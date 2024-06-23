@@ -1,0 +1,12 @@
+services:
+  linsta-back:
+    container_name: linsta_back
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 3000:3000
+    volumes:
+      - ./app:/home/node/app      
+    environment:
+      NODE_ENV: production

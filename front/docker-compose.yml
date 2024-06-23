@@ -1,0 +1,10 @@
+services:
+  linsta-front:
+    container_name: linsta_front
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 80:80
+    environment:
+      NODE_ENV: production
