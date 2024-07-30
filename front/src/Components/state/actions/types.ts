@@ -1,0 +1,1 @@
+export const ADD_DIALOG_REF = 'ADD_DIALOG_REF';

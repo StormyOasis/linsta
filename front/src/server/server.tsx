@@ -1,61 +1,71 @@
-import Koa from 'koa';
-import Router from '@koa/router';
-import http from 'http';
-import compress from 'compression';
-import cors from '@koa/cors';
-import serve from 'koa-static';
-import path from 'path';
-
+import Koa from "koa";
+import Router from "@koa/router";
+import http from "http";
+import compress from "compression";
+import cors from "@koa/cors";
+import serve from "koa-static";
+import path from "path";
 import React from "react";
-import { renderToPipeableStream } from 'react-dom/server';
-import store from '../common/state/store';
+import { ServerStyleSheet } from "styled-components";
+import { renderToString } from "react-dom/server";
+import { StaticRouter } from "react-router-dom/server";
 
-import App from '../common/App';
+import { initialState } from "../Components/state/store";
+import App from "../Components/App";
 
-const PORT = process.env['PORT'] || 3000;
+const PORT = process.env["PORT"] || 8080;
 
 const router = new Router();
 const app = new Koa();
 
-router.get('/', async (ctx) => {
-  let didError = false;
-  
-  const entryPoint = ["main.bundle.js", "vendor.bundle.js"];
+const renderHtml = (title: string, styles: any, html: any) => {
+  return `
+    <!DOCTYPE html>
+    <html lang="en">
+        <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">        
+            <title>${title}</title>
+            <link rel="stylesheet" href="public/defaults.css">
+            <link rel="icon" href="public/images/logo_small.png">
+            ${styles}
+        </head>
+        <body>
+            <div id="root">${html}</div>
+            <script>
+                window["__PRELOADED_STATE__"] = ${JSON.stringify(initialState)}
+            </script>          
+            <script type="application/javascript" src="main.bundle.js"></script>
+            <script type="application/javascript" src="vendor.bundle.js"></script>
+        </body>
+    </html>`;
+};
 
+router.get(/.*/, async (ctx) => {
   try {
     return new Promise((_resolve, reject) => {
-      const { pipe, abort } = renderToPipeableStream(
-        <App store={store} initialState={store.getState()}/>,
-        {
-          bootstrapScripts: entryPoint, 
-          onShellReady() {
-            ctx.respond = false;
-            ctx.status = didError ? 500 : 200;
-            ctx.set('Content-Type', 'text/html');
-            pipe(ctx.res);
-            ctx.res.end();
-          },
-          onShellError() {
-            ctx.status = 500;
-            abort();
-            didError = true;
-            ctx.set('Content-Type', 'text/html');
-            ctx.body = '<!doctype html><p>Loading...</p>';
-            reject();
-          },
-          onError(error) {
-            didError = true;
-            console.error(error);
-            reject();
-          }
-        },
-      );
-    })
+      const sheet = new ServerStyleSheet();
+
+      const appElement = <App />;
+      const withRouterElement = 
+        <StaticRouter location={ctx.req.url}>
+          {sheet.collectStyles(appElement)}
+        </StaticRouter>;
+
+      const appHtml = renderToString(sheet.collectStyles(withRouterElement));
+
+      ctx.body = renderHtml("Linstagram", sheet.getStyleTags(), appHtml);
+      ctx.response.set("content-type", "text/html");
+      ctx.status = 200;
+
+      _resolve(true);
+    });
   } catch (err) {
     console.log(err);
     ctx.status = 500;
-    ctx.body = 'Internal Server Error';
+    ctx.body = "Internal Server Error";
   }
+  return null;
 });
 
 app.use(serve(path.resolve(__dirname)));
@@ -64,7 +74,7 @@ app.use(router.routes());
 app.use(router.allowedMethods());
 app.use(async (ctx, next) => {
   compress();
-  await next();  
+  await next();
 });
 
 const server = http.createServer(app.callback());

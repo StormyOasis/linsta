@@ -1,0 +1,13 @@
+{
+    "database" : {
+        "host": "localhost",
+        "user": "laurenb",
+        "password": "password",
+        "database": "linsta",
+        "connectionLimit": 10
+    },
+
+    "logging": {
+        "logLevel": "debug"
+    }
+}

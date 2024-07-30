@@ -1,0 +1,68 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Modal Component 1`] = `
+<DocumentFragment>
+  <div
+    class="Modal__ModalWrapper-sc-ehox15-0 ithfnX"
+    role="dialog"
+  >
+    <div
+      class="Modal__ModalInnerWrapper-sc-ehox15-1 hSKvcq"
+    >
+      <div
+        class="Modal__ModalInnerWrapper2-sc-ehox15-2 Qehko"
+      >
+        <div
+          style="display: flex; flex-direction: column; height: 100%; max-width: 100%;"
+        >
+          <div
+            class="Modal__ModalTitleBarWrapper-sc-ehox15-3 SSVjs"
+          >
+            <div
+              class="Modal__ModalTitleBarInnerWrapper-sc-ehox15-4 kleBih"
+            >
+              <div
+                class="Modal__ModalTitleBarInnerWrapper2-sc-ehox15-5 ffpHMf"
+              >
+                <div
+                  class="Modal__ModalTitle-sc-ehox15-6 flwYZd"
+                >
+                  <div>
+                    Test Modal
+                  </div>
+                </div>
+              </div>
+              <div
+                class="Modal__ModalCloseWrapper-sc-ehox15-7 funGuz"
+              >
+                <div
+                  class="Modal__ModalClose-sc-ehox15-8 LwzWh"
+                >
+                  <button
+                    aria-label="Close"
+                    class="Modal__ModalCloseButton-sc-ehox15-9 bcIJQs"
+                    title="data-modal-close"
+                  >
+                    <div
+                      style="align-items: center; display: flex; justify-content: center; cursor: pointer;"
+                    >
+                      <span
+                        class="Modal__CloseButton-sc-ehox15-11 feBrNy"
+                      />
+                    </div>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            class="Modal__ModalContentWrapper-sc-ehox15-10"
+          >
+            Hello
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;

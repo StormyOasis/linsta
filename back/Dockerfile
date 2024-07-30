@@ -9,11 +9,13 @@ RUN npm install
 RUN npm run build
 
 FROM node:22 as container
-WORKDIR /app
+WORKDIR /dist
 
-COPY --from=build /app/build ./dist 
-COPY --from=build /app/build/package*.json ./
-RUN npm install --only=prod 
+COPY --from=build /app /dist/
+COPY --from=build /app/package*.json /dist/
+COPY --from=build /app/tsconfig.json /dist/
 
-EXPOSE 3000
+RUN npm install
+
+EXPOSE 3001
 CMD ["npm", "start"]

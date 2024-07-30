@@ -1,0 +1,12 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`MainLayout 1`] = `
+<DocumentFragment>
+  <main
+    class="MainLayout__MainWrapper-sc-1gsojru-0 bzvUxv"
+    role="main"
+  >
+    MainLayout
+  </main>
+</DocumentFragment>
+`;

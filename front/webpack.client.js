@@ -3,7 +3,6 @@ const path = require('path');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const ESLintPlugin = require("eslint-webpack-plugin");
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
-
 const isDevelopment = process.env.NODE_ENV === "development";
 const isProduction = !isDevelopment;
 
@@ -15,8 +14,8 @@ module.exports = {
   entry: path.resolve(__dirname, "src/client/index.tsx"),
 
   resolve: {
-    extensions: [".tsx", ".ts", ".js", ".jsx", "json"],
-    modules: ["src", "node_modules"],
+    extensions: [".tsx", ".ts", ".js", ".jsx", ".json"],
+    modules: ["src", "node_modules"], 
   },
 
   output: {
@@ -27,7 +26,7 @@ module.exports = {
   },
 
   module: {
-    rules: [
+    rules: [   
       {
         test: /\.(js|ts)x?$/,
         exclude: /node_modules/,
@@ -37,15 +36,31 @@ module.exports = {
         }
       },
       {
+        test: /\.(css)$/i,
         exclude: /node_modules/,
-        test: /\.(css)$/,
-        use: ['style-loader', 'css-loader']
-      },
+        use: [
+          "style-loader",
+          {
+            loader: "css-loader",
+            options: {
+                modules: {
+                  exportLocalsConvention: "camelCaseOnly",
+                  localIdentName: "[name]_[local]_[hash:base64:5]",
+                },
+            },
+          },
+        ],
+      }, 
       {
-        test: /\.(png|svg|jpg|gif)$/,
+        test: /\.(png|jpg|gif)$/,
         exclude: /node_modules/,
         use: ["file-loader"]
       },
+      {
+        test: /\.svg$/i,
+        issuer: /\.tsx$/,
+        use: ['@svgr/webpack'],
+      },    
     ],
 
   },

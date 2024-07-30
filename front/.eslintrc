@@ -3,6 +3,11 @@
       "browser": true,
       "es2021": true
     },
+    "settings": {
+      "react": {
+        "version": "detect"
+      }
+    },    
     "extends": ["eslint:recommended", "plugin:react/recommended", "plugin:react-hooks/recommended"],
     "parser": "@babel/eslint-parser",
     "parserOptions": {
@@ -12,8 +17,5 @@
         "jsx": true
       }
     },
-    "plugins": ["react", "react-hooks"],
-    "rules": {
-      //add customize rules here as per your project's needs
-    }
+    "plugins": ["react", "react-hooks"]
 }  

@@ -10,12 +10,13 @@ module.exports = {
   
   resolve: {
     extensions: [".tsx", ".ts", ".js", ".jsx", "json"],
-    modules: ["src", "node_modules"],
+    modules: ["src", "node_modules"], 
   },
     
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'server.js',
+    publicPath: '/',
   },
   module: {
     rules: [
@@ -27,6 +28,32 @@ module.exports = {
           options: { presets: ['@babel/preset-env', '@babel/preset-react'] },
         }
       },
+      {
+        test: /\.svg$/i,
+        issuer: /\.tsx$/,
+        use: ['@svgr/webpack'],
+      },     
+      {
+        test: /\.(png|jpg|gif)$/,
+        exclude: /node_modules/,
+        use: ["file-loader"]
+      },        
+      {
+        test: /\.(css)$/i,
+        exclude: /node_modules/,
+        use: [
+          "style-loader",
+          {
+            loader: "css-loader",
+            options: {
+                modules: {
+                  exportLocalsConvention: "camelCaseOnly",
+                  localIdentName: "[name]_[local]_[hash:base64:5]",
+                },
+            },
+          },
+        ],
+      },       
     ],
   },
   plugins: [],

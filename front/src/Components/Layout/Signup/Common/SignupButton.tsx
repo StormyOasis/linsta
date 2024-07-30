@@ -1,0 +1,61 @@
+import React from "react";
+import { styled } from "styled-components";
+
+import Theme from "../../../Themes/Theme";
+
+type SignupButtonProps = {
+    name?: string;
+    onClick?: any;
+    type?: "button" | "submit" | "reset" | undefined;
+    disabled?: boolean;
+    text: string;
+    style?: any;
+};
+
+const SignupButtonComponent = styled.button<{ $props?: any }>`
+  border: none;
+  border-radius: 8px;
+  text-decoration: none;
+  align-items: center;
+  font-weight: 600;
+  justify-content: center;
+  text-wrap: nowrap;
+  color: ${props => props.theme['colors'].buttonTextColorDefault};
+  background-color: ${(props) =>
+        props.disabled ? props.theme['colors'].buttonDefaultColorTrans : props.theme['colors'].buttonDefaultColor};
+  display: flex;
+  height: 34px;
+  position: relative;
+  text-align: center;
+  padding-left: 16px;
+  padding-right: 16px;
+  flex-direction: row;
+  margin-bottom: 12px;
+  margin-top: 0px;
+  margin-left: 40px;
+  margin-right: 40px;
+
+  cursor: ${(props) => (props.disabled ? "default" : "pointer")};
+
+  &:hover {
+    background-color: ${(props) =>
+        props.disabled ? props.theme['colors'].buttonDefaultColorTrans : props.theme['colors'].buttonOnHoverColor};
+  }
+`;
+
+const SignupButton: React.FC<SignupButtonProps> = (props: SignupButtonProps) => {
+    return (
+        <Theme>
+            <SignupButtonComponent
+                type={props.type}
+                name={props.name} 
+                disabled={props.disabled} 
+                onClick={props.onClick}
+                style={props.style}>
+                    {props.text}
+            </SignupButtonComponent>
+        </Theme>
+    );
+}
+
+export default SignupButton;

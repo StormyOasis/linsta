@@ -1,10 +1,11 @@
 {
     "presets": [
-        "@babel/react" , 
-        "@babel/env" 
+        "@babel/preset-env",
+        "@babel/preset-typescript", 
+        ["@babel/preset-react", {"runtime": "automatic", "targets": {"node":"current"}}]
     ],
-    "plugins": [
-        "babel-plugin-styled-components",
-        "@babel/plugin-proposal-class-properties"
-    ]
+    "plugins": [        
+        ["babel-plugin-styled-components", { "ssr": true, "displayName": true, "preprocess": false }],
+    ],
+    "ignore": ["node_modules", "build"]
  }

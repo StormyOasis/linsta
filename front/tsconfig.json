@@ -30,6 +30,6 @@
       "isolatedModules": true,
       "skipLibCheck": true
     },
-    "include": ["src/**/**/*"],
+    "include": ["src/**/**/*", "jest.config.js", "jest.polyfill.js"],
     "exclude": ["node_modules"]
   }
