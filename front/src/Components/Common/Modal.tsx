@@ -1,6 +1,5 @@
 import React from "react";
 import styled from "styled-components";
-import XSvg from '/public/images/x.svg';
 
 export type ModalProps = {
     children?: any;

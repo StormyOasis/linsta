@@ -1,4 +1,12 @@
-{
+{   
+    "frontHost": "http://localhost:8080",
+
+    "auth": {
+        "jwt": {
+            "secret": "sfD*okj2398!ru9aWad^IOEa",
+            "expiration": "128d"
+        }
+    },
     "database" : {
         "host": "localhost",
         "user": "laurenb",
@@ -7,7 +15,29 @@
         "connectionLimit": 10
     },
 
+    "redis": {
+        "host": "localhost",
+        "userName": "redis",
+        "password": "password",
+        "port": 6379
+    },
+
     "logging": {
         "logLevel": "debug"
+    },
+
+    "metrics": {
+        "statsd": {
+            "host" : "localhost",
+            "port" : 8125
+        }            
+    },
+
+    "aws": {
+        "region": "us-west-2",
+        "ses": {
+            "defaultReplyAddress": "no-reply@lboydstun.com",
+            "imageHostName": "https://linsta-public.s3.us-west-2.amazonaws.com"
+        }
     }
 }

@@ -4,7 +4,7 @@ import { ErrorBoundary } from "react-error-boundary";
 
 import Layout from "./Layout/Layout";
 
-import store from "../Components/state/store";
+import store from "../Components/state/redux";
 import Theme from "./Themes/Theme";
 import { useLocation } from "react-router-dom";
 

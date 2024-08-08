@@ -1,16 +1,16 @@
 import React from "react";
 import { styled } from "styled-components";
 
-import * as styles from "../SignupLayout.module.css";
-import Theme from "../../../Themes/Theme";
+import * as styles from "./Common.module.css";
+import Theme from "../Themes/Theme";
 
-const SignupFormInputWrapper = styled.div`
+const StyledInputWrapper = styled.div`
   display: flex;
   flex-direction: row;
   margin: 0 40px 5px 40px;
 `;
 
-const SignupFormInput = styled.input`
+const StyledInputInput = styled.input`
   border: 2px solid ${props => props.theme['colors'].borderDefaultColor};
   background-color: ${props => props.theme['colors'].inputBackgroundColor};
   display: block;
@@ -18,12 +18,12 @@ const SignupFormInput = styled.input`
   height: 24px;
 `;
 
-const SignupLabel = styled.label`
+const StyledInputLabel = styled.label`
     position: relative;
     width: 100%;
 `;
 
-type SignupInputProps = {
+type StyledInputProps = {
   name: string;
   value?: string | Number;
   placeholder?: string;
@@ -34,7 +34,7 @@ type SignupInputProps = {
   style?: any;
 }
 
-const SignupInput: React.FC<SignupInputProps> = (props: SignupInputProps) => {
+const StyledInput: React.FC<StyledInputProps> = (props: StyledInputProps) => {
 
     // Determine validation classname (None, valid, invalid)
     const value = `${props.value}`;
@@ -45,9 +45,9 @@ const SignupInput: React.FC<SignupInputProps> = (props: SignupInputProps) => {
 
     return (
       <Theme>
-        <SignupFormInputWrapper>
-          <SignupLabel className={validationClass}>
-              <SignupFormInput
+        <StyledInputWrapper>
+          <StyledInputLabel className={validationClass}>
+              <StyledInputInput
                   style={props.style}
                   type={props.type}
                   name={props.name}
@@ -56,10 +56,10 @@ const SignupInput: React.FC<SignupInputProps> = (props: SignupInputProps) => {
                   onChange={props.onChange} 
                   maxLength={props.maxLength ? props.maxLength : 255}
                   />
-          </SignupLabel>
-        </SignupFormInputWrapper>        
+          </StyledInputLabel>
+        </StyledInputWrapper>        
       </Theme>
     );
 }
 
-export default SignupInput;
+export default StyledInput;

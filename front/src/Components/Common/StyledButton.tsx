@@ -1,9 +1,9 @@
 import React from "react";
 import { styled } from "styled-components";
 
-import Theme from "../../../Themes/Theme";
+import Theme from "../Themes/Theme";
 
-type SignupButtonProps = {
+type StyledButtonProps = {
     name?: string;
     onClick?: any;
     type?: "button" | "submit" | "reset" | undefined;
@@ -12,7 +12,7 @@ type SignupButtonProps = {
     style?: any;
 };
 
-const SignupButtonComponent = styled.button<{ $props?: any }>`
+const StyledButtonComponent = styled.button<{ $props?: any }>`
   border: none;
   border-radius: 8px;
   text-decoration: none;
@@ -43,19 +43,19 @@ const SignupButtonComponent = styled.button<{ $props?: any }>`
   }
 `;
 
-const SignupButton: React.FC<SignupButtonProps> = (props: SignupButtonProps) => {
+const StyledButton: React.FC<StyledButtonProps> = (props: StyledButtonProps) => {
     return (
         <Theme>
-            <SignupButtonComponent
+            <StyledButtonComponent
                 type={props.type}
                 name={props.name} 
                 disabled={props.disabled} 
                 onClick={props.onClick}
                 style={props.style}>
                     {props.text}
-            </SignupButtonComponent>
+            </StyledButtonComponent>
         </Theme>
     );
 }
 
-export default SignupButton;
+export default StyledButton;

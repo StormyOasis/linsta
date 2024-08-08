@@ -1,6 +1,5 @@
 import React from "react";
 import { styled } from "styled-components";
-import { Link } from "react-router-dom";
 
 import * as styles from "./SignupLayout.module.css";
 
@@ -8,6 +7,7 @@ import Theme from "../../../Components/Themes/Theme";
 import SignupMainForm from "./Flow/SignupMainForm";
 import BirthdayForm from "./Flow/BirthdayForm";
 import ConfirmationCodeForm from "./Flow/ConfirmationCodeForm";
+import StyledLink from "/src/Components/Common/StyledLink";
 
 type SignupLayoutProps = {};
 
@@ -37,13 +37,6 @@ const SignupLayoutWrapper = styled.main<any>`
   display: flex;
   flex-direction: column;
   flex-grow: 1;
-`;
-
-const LoginLink = styled(Link)`
-  color: ${props => props.theme['colors'].buttonDefaultColor};
-  text-decoration: none;
-  display: contents;
-  font-weight: 600;
 `;
 
 export class SignupLayout extends React.Component<
@@ -130,6 +123,12 @@ export class SignupLayout extends React.Component<
                 confirmationCode={this.state.confirmationCode} 
                 confirmationCode_valid={this.state.confirmationCode_valid} 
                 emailOrPhone={this.state.emailOrPhone} 
+                fullName={this.state.fullName} 
+                userName={this.state.userName} 
+                password={this.state.password}
+                day={this.state.day} 
+                month={this.state.month} 
+                year={this.state.year}                 
                 handleFormChange={this.handleFormChange} 
                 changePage={this.changePage}/>
         }
@@ -148,7 +147,7 @@ export class SignupLayout extends React.Component<
                             <div
                                 className={styles.signupBox}
                                 style={{ padding: "20px 0" }}>
-                                    Have an account? <LoginLink to="/login">Log In</LoginLink>
+                                    Have an account? <StyledLink to="/login">Log In</StyledLink>
                             </div>
                         </div>
                     </div>

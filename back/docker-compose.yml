@@ -26,6 +26,15 @@ services:
     expose:
       - 3306:3306
 
+  linsta-redis:
+    image: redis/redis-stack-server
+    container_name: linsta_redis
+    ports:
+      - 6379:6379
+    command: ["redis-server", "/etc/redis/redis.conf"]
+    volumes:
+      - ./config/redis.conf:/etc/redis/redis.conf
+
   linsta-monitoring:
     image: stormyoasis/graphite-statsd-grafana
     container_name: linsta_monitoring

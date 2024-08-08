@@ -1,55 +1,18 @@
 import React from "react";
 import { styled } from "styled-components";
-import { Link } from "react-router-dom";
 
-import FBIconSVG from "/public/images/facebook.svg";
-import LogoSVG from "/public/images/linsta.svg";
 
-import * as styles from "../SignupLayout.module.css";
+import * as styles1 from "/src/Components/Layout/Login/LoginLayout.module.css";
+import * as styles2 from "/src/Components/Common/Common.module.css";
+import * as styles3 from "../SignupLayout.module.css";
+const styles = { ...styles1, ...styles2, ...styles3 };
 import Theme from "../../../../Components/Themes/Theme";
-import SignupInput from "../Common/SignupInput";
-import SignupButton from "../Common/SignupButton";
 import {postAccountsAttempt, getAccountsCheckUserUnique} from "../../../../api/ServiceController";
-
-const LogoWrapper = styled.div`
-  align-content: stretch;
-  align-items: stretch;
-  border: none;
-  display: flex;
-  flex-direction: column;
-  flex-grow: 0;
-  flex-shrink: 0;
-  justify-content: flex-start;
-  overflow: visible;
-  position: relative;
-  margin-bottom: 12px;
-  margin-top: 36px;
-`;
-
-const LoginWithFBButton = styled.button<{ $props?: any }>`
-  border-radius: 8px;
-  text-decoration: none;
-  align-items: center;
-  font-weight: 600;
-  justify-content: center;
-  text-wrap: nowrap;
-  color: ${props => props.theme['colors'].buttonTextColorDefault};
-  background-color: ${(props) => props.theme["colors"].buttonDefaultColor};
-  cursor: pointer;
-  display: flex;
-  height: 34px;
-  position: relative;
-  text-align: center;
-  padding-left: 16px;
-  padding-right: 16px;
-  flex-direction: row;
-  border: none;
-  margin-bottom: 12px;
-
-  &:hover {
-    background-color: ${(props) => props.theme["colors"].buttonOnHoverColor};
-  }
-`;
+import StyledInput from "/src/Components/Common/StyledInput";
+import StyledButton from "/src/Components/Common/StyledButton";
+import LargeLogo from "/src/Components/Common/LargeLogo";
+import LoginWithFB from "/src/Components/Common/LoginWithFB";
+import { validatePassword } from "/src/utils/utils";
 
 const SignupForm = styled.form`
   display: flex;
@@ -96,13 +59,6 @@ export default class MainSignupForm extends React.Component<MainSignupFormProps>
         );
     };
 
-    validatePassword = (value: string): boolean => {
-        const regex =
-            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@.#$!%*?&^])[A-Za-z\d@.#$!%*?&]{8,15}$/;
-
-        return regex.test(value);
-    };
-
     validateUserName = async (value: string): Promise<boolean> => {
         if (value == null || value.length == 0) return false;
 
@@ -123,7 +79,7 @@ export default class MainSignupForm extends React.Component<MainSignupFormProps>
                 break;
             }
             case "password": {
-                result = this.validatePassword(event.target.value);
+                result = validatePassword(event.target.value);
                 break;
             }
         }
@@ -171,6 +127,7 @@ export default class MainSignupForm extends React.Component<MainSignupFormProps>
         }
 
         const res = await postAccountsAttempt({
+            dryRun: true,
             emailOrPhone: this.props.emailOrPhone,
             userName: this.props.userName,
             fullName: this.props.fullName,
@@ -188,11 +145,7 @@ export default class MainSignupForm extends React.Component<MainSignupFormProps>
     override render() {
         return (
             <Theme>
-                <LogoWrapper>
-                    <Link to="/">
-                        <LogoSVG />
-                    </Link>
-                </LogoWrapper>
+                <LargeLogo />
                 <div>
                     <SignupForm method="post">
                         <div className={styles.signupFormDiv1}>
@@ -200,56 +153,42 @@ export default class MainSignupForm extends React.Component<MainSignupFormProps>
                                 Sign up to see photos and videos from your friends.
                             </span>
                         </div>
-                        <div className={styles.signupFormFbLoginDiv}>
-                            <LoginWithFBButton onClick={this.loginWithFacebookClicked}>
-                                <span className={styles.signupFormFbIcon}>
-                                    <FBIconSVG />
-                                </span>
-                                Log in with Facebook
-                            </LoginWithFBButton>
-                            <div className={styles.signupFormDiv1}>
-                                <div className={styles.signupFormDiv2}>
-                                    <div className={styles.signupFormDiv3} />
-                                    <div className={styles.signupFormDiv4}>OR</div>
-                                    <div className={styles.signupFormDiv3} />
-                                </div>
-                            </div>
-                        </div>
-                        <SignupInput
+                        <LoginWithFB>Login in with Facebook</LoginWithFB>
+                        <StyledInput
                             name="emailOrPhone"
                             placeholder="Phone Number or Email"
                             value={this.props.emailOrPhone}
                             isValid={this.props.emailOrPhone_valid}
                             onChange={this.handleFormChange}
-                        ></SignupInput>
-                        <SignupInput
+                        ></StyledInput>
+                        <StyledInput
                             name="fullName"
                             placeholder="Full Name"
                             value={this.props.fullName}
                             isValid={this.props.fullName_valid}
                             onChange={this.handleFormChange}
-                        ></SignupInput>
-                        <SignupInput
+                        ></StyledInput>
+                        <StyledInput
                             name="userName"
                             placeholder="Username"
                             value={this.props.userName}
                             isValid={this.props.userName_valid}
                             onChange={this.handleUsernameFormChange}
-                        ></SignupInput>
-                        <SignupInput
+                        ></StyledInput>
+                        <StyledInput
                             name="password"
                             placeholder="Password"
                             type="password"
                             value={this.props.password}
                             isValid={this.props.password_valid}
                             onChange={this.handleFormChange}
-                        ></SignupInput>
+                        ></StyledInput>
 
                         <div className={styles.termsDiv}>
                             By signing up, you agree to our Terms, Privacy Policy and Cookies
                             Policy.
                         </div>
-                        <SignupButton
+                        <StyledButton
                             type="button"
                             disabled={!this.isFormValid()}
                             onClick={this.submitForm}

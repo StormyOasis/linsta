@@ -2,7 +2,7 @@ import React from "react";
 import { styled } from "styled-components";
 
 import Theme from "../../../../Components/Themes/Theme";
-import SignupButton from "../Common/SignupButton";
+import StyledButton from "../../../Common/StyledButton";
 import Modal from "../../../../Components/Common/Modal";
 
 const FormWrapper = styled.div`
@@ -316,9 +316,9 @@ export default class BirthdayForm extends React.Component<BirthdayFormProps> {
                         </Section>
                     </Section>
                     <Section style={{ width: "100%", padding: "16px 8px 16px 8px" }}>
-                        <SignupButton type="button" text="Next" disabled={!this.props.date_valid}
+                        <StyledButton type="button" text="Next" disabled={!this.props.date_valid}
                             style={{ margin: 0 }} onClick={() => { this.props.changePage(1) }}>
-                        </SignupButton>
+                        </StyledButton>
                     </Section>
                     <Section>
                         <BackButton onClick={() => this.props.changePage(-1)}>Go Back</BackButton>

@@ -1,4 +1,6 @@
 import StatsDClient, { ClientOptions } from "hot-shots";
+import config from 'config';
+
 
 export class Metrics extends StatsDClient {
     private static instance:Metrics | null = null;
@@ -10,8 +12,8 @@ export class Metrics extends StatsDClient {
     public static getInstance() : Metrics {
         if(!Metrics.instance) {
             Metrics.instance = new Metrics({
-                host: "localhost",
-                port: 8125,                
+                host: config.get("metrics.statsd.host"),
+                port: config.get("metrics.statsd.port")
             });
         }
         return Metrics.instance;

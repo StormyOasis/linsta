@@ -1,0 +1,80 @@
+.validationPass {
+    position: relative;
+    width: 100%;   
+}
+
+.validationPass::after {
+    content: "";
+    position: absolute;
+    right: 10px;
+    width: 16px;
+    top: 6px;
+    bottom: 0;
+    height: 16px;
+    background: url("/public/images/check-circle.svg");
+} 
+
+.validationFail {
+    position: relative;
+    width: 100%;
+}
+
+.validationFail::after {
+    content: "";
+    position: absolute;
+    right: 10px;
+    width: 16px;
+    top: 6px;
+    bottom: 0;
+    height: 16px;
+    background: url("/public/images/x-circle.svg");
+}
+
+.signupFormDiv1 {
+    line-height: 18px;
+    margin: 10px 40px 18px 40px;
+    font-size: 14px;
+    display: block;
+}
+
+.signupFormDiv2 {
+    display: flex;
+    flex-direction: row;
+    line-height: 18px;
+}
+
+.signupFormDiv3 {
+    background-color: rgb(220, 220, 220);
+    flex-grow: 1;
+    flex-shrink: 1;
+    display: block;
+    position: relative;
+    top: 5px;
+    height: 1px;
+}
+
+.signupFormDiv4 {
+    color: rgb(115, 115, 115);
+    flex-direction: column;
+    font-weight: 600;
+    margin-left: 20px;
+    margin-right: 20px;
+    flex-grow: 0;
+    flex-shrink: 0;
+    display: flex;
+    position: relative;
+    vertical-align: baseline;
+    line-height: 15px;
+}
+
+.signupIntroSpan {
+    font-size: 16px;
+    display: block;
+    overflow-wrap: break-word;
+    line-height: 20px;
+    position: relative;
+    text-align: center;
+    text-wrap: wrap;
+    font-weight: 600;
+    color: rgb(115, 115, 115);
+}

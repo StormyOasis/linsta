@@ -1,8 +1,9 @@
 import React from "react";
 import { styled } from "styled-components";
 
-import SignupInput from "../Common/SignupInput";
-import SignupButton from "../Common/SignupButton";
+import { getAccountsSendVerifyNotification, postAccountsAttempt } from "/src/api/ServiceController";
+import StyledInput from "/src/Components/Common/StyledInput";
+import StyledButton from "/src/Components/Common/StyledButton";
 
 const ConfirmationWrapper = styled.div`
     align-content: stretch;
@@ -81,8 +82,14 @@ const PrevButton = styled.button`
 `;
 
 type ConfirmationCodeFormProps = {
-    emailOrPhone: string,
-    confirmationCode: string,
+    userName: string;
+    fullName: string;
+    emailOrPhone: string;
+    password: string;
+    confirmationCode: string;
+    month: number;
+    day: number;
+    year: number;
     confirmationCode_valid: boolean,
     handleFormChange: any,
     changePage: any,
@@ -90,10 +97,22 @@ type ConfirmationCodeFormProps = {
 
 export default class ConfirmationCodeForm extends React.Component<ConfirmationCodeFormProps> {
 
-    resendCode = () => {
+    hasSentConfirmEmail:boolean = false;
 
+    override componentDidMount(): void {
+        if(!this.hasSentConfirmEmail) {
+            this.hasSentConfirmEmail = true;
+            this.resendCode();
+        }
     }
 
+    resendCode = () => {
+        getAccountsSendVerifyNotification(this.props.emailOrPhone)
+            .then((res: any) => res)
+            .catch((err: any) => {
+                console.error(err);
+            });
+    }
 
     handleFormChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         this.props.handleFormChange(
@@ -102,6 +121,24 @@ export default class ConfirmationCodeForm extends React.Component<ConfirmationCo
             event.target.value.length > 0
         );
     };    
+
+    submitForm = async () => {
+        const result = await postAccountsAttempt({
+            dryRun: false,
+            userName: this.props.userName,
+            fullName: this.props.fullName,
+            emailOrPhone: this.props.emailOrPhone,
+            password: this.props.password,
+            confirmCode: this.props.confirmationCode,
+            month: this.props.month,
+            day: this.props.day,
+            year: this.props.year,
+        });
+
+        if(result.status === "OK") {
+
+        }
+    }
 
     override render() {
         return (
@@ -123,7 +160,7 @@ export default class ConfirmationCodeForm extends React.Component<ConfirmationCo
                 <ConfirmationWrapper>
                     <ConfirmationInnerWrapper style={{ alignItems: "center", margin: "8px 0", padding: "0 40px" }}>
                         <ConfirmationWrapper style={{ margin: 0, padding: 0 }}>
-                            <SignupInput style={{
+                            <StyledInput style={{
                                 borderRadius: "6px", cursor: "text", lineHeight: "30px",
                                 padding: "0px 12px", textAlign: "left", textTransform: "none", width: "240px"}}
                                 maxLength={8}
@@ -136,10 +173,10 @@ export default class ConfirmationCodeForm extends React.Component<ConfirmationCo
                             />
                         </ConfirmationWrapper>
                         <ConfirmationWrapper style={{ width: "100%", margin: 0, padding: "16px 8px 16px 8px" }}>
-                            <SignupButton
+                            <StyledButton
                                 type="button" text="Next" disabled={!this.props.confirmationCode_valid}
-                                style={{ margin: 0 }} onClick={() => { this.props.changePage(1) }}>
-                            </SignupButton>
+                                style={{ margin: 0 }} onClick={() => { this.submitForm(); }}>
+                            </StyledButton>
                         </ConfirmationWrapper>
                         <ConfirmationInnerWrapper style={{ margin: 0 }}>
                             <PrevButton onClick={() => this.props.changePage(-1)}>Go Back</PrevButton>

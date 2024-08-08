@@ -8,13 +8,25 @@ import {setupServer} from 'msw/node'
 
 import  { getAccountsCheckUserUnique } from './ServiceController';
 
+const host = "http://localhost";
+const port = 3001;
+
 // declare which API requests to mock
 const server = setupServer(
-    // capture "GET /greeting" requests
-    http.get('http://localhost:3001/accounts/check/', (req, res, ctx) => {
+    http.get(`${host}:${port}/api/v1/accounts/check/a`, (req, res, ctx) => {
       // respond using a mocked JSON body
-      return res(ctx.json({data: "true", status: 200, statusText: "OK"}));
+      return new HttpResponse(false, {
+        status: 200
+      });
     }),
+    http.get(`${host}:${port}/api/v1/accounts/check/aa`, (req, res, ctx) => {
+      return new HttpResponse(true, {
+        status: 200
+      });
+    }),    
+    http.post(`${host}:${port}/api/v1/accounts/attempt/`, (req, res, ctx) => {
+        
+    })
   )
   
   // establish API mocking before all tests
@@ -25,9 +37,17 @@ const server = setupServer(
   // clean up once the tests are done
   afterAll(() => server.close())
 
-test("getAccountsCheckUserUnique", async () => {
+test("getAccountsCheckUserUniqueFalse", async () => {
     let response:any = {};
     response = await getAccountsCheckUserUnique("a");
+    expect(response).toBeDefined();
+    expect(response.data).toBeFalsy();
+    expect(response.status).toEqual(200);
+});
+
+test("getAccountsCheckUserUniqueTrue", async () => {
+    let response:any = {};
+    response = await getAccountsCheckUserUnique("aa");
     expect(response).toBeDefined();
     expect(response.data).toBeTruthy();
     expect(response.status).toEqual(200);

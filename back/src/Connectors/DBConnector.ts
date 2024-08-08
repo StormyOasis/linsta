@@ -55,9 +55,9 @@ export class DBConnector {
                 throw new Error("Invalid connection");
             }
 
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const [rows, fields] = await this.dbPromisePool.query(query, params);
-
-            return [rows, fields];
+            return rows;
         } catch(err) {
             Metrics.increment("db.error.counts");
             Logger.error(`Error querying db: ${err}`);
@@ -70,7 +70,10 @@ export class DBConnector {
             if(!this.dbPromisePool) {
                 throw new Error("Invalid connection");
             }            
-            return await this.dbPromisePool.execute(query, params);
+           
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const [rows, fields] = await this.dbPromisePool.execute(query, params);
+            return rows;
         } catch(err) {
             Metrics.increment("db.error.counts");
             Logger.error(`Error executing against db: ${err}`);
