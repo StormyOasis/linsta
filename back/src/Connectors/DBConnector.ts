@@ -1,8 +1,13 @@
 import mysql, {Pool} from 'mysql2';
-import { PoolConnection, Pool as PromisePool } from 'mysql2/promise';
+import { PoolConnection, Pool as PromisePool, QueryResult, ResultSetHeader } from 'mysql2/promise';
 import config from 'config';
 import Logger from '../logger/logger';
 import Metrics from '../metrics/Metrics';
+
+export type DbResult = {
+    affectedRows: number;
+    data: unknown[];
+};
 
 export class DBConnector {
     private static instance:DBConnector | null = null;
@@ -55,12 +60,13 @@ export class DBConnector {
                 throw new Error("Invalid connection");
             }
 
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const [rows, fields] = await this.dbPromisePool.query(query, params);
-            return rows;
+            const [rows] = await this.dbPromisePool.query(query, params);
+            return this.parseResult(rows);
+
         } catch(err) {
             Metrics.increment("db.error.counts");
             Logger.error(`Error querying db: ${err}`);
+            throw err;            
         }
     }
 
@@ -71,12 +77,13 @@ export class DBConnector {
                 throw new Error("Invalid connection");
             }            
            
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const [rows, fields] = await this.dbPromisePool.execute(query, params);
-            return rows;
+            const [rows] = await this.dbPromisePool.execute(query, params);
+            return this.parseResult(rows);
+
         } catch(err) {
             Metrics.increment("db.error.counts");
             Logger.error(`Error executing against db: ${err}`);
+            throw err;
         }
     }
 
@@ -86,6 +93,29 @@ export class DBConnector {
 
     public releaseConnection = (connection: PoolConnection) => {
         this.dbPromisePool?.releaseConnection(connection);
+    }
+
+    private parseResult = (result: QueryResult|ResultSetHeader) :DbResult => {        
+        if(result == null) {
+            throw new Error("Invalid result");
+        }
+
+        const dbResult:DbResult = {
+            affectedRows: 0,
+            data: []
+        }
+
+        if((result as []).length == undefined) {
+            // A non select statement(ie. INSERT, ROLLBACK, etc)
+            dbResult.data = [];
+            dbResult.affectedRows = (result as ResultSetHeader).affectedRows;
+        }
+        else if((result as []).length != 0) {
+            // standard SELECT
+            dbResult.data = (result as []);
+        }
+
+        return dbResult;
     }
 }
 

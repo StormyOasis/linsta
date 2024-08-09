@@ -4,6 +4,7 @@ import { styled } from "styled-components";
 import { getAccountsSendVerifyNotification, postAccountsAttempt } from "/src/api/ServiceController";
 import StyledInput from "/src/Components/Common/StyledInput";
 import StyledButton from "/src/Components/Common/StyledButton";
+import { Navigate } from "react-router-dom";
 
 const ConfirmationWrapper = styled.div`
     align-content: stretch;
@@ -95,18 +96,30 @@ type ConfirmationCodeFormProps = {
     changePage: any,
 }
 
-export default class ConfirmationCodeForm extends React.Component<ConfirmationCodeFormProps> {
+type ConfirmationCodeFormState = {
+    navigateToHome: boolean;
+}
 
-    hasSentConfirmEmail:boolean = false;
+export default class ConfirmationCodeForm extends React.Component<ConfirmationCodeFormProps, ConfirmationCodeFormState> {
 
-    override componentDidMount(): void {
-        if(!this.hasSentConfirmEmail) {
-            this.hasSentConfirmEmail = true;
+    messageSent: boolean = false; //This nonsense is bc React strictmode double calls constructor and lifecycle methods in dev
+    
+    constructor(props: ConfirmationCodeFormProps) {
+        super(props);
+
+        this.state = {
+            navigateToHome: false,
+        };
+    }
+
+    override componentDidMount(): void { 
+        if(!this.messageSent) {
             this.resendCode();
+            this.messageSent = true;
         }
     }
 
-    resendCode = () => {
+    resendCode = () => {                
         getAccountsSendVerifyNotification(this.props.emailOrPhone)
             .then((res: any) => res)
             .catch((err: any) => {
@@ -135,14 +148,15 @@ export default class ConfirmationCodeForm extends React.Component<ConfirmationCo
             year: this.props.year,
         });
 
-        if(result.status === "OK") {
-
+        if(result.status === 200) {
+            this.setState({navigateToHome: true});
         }
     }
 
     override render() {
         return (
             <>
+                {this.state.navigateToHome && <Navigate to="/" replace={true} />}
                 <ConfirmationWrapper style={{ alignItems: "center" }}>
                     <EmailImage aria-label="Email Confirmation" />
                     <ConfirmationInnerWrapper>

@@ -7,7 +7,9 @@ import Metrics from "../metrics/Metrics";
 import { isEmail, isPhone, isValidPassword, obfuscateEmail, obfuscatePhone } from "../utils/utils";
 import config from 'config';
 import jwt from 'jsonwebtoken';
-import { SEND_CONFIRM_TEMPLATE, FORGOT_PASSWORD_TEMPLATE, sendEmailByTemplate, sendSMS } from "../Connectors/AWSConnector";
+import { SEND_CONFIRM_TEMPLATE, 
+         FORGOT_PASSWORD_TEMPLATE, 
+         sendEmailByTemplate, sendSMS } from "../Connectors/AWSConnector";
 
 export const getIsUnqiueUsername = async (ctx: Context) => {
     Metrics.increment("accounts.checkunique");
@@ -32,24 +34,14 @@ export const getIsUnqiueUsername = async (ctx: Context) => {
     try {
         const query = "SELECT userName from Users where USERNAME = ?";
         const result = await DBConnector.query(query, [userName]);
-        if (result == null) {
-            throw new Error();
-        }
 
-        if (result != null && (result as []).length != 0) {
-            // match found
-            ctx.body = true;
-        } else {
-            ctx.body = false;
-        }
+        ctx.body = result.data.length == 0;
+        ctx.status = 200;
 
     } catch (err) {
-        Metrics.increment("db.error.counts");
         ctx.status = 400;
         return;
     }
-
-    ctx.status = 200;
 }
 
 type AttemptRequest = {
@@ -61,7 +53,7 @@ type AttemptRequest = {
     confirmCode?: string;
     month?: number;
     day?: number;
-    year?: number;    
+    year?: number;
 }
 
 export const attemptCreateUser = async (ctx: Context) => {
@@ -79,15 +71,15 @@ export const attemptCreateUser = async (ctx: Context) => {
         return;
     }
 
-    if (!data.dryRun && 
-        (data.confirmCode == null || data.day == null || 
-        data.month == null || data.year == null)) {
-            
+    if (!data.dryRun &&
+        (data.confirmCode == null || data.day == null ||
+            data.month == null || data.year == null)) {
+
         ctx.status = 400;
         ctx.body = `{status: "Invalid input"}`;
         return;
     }
-    
+
     // Determine if value passed to emailOrPhone is an email address or phone
     const isEmailAddr: boolean = isEmail(data.emailOrPhone);
     const isPhoneNum: boolean = isPhone(data.emailOrPhone);
@@ -110,38 +102,39 @@ export const attemptCreateUser = async (ctx: Context) => {
     if (!data.dryRun) {
         // If this is not a dry run an instead an actual attempt then 
         // we need to compare the confirmation codes
-        if(data.confirmCode?.trim().length !== 8 || data.emailOrPhone.trim().length === 0) {
+        if (data.confirmCode?.trim().length !== 8 || data.emailOrPhone.trim().length === 0) {
             ctx.status = 400;
             ctx.body = `{status: "Invalid Confirmation Code"}`;
             return;
         }
 
-        // Check if confirmation code + email/phone entry exists
-        res = await DBConnector.query("SELECT * FROM ConfirmCodes where user_data = ? and code = ?", [data.emailOrPhone.trim(), data.confirmCode.trim()])
-            .then(r => res = r)
-            .catch(() => {
-                ctx.status = 500;
-                return;
-            });
+        try {
+            // Check if confirmation code + email/phone entry exists
+            res = await DBConnector.query("SELECT * FROM ConfirmCodes where user_data = ? and code = ?",
+                [data.emailOrPhone.trim(), data.confirmCode.trim()]);
 
-            if (res == null || (res as []).length == 0) {
+            if (res.data.length == 0) {
                 // no matching code found so respond as invalid
                 ctx.status = 400;
                 ctx.body = `{status: "Invalid Confirmation Code"}`;
                 return;
             }
+        } catch (err) {
+            ctx.status = 500;
+            return;
+        }
     }
 
-    let failureOccured:boolean = false;
+    let failureOccured: boolean = false;
 
-    if(!isValidPassword(data.password)) {
+    if (!isValidPassword(data.password)) {
         // Password does not pass rules check
         ctx.status = 400;
         ctx.body = `{status: "Invalid Password"}`;
-        return;        
+        return;
     }
 
-    try {        
+    try {
         const hashedPassword = await bcrypt.hash(data.password, 10);
 
         const first: string = names[0];
@@ -150,8 +143,8 @@ export const attemptCreateUser = async (ctx: Context) => {
         const timestamp = currentTime.format("YYYY-MM-DD  HH:mm:ss.000");
         const birthDate = data.dryRun ? currentTime : moment(
             {
-                year: data.year, 
-                month: data.month, 
+                year: data.year,
+                month: data.month,
                 day: data.day,
                 hour: currentTime.hour(),
                 minute: currentTime.minute(),
@@ -173,44 +166,43 @@ export const attemptCreateUser = async (ctx: Context) => {
             hashedPassword
         ]);
 
-        if (!res) {        
+        if (res.affectedRows == 0) {
             ctx.status = 400;
             ctx.body = `{status: "Error adding user"}`;
             failureOccured = true;
         } else {
-            if(!data.dryRun && data.confirmCode) {
-                res = await DBConnector.query("DELETE FROM ConfirmCodes WHERE USER_DATA = ? AND CODE = ?", 
+            if (!data.dryRun && data.confirmCode) {
+                res = await DBConnector.query("DELETE FROM ConfirmCodes WHERE USER_DATA = ? AND CODE = ?",
                     [data.emailOrPhone, data.confirmCode]);
 
-                if(!res) {
+                if (res.affectedRows == 0) {
                     ctx.status = 400;
-                    ctx.body = `{status: "Error with confirmation code"}`;    
-                    failureOccured = true;            
+                    ctx.body = `{status: "Error with confirmation code"}`;
+                    failureOccured = true;
                 }
             }
         }
 
     } catch (err) {
+        logger.error(err);
         ctx.status = 500;
         failureOccured = true;
     }
 
-    if(data.dryRun || failureOccured) {
-        await DBConnector.query("ROLLBACK", [])
-            .then(() => {ctx.body = `{"status": ${failureOccured ? "Error creating user" : "OK"}}`;})
-            .catch(err => {
-                logger.error(`Error Rolling back: ${err}`);
-                ctx.status = 400;
-                ctx.body = `{"status": "Error creating user"}`;
-            });
+    if (data.dryRun || failureOccured) {
+        res = await DBConnector.query("ROLLBACK", []);
+
+        ctx.body = `{"status": ${failureOccured ? "Error creating user" : "OK"}}`;
     } else {
-        await DBConnector.query("COMMIT", [])
-            .then(() => {ctx.body = `{"status": "OK"}`;})
-            .catch(err => {
-                logger.error(`Error Commiting transaction: ${err}`);
-                ctx.status = 400;
-                ctx.body = `{"status": "Error creating user"}`;
-            });
+        try {
+            await DBConnector.query("COMMIT", [])
+            ctx.body = `{"status": "OK"}`;
+            ctx.status = 200;
+        } catch (err) {
+            logger.error(`Error Commiting transaction: ${err}`);
+            ctx.status = 400;
+            ctx.body = `{"status": "Error creating user"}`;
+        }
     }
 }
 
@@ -240,67 +232,52 @@ export const sendConfirmCode = async (ctx: Context) => {
     }
 
     let res = null;
-    const currentTime = moment();    
-    
+    const currentTime = moment();
+
     // generate a token to be used in the and store in the db
-    const token: string = crypto.randomUUID().split("-")[0]; 
-    
-    await DBConnector.query("SELECT * FROM ConfirmCodes where user_data = ?", [userData])
-        .then(r => res = r)
-        .catch(err => { 
-            logger.error("DB error: ", err);
-            Metrics.increment("db.error.counts"); 
-            ctx.status = 500;
-        });
+    const token: string = crypto.randomUUID().split("-")[0];
 
-    if (res == null || res[0] == null || (res[0] as []).length == 0) {
-        // Doesn't exist in the db
-        // so we will assume this is a brand new attempt
-        res = await DBConnector.query("INSERT INTO ConfirmCodes VALUES(?, ?, ?)", 
-            [token, userData, currentTime.format("YYYY-MM-DD  HH:mm:ss.000")])
-            .catch(err => { 
-                logger.error("DB error: ", err); 
-                Metrics.increment("db.error.counts"); 
-                ctx.status = 500;
-            });
-    } else {
-        // an entry currently exists, replace it with the new code
-        await DBConnector.query("UPDATE ConfirmCodes SET CODE = ?, SENT_TIME = ? where USER_DATA = ?", 
-            [token, currentTime.format("YYYY-MM-DD  HH:mm:ss.000"), userData])
-            .catch(err => { 
-                logger.error("DB error: ", err); 
-                Metrics.increment("db.error.counts"); 
-                ctx.status = 200;
-            });
-    }
+    try {
+        res = await DBConnector.query(`
+            INSERT INTO ConfirmCodes VALUES(?, ?, ?) 
+            ON DUPLICATE KEY UPDATE CODE = ?`,
+            [token, userData, currentTime.format("YYYY-MM-DD  HH:mm:ss.000"), token]);
 
-    if(ctx.status != 500) {
-        if(isEmailAddr) {
-            // Send email
-            const replyToAddress:string = config.get("aws.ses.defaultReplyAddress");
-
-            try {
-                await sendEmailByTemplate(SEND_CONFIRM_TEMPLATE, {
-                    destination: {ToAddresses: [userData]},
-                    source: replyToAddress,
-                    template: SEND_CONFIRM_TEMPLATE,
-                    templateData: {
-                        assetHostname: config.get("aws.ses.imageHostName"),
-                        emailAddress: userData,
-                        code: token
-                    }
-                });
-                ctx.body = "OK";
-            } catch(err) {
-                ctx.body = "Send Error";
-            }
-        } else {
-            // Send SMS
-            await sendSMS(userData, token);
+        if (res.affectedRows == 0) {
+            ctx.status = 400;
+            ctx.body = { status: "Invalid confirmation data" };
+            return;
         }
-
-        ctx.status = 200;        
+    } catch (err) {
+        ctx.status = 500;
+        return;
     }
+
+    if (isEmailAddr) {
+        // Send email
+        const replyToAddress: string = config.get("aws.ses.defaultReplyAddress");
+
+        try {
+            await sendEmailByTemplate(SEND_CONFIRM_TEMPLATE, {
+                destination: { ToAddresses: [userData] },
+                source: replyToAddress,
+                template: SEND_CONFIRM_TEMPLATE,
+                templateData: {
+                    assetHostname: config.get("aws.ses.imageHostName"),
+                    emailAddress: userData,
+                    code: token
+                }
+            });
+            ctx.body = "OK";
+        } catch (err) {
+            ctx.body = "Send Error";
+        }
+    } else {
+        // Send SMS
+        await sendSMS(userData, token);
+    }
+
+    ctx.status = 200;
 }
 
 type LoginRequest = {
@@ -310,12 +287,12 @@ type LoginRequest = {
 
 export const loginUser = async (ctx: Context) => {
     Metrics.increment("accounts.userlogin");
-    
+
     const data = <LoginRequest>ctx.request.body;
 
-    if(data.userName == null || data.password == null) {
+    if (data.userName == null || data.password == null) {
         ctx.status = 400;
-        ctx.body = {status: "Invalid username or password"};
+        ctx.body = { status: "Invalid username or password" };
         return;
     }
 
@@ -324,45 +301,44 @@ export const loginUser = async (ctx: Context) => {
     try {
         const query = "SELECT userName, password, id from Users where USERNAME = ?";
         const result = await DBConnector.execute(query, [data.userName]);
-        if (result == null) {
-            logger.error("Invalid query");
-            throw new Error();
+
+        type db_result = {
+            password: string;
+            id: string
         }
 
-        if (result != null && (result as []).length != 0) {
-            const dbData = (result as []).at(0);
-            if(dbData) {                
-                const passwordMatch:boolean = await bcrypt.compare(data.password, dbData['password']);
-                if(passwordMatch) {
-                    // create the JWT token
-                    const token = jwt.sign(
-                        {id: (dbData['id'] as string)}, 
-                        config.get("auth.jwt.secret") as string,
-                        {
-                            algorithm: 'HS256',
-                            allowInsecureKeySizes: true,
-                            expiresIn: config.get("auth.jwt.expiration")
-                        }                        
-                    );                    
+        if (result.data.length > 0) {
+            const dbData: db_result = result.data[0] as db_result;
+            const passwordMatch: boolean = await bcrypt.compare(data.password, dbData.password);
 
-                    ctx.status = 200;
-                    ctx.body = {token: token, userName: data.userName, id: dbData['id']};                    
-                } else {
-                    ctx.status = 400;
-                    ctx.body = {status: "Invalid username or password"};                    
-                }
+            if (passwordMatch) {
+                // create the JWT token
+                const token = jwt.sign(
+                    { id: (dbData.id as string) },
+                    config.get("auth.jwt.secret") as string,
+                    {
+                        algorithm: 'HS256',
+                        allowInsecureKeySizes: true,
+                        expiresIn: config.get("auth.jwt.expiration")
+                    }
+                );
+
+                ctx.status = 200;
+                ctx.body = { token: token, userName: data.userName, id: dbData.id };
             }
-        } else {
-            ctx.status = 400;
-            ctx.body = {status: "Invalid username or password"};
-            return;            
+            else {
+                ctx.status = 400;
+                ctx.body = { status: "Invalid username or password" };
+            }
         }
-
+        else {
+            ctx.status = 400;
+            ctx.body = { status: "Invalid username or password" };
+        }
     } catch (err) {
-        Metrics.increment("db.error.counts");
-        ctx.status = 400;
-        return;
-    }    
+        logger.error(err);
+        ctx.status = 500;
+    }
 }
 
 type ForgotRequest = {
@@ -374,70 +350,89 @@ export const forgotPassword = async (ctx: Context) => {
 
     const data = <ForgotRequest>ctx.request.body;
 
-    if(data.user == null) {
+    if (data.user == null) {
         ctx.status = 400;
-        ctx.body = {status: "Invalid user info"};
+        ctx.body = { status: "Invalid user info" };
         return;
     }
 
     try {
         const query = "SELECT EMAIL, PHONE, USERNAME, ID from Users where EMAIL = ? OR PHONE = ? OR USERNAME = ?";
         const result = await DBConnector.execute(query, [data.user, data.user, data.user]);
-        if (result == null) {            
-            throw new Error();
+
+        if (result.data.length === 0) {
+            ctx.status = 400;
+            ctx.body = { status: "Invalid user info" };
+            return;
         }
 
-        if (result != null && (result as []).length != 0) {
-            const dbData = (result as []).at(0);
-            
-            if(dbData) {
-                const email = (dbData['EMAIL'] as string);
-                const phone = (dbData['PHONE'] as string);
-                const userName = (dbData['USERNAME'] as string);
-                const userId = (dbData['ID'] as string);
+        if (result.data.length > 0) {
+            type db_result = {
+                EMAIL: string;
+                PHONE: string;
+                USERNAME: string;
+                ID: string;
+            }
 
-                await sendForgotMessage(ctx, email, phone, userName, userId);
+            const dbData: db_result = result.data[0] as db_result;
+
+            if (dbData) {
+                const email = (dbData.EMAIL as string);
+                const phone = (dbData.PHONE as string);
+                const userName = (dbData.USERNAME as string);
+                const userId = (dbData.ID as string);
+
+                const res = await sendForgotMessage(ctx, email, phone, userName, userId);
+                if (!res) {
+                    ctx.status = 400;
+                    //ctx.body = {status: "Failed to send message"};                
+                    return;
+                }
+                ctx.status = 200;
             } else {
                 ctx.status = 400;
-                ctx.body = {status: "Invalid user info"};                
-                return;                
+                //ctx.body = {status: "Invalid user info"};                
+                return;
             }
         }
 
-    } catch(err) {
+    } catch (err) {
         logger.error(err);
-        Metrics.increment("db.error.counts");
-        ctx.status = 400;
-        ctx.body = {status: "Invalid user info"};
-        return;        
-    }    
+        ctx.status = 500;
+        return;
+    }
 }
 
 const sendForgotMessage = async (ctx: Context, email: string, phone: string, userName: string, userId: string) => {
-    if((email == null && phone == null) || userName == null) {
+    logger.debug(`Sending lost password message for userName: ${userName}`);
+
+    if ((email == null && phone == null) || userName == null) {
         return false;
     }
 
     // Generate a unique token and store it in the db mapped to the user
-    const token: string = crypto.randomUUID().replace(/-/g, ""); 
+    const token: string = crypto.randomUUID().replace(/-/g, "");
 
     try {
+        //Upsert
         const res = await DBConnector.execute(`
             INSERT INTO ForgotToken VALUES(?, ?) 
-            ON DUPLICATE KEY UPDATE token = ?`,  
+            ON DUPLICATE KEY UPDATE token = ?`,
             [token, userId, token]);
 
-        if(res == null) {
-            throw new Error();
+        if (res.affectedRows == 0) {
+            ctx.status = 400;
+            ctx.body = { status: "Failed preparing to send message" };
+            return false;
         }
 
-        if(email.length > 0) {
+        if (email.length > 0) {
             // Send forgot message as an email to user
-            const replyToAddress:string = config.get("aws.ses.defaultReplyAddress");
+            const replyToAddress: string = config.get("aws.ses.defaultReplyAddress");
 
             try {
                 const r = await sendEmailByTemplate(FORGOT_PASSWORD_TEMPLATE, {
-                    destination: {ToAddresses: [email]},
+                    destination: { ToAddresses: [email] },
                     source: replyToAddress,
                     template: FORGOT_PASSWORD_TEMPLATE,
                     templateData: {
@@ -445,20 +440,24 @@ const sendForgotMessage = async (ctx: Context, email: string, phone: string, use
                         hostname: config.get("frontHost"),
                         emailAddress: email,
                         token: token,
-                        username: userName,                 
+                        username: userName,
                     }
                 });
 
-                if(r) {
+                if (r) {
                     ctx.status = 200;
-                    ctx.body = {status: "OK", title: "Email Sent", 
-                        text: `We sent an email to ${obfuscateEmail(email)} with a link to reset your password`};
+                    ctx.body = {
+                        status: "OK", title: "Email Sent",
+                        text: `We sent an email to ${obfuscateEmail(email)} with a link to reset your password`
+                    };
                 } else {
                     ctx.status = 400;
-                    ctx.body = {status: "Failed to send message"};
+                    ctx.body = { status: "Failed to send message" };
                 }
-            } catch(err) {
+            } catch (err) {
                 logger.error("Error sending forgot password message", err);
+                ctx.status = 400;
+                ctx.body = { status: "Failed to send message" };
                 return false;
             }
         } else {
@@ -468,27 +467,27 @@ const sendForgotMessage = async (ctx: Context, email: string, phone: string, use
             const message = `A request to reset your Linstagram password was made`
             const r = await sendSMS(phone, message);
 
-            if(r) {
+            if (r) {
                 ctx.status = 200;
-                ctx.body = {status: "OK", title: "SMS Sent", 
-                    text: `A request to reset your Linstagram password was made. Use this link to reset your password ${obfuscatePhone(phone)}`};
+                ctx.body = {
+                    status: "OK", title: "SMS Sent",
+                    text: `A request to reset your Linstagram password was made. Use this link to reset your password ${obfuscatePhone(phone)}`
+                };
             } else {
                 ctx.status = 400;
-                ctx.body = {status: "Failed to send message"};
-            }            
+                ctx.body = { status: "Failed to send message" };
+            }
         }
 
         return true;
-    } catch(err) {
-        logger.error("DB error: ", err); 
-        Metrics.increment("db.error.counts"); 
+    } catch (err) {
         return false;
     }
 }
 
 type ChangePasswodType = {
-    token?:string;
-    userName?:string;
+    token?: string;
+    userName?: string;
     oldPassword?: string;
     password1: string;
     password2: string;
@@ -498,48 +497,52 @@ export const changePassword = async (ctx: Context) => {
 
     const data = <ChangePasswodType>ctx.request.body;
 
-    if(data.password1 !== data.password2) {
+    if (data.password1 !== data.password2) {
         ctx.status = 400;
-        ctx.body = {status: "Passwords don't match"};
+        ctx.body = { status: "Passwords don't match" };
         return;
     }
 
-    if(!isValidPassword(data.password1)) {
+    if (!isValidPassword(data.password1)) {
         // Password does not pass rules check
         ctx.status = 400;
         ctx.body = `{status: "Invalid Password"}`;
-        return;        
-    }    
-
-    if(data.token == null && (data.userName == null || data.oldPassword == null)) {
-        ctx.status = 400;
-        ctx.body = {status: "Invalid username, password, or token"};
-        return;        
+        return;
     }
 
-    const hashedPassword = await bcrypt.hash(data.password1, 10);    
+    if (data.token == null && (data.userName == null || data.oldPassword == null)) {
+        ctx.status = 400;
+        ctx.body = { status: "Invalid username, password, or token" };
+        return;
+    }
+
+    const hashedPassword = await bcrypt.hash(data.password1, 10);
 
     try {
         if (data.userName != null) {
-            if(data.oldPassword == null) {
+            if (data.oldPassword == null) {
                 ctx.status = 400;
-                ctx.body = {status: "Invalid username, password, or token"};               
-                return;                      
+                ctx.body = { status: "Invalid username, password, or token" };
+                return;
             }
             const hashedOldPassword = await bcrypt.hash(data.oldPassword, 10);
 
             // Use the username and password to change password        
-            const result = await DBConnector.execute("UPDATE User SET PASSWORD = ? where USERNAME = ? AND PASSWORD = ?",
+            const result = await DBConnector.execute(
+                "UPDATE User SET PASSWORD = ? where USERNAME = ? AND PASSWORD = ?",
                 [hashedPassword, data.userName, hashedOldPassword]);
 
-            if (result == null) {
-                throw new Error();
+            if (result.affectedRows == 0) {
+                ctx.status = 400;
+                ctx.body = { status: "Invalid username or password" };
+                return;
             }
 
         } else {
             // use the token to change password and then delete the token from the db
             await DBConnector.query("START TRANSACTION", []);
-            const token:string = data.token ? data.token : "";
+
+            const token: string = data.token ? data.token : "";
 
             let result = await DBConnector.execute(`
                 SELECT USERNAME, ID from Users 
@@ -547,31 +550,33 @@ export const changePassword = async (ctx: Context) => {
                 ON Users.ID = ForgotToken.USER_ID
                 WHERE ForgotToken.TOKEN = ?`, [token]);
 
-            if(result == null || (result as []).length == 0) {
+            if (result.data.length == 0) {
+                ctx.status = 400;
+                ctx.body = { status: "Invalid user or token" };
                 throw new Error();
             }
 
-            if (result != null && (result as []).length != 0) {
-                const dbData = (result as []).at(0);
-                
-                if(dbData) {
-                    const userName = `${dbData["USERNAME"]}`;
-                    const userId = `${dbData["ID"]}`
-
-                    result = await DBConnector.execute("UPDATE Users SET PASSWORD = ? where USERNAME = ?",
-                        [hashedPassword, userName]);
-
-                    if (result == null) {                
-                        throw new Error();
-                    }
-                    
-                    result = await DBConnector.execute("DELETE FROM ForgotToken where USER_ID = ?", [userId]);
-                    if (result == null) {                
-                        throw new Error();
-                    }                    
-                }
+            type db_result = {
+                USERNAME: string;
+                ID: string;
             }
-            if (result == null) {                
+
+            const dbData: db_result = result.data[0] as db_result;
+
+            result = await DBConnector.execute(
+                "UPDATE Users SET PASSWORD = ? where USERNAME = ?",
+                [hashedPassword, dbData.USERNAME]);
+
+            if (result.affectedRows == 0) {
+                ctx.status = 400;
+                ctx.body = { status: "Invalid username" };
+                throw new Error();
+            }
+
+            result = await DBConnector.execute("DELETE FROM ForgotToken where USER_ID = ?", [dbData.ID]);
+            if (result.affectedRows == 0) {
+                ctx.status = 400;
+                ctx.body = { status: "Invalid token" };
                 throw new Error();
             }
 
@@ -580,11 +585,11 @@ export const changePassword = async (ctx: Context) => {
     } catch (err) {
         await DBConnector.execute("ROLLBACK", []);
 
-        ctx.status = 500;
-        ctx.body = { status: "DB error" };
+        ctx.status = 400;
+        ctx.body = { status: "Error with token" };
         return;
     }
 
     ctx.status = 200;
-    ctx.body = {status: "OK"};
+    ctx.body = { status: "OK" };
 }

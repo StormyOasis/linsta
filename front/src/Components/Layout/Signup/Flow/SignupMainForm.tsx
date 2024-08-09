@@ -60,11 +60,12 @@ export default class MainSignupForm extends React.Component<MainSignupFormProps>
     };
 
     validateUserName = async (value: string): Promise<boolean> => {
-        if (value == null || value.length == 0) return false;
+        if (value == null || value.length == 0) 
+            return false;
 
         const response = await getAccountsCheckUserUnique(value);
 
-        return response.data;
+        return !response.data;
     };
 
     validateField = (event: React.ChangeEvent<HTMLInputElement>): boolean => {
