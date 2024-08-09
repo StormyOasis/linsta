@@ -6,7 +6,7 @@
   "scripts": {
     "test": "jest --config=jest.config.js",
     "start": "tsc -p tsconfig.json && node build/index.js",
-    "clean": "rm -rf dist build package",
+    "clean": "rm -rf ./dist/* ./build/* ./package/*",
     "build": "tsc -p tsconfig.json --skipLibCheck",
     "lint": "eslint src/ --ext .js,.jsx,.ts,.tsx",
     "templates": "node scripts/createTemplates.mjs"

@@ -1,20 +1,21 @@
 import { Context } from "koa";
 import bcrypt from 'bcrypt';
-import DBConnector from "../Connectors/DBConnector";
-import moment from "moment";
+import config from 'config';
+import jwt, { SignOptions } from 'jsonwebtoken';
+import moment, { MomentInput } from "moment";
 import logger from "../logger/logger";
 import Metrics from "../metrics/Metrics";
+import DBConnector from "../Connectors/DBConnector";
 import { isEmail, isPhone, isValidPassword, obfuscateEmail, obfuscatePhone } from "../utils/utils";
-import config from 'config';
-import jwt from 'jsonwebtoken';
 import { SEND_CONFIRM_TEMPLATE, 
          FORGOT_PASSWORD_TEMPLATE, 
          sendEmailByTemplate, sendSMS } from "../Connectors/AWSConnector";
 
+
 export const getIsUnqiueUsername = async (ctx: Context) => {
     Metrics.increment("accounts.checkunique");
 
-    const userName = ctx.params.userName;
+    const userName = ctx["params"].userName;
 
     // Error out if invalid data
     if (userName == null || userName.trim().length == 0) {
@@ -141,16 +142,17 @@ export const attemptCreateUser = async (ctx: Context) => {
         const last: string = names.length > 1 ? names[names.length - 1] : "";
         const currentTime = moment();
         const timestamp = currentTime.format("YYYY-MM-DD  HH:mm:ss.000");
-        const birthDate = data.dryRun ? currentTime : moment(
-            {
-                year: data.year,
-                month: data.month,
-                day: data.day,
-                hour: currentTime.hour(),
-                minute: currentTime.minute(),
-                second: currentTime.second(),
-                millisecond: currentTime.millisecond()
-            });
+        const momentData:MomentInput = {
+            year: data.year,
+            month: data.month,
+            day: data.day,
+            hour: currentTime.hour(),
+            minute: currentTime.minute(),
+            second: currentTime.second(),
+            millisecond: currentTime.millisecond()
+        } as MomentInput;
+        
+        const birthDate = data.dryRun ? currentTime : moment(momentData);
         const age = data.dryRun ? 0 : currentTime.diff(birthDate, 'years', true);
 
         // use transaction to do wither a dry run or an actual insert
@@ -314,13 +316,13 @@ export const loginUser = async (ctx: Context) => {
             if (passwordMatch) {
                 // create the JWT token
                 const token = jwt.sign(
-                    { id: (dbData.id as string) },
+                    dbData.id,
                     config.get("auth.jwt.secret") as string,
                     {
                         algorithm: 'HS256',
                         allowInsecureKeySizes: true,
                         expiresIn: config.get("auth.jwt.expiration")
-                    }
+                    } as SignOptions
                 );
 
                 ctx.status = 200;

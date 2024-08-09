@@ -14,7 +14,7 @@ module.exports = {
   entry: path.resolve(__dirname, "src/client/index.tsx"),
 
   resolve: {
-    extensions: [".tsx", ".ts", ".js", ".jsx", ".json"],
+    extensions: [".tsx", ".ts", ".js", ".jsx", ".json", ".css"],
     modules: ["src", "node_modules"]
   },
 

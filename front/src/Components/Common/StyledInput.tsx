@@ -1,8 +1,8 @@
 import React from "react";
 import { styled } from "styled-components";
 
-import * as styles from "./Common.module.css";
-import Theme from "../Themes/Theme";
+import * as styles from "/src/Components/Common/Common.module.css";
+import Theme from "/src/Components/Themes/Theme";
 
 const StyledInputWrapper = styled.div`
   display: flex;

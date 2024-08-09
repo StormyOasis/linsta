@@ -1,7 +1,7 @@
 import {createClient,  RedisClientOptions } from "redis";
+import config from 'config';
 import logger from "../logger/logger";
 import Metrics from "../metrics/Metrics";
-import config from 'config';
 
 // Minor annoyance. see: https://github.com/redis/node-redis/issues/1673
 export type RedisClientType = ReturnType<typeof createClient>;

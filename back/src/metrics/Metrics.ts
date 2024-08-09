@@ -14,7 +14,7 @@ export class Metrics extends StatsDClient {
             Metrics.instance = new Metrics({
                 host: config.get("metrics.statsd.host"),
                 port: config.get("metrics.statsd.port")
-            });
+            } as ClientOptions);
         }
         return Metrics.instance;
     }    

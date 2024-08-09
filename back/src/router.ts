@@ -1,6 +1,14 @@
 import Router from "koa-router";
-import { getIsUnqiueUsername, attemptCreateUser, sendConfirmCode, loginUser, forgotPassword, changePassword } from './controllers/accountsController';
+import { 
+    getIsUnqiueUsername, 
+    attemptCreateUser, 
+    sendConfirmCode, 
+    loginUser, 
+    forgotPassword, 
+    changePassword 
+} from './controllers/accountsController';
 import { verifyJWT } from "./auth/Auth";
+
 
 const router = new Router();
 

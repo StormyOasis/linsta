@@ -1,8 +1,8 @@
 import Koa, { Context } from "koa";
 import cors from "@koa/cors";
 import json from 'koa-json';
-import router from "./router";
 import bodyParser from "koa-bodyparser";
+import router from "./router";
 import Logger from "./logger/logger";
 import DBConnector from "./Connectors/DBConnector";
 

@@ -1,5 +1,5 @@
-import { LOG_IN_USER_ACTION, LOG_OUT_USER_ACTION, ReduxAction } from "../actions/types";
-import { initialState } from "../store";
+import { LOG_IN_USER_ACTION, LOG_OUT_USER_ACTION, ReduxAction } from "/src/Components/state/actions/types";
+import { initialState } from "/src/Components/state/store";
 
 export default (state = initialState, action:ReduxAction) => {
     switch(action.type) {

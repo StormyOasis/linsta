@@ -1,12 +1,12 @@
 import React from "react";
 import { styled } from "styled-components";
 
-import * as styles from "./SignupLayout.module.css";
+import * as styles from '/src/Components/Common/CombinedStyling';
 
-import Theme from "../../../Components/Themes/Theme";
-import SignupMainForm from "./Flow/SignupMainForm";
-import BirthdayForm from "./Flow/BirthdayForm";
-import ConfirmationCodeForm from "./Flow/ConfirmationCodeForm";
+import Theme from "/src/Components/Themes/Theme";
+import SignupMainForm from "/src/Components/Layout/Signup/Flow/SignupMainForm";
+import BirthdayForm from "/src/Components/Layout/Signup/Flow/BirthdayForm";
+import ConfirmationCodeForm from "/src/Components/Layout/Signup/Flow/ConfirmationCodeForm";
 import StyledLink from "/src/Components/Common/StyledLink";
 
 type SignupLayoutProps = {};
@@ -139,13 +139,13 @@ export class SignupLayout extends React.Component<
         return (
             <Theme>
                 <SignupLayoutWrapper role="main">
-                    <div className={styles.innerDiv1}>
-                        <div className={styles.innerDiv2}>
-                            <div className={styles.signupBox}>
+                    <div className={styles.default.innerDiv1}>
+                        <div className={styles.default.innerDiv2}>
+                            <div className={styles.default.signupBox}>
                                 {this.renderPage()}
                             </div>
                             <div
-                                className={styles.signupBox}
+                                className={styles.default.signupBox}
                                 style={{ padding: "20px 0" }}>
                                     Have an account? <StyledLink to="/login">Log In</StyledLink>
                             </div>

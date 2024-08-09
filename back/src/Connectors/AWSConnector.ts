@@ -1,7 +1,6 @@
 import { Destination, SendTemplatedEmailCommand } from "@aws-sdk/client-ses";
 import { SESClient } from "@aws-sdk/client-ses";
 import { SNSClient, PublishCommand } from "@aws-sdk/client-sns";
-
 import config from 'config';
 import logger from "../logger/logger";
 import Metrics from "../metrics/Metrics";
@@ -32,6 +31,7 @@ export const sendEmailByTemplate = async (templateName: string, params: SESTempl
     } catch (error) {
         logger.error("Failure sending email", error);
         Metrics.increment("aws.sesfailurecount");
+        return {};
     }    
 }
 

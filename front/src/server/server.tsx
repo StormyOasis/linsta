@@ -5,13 +5,13 @@ import compress from "compression";
 import cors from "@koa/cors";
 import serve from "koa-static";
 import path from "path";
-import React from "react";
+import React from 'react';
+
 import { ServerStyleSheet } from "styled-components";
 import { renderToString } from "react-dom/server";
 import { StaticRouter } from "react-router-dom/server";
-
 import { initialState } from "../Components/state/store";
-import App from "../Components/App";
+import App from "/src/Components/App";
 
 const PORT = process.env["PORT"] || 8080;
 

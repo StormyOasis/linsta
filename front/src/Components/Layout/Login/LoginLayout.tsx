@@ -1,9 +1,9 @@
 import React from "react";
 import { styled } from "styled-components";
+import { connect } from "react-redux";
+import { Navigate } from "react-router-dom";
 
-import * as styles1 from "./LoginLayout.module.css";
-import * as styles2 from "/src/Components/Common/Common.module.css";
-const styles = { ...styles1, ...styles2 };
+import * as styles from '/src/Components/Common/CombinedStyling';
 
 import Theme from "/src/Components/Themes/Theme";
 import StyledLink from "/src/Components/Common/StyledLink";
@@ -14,10 +14,9 @@ import LoginWithFB from "/src/Components/Common/LoginWithFB";
 import { login } from "/src/api/Auth";
 import { validatePassword } from "/src/utils/utils";
 import { LOG_IN_USER_ACTION, LOG_OUT_USER_ACTION } from "/src/Components/state/actions/types";
-import { connect } from "react-redux";
+
 import { Store } from "/src/Components/state/store";
-import { logout } from "/src/api/Auth";
-import { Navigate } from "react-router-dom";
+
 
 type LoginLayoutProps = {};
 
@@ -109,8 +108,8 @@ class LoginLayout extends React.Component<LoginLayoutProps, LoginState> {
                 {this.props.isLoggedIn && <Navigate to="/" replace={true} />}
                 <LargeLogo />
                 <LoginForm method="post">
-                    <div className={styles.signupFormDiv1}>
-                        <span className={styles.signupIntroSpan}>
+                    <div className={styles.default.signupFormDiv1}>
+                        <span className={styles.default.signupIntroSpan}>
                             Log in to see photos and videos from your friends.
                         </span>
                     </div>                    
@@ -137,11 +136,11 @@ class LoginLayout extends React.Component<LoginLayoutProps, LoginState> {
                         onClick={this.submitForm}
                         text="Login">
                     </StyledButton>
-                    <div className={styles.signupFormFbLoginDiv} style={widthStyle}>
+                    <div className={styles.default.signupFormFbLoginDiv} style={widthStyle}>
                         <LoginWithFB top={true} onClick={this.loginWithFacebookClicked}>Log in with Facebook</LoginWithFB>
                     </div> 
                     <div>
-                        <StyledLink to="/forgot" styleOverride={styles.forgotWrapper}>Forgot Password?</StyledLink>
+                        <StyledLink to="/forgot" styleOverride={styles.default.forgotWrapper}>Forgot Password?</StyledLink>
                     </div>
                 </LoginForm>
             </Theme>
@@ -152,13 +151,13 @@ class LoginLayout extends React.Component<LoginLayoutProps, LoginState> {
         return (
             <Theme>
                 <LoginLayoutWrapper role="main">
-                    <div className={styles.innerDiv1}>
-                        <div className={styles.innerDiv2}>
-                            <div className={styles.signupBox}>
+                    <div className={styles.default.innerDiv1}>
+                        <div className={styles.default.innerDiv2}>
+                            <div className={styles.default.signupBox}>
                                 {this.renderLoginForm()}
                             </div>
                             <div
-                                className={styles.signupBox}
+                                className={styles.default.signupBox}
                                 style={{ padding: "20px 0" }}>
                                 Don't have an account? <StyledLink to="/signup">Sign up</StyledLink>
                             </div>

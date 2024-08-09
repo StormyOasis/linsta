@@ -1,7 +1,7 @@
 import React from "react";
+import styled from "styled-components";
 import { connect } from "react-redux";
 import { Store } from "/src/Components/state/store";
-import styled from "styled-components";
 
 const MainWrapper = styled.main`
     display: flex;

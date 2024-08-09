@@ -7,6 +7,7 @@
       "noFallthroughCasesInSwitch": true,
       "noImplicitThis": true,
       "noPropertyAccessFromIndexSignature": true,
+      "noUncheckedIndexedAccess": false,
       "noUnusedLocals": true,
       "noUnusedParameters": true,
       "noImplicitOverride": true,
@@ -21,7 +22,7 @@
       "baseUrl": ".",
       "module": "ES2022",
       "moduleResolution": "node",
-
+      "rootDirs": ["./src"],
       "target": "ES2022",
       "jsx": "react-jsx",
       "allowJs": true,
@@ -30,6 +31,6 @@
       "isolatedModules": true,
       "skipLibCheck": true
     },
-    "include": ["src/**/**/*", "jest.config.js", "jest.polyfill.js"],
+    "include": ["./src/**/**/*", "jest.config.js", "jest.polyfill.js"],
     "exclude": ["node_modules"]
-  }
+}

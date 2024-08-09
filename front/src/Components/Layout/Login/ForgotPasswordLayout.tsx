@@ -1,9 +1,7 @@
 import React, { useState } from "react";
 import { styled } from "styled-components";
 
-import * as styles1 from "./LoginLayout.module.css";
-import * as styles2 from "/src/Components/Common/Common.module.css";
-const styles = { ...styles1, ...styles2 };
+import * as styles from "/src/Components/Common/CombinedStyling";
 
 import Theme from "/src/Components/Themes/Theme";
 import StyledLink from "/src/Components/Common/StyledLink";
@@ -163,11 +161,11 @@ const renderForgotForm = () => {
                     onClick={() => {return onSubmit(userData, setShowModal, setQueryResponse);}}
                     text="Send Login Link">
                 </StyledButton>
-                <div className={styles.signupFormDiv1}>
-                    <div className={styles.signupFormDiv2}>
-                        <div className={styles.signupFormDiv3} />
-                        <div className={styles.signupFormDiv4}>OR</div>
-                        <div className={styles.signupFormDiv3} />
+                <div className={styles.default.signupFormDiv1}>
+                    <div className={styles.default.signupFormDiv2}>
+                        <div className={styles.default.signupFormDiv3} />
+                        <div className={styles.default.signupFormDiv4}>OR</div>
+                        <div className={styles.default.signupFormDiv3} />
                     </div>
                 </div>
                 <SignupText>
@@ -182,9 +180,9 @@ const ForgotPasswordLayout: React.FC<ForgotProps> = (props: ForgotProps) => {
     return (
         <Theme>
             <ForgotLayoutWrapper role="main">
-                <div className={styles.innerDiv1}>
-                    <div className={styles.innerDiv2}>
-                        <div className={styles.signupBox}>
+                <div className={styles.default.innerDiv1}>
+                    <div className={styles.default.innerDiv2}>
+                        <div className={styles.default.signupBox}>
                             {renderForgotForm()}
                         </div>
                     </div>

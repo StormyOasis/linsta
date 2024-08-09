@@ -1,13 +1,8 @@
 import React from "react";
 import { styled } from "styled-components";
-
-
-import * as styles1 from "/src/Components/Layout/Login/LoginLayout.module.css";
-import * as styles2 from "/src/Components/Common/Common.module.css";
-import * as styles3 from "../SignupLayout.module.css";
-const styles = { ...styles1, ...styles2, ...styles3 };
-import Theme from "../../../../Components/Themes/Theme";
-import {postAccountsAttempt, getAccountsCheckUserUnique} from "../../../../api/ServiceController";
+import * as styles from "/src/Components/Common/CombinedStyling";
+import Theme from "/src/Components/Themes/Theme";
+import {postAccountsAttempt, getAccountsCheckUserUnique} from "/src/api/ServiceController";
 import StyledInput from "/src/Components/Common/StyledInput";
 import StyledButton from "/src/Components/Common/StyledButton";
 import LargeLogo from "/src/Components/Common/LargeLogo";
@@ -149,8 +144,8 @@ export default class MainSignupForm extends React.Component<MainSignupFormProps>
                 <LargeLogo />
                 <div>
                     <SignupForm method="post">
-                        <div className={styles.signupFormDiv1}>
-                            <span className={styles.signupIntroSpan}>
+                        <div className={styles.default.signupFormDiv1}>
+                            <span className={styles.default.signupIntroSpan}>
                                 Sign up to see photos and videos from your friends.
                             </span>
                         </div>
@@ -185,7 +180,7 @@ export default class MainSignupForm extends React.Component<MainSignupFormProps>
                             onChange={this.handleFormChange}
                         ></StyledInput>
 
-                        <div className={styles.termsDiv}>
+                        <div className={styles.default.termsDiv}>
                             By signing up, you agree to our Terms, Privacy Policy and Cookies
                             Policy.
                         </div>

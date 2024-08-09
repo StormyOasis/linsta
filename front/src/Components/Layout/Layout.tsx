@@ -1,14 +1,14 @@
 import React from "react";
-import { Route, Routes} from "react-router-dom";
-import { connect } from "react-redux";
-import { Store } from "/src/common/state/store";
-import LoginLayout from "./Login/LoginLayout";
-import { MainLayout } from "./Main/MainLayout";
-import Header from "./Header";
 import { styled } from "styled-components";
-import { SignupLayout } from "./Signup/SignupLayout";
-import ForgotPasswordLayout from "./Login/ForgotPasswordLayout";
-import ChangePasswordLayout from "./Login/ChangePasswordLayout";
+import { Route, Routes } from "react-router-dom";
+import { connect } from "react-redux";
+import { Store } from "/src/Components/state/store";
+import LoginLayout from "/src/Components/Layout/Login/LoginLayout";
+import { MainLayout } from "/src/Components/Layout/Main/MainLayout";
+import Header from "/src/Components/Layout/Header";
+import { SignupLayout } from "/src/Components/Layout/Signup/SignupLayout";
+import ForgotPasswordLayout from "/src/Components/Layout/Login/ForgotPasswordLayout";
+import ChangePasswordLayout from "/src/Components/Layout/Login/ChangePasswordLayout";
 
 const Section = styled.section`
     display: flex;
@@ -35,18 +35,18 @@ type LayoutProps = {
 type LayoutState = {};
 
 class Layout extends React.Component<LayoutProps, LayoutState> {
-    
-    constructor (props: LayoutProps) {
-        super(props);        
+
+    constructor(props: LayoutProps) {
+        super(props);
     }
 
     renderHeader = () => {
         // Don't want to display the header on the login or signup routes
         // or if user is logged in
-        if(this.props.isLoggedIn || 
-            this.props.location.endsWith("/login") || 
-            this.props.location.endsWith("/signup"))  {
-                return null;
+        if (this.props.isLoggedIn ||
+            this.props.location.endsWith("/login") ||
+            this.props.location.endsWith("/signup")) {
+            return null;
         }
 
         return (
@@ -55,7 +55,7 @@ class Layout extends React.Component<LayoutProps, LayoutState> {
     }
 
     renderLayout = () => {
-        return (  
+        return (
             <>
                 <Section id="mainSectionContainer">
                     {this.renderHeader()}
@@ -67,7 +67,7 @@ class Layout extends React.Component<LayoutProps, LayoutState> {
                         <Route path="/change_password/*" element={<ChangePasswordLayout />} />
                     </Routes>
                 </Section>
-            </>          
+            </>
         );
     }
 

@@ -1,14 +1,12 @@
 import React, { useState } from "react";
 import { styled } from "styled-components";
 import { Navigate, useSearchParams } from 'react-router-dom';
-import * as styles1 from "./LoginLayout.module.css";
-import * as styles2 from "/src/Components/Common/Common.module.css";
+import * as styles from "/src/Components/Common/CombinedStyling";
 import Theme from "/src/Components/Themes/Theme";
 import StyledInput from "/src/Components/Common/StyledInput";
 import { validatePassword } from "/src/utils/utils";
 import StyledButton from "/src/Components/Common/StyledButton";
 import { postChangePassword } from "/src/api/ServiceController";
-const styles = { ...styles1, ...styles2 };
 
 type ChangeProps = {
 
@@ -142,9 +140,9 @@ const ChangePasswordLayout: React.FC<ChangeProps> = (props: ChangeProps) => {
     return (
         <Theme>
             <ChangeLayoutWrapper role="main">
-                <div className={styles.innerDiv1}>
-                    <div className={styles.innerDiv2}>
-                        <div className={styles.signupBox}>
+                <div className={styles.default.innerDiv1}>
+                    <div className={styles.default.innerDiv2}>
+                        <div className={styles.default.signupBox}>
                             {renderChangeForm()}
                         </div>
                     </div>

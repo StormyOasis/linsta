@@ -1,7 +1,7 @@
 import React from "react";
 import { styled } from "styled-components";
 
-import Theme from "../Themes/Theme";
+import Theme from "/src/Components/Themes/Theme";
 
 type StyledButtonProps = {
     name?: string;
