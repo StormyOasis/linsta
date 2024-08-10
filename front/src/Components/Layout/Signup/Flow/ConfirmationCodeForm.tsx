@@ -1,9 +1,9 @@
 import React from "react";
 import { styled } from "styled-components";
 
-import { getAccountsSendVerifyNotification, postAccountsAttempt } from "/src/api/ServiceController";
-import StyledInput from "/src/Components/Common/StyledInput";
-import StyledButton from "/src/Components/Common/StyledButton";
+import { getAccountsSendVerifyNotification, postAccountsAttempt } from "../../../../api/ServiceController";
+import StyledInput from "../../../../Components/Common/StyledInput";
+import StyledButton from "../../../../Components/Common/StyledButton";
 import { Navigate } from "react-router-dom";
 
 const ConfirmationWrapper = styled.div`

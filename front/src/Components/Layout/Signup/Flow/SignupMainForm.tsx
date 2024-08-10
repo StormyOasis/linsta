@@ -1,13 +1,13 @@
 import React from "react";
 import { styled } from "styled-components";
-import * as styles from "/src/Components/Common/CombinedStyling";
-import Theme from "/src/Components/Themes/Theme";
-import {postAccountsAttempt, getAccountsCheckUserUnique} from "/src/api/ServiceController";
-import StyledInput from "/src/Components/Common/StyledInput";
-import StyledButton from "/src/Components/Common/StyledButton";
-import LargeLogo from "/src/Components/Common/LargeLogo";
-import LoginWithFB from "/src/Components/Common/LoginWithFB";
-import { validatePassword } from "/src/utils/utils";
+import * as styles from "../../../../Components/Common/CombinedStyling";
+import Theme from "../../../../Components/Themes/Theme";
+import {postAccountsAttempt, getAccountsCheckUserUnique} from "../../../../api/ServiceController";
+import StyledInput from "../../../../Components/Common/StyledInput";
+import StyledButton from "../../../../Components/Common/StyledButton";
+import LargeLogo from "../../../../Components/Common/LargeLogo";
+import LoginWithFB from "../../../../Components/Common/LoginWithFB";
+import { validatePassword } from "../../../../utils/utils";
 
 const SignupForm = styled.form`
   display: flex;

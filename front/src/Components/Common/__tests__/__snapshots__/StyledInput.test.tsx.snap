@@ -1,0 +1,61 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`StyledInput Component 1`] = `
+<DocumentFragment>
+  <div
+    class="StyledInput__StyledInputWrapper-sc-fkf055-0 hOmQjA"
+  >
+    <label
+      class="StyledInput__StyledInputLabel-sc-fkf055-2 gizmBW"
+    >
+      <input
+        class="StyledInput__StyledInputInput-sc-fkf055-1 ejdHNL"
+        maxlength="255"
+        name="name"
+        type="button"
+        value="undefined"
+      />
+    </label>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`StyledInput Component With Style Override 1`] = `
+<DocumentFragment>
+  <div
+    class="StyledInput__StyledInputWrapper-sc-fkf055-0 hOmQjA"
+  >
+    <label
+      class="StyledInput__StyledInputLabel-sc-fkf055-2 gizmBW"
+    >
+      <input
+        class="StyledInput__StyledInputInput-sc-fkf055-1 ejdHNL"
+        maxlength="255"
+        name="name"
+        style="color: red;"
+        value="undefined"
+      />
+    </label>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`StyledInput Component validation true 1`] = `
+<DocumentFragment>
+  <div
+    class="StyledInput__StyledInputWrapper-sc-fkf055-0 hOmQjA"
+  >
+    <label
+      class="StyledInput__StyledInputLabel-sc-fkf055-2 gizmBW"
+    >
+      <input
+        class="StyledInput__StyledInputInput-sc-fkf055-1 ejdHNL"
+        maxlength="255"
+        name="name"
+        type="password"
+        value="undefined"
+      />
+    </label>
+  </div>
+</DocumentFragment>
+`;

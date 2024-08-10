@@ -1,0 +1,23 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`StyledLink Component 1`] = `
+<DocumentFragment>
+  <a
+    class="StyledLink__StyledLinkWrapper-sc-1rgr01q-0 dLJqDG"
+    href="/"
+  >
+    Hello
+  </a>
+</DocumentFragment>
+`;
+
+exports[`StyledLink Component With Style Override 1`] = `
+<DocumentFragment>
+  <a
+    class="StyledLink__StyledLinkWrapper-sc-1rgr01q-0 dLJqDG [object Object]"
+    href="/"
+  >
+    Hello
+  </a>
+</DocumentFragment>
+`;

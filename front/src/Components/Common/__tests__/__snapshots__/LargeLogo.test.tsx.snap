@@ -1,0 +1,13 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`LargeLogo Component 1`] = `
+<DocumentFragment>
+  <div
+    class="LargeLogo__LogoWrapper-sc-1bu4w53-0 hBpxrf"
+  >
+    <a
+      href="/"
+    />
+  </div>
+</DocumentFragment>
+`;

@@ -1,0 +1,24 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`StyledButton Component 1`] = `
+<DocumentFragment>
+  <button
+    class="StyledButton__StyledButtonComponent-sc-8t4kac-0 jZJObc"
+    type="button"
+  >
+    Hello
+  </button>
+</DocumentFragment>
+`;
+
+exports[`StyledButton Component With Style Override 1`] = `
+<DocumentFragment>
+  <button
+    class="StyledButton__StyledButtonComponent-sc-8t4kac-0 jZJObc"
+    style="color: red;"
+    type="submit"
+  >
+    Hello
+  </button>
+</DocumentFragment>
+`;

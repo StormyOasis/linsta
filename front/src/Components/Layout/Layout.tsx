@@ -2,13 +2,13 @@ import React from "react";
 import { styled } from "styled-components";
 import { Route, Routes } from "react-router-dom";
 import { connect } from "react-redux";
-import { Store } from "/src/Components/state/store";
-import LoginLayout from "/src/Components/Layout/Login/LoginLayout";
-import { MainLayout } from "/src/Components/Layout/Main/MainLayout";
-import Header from "/src/Components/Layout/Header";
-import { SignupLayout } from "/src/Components/Layout/Signup/SignupLayout";
-import ForgotPasswordLayout from "/src/Components/Layout/Login/ForgotPasswordLayout";
-import ChangePasswordLayout from "/src/Components/Layout/Login/ChangePasswordLayout";
+import { Store } from "../../Components/state/store";
+import LoginLayout from "../../Components/Layout/Login/LoginLayout";
+import { MainLayout } from "../../Components/Layout/Main/MainLayout";
+import Header from "../../Components/Layout/Header";
+import { SignupLayout } from "../../Components/Layout/Signup/SignupLayout";
+import ForgotPasswordLayout from "../../Components/Layout/Login/ForgotPasswordLayout";
+import ChangePasswordLayout from "../../Components/Layout/Login/ChangePasswordLayout";
 
 const Section = styled.section`
     display: flex;

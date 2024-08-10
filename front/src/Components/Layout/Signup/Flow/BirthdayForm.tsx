@@ -1,9 +1,9 @@
 import React from "react";
 import { styled } from "styled-components";
 
-import Theme from "/src/Components/Themes/Theme";
-import StyledButton from "/src/Components/Common/StyledButton";
-import Modal from "/src/Components/Common/Modal";
+import Theme from "../../../../Components/Themes/Theme";
+import StyledButton from "../../../../Components/Common/StyledButton";
+import Modal from "../../../../Components/Common/Modal";
 
 const FormWrapper = styled.div`
     align-content: stretch;

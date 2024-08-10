@@ -1,0 +1,83 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Primary App Component should render correctly 1`] = `
+<DocumentFragment>
+  <div
+    class="Layout__ModalContainer-sc-1y0f571-1 dljdPV"
+    id="modalContainer"
+  />
+  <section
+    class="Layout__Section-sc-1y0f571-0 kMCVf"
+    id="mainSectionContainer"
+  >
+    <nav
+      class="Header__HeaderWrapper-sc-1a1rnwk-0 kvRYeL"
+    >
+      <div
+        style="flex-basis: 60px;"
+      />
+      <div>
+        <div>
+          <div
+            class="Header__LogoWrapper-sc-1a1rnwk-1 klxYXA"
+          >
+            <a
+              href="/"
+            />
+          </div>
+          <div
+            class="Header__SearchWrapper-sc-1a1rnwk-5 jBpodB"
+          >
+            <input
+              aria-label="Search input box"
+              class="Header__SearchBox-sc-1a1rnwk-4 fPghwO"
+              placeholder=""
+              type="text"
+            />
+            <div>
+              <div>
+                <div />
+                <span
+                  class="Header__SearchSpan-sc-1a1rnwk-6 jnEykV"
+                />
+              </div>
+            </div>
+          </div>
+          <div
+            class="Header__ActionWrapper-sc-1a1rnwk-7 cVPQJC"
+          >
+            <div>
+              <div
+                class="Header__ActionLinkWrapper-sc-1a1rnwk-8 eOiqBu"
+              >
+                <a
+                  class="Header__LoginButton-sc-1a1rnwk-9 bAvoUV"
+                  href="/login"
+                >
+                  Log In
+                </a>
+              </div>
+              <div
+                class="Header__ActionLinkWrapper-sc-1a1rnwk-8 eOiqBu"
+              >
+                <a
+                  class="Header__SignupButton-sc-1a1rnwk-10 eYQiMU"
+                  href="/signup"
+                >
+                  Sign Up
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+    <main
+      class="MainLayout__MainWrapper-sc-1gsojru-0 bzvUxv"
+      role="main"
+    >
+      MainLayout
+    </main>
+  </section>
+</DocumentFragment>
+`;

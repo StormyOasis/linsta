@@ -1,8 +1,6 @@
 import React from "react";
 import { styled } from "styled-components";
 
-import Theme from "/src/Components/Themes/Theme";
-
 type StyledButtonProps = {
     name?: string;
     onClick?: any;
@@ -45,16 +43,14 @@ const StyledButtonComponent = styled.button<{ $props?: any }>`
 
 const StyledButton: React.FC<StyledButtonProps> = (props: StyledButtonProps) => {
     return (
-        <Theme>
-            <StyledButtonComponent
-                type={props.type}
-                name={props.name} 
-                disabled={props.disabled} 
-                onClick={props.onClick}
-                style={props.style}>
-                    {props.text}
-            </StyledButtonComponent>
-        </Theme>
+        <StyledButtonComponent
+            type={props.type}
+            name={props.name} 
+            disabled={props.disabled} 
+            onClick={props.onClick}
+            style={props.style}>
+                {props.text}
+        </StyledButtonComponent>
     );
 }
 

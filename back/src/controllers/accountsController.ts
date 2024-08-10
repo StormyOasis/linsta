@@ -306,7 +306,8 @@ export const loginUser = async (ctx: Context) => {
 
         type db_result = {
             password: string;
-            id: string
+            id: string,
+            userName: string;
         }
 
         if (result.data.length > 0) {
@@ -316,7 +317,7 @@ export const loginUser = async (ctx: Context) => {
             if (passwordMatch) {
                 // create the JWT token
                 const token = jwt.sign(
-                    dbData.id,
+                    {id: dbData.id},
                     config.get("auth.jwt.secret") as string,
                     {
                         algorithm: 'HS256',
@@ -324,7 +325,6 @@ export const loginUser = async (ctx: Context) => {
                         expiresIn: config.get("auth.jwt.expiration")
                     } as SignOptions
                 );
-
                 ctx.status = 200;
                 ctx.body = { token: token, userName: data.userName, id: dbData.id };
             }

@@ -1,13 +1,13 @@
 import React from "react";
 import { styled } from "styled-components";
 
-import * as styles from '/src/Components/Common/CombinedStyling';
+import * as styles from '../../../Components/Common/CombinedStyling';
 
-import Theme from "/src/Components/Themes/Theme";
-import SignupMainForm from "/src/Components/Layout/Signup/Flow/SignupMainForm";
-import BirthdayForm from "/src/Components/Layout/Signup/Flow/BirthdayForm";
-import ConfirmationCodeForm from "/src/Components/Layout/Signup/Flow/ConfirmationCodeForm";
-import StyledLink from "/src/Components/Common/StyledLink";
+import Theme from "../../../Components/Themes/Theme";
+import SignupMainForm from "../../../Components/Layout/Signup/Flow/SignupMainForm";
+import BirthdayForm from "../../../Components/Layout/Signup/Flow/BirthdayForm";
+import ConfirmationCodeForm from "../../../Components/Layout/Signup/Flow/ConfirmationCodeForm";
+import StyledLink from "../../../Components/Common/StyledLink";
 
 type SignupLayoutProps = {};
 

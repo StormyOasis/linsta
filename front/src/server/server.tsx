@@ -11,7 +11,7 @@ import { ServerStyleSheet } from "styled-components";
 import { renderToString } from "react-dom/server";
 import { StaticRouter } from "react-router-dom/server";
 import { initialState } from "../Components/state/store";
-import App from "/src/Components/App";
+import App from "../Components/App";
 
 const PORT = process.env["PORT"] || 8080;
 

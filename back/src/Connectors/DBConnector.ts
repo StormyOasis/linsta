@@ -114,7 +114,7 @@ export class DBConnector {
             // standard SELECT
             dbResult.data = (result as []);
         }
-
+        
         return dbResult;
     }
 }

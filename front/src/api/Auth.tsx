@@ -20,7 +20,7 @@ export const authHeader = () => {
 }
 
 export const login = async (userName: string, password: string) => {
-    if (userName == null || password == null) {
+    if (userName.trim().length === 0 || password.trim().length === 0) {
         return false;
     }
 

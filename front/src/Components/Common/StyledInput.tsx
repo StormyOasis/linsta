@@ -1,8 +1,7 @@
 import React from "react";
 import { styled } from "styled-components";
 
-import * as styles from "/src/Components/Common/Common.module.css";
-import Theme from "/src/Components/Themes/Theme";
+import * as styles from "./Common.module.css";
 
 const StyledInputWrapper = styled.div`
   display: flex;
@@ -10,7 +9,7 @@ const StyledInputWrapper = styled.div`
   margin: 0 40px 5px 40px;
 `;
 
-const StyledInputInput = styled.input`
+const StyledInputInput = styled.input<{"data-testid"?: string}>`
   border: 2px solid ${props => props.theme['colors'].borderDefaultColor};
   background-color: ${props => props.theme['colors'].inputBackgroundColor};
   display: block;
@@ -32,6 +31,7 @@ type StyledInputProps = {
   type?: string;
   maxLength?: number;
   style?: any;
+  datatestid?: string;
 }
 
 const StyledInput: React.FC<StyledInputProps> = (props: StyledInputProps) => {
@@ -44,21 +44,20 @@ const StyledInput: React.FC<StyledInputProps> = (props: StyledInputProps) => {
     }
 
     return (
-      <Theme>
-        <StyledInputWrapper>
-          <StyledInputLabel className={validationClass}>
-              <StyledInputInput
-                  style={props.style}
-                  type={props.type}
-                  name={props.name}
-                  value={value}
-                  placeholder={props.placeholder}
-                  onChange={props.onChange} 
-                  maxLength={props.maxLength ? props.maxLength : 255}
-                  />
-          </StyledInputLabel>
-        </StyledInputWrapper>        
-      </Theme>
+      <StyledInputWrapper>
+        <StyledInputLabel className={validationClass}>
+            <StyledInputInput
+                style={props.style}
+                type={props.type}
+                name={props.name}
+                value={value}
+                placeholder={props.placeholder}
+                onChange={props.onChange} 
+                maxLength={props.maxLength ? props.maxLength : 255}
+                data-testid={props.datatestid}
+                />
+        </StyledInputLabel>
+      </StyledInputWrapper>        
     );
 }
 

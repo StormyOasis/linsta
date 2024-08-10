@@ -1,14 +1,14 @@
 import React, { useState } from "react";
 import { styled } from "styled-components";
 
-import * as styles from "/src/Components/Common/CombinedStyling";
+import * as styles from "../../../Components/Common/CombinedStyling";
 
-import Theme from "/src/Components/Themes/Theme";
-import StyledLink from "/src/Components/Common/StyledLink";
-import StyledInput from "/src/Components/Common/StyledInput";
-import StyledButton from "/src/Components/Common/StyledButton";
-import Modal from "/src/Components/Common/Modal";
-import { postForgotPassword } from "/src/api/ServiceController";
+import Theme from "../../../Components/Themes/Theme";
+import StyledLink from "../../../Components/Common/StyledLink";
+import StyledInput from "../../../Components/Common/StyledInput";
+import StyledButton from "../../../Components/Common/StyledButton";
+import Modal from "../../../Components/Common/Modal";
+import { postForgotPassword } from "../../../api/ServiceController";
 
 type ForgotProps = {
 
@@ -103,7 +103,7 @@ const renderModal = (showModal, setShowModal, queryResponse) => {
                     sectionCont.style.pointerEvents = "auto";
                 }                
             }}>
-                <ModalContentWrapper>
+                <ModalContentWrapper data-testid="forgotModal">
                     <ModalSectionWrapper style={{ maxWidth: "350px", padding: "4px" }}>
                         <span style={{fontSize: "18px", fontWeight: 500, paddingBottom: "20px", textAlign: "center"}}>{queryResponse.title}</span>
                         <div style={{fontWeight: 400, paddingBottom: "10px", textAlign: "center"}}>
@@ -150,6 +150,7 @@ const renderForgotForm = () => {
                     Enter your email, phone, or username and we'll send you a link to get back into your account.
                 </SubHeadingText> 
                 <StyledInput
+                    datatestid='userName'
                     name="userName"
                     placeholder="Email, Phone, or Username"
                     value={userData}

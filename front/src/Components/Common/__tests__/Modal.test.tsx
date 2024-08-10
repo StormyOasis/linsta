@@ -4,7 +4,7 @@ import {render, fireEvent, screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event'
 import '@testing-library/jest-dom';
 import Jest from 'jest';
-import Modal from './Modal';
+import Modal from '../Modal';
 
 
 test("Modal Component", () => {

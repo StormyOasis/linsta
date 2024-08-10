@@ -3,27 +3,29 @@ import { styled } from "styled-components";
 import { connect } from "react-redux";
 import { Navigate } from "react-router-dom";
 
-import * as styles from '/src/Components/Common/CombinedStyling';
+import * as styles from '../../../Components/Common/CombinedStyling';
 
-import Theme from "/src/Components/Themes/Theme";
-import StyledLink from "/src/Components/Common/StyledLink";
-import LargeLogo from "/src/Components/Common/LargeLogo";
-import StyledInput from "/src/Components/Common/StyledInput";
-import StyledButton from "/src/Components/Common/StyledButton";
-import LoginWithFB from "/src/Components/Common/LoginWithFB";
-import { login } from "/src/api/Auth";
-import { validatePassword } from "/src/utils/utils";
-import { LOG_IN_USER_ACTION, LOG_OUT_USER_ACTION } from "/src/Components/state/actions/types";
+import Theme from "../../../Components/Themes/Theme";
+import StyledLink from "../../../Components/Common/StyledLink";
+import LargeLogo from "../../../Components/Common/LargeLogo";
+import StyledInput from "../../../Components/Common/StyledInput";
+import StyledButton from "../../../Components/Common/StyledButton";
+import LoginWithFB from "../../../Components/Common/LoginWithFB";
+import { login, logout } from "../../../api/Auth";
+import { validatePassword } from "../../../utils/utils";
+import { LOG_IN_USER_ACTION, LOG_OUT_USER_ACTION } from "../../../Components/state/actions/types";
 
-import { Store } from "/src/Components/state/store";
+import { Store } from "../../../Components/state/store";
 
 
-type LoginLayoutProps = {};
+type LoginLayoutProps = {
+    isLoggedIn?: boolean,
+};
 
 type LoginState = {
     userName: string;
     password: string;
-    invalidUser: boolean;
+    loginStep: number;
 };
 
 const LoginLayoutWrapper = styled.main<any>`
@@ -56,7 +58,7 @@ class LoginLayout extends React.Component<LoginLayoutProps, LoginState> {
         this.state = {
             userName: "",
             password: "",
-            invalidUser: false,
+            loginStep: 0
         };
     }
 
@@ -76,24 +78,23 @@ class LoginLayout extends React.Component<LoginLayoutProps, LoginState> {
         event?.preventDefault();
 
         if(!this.isFormValid()) {
-            this.setState({invalidUser: true});
+            this.setState({loginStep: 0});
             return false;
         }
 
         try {
-            logout();
-            this.props.logoutUser();            
+            logout();    
 
             const result = await login(this.state.userName, this.state.password);
             if(!result) {
-                this.setState({invalidUser: true});
+                this.setState({loginStep: 1});
             } else {
                 //we should be logged in and the JWT token set into localstorage
                 //navigate to root route
-                this.props.loginUser();
+                this.setState({loginStep: 2})
             }    
         } catch(err) {
-            this.setState({invalidUser: true});
+            this.setState({loginStep: 1});
         }
 
         return false;
@@ -105,7 +106,7 @@ class LoginLayout extends React.Component<LoginLayoutProps, LoginState> {
 
         return (
             <Theme>
-                {this.props.isLoggedIn && <Navigate to="/" replace={true} />}
+                {this.state.loginStep === 2 && <Navigate to="/" replace={true} />}
                 <LargeLogo />
                 <LoginForm method="post">
                     <div className={styles.default.signupFormDiv1}>
@@ -128,7 +129,7 @@ class LoginLayout extends React.Component<LoginLayoutProps, LoginState> {
                         isValid={validatePassword(this.state.password)}
                         onChange={(event: React.ChangeEvent<HTMLInputElement>) => this.setState({ password: event.target.value })}
                     ></StyledInput>
-                    {this.state.invalidUser && <StatusText>Invalid username or password</StatusText>}
+                    {this.state.loginStep === 1 && <StatusText>Invalid username or password</StatusText>}
                     <StyledButton
                         style={stylesToAddToLastInput}
                         type="button"
