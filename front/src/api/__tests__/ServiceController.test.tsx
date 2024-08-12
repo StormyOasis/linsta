@@ -6,7 +6,7 @@ import Jest from 'jest';
 import {http, HttpResponse, rest} from 'msw'
 import {setupServer} from 'msw/node'
 
-import  { getAccountsCheckUserUnique } from './ServiceController';
+import  { getAccountsCheckUserUnique } from '../ServiceController';
 
 const host = "http://localhost";
 const port = 3001;
@@ -25,7 +25,9 @@ const server = setupServer(
       });
     }),    
     http.post(`${host}:${port}/api/v1/accounts/attempt/`, (req, res, ctx) => {
-        
+      return new HttpResponse(true, {
+        status: 200
+      });        
     })
   )
   

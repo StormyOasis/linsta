@@ -21,3 +21,14 @@ exports[`StyledLink Component With Style Override 1`] = `
   </a>
 </DocumentFragment>
 `;
+
+exports[`StyledLink Component no onclick 1`] = `
+<DocumentFragment>
+  <a
+    class="StyledLink__StyledLinkWrapper-sc-1rgr01q-0 dLJqDG"
+    href="/"
+  >
+    Hello
+  </a>
+</DocumentFragment>
+`;

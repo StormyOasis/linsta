@@ -31,3 +31,15 @@ test("StyledLink Component With Style Override", () => {
 
     expect(r).toMatchSnapshot();
 })
+
+
+test("StyledLink Component no onclick", () => {
+    const r = render(
+        <MemoryRouter>
+            <Theme>
+                <StyledLink>Hello</StyledLink>
+            </Theme>
+        </MemoryRouter>).asFragment();
+
+    expect(r).toMatchSnapshot();
+})

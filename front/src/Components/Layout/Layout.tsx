@@ -1,6 +1,6 @@
 import React from "react";
 import { styled } from "styled-components";
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import { connect } from "react-redux";
 import { Store } from "../../Components/state/store";
 import LoginLayout from "../../Components/Layout/Login/LoginLayout";
@@ -60,11 +60,12 @@ class Layout extends React.Component<LayoutProps, LayoutState> {
                 <Section id="mainSectionContainer">
                     {this.renderHeader()}
                     <Routes>
-                        <Route path="*" element={<MainLayout />} />
+                        <Route path="/" element={<MainLayout />} />                        
                         <Route path="/login/*" element={<LoginLayout />} />
                         <Route path="/signup/*" element={<SignupLayout />} />
                         <Route path="/forgot/*" element={<ForgotPasswordLayout />} />
                         <Route path="/change_password/*" element={<ChangePasswordLayout />} />
+                        <Route path="*" element={<Navigate to="/" />} />
                     </Routes>
                 </Section>
             </>
