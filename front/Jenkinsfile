@@ -5,14 +5,10 @@ pipeline {
             steps {
                 sh "docker-compose build"
                 sh "docker-compose up -d"
-                waitUntilServicesReady
+                sleep(45)
             }
         }
-        stage("Run Tests") {
-            steps {
 
-            }
-        }
     }
     post {
         always {
