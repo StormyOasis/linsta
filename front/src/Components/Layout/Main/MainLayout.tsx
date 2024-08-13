@@ -1,7 +1,5 @@
 import React from "react";
 import styled from "styled-components";
-import { connect } from "react-redux";
-import { Store } from "/src/Components/state/store";
 
 const MainWrapper = styled.main`
     display: flex;
@@ -21,9 +19,3 @@ export class MainLayout extends React.Component {
         );
     }
 }
-
-const mapStateToProps = (state:Store) => ({
-    isLoggedIn: state.isLoggedIn
-});
-
-export default connect(mapStateToProps)(MainLayout);

@@ -1,14 +1,14 @@
 import React from "react";
 import { styled } from "styled-components";
 import { Navigate, Route, Routes } from "react-router-dom";
-import { connect } from "react-redux";
-import { Store } from "../../Components/state/store";
 import LoginLayout from "../../Components/Layout/Login/LoginLayout";
 import { MainLayout } from "../../Components/Layout/Main/MainLayout";
 import Header from "../../Components/Layout/Header";
 import { SignupLayout } from "../../Components/Layout/Signup/SignupLayout";
 import ForgotPasswordLayout from "../../Components/Layout/Login/ForgotPasswordLayout";
 import ChangePasswordLayout from "../../Components/Layout/Login/ChangePasswordLayout";
+import { historyUtils } from "../../utils/utils";
+import { useSelector } from "react-redux";
 
 const Section = styled.section`
     display: flex;
@@ -26,26 +26,14 @@ const ModalContainer = styled.div`
     z-index: 9999;
     position: fixed;
 `
-
-type LayoutProps = {
-    location: string,
-    isLoggedIn?: boolean
-};
-
-type LayoutState = {};
-
-class Layout extends React.Component<LayoutProps, LayoutState> {
-
-    constructor(props: LayoutProps) {
-        super(props);
-    }
-
-    renderHeader = () => {
+const Layout: React.FC = () => {
+    const authUser = useSelector((value:any) => value?.auth?.user);
+    
+    const renderHeader = () => {
+        const path = historyUtils.location.pathname.toLowerCase();
         // Don't want to display the header on the login or signup routes
         // or if user is logged in
-        if (this.props.isLoggedIn ||
-            this.props.location.endsWith("/login") ||
-            this.props.location.endsWith("/signup")) {
+        if ((authUser && authUser.token!= null) || path.endsWith("/login") || path.endsWith("/signup")) {
             return null;
         }
 
@@ -54,11 +42,11 @@ class Layout extends React.Component<LayoutProps, LayoutState> {
         );
     }
 
-    renderLayout = () => {
-        return (
-            <>
-                <Section id="mainSectionContainer">
-                    {this.renderHeader()}
+    return (
+        <>
+            <ModalContainer id="modalContainer" />
+            <Section id="mainSectionContainer">
+                    {renderHeader()}
                     <Routes>
                         <Route path="/" element={<MainLayout />} />                        
                         <Route path="/login/*" element={<LoginLayout />} />
@@ -68,22 +56,8 @@ class Layout extends React.Component<LayoutProps, LayoutState> {
                         <Route path="*" element={<Navigate to="/" />} />
                     </Routes>
                 </Section>
-            </>
-        );
-    }
-
-    override render() {
-        return (
-            <>
-                <ModalContainer id="modalContainer" />
-                {this.renderLayout()}
-            </>
-        );
-    }
+        </>
+    );
 }
 
-const mapStateToProps = (state: Store) => ({
-    isLoggedIn: state.isLoggedIn,
-});
-
-export default connect(mapStateToProps)(Layout);
+export default Layout;

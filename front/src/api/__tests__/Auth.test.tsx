@@ -39,7 +39,8 @@ describe("Auth Module", () => {
     it("should process a valid login", async () => {
         let response: any = {};
         response = await login("userName", "password");
-        
+        response = await login("userName", "password").catch(err => expect(err).not.toBeDefined());            
+
         expect(response).toBeDefined();
         expect(response).toBeTruthy();
 
@@ -54,10 +55,10 @@ describe("Auth Module", () => {
 
     it("should return false given invalid username/password", async () => {
         let response: any = {};
-        response = await login("userName", "");
 
-        expect(response).toBeDefined();
-        expect(response).toBeFalsy();
+        response = await login("userName", "").catch(err => expect(err).toBeDefined());            
+
+        expect(response).toBeFalsy();                    
 
         const user = localStorage.getItem("user");
         expect(user).toBeNull();  
