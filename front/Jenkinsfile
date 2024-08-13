@@ -1,17 +1,22 @@
 pipeline {
     agent any
     stages {
-        stage("Prepare for Build") {
+        stage("Build") {
             steps {
-                dir("linsta") {
-                    git(
-                        url: "https://github.com/StormyOasis/linsta.git",
-                        branch: "main",
-                        changelog: true,
-                        poll: true                        
-                    )
-                }
+                sh "docker-compose build"
+                sh "docker-compose up -d"
+                waitUntilServicesReady
             }
+        }
+        stage("Run Tests") {
+            steps {
+
+            }
+        }
+    }
+    post {
+        always {
+            sh "docker-compose down || true"
         }
     }
 }
