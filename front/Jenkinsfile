@@ -1,0 +1,17 @@
+pipeline {
+    agent any
+    stages {
+        stage("Prepare for Build") {
+            steps {
+                dir("linsta") {
+                    git(
+                        url: "https://github.com/StormyOasis/linsta.git",
+                        branch: "main",
+                        changelog: true,
+                        poll: true                        
+                    )
+                }
+            }
+        }
+    }
+}
