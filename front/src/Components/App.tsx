@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react"
 import { Provider } from 'react-redux';
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { ErrorBoundary } from "react-error-boundary";
 
 import Layout from "../Components/Layout/Layout";
-import store from "../Components/state/redux";
+import store from "../Components/Redux/redux";
 import Theme from "../Components/Themes/Theme";
+import { historyUtils } from "../utils/utils";
 
-
-const App: React.FC<{ any: any }> = () => {
+const App: React.FC = () => {
   const isOnServer = () => {
     const [isServer, setIsServer] = useState(true);
 
@@ -19,20 +19,17 @@ const App: React.FC<{ any: any }> = () => {
 
     return isServer;
   }
-
-  const location = useLocation().pathname.toLowerCase();
-  const isServer = isOnServer();
-
-  if(!isServer) {
-    console.log(localStorage.getItem("user"));
-  }
+  
+  historyUtils.location = useLocation();
+  historyUtils.navigate = useNavigate();
+  historyUtils.isServer = isOnServer();
 
   return (
     <React.StrictMode>
       <Provider store={store}>
         <ErrorBoundary FallbackComponent={({ error }) => <div>{error.stack}</div>}>
           <Theme>
-            <Layout location={location} />
+            <Layout />
           </Theme>
         </ErrorBoundary>
       </Provider>

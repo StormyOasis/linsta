@@ -4,3 +4,15 @@ export const validatePassword = (value: string): boolean => {
 
     return regex.test(value);
 };
+
+export type HistoryType = {
+    navigate: any,
+    location: any,
+    isServer: boolean
+};
+
+export const historyUtils:HistoryType = {
+    navigate: null,
+    location: null,
+    isServer: true
+}

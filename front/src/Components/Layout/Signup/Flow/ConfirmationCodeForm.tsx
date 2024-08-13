@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { styled } from "styled-components";
 
 import { getAccountsSendVerifyNotification, postAccountsAttempt } from "../../../../api/ServiceController";
 import StyledInput from "../../../../Components/Common/StyledInput";
 import StyledButton from "../../../../Components/Common/StyledButton";
-import { Navigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, authActions } from "../../../../Components/Redux/redux";
 
 const ConfirmationWrapper = styled.div`
     align-content: stretch;
@@ -96,108 +97,103 @@ type ConfirmationCodeFormProps = {
     changePage: any,
 }
 
-type ConfirmationCodeFormState = {
-    navigateToHome: boolean;
-}
-
-export default class ConfirmationCodeForm extends React.Component<ConfirmationCodeFormProps, ConfirmationCodeFormState> {
-
-    messageSent: boolean = false; //This nonsense is bc React strictmode double calls constructor and lifecycle methods in dev
+let emailStep = 0;
+const ConfirmationCodeForm: React.FC<ConfirmationCodeFormProps> = (props: ConfirmationCodeFormProps) => {
+    const dispatch = useDispatch<AppDispatch>();
     
-    constructor(props: ConfirmationCodeFormProps) {
-        super(props);
-
-        this.state = {
-            navigateToHome: false,
-        };
-    }
-
-    override componentDidMount(): void { 
-        if(!this.messageSent) {
-            this.resendCode();
-            this.messageSent = true;
+    useEffect(() => {
+        if(emailStep === 1) {
+            //automatically send the message the very first time this component is mounted
+            //every subsequent resend requires a user click the link 
+            //(Note: Using this emailStep variable bc in dev mode React.StrictMode double calls the 
+            //useEffect so have to track it outside react. yuk...)
+            
+           resendCode();
         }
-    }
+        emailStep++;
+    }, [])
 
-    resendCode = () => {                
-        getAccountsSendVerifyNotification(this.props.emailOrPhone)
+    function resendCode() {
+        getAccountsSendVerifyNotification(props.emailOrPhone)
             .then((res: any) => res)
             .catch((err: any) => {
                 console.error(err);
             });
     }
 
-    handleFormChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        this.props.handleFormChange(
+    function handleFormChange (event: React.ChangeEvent<HTMLInputElement>) {
+        props.handleFormChange(
             event.target.name,
             event.target.value,
             event.target.value.length > 0
         );
     };    
 
-    submitForm = async () => {
+    async function submitForm() {
         const result = await postAccountsAttempt({
             dryRun: false,
-            userName: this.props.userName,
-            fullName: this.props.fullName,
-            emailOrPhone: this.props.emailOrPhone,
-            password: this.props.password,
-            confirmCode: this.props.confirmationCode,
-            month: this.props.month,
-            day: this.props.day,
-            year: this.props.year,
+            userName: props.userName,
+            fullName: props.fullName,
+            emailOrPhone: props.emailOrPhone,
+            password: props.password,
+            confirmCode: props.confirmationCode,
+            month: props.month,
+            day: props.day,
+            year: props.year,
         });
 
-        if(result.status === 200) {
-            this.setState({navigateToHome: true});
+        if(result.status === 200) {                             
+            const userName = props.userName;
+            const password = props.password;
+
+            dispatch(authActions.login({userName, password}))
         }
     }
 
-    override render() {
-        return (
-            <>
-                {this.state.navigateToHome && <Navigate to="/" replace={true} />}
-                <ConfirmationWrapper style={{ alignItems: "center" }}>
-                    <EmailImage aria-label="Email Confirmation" />
-                    <ConfirmationInnerWrapper>
-                        <Text style={{ fontWeight: 600, margin: 0 }}>
-                            Enter Confirmation Code
-                        </Text>
+    return (
+        <>
+            <ConfirmationWrapper style={{ alignItems: "center" }}>
+                <EmailImage aria-label="Email Confirmation" />
+                <ConfirmationInnerWrapper>
+                    <Text style={{ fontWeight: 600, margin: 0 }}>
+                        Enter Confirmation Code
+                    </Text>
+                </ConfirmationInnerWrapper>
+                <ConfirmationInnerWrapper>
+                    <Text style={{ maxWidth: "100%" }}>
+                        Enter the confirmation code we sent to {props.emailOrPhone}.
+                        <ResendButton onClick={resendCode}>Resend Code</ResendButton>
+                    </Text>
+                </ConfirmationInnerWrapper>
+            </ConfirmationWrapper>
+            <ConfirmationWrapper>
+                <ConfirmationInnerWrapper style={{ alignItems: "center", margin: "8px 0", padding: "0 40px" }}>
+                    <ConfirmationWrapper style={{ margin: 0, padding: 0 }}>
+                        <StyledInput style={{
+                            borderRadius: "6px", cursor: "text", lineHeight: "30px",
+                            padding: "0px 12px", textAlign: "left", textTransform: "none", width: "240px"}}
+                            maxLength={8}
+                            type="text"
+                            name="confirmationCode"
+                            value={props.confirmationCode}
+                            placeholder="Confirmation Code"
+                            onChange={handleFormChange} 
+                            isValid={props.confirmationCode_valid} 
+                        />
+                    </ConfirmationWrapper>
+                    <ConfirmationWrapper style={{ width: "100%", margin: 0, padding: "16px 8px 16px 8px" }}>
+                        <StyledButton
+                            type="button" text="Next" disabled={!props.confirmationCode_valid}
+                            style={{ margin: 0 }} onClick={() => { submitForm(); }}>
+                        </StyledButton>
+                    </ConfirmationWrapper>
+                    <ConfirmationInnerWrapper style={{ margin: 0 }}>
+                        <PrevButton onClick={() => props.changePage(-1)}>Go Back</PrevButton>
                     </ConfirmationInnerWrapper>
-                    <ConfirmationInnerWrapper>
-                        <Text style={{ maxWidth: "100%" }}>
-                            Enter the confirmation code we sent to {this.props.emailOrPhone}.
-                            <ResendButton onClick={this.resendCode}>Resend Code</ResendButton>
-                        </Text>
-                    </ConfirmationInnerWrapper>
-                </ConfirmationWrapper>
-                <ConfirmationWrapper>
-                    <ConfirmationInnerWrapper style={{ alignItems: "center", margin: "8px 0", padding: "0 40px" }}>
-                        <ConfirmationWrapper style={{ margin: 0, padding: 0 }}>
-                            <StyledInput style={{
-                                borderRadius: "6px", cursor: "text", lineHeight: "30px",
-                                padding: "0px 12px", textAlign: "left", textTransform: "none", width: "240px"}}
-                                maxLength={8}
-                                type="text"
-                                name="confirmationCode"
-                                value={this.props.confirmationCode}
-                                placeholder="Confirmation Code"
-                                onChange={this.handleFormChange} 
-                                isValid={this.props.confirmationCode_valid} 
-                            />
-                        </ConfirmationWrapper>
-                        <ConfirmationWrapper style={{ width: "100%", margin: 0, padding: "16px 8px 16px 8px" }}>
-                            <StyledButton
-                                type="button" text="Next" disabled={!this.props.confirmationCode_valid}
-                                style={{ margin: 0 }} onClick={() => { this.submitForm(); }}>
-                            </StyledButton>
-                        </ConfirmationWrapper>
-                        <ConfirmationInnerWrapper style={{ margin: 0 }}>
-                            <PrevButton onClick={() => this.props.changePage(-1)}>Go Back</PrevButton>
-                        </ConfirmationInnerWrapper>
-                    </ConfirmationInnerWrapper>
-                </ConfirmationWrapper>
-            </>
-        );
-    }
+                </ConfirmationInnerWrapper>
+            </ConfirmationWrapper>
+        </>
+    );
 }
+
+export default ConfirmationCodeForm;

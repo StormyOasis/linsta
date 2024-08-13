@@ -19,20 +19,18 @@ export const authHeader = () => {
     return {};
 }
 
-export const login = async (userName: string, password: string) => {
+export const login = async (userName: string, password: string) => {    
     if (userName.trim().length === 0 || password.trim().length === 0) {
-        return false;
+        throw new Error("Invalid username or password");
     }
 
     const result = await postLogin({ userName, password });
 
     if (result == null || result.status != 200 || result.data == null || result.data.token == null) {
-        return false;
+        throw new Error("Invalid username or password");
     }
 
-    localStorage.setItem("user", JSON.stringify(result.data));
-
-    return true;
+    return result.data;
 }
 
 export const logout = () => {

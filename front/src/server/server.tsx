@@ -10,7 +10,6 @@ import React from 'react';
 import { ServerStyleSheet } from "styled-components";
 import { renderToString } from "react-dom/server";
 import { StaticRouter } from "react-router-dom/server";
-import { initialState } from "../Components/state/store";
 import App from "../Components/App";
 
 const PORT = process.env["PORT"] || 8080;
@@ -33,7 +32,7 @@ const renderHtml = (title: string, styles: any, html: any) => {
         <body>
             <div id="root">${html}</div>
             <script>
-                window["__PRELOADED_STATE__"] = ${JSON.stringify(initialState)}
+                window["__PRELOADED_STATE__"] = ${JSON.stringify({})}
             </script>          
             <script type="application/javascript" src="main.bundle.js"></script>
             <script type="application/javascript" src="vendor.bundle.js"></script>
