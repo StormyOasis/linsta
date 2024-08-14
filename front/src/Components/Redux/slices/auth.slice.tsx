@@ -17,6 +17,7 @@ function createInitialState() {
     if(historyUtils.isServer) {
         return {...defaultState};
     }
+
     
     return {
         ...defaultState,

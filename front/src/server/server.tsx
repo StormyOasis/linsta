@@ -11,13 +11,14 @@ import { ServerStyleSheet } from "styled-components";
 import { renderToString } from "react-dom/server";
 import { StaticRouter } from "react-router-dom/server";
 import App from "../Components/App";
+import store from "../Components/Redux/redux";
 
 const PORT = process.env["PORT"] || 8080;
 
 const router = new Router();
 const app = new Koa();
 
-const renderHtml = (title: string, styles: any, html: any) => {
+const renderHtml = (title: string, styles: any, html: any, preloadState: any) => {
   return `
     <!DOCTYPE html>
     <html lang="en">
@@ -32,7 +33,7 @@ const renderHtml = (title: string, styles: any, html: any) => {
         <body>
             <div id="root">${html}</div>
             <script>
-                window["__PRELOADED_STATE__"] = ${JSON.stringify({})}
+                window["__PRELOADED_STATE__"] = ${JSON.stringify({preloadState}).replace(/</g, '\\x3c')}
             </script>          
             <script type="application/javascript" src="main.bundle.js"></script>
             <script type="application/javascript" src="vendor.bundle.js"></script>
@@ -53,7 +54,7 @@ router.get(/.*/, async (ctx) => {
 
       const appHtml = renderToString(sheet.collectStyles(withRouterElement));
 
-      ctx.body = renderHtml("Linstagram", sheet.getStyleTags(), appHtml);
+      ctx.body = renderHtml("Linstagram", sheet.getStyleTags(), appHtml, store.getState());
       ctx.response.set("content-type", "text/html");
       ctx.status = 200;
 

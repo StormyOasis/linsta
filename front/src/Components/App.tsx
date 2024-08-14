@@ -19,7 +19,7 @@ const App: React.FC = () => {
 
     return isServer;
   }
-  
+
   historyUtils.location = useLocation();
   historyUtils.navigate = useNavigate();
   historyUtils.isServer = isOnServer();
