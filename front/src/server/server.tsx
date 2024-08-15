@@ -11,7 +11,8 @@ import { ServerStyleSheet } from "styled-components";
 import { renderToString } from "react-dom/server";
 import { StaticRouter } from "react-router-dom/server";
 import App from "../Components/App";
-import store from "../Components/Redux/redux";
+import {buildStore} from "../Components/Redux/redux";
+import { Provider } from "react-redux";
 
 const PORT = process.env["PORT"] || 8080;
 
@@ -33,7 +34,7 @@ const renderHtml = (title: string, styles: any, html: any, preloadState: any) =>
         <body>
             <div id="root">${html}</div>
             <script>
-                window["__PRELOADED_STATE__"] = ${JSON.stringify({preloadState}).replace(/</g, '\\x3c')}
+                window.__PRELOADED_STATE__ = ${JSON.stringify(preloadState).replace(/</g,'\\u003c')}
             </script>          
             <script type="application/javascript" src="main.bundle.js"></script>
             <script type="application/javascript" src="vendor.bundle.js"></script>
@@ -46,11 +47,14 @@ router.get(/.*/, async (ctx) => {
     return new Promise((_resolve, reject) => {
       const sheet = new ServerStyleSheet();
 
+      const store = buildStore();
       const appElement = <App />;
       const withRouterElement = 
-        <StaticRouter location={ctx.req.url}>
-          {sheet.collectStyles(appElement)}
-        </StaticRouter>;
+        <Provider store={store}>
+          <StaticRouter location={ctx.req.url}>
+            {sheet.collectStyles(appElement)}
+          </StaticRouter>
+        </Provider>;
 
       const appHtml = renderToString(sheet.collectStyles(withRouterElement));
 
