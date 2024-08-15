@@ -7,7 +7,7 @@ import SearchSVG from '/public/images/search.svg';
 
 import * as styles from './Header.module.css';
 
-const HeaderWrapper = styled.nav`
+const HeaderWrapper = styled.div`
   z-index: 100;
   align-items: center;
   flex-direction: column;

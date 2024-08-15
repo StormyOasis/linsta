@@ -11,6 +11,9 @@ const Private = ({ children }:any) => {
     if (!historyUtils.isServer && !user) {
         return <Navigate to="/login" state={{ from: historyUtils.location }} />
     }
+    if(historyUtils.isServer) {
+        return null;
+    }
 
     return children;
 }
