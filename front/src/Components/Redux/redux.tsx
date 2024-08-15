@@ -24,7 +24,7 @@ export const buildStore = (initialState?: any) => {
   return store;
 }
 
-type ConfiguredStore = ReturnType<typeof buildStore>;
-type StoreGetState = ConfiguredStore["getState"];
+export type ConfiguredStore = ReturnType<typeof buildStore>;
+export type StoreGetState = ConfiguredStore["getState"];
 export type RootState = ReturnType<StoreGetState>;
 export type AppDispatch = ConfiguredStore["dispatch"];

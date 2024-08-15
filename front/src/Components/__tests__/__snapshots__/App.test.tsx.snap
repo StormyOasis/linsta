@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Primary App Component should render correctly 1`] = `
+exports[`Primary App Component should render logged in correctly 1`] = `
 <DocumentFragment>
   <div
     class="Layout__ModalContainer-sc-1y0f571-1 dljdPV"
@@ -10,73 +10,136 @@ exports[`Primary App Component should render correctly 1`] = `
     class="Layout__Section-sc-1y0f571-0 kMCVf"
     id="mainSectionContainer"
   >
-    <nav
-      class="Header__HeaderWrapper-sc-1a1rnwk-0 kvRYeL"
-    >
-      <div
-        style="flex-basis: 60px;"
-      />
-      <div>
-        <div>
-          <div
-            class="Header__LogoWrapper-sc-1a1rnwk-1 klxYXA"
-          >
-            <a
-              href="/"
-            />
-          </div>
-          <div
-            class="Header__SearchWrapper-sc-1a1rnwk-5 jBpodB"
-          >
-            <input
-              aria-label="Search input box"
-              class="Header__SearchBox-sc-1a1rnwk-4 fPghwO"
-              placeholder=""
-              type="text"
-            />
-            <div>
-              <div>
-                <div />
-                <span
-                  class="Header__SearchSpan-sc-1a1rnwk-6 jnEykV"
-                />
-              </div>
-            </div>
-          </div>
-          <div
-            class="Header__ActionWrapper-sc-1a1rnwk-7 cVPQJC"
-          >
-            <div>
-              <div
-                class="Header__ActionLinkWrapper-sc-1a1rnwk-8 eOiqBu"
-              >
-                <a
-                  class="Header__LoginButton-sc-1a1rnwk-9 bAvoUV"
-                  href="/login"
-                >
-                  Log In
-                </a>
-              </div>
-              <div
-                class="Header__ActionLinkWrapper-sc-1a1rnwk-8 eOiqBu"
-              >
-                <a
-                  class="Header__SignupButton-sc-1a1rnwk-10 eYQiMU"
-                  href="/signup"
-                >
-                  Sign Up
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </nav>
     <main
       class="MainLayout__MainWrapper-sc-1gsojru-0 bzvUxv"
       role="main"
     >
       MainLayout
+    </main>
+  </section>
+</DocumentFragment>
+`;
+
+exports[`Primary App Component should render logged out correctly 1`] = `
+<DocumentFragment>
+  <div
+    class="Layout__ModalContainer-sc-1y0f571-1 dljdPV"
+    id="modalContainer"
+  />
+  <section
+    class="Layout__Section-sc-1y0f571-0 kMCVf"
+    id="mainSectionContainer"
+  >
+    <main
+      class="LoginLayout__LoginLayoutWrapper-sc-1p2723n-0 ilDFLd"
+      role="main"
+    >
+      <div>
+        <div>
+          <div>
+            <div
+              class="LargeLogo__LogoWrapper-sc-1bu4w53-0 hBpxrf"
+            >
+              <a
+                href="/"
+              />
+            </div>
+            <form
+              class="LoginLayout__LoginForm-sc-1p2723n-1 iKZqXv"
+              method="post"
+            >
+              <div>
+                <span>
+                  Log in to see photos and videos from your friends.
+                </span>
+              </div>
+              <div
+                class="StyledInput__StyledInputWrapper-sc-fkf055-0 hOmQjA"
+              >
+                <label
+                  class="StyledInput__StyledInputLabel-sc-fkf055-2 gizmBW"
+                >
+                  <input
+                    class="StyledInput__StyledInputInput-sc-fkf055-1 ejdHNL"
+                    maxlength="255"
+                    name="userName"
+                    placeholder="Username"
+                    value=""
+                  />
+                </label>
+              </div>
+              <div
+                class="StyledInput__StyledInputWrapper-sc-fkf055-0 hOmQjA"
+              >
+                <label
+                  class="StyledInput__StyledInputLabel-sc-fkf055-2 gizmBW"
+                >
+                  <input
+                    class="StyledInput__StyledInputInput-sc-fkf055-1 ejdHNL"
+                    maxlength="255"
+                    name="password"
+                    placeholder="Password"
+                    type="password"
+                    value=""
+                  />
+                </label>
+              </div>
+              <button
+                class="StyledButton__StyledButtonComponent-sc-8t4kac-0 fLkIsR"
+                disabled=""
+                style="margin-top: 8px;"
+                type="submit"
+              >
+                Login
+              </button>
+              <div
+                style="width: 100%;"
+              >
+                <div
+                  style="margin-top: -5px;"
+                >
+                  <div>
+                    <div>
+                      <div>
+                        <div />
+                        <div>
+                          OR
+                        </div>
+                        <div />
+                      </div>
+                    </div>
+                    <button
+                      class="LoginWithFB__LoginWithFBButton-sc-18oes83-0 eSywRS"
+                    >
+                      <span />
+                      Log in with Facebook
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <a
+                  class="StyledLink__StyledLinkWrapper-sc-1rgr01q-0 dLJqDG"
+                  href="/forgot"
+                >
+                  Forgot Password?
+                </a>
+              </div>
+            </form>
+          </div>
+          <div
+            style="padding: 20px 0px;"
+          >
+            Don't have an account? 
+            <a
+              class="StyledLink__StyledLinkWrapper-sc-1rgr01q-0 dLJqDG"
+              href="/signup"
+            >
+              Sign up
+            </a>
+          </div>
+        </div>
+      </div>
     </main>
   </section>
 </DocumentFragment>

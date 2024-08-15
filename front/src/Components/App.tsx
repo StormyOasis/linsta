@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react"
-import { Provider } from 'react-redux';
 import { useLocation, useNavigate } from "react-router-dom";
 import { ErrorBoundary } from "react-error-boundary";
 

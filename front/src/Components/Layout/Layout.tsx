@@ -9,6 +9,7 @@ import ForgotPasswordLayout from "../../Components/Layout/Login/ForgotPasswordLa
 import ChangePasswordLayout from "../../Components/Layout/Login/ChangePasswordLayout";
 import { historyUtils } from "../../utils/utils";
 import { useSelector } from "react-redux";
+import Private from "../Common/Private";
 
 const Section = styled.section`
     display: flex;
@@ -33,7 +34,7 @@ const Layout: React.FC = () => {
         const path = historyUtils.location.pathname.toLowerCase();
         // Don't want to display the header on the login or signup routes
         // or if user is logged in
-        if ((authUser && authUser.token!= null) || path.endsWith("/login") || path.endsWith("/signup")) {
+        if ((!historyUtils.isServer && authUser && authUser.token!= null) || path.endsWith("/login") || path.endsWith("/signup")) {
             return null;
         }
 
@@ -48,7 +49,7 @@ const Layout: React.FC = () => {
             <Section id="mainSectionContainer">
                     {renderHeader()}
                     <Routes>
-                        <Route path="/" element={<MainLayout />} />                        
+                        <Route path="/" element={<Private><MainLayout /></Private>} />                        
                         <Route path="/login/*" element={<LoginLayout />} />
                         <Route path="/signup/*" element={<SignupLayout />} />
                         <Route path="/forgot/*" element={<ForgotPasswordLayout />} />
