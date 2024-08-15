@@ -4,7 +4,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import LoginLayout from "../../Components/Layout/Login/LoginLayout";
 import { MainLayout } from "../../Components/Layout/Main/MainLayout";
 import Header from "../../Components/Layout/Header";
-import { SignupLayout } from "../../Components/Layout/Signup/SignupLayout";
+import SignupLayout from "../../Components/Layout/Signup/SignupLayout";
 import ForgotPasswordLayout from "../../Components/Layout/Login/ForgotPasswordLayout";
 import ChangePasswordLayout from "../../Components/Layout/Login/ChangePasswordLayout";
 import { historyUtils } from "../../utils/utils";

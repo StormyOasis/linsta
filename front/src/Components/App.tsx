@@ -6,7 +6,7 @@ import Layout from "../Components/Layout/Layout";
 import Theme from "../Components/Themes/Theme";
 import { historyUtils } from "../utils/utils";
 
-const App: React.FC = () => {
+const App: React.FC<any> = ({children}) => {
   const isOnServer = () => {
     const [isServer, setIsServer] = useState(true);
 
@@ -24,7 +24,8 @@ const App: React.FC = () => {
 
   return (
     <React.StrictMode>      
-      <ErrorBoundary FallbackComponent={({ error }) => <div>{error.stack}</div>}>
+      <ErrorBoundary FallbackComponent={({ error }) => <div data-testid="fallback">{error.stack}</div>}>
+      {children}
         <Theme>
           <Layout />
         </Theme>

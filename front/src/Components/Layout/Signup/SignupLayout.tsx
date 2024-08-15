@@ -9,7 +9,9 @@ import BirthdayForm from "../../../Components/Layout/Signup/Flow/BirthdayForm";
 import ConfirmationCodeForm from "../../../Components/Layout/Signup/Flow/ConfirmationCodeForm";
 import StyledLink from "../../../Components/Common/StyledLink";
 
-type SignupLayoutProps = {};
+type SignupLayoutProps = {
+    page?: number | null
+};
 
 type SignupState = {
     userName: string;
@@ -39,7 +41,7 @@ const SignupLayoutWrapper = styled.main<any>`
   flex-grow: 1;
 `;
 
-export class SignupLayout extends React.Component<
+export default class SignupLayout extends React.Component<
     SignupLayoutProps,
     SignupState
 > {
@@ -63,7 +65,7 @@ export class SignupLayout extends React.Component<
             password_valid: false,
             confirmationCode_valid: false,
             year_valid: false,
-            signupPage: 0,
+            signupPage: props.page ? props.page : 0,
             showBirthdayModal: false
         };
     }

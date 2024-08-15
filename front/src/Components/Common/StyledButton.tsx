@@ -8,6 +8,7 @@ type StyledButtonProps = {
     disabled?: boolean;
     text: string;
     style?: any;
+    datatestid?: string;
 };
 
 const StyledButtonComponent = styled.button<{ $props?: any }>`
@@ -48,7 +49,8 @@ const StyledButton: React.FC<StyledButtonProps> = (props: StyledButtonProps) => 
             name={props.name} 
             disabled={props.disabled} 
             onClick={props.onClick}
-            style={props.style}>
+            style={props.style}
+            data-testid={props.datatestid}>
                 {props.text}
         </StyledButtonComponent>
     );

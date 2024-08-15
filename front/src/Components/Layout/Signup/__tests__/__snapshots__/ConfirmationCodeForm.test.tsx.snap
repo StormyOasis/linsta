@@ -1,0 +1,188 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Signup Confirmation Form Component should render correctly 1`] = `
+<DocumentFragment>
+  <div
+    class="ConfirmationCodeForm__ConfirmationWrapper-sc-1ois2aw-0 efWDGZ"
+    style="align-items: center;"
+  >
+    <span
+      aria-label="Email Confirmation"
+      class="ConfirmationCodeForm__EmailImage-sc-1ois2aw-1 cyVRga"
+    />
+    <div
+      class="ConfirmationCodeForm__ConfirmationInnerWrapper-sc-1ois2aw-2 jZUObA"
+    >
+      <span
+        class="ConfirmationCodeForm__Text-sc-1ois2aw-3 eactoZ"
+        style="font-weight: 600; margin: 0px;"
+      >
+        Enter Confirmation Code
+      </span>
+    </div>
+    <div
+      class="ConfirmationCodeForm__ConfirmationInnerWrapper-sc-1ois2aw-2 jZUObA"
+    >
+      <span
+        class="ConfirmationCodeForm__Text-sc-1ois2aw-3 eactoZ"
+        style="max-width: 100%;"
+      >
+        Enter the confirmation code we sent to .
+        <button
+          class="ConfirmationCodeForm__ResendButton-sc-1ois2aw-4 dvbEtO"
+        >
+          Resend Code
+        </button>
+      </span>
+    </div>
+  </div>
+  <div
+    class="ConfirmationCodeForm__ConfirmationWrapper-sc-1ois2aw-0 efWDGZ"
+  >
+    <div
+      class="ConfirmationCodeForm__ConfirmationInnerWrapper-sc-1ois2aw-2 jZUObA"
+      style="align-items: center; margin: 8px 0px; padding: 0px 40px;"
+    >
+      <div
+        class="ConfirmationCodeForm__ConfirmationWrapper-sc-1ois2aw-0 efWDGZ"
+        style="margin: 0px; padding: 0px;"
+      >
+        <div
+          class="StyledInput__StyledInputWrapper-sc-fkf055-0 hOmQjA"
+        >
+          <label
+            class="StyledInput__StyledInputLabel-sc-fkf055-2 gizmBW"
+          >
+            <input
+              class="StyledInput__StyledInputInput-sc-fkf055-1 ejdHNL"
+              maxlength="8"
+              name="confirmationCode"
+              placeholder="Confirmation Code"
+              style="border-radius: 6px; cursor: text; line-height: 30px; padding: 0px 12px; text-align: left; text-transform: none; width: 240px;"
+              type="text"
+              value=""
+            />
+          </label>
+        </div>
+      </div>
+      <div
+        class="ConfirmationCodeForm__ConfirmationWrapper-sc-1ois2aw-0 efWDGZ"
+        style="width: 100%; margin: 0px; padding: 16px 8px 16px 8px;"
+      >
+        <button
+          class="StyledButton__StyledButtonComponent-sc-8t4kac-0 fLkIsR"
+          data-testid="submit-signupconfirm"
+          disabled=""
+          style="margin: 0px;"
+          type="button"
+        >
+          Next
+        </button>
+      </div>
+      <div
+        class="ConfirmationCodeForm__ConfirmationInnerWrapper-sc-1ois2aw-2 jZUObA"
+        style="margin: 0px;"
+      >
+        <button
+          class="ConfirmationCodeForm__PrevButton-sc-1ois2aw-5 hihaLz"
+        >
+          Go Back
+        </button>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`Signup Confirmation Form Component should validate all params and render correctly 1`] = `
+<DocumentFragment>
+  <div
+    class="ConfirmationCodeForm__ConfirmationWrapper-sc-1ois2aw-0 efWDGZ"
+    style="align-items: center;"
+  >
+    <span
+      aria-label="Email Confirmation"
+      class="ConfirmationCodeForm__EmailImage-sc-1ois2aw-1 cyVRga"
+    />
+    <div
+      class="ConfirmationCodeForm__ConfirmationInnerWrapper-sc-1ois2aw-2 jZUObA"
+    >
+      <span
+        class="ConfirmationCodeForm__Text-sc-1ois2aw-3 eactoZ"
+        style="font-weight: 600; margin: 0px;"
+      >
+        Enter Confirmation Code
+      </span>
+    </div>
+    <div
+      class="ConfirmationCodeForm__ConfirmationInnerWrapper-sc-1ois2aw-2 jZUObA"
+    >
+      <span
+        class="ConfirmationCodeForm__Text-sc-1ois2aw-3 eactoZ"
+        style="max-width: 100%;"
+      >
+        Enter the confirmation code we sent to a@a.com.
+        <button
+          class="ConfirmationCodeForm__ResendButton-sc-1ois2aw-4 dvbEtO"
+        >
+          Resend Code
+        </button>
+      </span>
+    </div>
+  </div>
+  <div
+    class="ConfirmationCodeForm__ConfirmationWrapper-sc-1ois2aw-0 efWDGZ"
+  >
+    <div
+      class="ConfirmationCodeForm__ConfirmationInnerWrapper-sc-1ois2aw-2 jZUObA"
+      style="align-items: center; margin: 8px 0px; padding: 0px 40px;"
+    >
+      <div
+        class="ConfirmationCodeForm__ConfirmationWrapper-sc-1ois2aw-0 efWDGZ"
+        style="margin: 0px; padding: 0px;"
+      >
+        <div
+          class="StyledInput__StyledInputWrapper-sc-fkf055-0 hOmQjA"
+        >
+          <label
+            class="StyledInput__StyledInputLabel-sc-fkf055-2 gizmBW"
+          >
+            <input
+              class="StyledInput__StyledInputInput-sc-fkf055-1 ejdHNL"
+              maxlength="8"
+              name="confirmationCode"
+              placeholder="Confirmation Code"
+              style="border-radius: 6px; cursor: text; line-height: 30px; padding: 0px 12px; text-align: left; text-transform: none; width: 240px;"
+              type="text"
+              value="abcde12"
+            />
+          </label>
+        </div>
+      </div>
+      <div
+        class="ConfirmationCodeForm__ConfirmationWrapper-sc-1ois2aw-0 efWDGZ"
+        style="width: 100%; margin: 0px; padding: 16px 8px 16px 8px;"
+      >
+        <button
+          class="StyledButton__StyledButtonComponent-sc-8t4kac-0 jZJObc"
+          data-testid="submit-signupconfirm"
+          style="margin: 0px;"
+          type="button"
+        >
+          Next
+        </button>
+      </div>
+      <div
+        class="ConfirmationCodeForm__ConfirmationInnerWrapper-sc-1ois2aw-2 jZUObA"
+        style="margin: 0px;"
+      >
+        <button
+          class="ConfirmationCodeForm__PrevButton-sc-1ois2aw-5 hihaLz"
+        >
+          Go Back
+        </button>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;

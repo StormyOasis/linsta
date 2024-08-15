@@ -7,7 +7,7 @@ import StyledInput from "../../../../Components/Common/StyledInput";
 import StyledButton from "../../../../Components/Common/StyledButton";
 import LargeLogo from "../../../../Components/Common/LargeLogo";
 import LoginWithFB from "../../../../Components/Common/LoginWithFB";
-import { validatePassword } from "../../../../utils/utils";
+import { validateEmailPhone, validateFullName, validatePassword } from "../../../../utils/utils";
 
 const SignupForm = styled.form`
   display: flex;
@@ -17,7 +17,7 @@ const SignupForm = styled.form`
   vertical-align: baseline;
 `;
 
-type MainSignupFormProps = {
+export type SignupMainFormProps = {
     emailOrPhone: string;
     fullName: string;
     userName: string;
@@ -30,28 +30,9 @@ type MainSignupFormProps = {
     handleFormChange: any;
 };
 
-export default class MainSignupForm extends React.Component<MainSignupFormProps> {
+export default class SignupMainForm extends React.Component<SignupMainFormProps> {
     loginWithFacebookClicked = (event: React.MouseEventHandler<HTMLButtonElement>) => {
         window.alert("todo");
-    };
-
-    validateEmailPhone = (value: string): boolean => {
-        if (value == null) {
-            return false;
-        }
-
-        const phoneRegex = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/;
-        const emailRegex =
-            /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
-        return emailRegex.test(value) || phoneRegex.test(value);
-    };
-
-    validateFullName = (value: string): boolean => {
-        return (
-            value !== null &&
-            value.trim().length > 0 &&
-            value.trim().split(" ").length > 1
-        );
     };
 
     validateUserName = async (value: string): Promise<boolean> => {
@@ -67,11 +48,11 @@ export default class MainSignupForm extends React.Component<MainSignupFormProps>
         let result = false;
         switch (event.target.name) {
             case "emailOrPhone": {
-                result = this.validateEmailPhone(event.target.value);
+                result = validateEmailPhone(event.target.value);
                 break;
             }
             case "fullName": {
-                result = this.validateFullName(event.target.value);
+                result = validateFullName(event.target.value);
                 break;
             }
             case "password": {
@@ -185,6 +166,7 @@ export default class MainSignupForm extends React.Component<MainSignupFormProps>
                             Policy.
                         </div>
                         <StyledButton
+                            datatestid="submit-signupmain"
                             type="button"
                             disabled={!this.isFormValid()}
                             onClick={this.submitForm}

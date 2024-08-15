@@ -9,7 +9,7 @@ const StyledInputWrapper = styled.div`
   margin: 0 40px 5px 40px;
 `;
 
-const StyledInputInput = styled.input<{"data-testid"?: string}>`
+const StyledInputInput = styled.input`
   border: 2px solid ${props => props.theme['colors'].borderDefaultColor};
   background-color: ${props => props.theme['colors'].inputBackgroundColor};
   display: block;

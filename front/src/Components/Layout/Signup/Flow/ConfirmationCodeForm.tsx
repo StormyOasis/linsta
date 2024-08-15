@@ -4,7 +4,7 @@ import { styled } from "styled-components";
 import { getAccountsSendVerifyNotification, postAccountsAttempt } from "../../../../api/ServiceController";
 import StyledInput from "../../../../Components/Common/StyledInput";
 import StyledButton from "../../../../Components/Common/StyledButton";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { AppDispatch, actions } from "../../../../Components/Redux/redux";
 
 const ConfirmationWrapper = styled.div`
@@ -83,7 +83,7 @@ const PrevButton = styled.button`
     text-wrap: wrap;
 `;
 
-type ConfirmationCodeFormProps = {
+export type ConfirmationCodeFormProps = {
     userName: string;
     fullName: string;
     emailOrPhone: string;
@@ -183,6 +183,7 @@ const ConfirmationCodeForm: React.FC<ConfirmationCodeFormProps> = (props: Confir
                     </ConfirmationWrapper>
                     <ConfirmationWrapper style={{ width: "100%", margin: 0, padding: "16px 8px 16px 8px" }}>
                         <StyledButton
+                            datatestid="submit-signupconfirm"
                             type="button" text="Next" disabled={!props.confirmationCode_valid}
                             style={{ margin: 0 }} onClick={() => { submitForm(); }}>
                         </StyledButton>

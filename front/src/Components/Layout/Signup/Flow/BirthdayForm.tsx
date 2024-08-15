@@ -144,7 +144,7 @@ const ModalSectionWrapper = styled.div`
     pointer-events: all;
 `;
 
-type BirthdayFormProps = {
+export type BirthdayFormProps = {
     month: number;
     day: number;
     year: number;
@@ -316,7 +316,7 @@ export default class BirthdayForm extends React.Component<BirthdayFormProps> {
                         </Section>
                     </Section>
                     <Section style={{ width: "100%", padding: "16px 8px 16px 8px" }}>
-                        <StyledButton type="button" text="Next" disabled={!this.props.date_valid}
+                        <StyledButton datatestid="submit-signupbday" type="button" text="Next" disabled={!this.props.date_valid}
                             style={{ margin: 0 }} onClick={() => { this.props.changePage(1) }}>
                         </StyledButton>
                     </Section>
