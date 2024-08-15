@@ -22,10 +22,11 @@ exports[`StyledLink Component With Style Override 1`] = `
 </DocumentFragment>
 `;
 
-exports[`StyledLink Component no onclick 1`] = `
+exports[`StyledLink Component with click 1`] = `
 <DocumentFragment>
   <a
     class="StyledLink__StyledLinkWrapper-sc-1rgr01q-0 dLJqDG"
+    data-testid="styledlink-click"
     href="/"
   >
     Hello

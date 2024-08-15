@@ -7,6 +7,7 @@ export type StyledLinkProps = {
   children?: any;
   onClick?: any;
   styleOverride?:any;
+  datatestid?:string
 };
 
 const StyledLinkWrapper = styled(Link)`
@@ -21,7 +22,7 @@ const StyledLink: React.FC<StyledLinkProps> = (props: StyledLinkProps) => {
   const to = props.to ? props.to : "";
 
   return (
-    <StyledLinkWrapper to={to} onClick={onClick} className={props.styleOverride}>
+    <StyledLinkWrapper data-testid={props.datatestid} to={to} onClick={onClick} className={props.styleOverride}>
         {props.children}
     </StyledLinkWrapper>
   );

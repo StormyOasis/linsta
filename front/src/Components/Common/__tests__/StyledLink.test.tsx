@@ -33,13 +33,21 @@ test("StyledLink Component With Style Override", () => {
 })
 
 
-test("StyledLink Component no onclick", () => {
+test("StyledLink Component with click", async () => {
+    const cb = jest.fn();
     const r = render(
         <MemoryRouter>
             <Theme>
-                <StyledLink>Hello</StyledLink>
+                <StyledLink datatestid="styledlink-click" onClick={cb}>Hello</StyledLink>
             </Theme>
         </MemoryRouter>).asFragment();
 
-    expect(r).toMatchSnapshot();
+    let element = screen.queryByTestId("styledlink-click");
+    expect(element).toBeDefined();
+    if(element) {
+        await userEvent.click(element);
+        expect(r).toMatchSnapshot();
+        expect(cb).toHaveBeenCalled();
+    }
+
 })
