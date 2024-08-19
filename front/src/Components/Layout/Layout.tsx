@@ -2,7 +2,7 @@ import React from "react";
 import { styled } from "styled-components";
 import { Navigate, Route, Routes } from "react-router-dom";
 import LoginLayout from "../../Components/Layout/Login/LoginLayout";
-import { MainLayout } from "../../Components/Layout/Main/MainLayout";
+import MainLayout from "../../Components/Layout/Main/MainLayout";
 import Header from "../../Components/Layout/Header";
 import SignupLayout from "../../Components/Layout/Signup/SignupLayout";
 import ForgotPasswordLayout from "../../Components/Layout/Login/ForgotPasswordLayout";
