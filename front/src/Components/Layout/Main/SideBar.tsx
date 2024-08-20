@@ -24,11 +24,13 @@ const SideBarWrapper = styled.div`
     background-color: ${props => props.theme["colors"].backgroundColor};
     border-right: 1px solid ${props => props.theme["colors"].borderDefaultColor};
 
-    @media (min-width: 768px) and (max-width: 1279px) {
+    @media (min-width: ${props => props.theme["breakpoints"].md}px) and 
+            (max-width: ${props => props.theme["breakpoints"].lg - 1}px) {
+
         width: ${props => props.theme["sizes"].sideBarNavWidthNarrow};
     }
 
-    @media screen and (max-width: 767px) {
+    @media screen and (max-width: ${props => props.theme["breakpoints"].md-1}px) {
       width: 100%;
       height: auto;
       position: fixed;
@@ -37,19 +39,13 @@ const SideBarWrapper = styled.div`
     }
 `;
 
-const LogoWrapper = styled.div`
-    margin-bottom: 20px;
-    padding: 12px;
-    text-align:center;
-`;
-
 const NavWrapper = styled.div`
     width: 100%;
     flex-grow: 1;
     display: flex;
     flex-direction: column;
 
-    @media (max-width: 767px) {
+    @media (max-width: ${props => props.theme["breakpoints"].md-1}px) {
         display: inline-flex;
         flex-direction: row;
         justify-content: center;
@@ -77,50 +73,19 @@ const InnerNavLinkWrapper = styled.div`
         background-color: ${(props) => props.theme['colors'].navLinkHoverColor};
     }        
 
-    @media (min-width: 1280px) {
+    @media (min-width: ${props => props.theme["breakpoints"].lg-1}px) {
         width: 100%;
         align-items: center;
         flex-direction: row;
     }
 `;
 
-const IconWrapper = styled.div`
-    overflow: visible;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    justify-content: flex-start;
-    position: relative;
-`;
 
-const Icon = styled.div`
-    width: 24px;
-    height: 24px;
-    position: relative;
-    color: black;
-`;
+export type SideBarProps = {
+    createPostHandler: any;
+}
 
-const TextWrapper = styled.div`
-    padding-left: 16px;
-    overflow: hidden;
-    height: 24px;
-    width: fit-content;
-    display: flex;
-`;
-
-const Text = styled.span`
-    color: black;
-    font-size: 16px;
-    font-weight: 700;
-    word-wrap: break-word;
-    word-break: break-word;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    max-width: 100%;
-    align-content: center;
-`;
-
-const SideBar: React.FC = () => {
+const SideBar: React.FC<SideBarProps> = (props: SideBarProps) => {
     const matchesLargestBP = useMediaQuery({minWidth: 1280});
     const matchesSmallestBP = useMediaQuery({maxWidth: 767});
 
@@ -130,15 +95,15 @@ const SideBar: React.FC = () => {
         return (
             <NavLink to={to} onClick={onClickHandler}>
                 <InnerNavLinkWrapper>
-                    <IconWrapper>
-                        <Icon>
+                    <div className={styles.iconWrapper}>
+                        <div className={styles.iconWrapper}>
                             {iconElement}
-                        </Icon>
-                    </IconWrapper>
+                        </div>
+                    </div>
                     {matchesLargestBP &&
-                        <TextWrapper>
-                            <Text>{text}</Text>                                
-                        </TextWrapper>                            
+                        <div className={styles.textWrapper}>
+                            <span className={styles.text}>{text}</span>                                
+                        </div>                            
                     }
                 </InnerNavLinkWrapper>
             </NavLink>
@@ -148,11 +113,11 @@ const SideBar: React.FC = () => {
     return (
         <SideBarWrapper>
             {!matchesSmallestBP && 
-                <LogoWrapper>
+                <div className={styles.logoWrapper}>
                     <Link to="/">
                         {matchesLargestBP ? <LogoSVG /> : <MainSVG />}
                     </Link>
-                </LogoWrapper>
+                </div>
             }
             <NavWrapper>
                 {renderMenuItem("Home", "#", <HomeSVG/>, null)}
@@ -161,7 +126,7 @@ const SideBar: React.FC = () => {
                 {renderMenuItem("Reels", "/reels", <ReelsSVG/>, null)}
                 {renderMenuItem("Messages", "/messages", <MessagesSVG/>, null)}
                 {renderMenuItem("Notifications", "#", <NotificationsSVG/>, null)}
-                {renderMenuItem("Create", "#", <CreateSVG/>, null)}
+                {renderMenuItem("Create", "#", <CreateSVG/>, props.createPostHandler)}
             </NavWrapper>            
         </SideBarWrapper>
     );

@@ -1,12 +1,6 @@
 import React from "react";
 import styled from "styled-components";
 
-export type ModalProps = {
-  children?: any;
-  title?: string;
-  onClose: any;
-};
-
 const ModalWrapper = styled.div`
   align-items: center;
   display: flex;
@@ -177,7 +171,29 @@ export const EnableModal = (enable: boolean) => {
   }
 }
 
-export default class Modal extends React.Component<ModalProps> {
+export type MultiStepModalProps = {
+  steps: Array<{title: string, element: JSX.Element}>;
+  onClose: any;
+};
+
+type MultiStepModalState = {
+  stepNumber: number
+};
+
+export default class MultiStepModal extends React.Component<MultiStepModalProps, MultiStepModalState> {
+  
+  constructor(props: MultiStepModalProps) {
+    super(props);
+
+    if(props.steps.length == 0) {
+      throw new Error("Invalid multi step modal length");
+    }
+
+    this.state = {
+      stepNumber: 0
+    }
+  }
+
   onClose = (event: React.ChangeEvent<HTMLSelectElement>) => {
     this.props.onClose && this.props.onClose(event);
     EnableModal(false);
@@ -198,7 +214,7 @@ export default class Modal extends React.Component<ModalProps> {
                   <ModalTitleBarInnerWrapper>
                     <ModalTitleBarInnerWrapper2>
                       <ModalTitle>
-                        <div>{this.props.title}</div>
+                        <div>{this.props.steps[this.state.stepNumber].title}</div>
                       </ModalTitle>
                     </ModalTitleBarInnerWrapper2>
                     <ModalCloseWrapper>
@@ -213,12 +229,12 @@ export default class Modal extends React.Component<ModalProps> {
                   </ModalTitleBarInnerWrapper>
                 </ModalTitleBarWrapper>
                 <ModalContentWrapper>
-                  {this.props.children}
+                  {this.props.steps[this.state.stepNumber].element}
                 </ModalContentWrapper>
               </div>
             </ModalInnerWrapper2>
           </ModalInnerWrapper>
-        </ModalWrapper>
+        </ModalWrapper>      
       </>
     );
   }

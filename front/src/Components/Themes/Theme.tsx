@@ -22,7 +22,13 @@ const defaultTheme = {
     sizes: {
         sideBarNavWidthDefault: "244px",
         sideBarNavWidthNarrow: "72px",
-        sideBarNavBottomHeight: "50px",
+        sideBarNavBottomHeight: "50px"
+    },
+
+    breakpoints: {
+        sm: "576",
+        md: "768",
+        lg: "1280"
     }
 };
 
