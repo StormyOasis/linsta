@@ -1,4 +1,5 @@
 import React from "react";
+import { createPortal } from "react-dom";
 import styled from "styled-components";
 
 export type ModalProps = {
@@ -28,12 +29,12 @@ const ModalInnerWrapper = styled.div`
   display: block;
   flex-shrink: 1;
   margin: 20px;
-  max-width: 400px;
+  max-width: ${props => props.theme['sizes'].modalWidth};
   max-height: calc(100% - 40px);
   min-width: 260px;
   pointer-events: all;
   position: relative;
-  width: 400px;
+  width: ${props => props.theme['sizes'].modalWidth};
   border-radius: 12px;
   background-color: white;
 `;
@@ -58,7 +59,7 @@ const ModalTitleBarInnerWrapper = styled.div`
   height: 42px;
   pointer-events: all;
   position: relative;
-  width: 400px;
+  width: ${props => props.theme['sizes'].modalWidth};
 `;
 
 const ModalTitleBarInnerWrapper2 = styled.div`
@@ -73,7 +74,7 @@ const ModalTitleBarInnerWrapper2 = styled.div`
   justify-content: center;
   overflow: visible;
   pointer-events: all;
-  width: 400px;
+  width: ${props => props.theme['sizes'].modalWidth};
   position: absolute;
 `;
 
@@ -188,7 +189,12 @@ export default class Modal extends React.Component<ModalProps> {
   }
 
   override render() {
-    return (
+    const cont = document.getElementById("modalContainer");
+    if(cont == null) {
+      throw new Error("No modal container");
+    }
+
+    return createPortal(
       <>
         <ModalWrapper role="dialog">
           <ModalInnerWrapper>
@@ -220,6 +226,6 @@ export default class Modal extends React.Component<ModalProps> {
           </ModalInnerWrapper>
         </ModalWrapper>
       </>
-    );
+    , cont);
   }
 }

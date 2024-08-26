@@ -24,6 +24,25 @@ export const validateFullName = (value: string): boolean => {
     );
 };
 
+export const isVideoFileFromPath = (path: string): boolean => {
+    if(path == null || path.trim().length < 4) {
+        throw new Error("Invalid path");
+    }
+
+    const validVideoExtentions:string[] = ["avif", "ogm", "wmv", "mpg", "webm", "ogv", "mov", "asx", "mpeg", "mp4", "m4v", "avi"];
+    const ext = path.toLowerCase().substring(path.lastIndexOf(".") + 1);
+    
+    return validVideoExtentions.includes(ext);    
+}
+
+export const isVideoFileFromType = (type: string): boolean => {
+    if(type == null || type.trim().length < 4) {
+        throw new Error("Invalid type");
+    }
+        
+    return type.toLowerCase().includes("video");
+}
+
 export type HistoryType = {
     navigate: any,
     location: any,

@@ -1,5 +1,7 @@
 import React from "react";
+import { createPortal } from "react-dom";
 import styled from "styled-components";
+import StyledLink from "./StyledLink";
 
 const ModalWrapper = styled.div`
   align-items: center;
@@ -22,14 +24,14 @@ const ModalInnerWrapper = styled.div`
   display: block;
   flex-shrink: 1;
   margin: 20px;
-  max-width: 400px;
+  max-width: ${props => props.theme['sizes'].modalWidth};
   max-height: calc(100% - 40px);
   min-width: 260px;
   pointer-events: all;
   position: relative;
-  width: 400px;
+  width: ${props => props.theme['sizes'].modalWidth};;
   border-radius: 12px;
-  background-color: white;
+  background-color: ${props => props.theme['colors'].backgroundColor};
 `;
 
 const ModalInnerWrapper2 = styled.div`  
@@ -48,11 +50,11 @@ const ModalTitleBarWrapper = styled.div`
 const ModalTitleBarInnerWrapper = styled.div`
   align-items: center;
   display: block;
-  border-bottom: 1px solid rgb(220, 220, 220);
+  border-bottom: 1px solid ${props => props.theme['colors'].borderDefaultColor};
   height: 42px;
   pointer-events: all;
   position: relative;
-  width: 400px;
+  width: ${props => props.theme['sizes'].modalWidth};
 `;
 
 const ModalTitleBarInnerWrapper2 = styled.div`
@@ -67,7 +69,7 @@ const ModalTitleBarInnerWrapper2 = styled.div`
   justify-content: center;
   overflow: visible;
   pointer-events: all;
-  width: 400px;
+  width: ${props => props.theme['sizes'].modalWidth};
   position: absolute;
 `;
 
@@ -111,7 +113,7 @@ const ModalClose = styled.div`
 
 const ModalCloseButton = styled.button`
   align-items: center;
-  background-color: white;
+  background-color: ${props => props.theme['colors'].backgroundColor};
   border: none;
   cursor: pointer;
   display: flex;
@@ -144,7 +146,7 @@ export const ModalContentWrapper = styled.div`
 
 export const ModalSectionWrapper = styled.div`
     align-content: stretch;
-    align-items: stretch;
+    align-items: center;
     display: flex;
     flex-direction: column;
     flex-grow: 0;
@@ -154,6 +156,22 @@ export const ModalSectionWrapper = styled.div`
     position: relative;
     pointer-events: all;
 `;
+
+const ModalFooter = styled.div`
+  padding: 10px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  border-top: 1px solid ${props => props.theme['colors'].borderDefaultColor};
+`;
+
+const PrevButton = styled.div`
+  background: url('/public/images/backarrow.svg') no-repeat;
+  cursor: pointer;
+  height: 17px;
+  width: 22px;
+`;
+
 
 export const EnableModal = (enable: boolean) => {
   const cont = document.getElementById("modalContainer");
@@ -166,31 +184,27 @@ export const EnableModal = (enable: boolean) => {
     }
     else {
       cont.style.height = "0%";
-      sectionCont.style.pointerEvents = "auto";      
+      sectionCont.style.pointerEvents = "auto";
     }
   }
 }
 
 export type MultiStepModalProps = {
-  steps: Array<{title: string, element: JSX.Element}>;
+  steps: Array<{ title: string, options: any, element: JSX.Element, onNext?: any, onPrev?: any }>;
   onClose: any;
+  stepNumber: number;
 };
 
 type MultiStepModalState = {
-  stepNumber: number
 };
 
 export default class MultiStepModal extends React.Component<MultiStepModalProps, MultiStepModalState> {
-  
+
   constructor(props: MultiStepModalProps) {
     super(props);
 
-    if(props.steps.length == 0) {
+    if (props.steps.length === 0 || props.stepNumber < 0 || props.stepNumber >= props.steps.length) {
       throw new Error("Invalid multi step modal length");
-    }
-
-    this.state = {
-      stepNumber: 0
     }
   }
 
@@ -204,7 +218,14 @@ export default class MultiStepModal extends React.Component<MultiStepModalProps,
   }
 
   override render() {
-    return (
+    const cont = document.getElementById("modalContainer");
+    if (cont == null) {
+      throw new Error("No modal container");
+    }
+
+    const step = this.props.steps[this.props.stepNumber];
+
+    return createPortal(
       <>
         <ModalWrapper role="dialog">
           <ModalInnerWrapper>
@@ -214,7 +235,7 @@ export default class MultiStepModal extends React.Component<MultiStepModalProps,
                   <ModalTitleBarInnerWrapper>
                     <ModalTitleBarInnerWrapper2>
                       <ModalTitle>
-                        <div>{this.props.steps[this.state.stepNumber].title}</div>
+                        <div>{step.title}</div>
                       </ModalTitle>
                     </ModalTitleBarInnerWrapper2>
                     <ModalCloseWrapper>
@@ -229,13 +250,18 @@ export default class MultiStepModal extends React.Component<MultiStepModalProps,
                   </ModalTitleBarInnerWrapper>
                 </ModalTitleBarWrapper>
                 <ModalContentWrapper>
-                  {this.props.steps[this.state.stepNumber].element}
+                  {step.element}
                 </ModalContentWrapper>
               </div>
+              {step.options.showFooter &&
+                <ModalFooter>
+                  <PrevButton onClick={step?.onPrev} />
+                  <StyledLink to="#" onClick={step?.onNext}>{step.options.footerNextPageText}</StyledLink>
+                </ModalFooter>
+              }
             </ModalInnerWrapper2>
           </ModalInnerWrapper>
-        </ModalWrapper>      
-      </>
-    );
+        </ModalWrapper>
+      </>, cont);
   }
 }

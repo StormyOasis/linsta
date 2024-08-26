@@ -113,7 +113,7 @@ const LoginLayout: React.FC<LoginLayoutProps> = (props: LoginLayoutProps) => {
                         <LoginWithFB top={true} onClick={loginWithFacebookClicked}>Log in with Facebook</LoginWithFB>
                     </div> 
                     <div>
-                        <StyledLink to="/forgot" styleOverride={styles.default.forgotWrapper}>Forgot Password?</StyledLink>
+                        <StyledLink to="/forgot" className={styles.default.forgotWrapper}>Forgot Password?</StyledLink>
                     </div>
                 </LoginForm>
             </Theme>
