@@ -1,3 +1,15 @@
+export type HistoryType = {
+    navigate: any,
+    location: any,
+    isServer: boolean
+};
+
+export const historyUtils:HistoryType = {
+    navigate: null,
+    location: null,
+    isServer: true
+}
+
 export const validatePassword = (value: string): boolean => {
     const regex:RegExp =
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@.#$!%*?&^])[A-Za-z\d@.#$!%*?&]{8,15}$/;
@@ -43,14 +55,24 @@ export const isVideoFileFromType = (type: string): boolean => {
     return type.toLowerCase().includes("video");
 }
 
-export type HistoryType = {
-    navigate: any,
-    location: any,
-    isServer: boolean
-};
+export const base64ToBlob = (base64String, contentType, outFileName) => {
+    const sliceSize = 512;
+  
+    var byteCharacters = atob(base64String);
+    var byteArrays = [];
+  
+    for (var offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+      var slice = byteCharacters.slice(offset, offset + sliceSize);
+  
+      var byteNumbers = new Array(slice.length);
+      for (var i = 0; i < slice.length; i++) {
+        byteNumbers[i] = slice.charCodeAt(i);
+      }
+  
+      var byteArray = new Uint8Array(byteNumbers);
+  
+      byteArrays.push(byteArray);
+    }
 
-export const historyUtils:HistoryType = {
-    navigate: null,
-    location: null,
-    isServer: true
+    return new File(byteArrays, outFileName, { type: contentType });
 }

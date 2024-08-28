@@ -20,12 +20,17 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
     const [imageUrls, setImageUrls] = useState<string[]>([]);
     const [editData, setEditData] = useState<EditData[]>([]);
     const [files, setFiles] = useState([]);    
+    const [hasFileRejections, setHasFileRejections] = useState(false);    
     const [stepNumber, setStepNumber] = useState(0);
 
-    const onSetFiles = (files: any) => {
-        if(files.length === 0) {
+    const onSetFiles = (rejectionsCount:number, files: any) => {
+        if(rejectionsCount > 0) {
+            setHasFileRejections(true);
             return;
         }
+        if(files.length === 0) {
+            return; //should never happen
+        }        
         
         setFiles(files);
         setStepNumber(stepNumber + 1);
@@ -72,15 +77,17 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
             }
             newEditorData[index] = data;
         } 
-        
+
         setEditData(newEditorData);
     }
 
-    const onEditedFile = (updatedEditData: EditData, newUrl: string, newFilterName: string) => {        
+    const onEditedFile = (updatedEditData: EditData, newUrl: string, newFilterName: string) => {            
         const newEditData = [...editData];
         const oldBlob = newEditData[updatedEditData.index].editedUrl;
         newEditData[updatedEditData.index].editedUrl = newUrl;
         newEditData[updatedEditData.index].filterName = newFilterName;
+
+        console.log(updatedEditData, oldBlob, newUrl);
 
         if(oldBlob !== newEditData[updatedEditData.index].originalUrl && oldBlob !== newUrl) {
             // Want to revoke the url to any blobs created unless it is the original image
@@ -100,12 +107,13 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
         setCropData([]);
         setImageUrls([]);
         setEditData([]);
+        setHasFileRejections(false);
     }
 
     const steps = [
         {
             title: "Create New Post",
-            element: <CreatePostModalSelectMedia setFiles={onSetFiles} />,
+            element: <CreatePostModalSelectMedia setFiles={onSetFiles} hasFileRejections={hasFileRejections} />,
             options: {
                 showFooter: false,
             },
@@ -139,7 +147,9 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
     
 
     return (
-        <MultiStepModal steps={steps} onClose={props.onClose} stepNumber={stepNumber} />
+        <>
+            <MultiStepModal steps={steps} onClose={props.onClose} stepNumber={stepNumber} />
+        </>
     );
 }
 
