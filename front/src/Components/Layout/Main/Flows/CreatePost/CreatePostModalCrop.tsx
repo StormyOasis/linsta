@@ -1,11 +1,8 @@
-import React, { useCallback, useEffect, useState } from "react";
-import Theme from "../../../../Themes/Theme";
+import React, { useState } from "react";
 import styled from "styled-components";
-import * as styles from '../../Main.module.css';
 import Cropper, { Area, Point } from 'react-easy-crop';
 import { isVideoFileFromType } from "../../../../../utils/utils";
 import { ModalSectionWrapper } from "../../../../../Components/Common/MultiStepModal";
-import getCroppedImg from "../../../../../utils/cropImage";
 import Slider from "../../../../../Components/Common/Slider";
 import CropSVG from "/public/images/crop.svg";
 import OneToOneSVG from "/public/images/1to1.svg";
@@ -17,7 +14,8 @@ import ImageSVG from "/public/images/image.svg";
 
 const CropContainer = styled.div`
     height: ${props => props.theme['sizes'].cropperHeight};
-    width: calc(${props => props.theme['sizes'].modalWidth} - 40px);
+    width: calc(${props => props.theme['sizes'].defaultModalWidth} - 40px);
+    max-width: calc(${props => props.theme['sizes'].maxModalWidth} - 40px);
 `;
 
 const CropperWrapper = styled.div`
@@ -257,6 +255,8 @@ const CreatePostModalCropper: React.FC<CropperProps> = (props: CropperProps) => 
         setAspect(props.cropData.aspect);
         setCroppedAreaPixels(props.cropData.croppedAreaPixels);
         setIsAspectMenuOpen(false);
+        
+        setIsFlaggedForReset(false);
     }
 
     const getImageDimensions = async (blob: string):Promise<{width: number, height:number}> => {
@@ -325,7 +325,6 @@ const CreatePostModalCropper: React.FC<CropperProps> = (props: CropperProps) => 
     // update the new image's state with now bad data
     if(isFlaggedForReset) {
         resetStateToProps();
-        setIsFlaggedForReset(false);
     }    
 
     const aspectRatioValue = (aspect.value !== 0) ? aspect.value : (width / height);

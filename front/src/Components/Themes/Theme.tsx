@@ -27,7 +27,10 @@ const defaultTheme = {
         sideBarNavWidthNarrow: "72px",
         sideBarNavBottomHeight: "50px",
         cropperHeight: "275px",
-        modalWidth: "400px",
+        defaultModalWidth: "450px",
+        maxModalWidth: "600px",
+        maxModalHeight: "350px",
+        minModalHeight: "300px",
     },
 
     breakpoints: {

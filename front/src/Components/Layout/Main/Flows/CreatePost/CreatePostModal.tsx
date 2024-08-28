@@ -8,6 +8,7 @@ import CreatePostModalCrop, { CropData, defaultCropData } from "./CreatePostModa
 import CreatePostModalSelectMedia from "./CreatePostModalSelectMedia";
 import { isVideoFileFromType } from "../../../../../utils/utils";
 import getCroppedImg from "../../../../../utils/cropImage";
+import CreatePostModalEdit, { EditData } from "./CreatePostModalEdit";
 
 
 export type CreatePostModalProps = {
@@ -17,6 +18,7 @@ export type CreatePostModalProps = {
 const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalProps) => {
     const [cropData, setCropData] = useState<CropData[]>([]);
     const [imageUrls, setImageUrls] = useState<string[]>([]);
+    const [editData, setEditData] = useState<EditData[]>([]);
     const [files, setFiles] = useState([]);    
     const [stepNumber, setStepNumber] = useState(0);
 
@@ -40,7 +42,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
             let imageUrl = null;
 
             if(isVideo) {
-                imageUrl = URL.createObjectURL(file.blob);
+                imageUrl = file.blob;
             } else {
                 imageUrl = await getCroppedImg(file.blob, cropData[index].croppedAreaPixels, cropData[index].rotation);    
             }
@@ -49,15 +51,55 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
         }
 
         setImageUrls(newImageUrls);
-    };  
+        initEditorData(newImageUrls);
+    };
+
+    const initEditorData = (newImageUrls: string[]) => {
+        const newEditorData = [];
+        
+        for(let idx in files) {
+            const index:number = parseInt(idx);
+            const file:any = files[index];
+
+            const isVideoFile:boolean = isVideoFileFromType(file.type);
+            
+            const data:EditData = {
+                isVideoFile,
+                index,
+                originalUrl: newImageUrls[index],
+                editedUrl: newImageUrls[index],
+                filterName: 'original'
+            }
+            newEditorData[index] = data;
+        } 
+        
+        setEditData(newEditorData);
+    }
+
+    const onEditedFile = (updatedEditData: EditData, newUrl: string, newFilterName: string) => {        
+        const newEditData = [...editData];
+        const oldBlob = newEditData[updatedEditData.index].editedUrl;
+        newEditData[updatedEditData.index].editedUrl = newUrl;
+        newEditData[updatedEditData.index].filterName = newFilterName;
+
+        if(oldBlob !== newEditData[updatedEditData.index].originalUrl && oldBlob !== newUrl) {
+            // Want to revoke the url to any blobs created unless it is the original image
+            // Or if it matches the new one for some reason
+            URL.revokeObjectURL(oldBlob);
+        }
+
+        setEditData(newEditData);
+    }
     
     const clearAllFileData = () => {
         files.forEach((file:any) => URL.revokeObjectURL(file.blob));
         imageUrls.forEach((imageUrl:string) => URL.revokeObjectURL(imageUrl));
+        editData.forEach((data:EditData) => URL.revokeObjectURL(data.editedUrl));
 
         setFiles([]);
         setCropData([]);
         setImageUrls([]);
+        setEditData([]);
     }
 
     const steps = [
@@ -77,7 +119,17 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
             },
             onNext: async () => {await onCrop();  setStepNumber(stepNumber + 1)},
             onPrev: () => {clearAllFileData(); setStepNumber(stepNumber - 1)}
-        }
+        },
+        {
+            title: "Edit",
+            element: <CreatePostModalEdit editData={editData} onEditedFile={onEditedFile} />,
+            options: {
+                showFooter: true,
+                footerNextPageText: "Next"
+            },
+            onNext: async () => {setStepNumber(stepNumber + 1)},
+            onPrev: () => {setStepNumber(stepNumber - 1)}            
+        },        
     ]; 
 
     useEffect(() => {

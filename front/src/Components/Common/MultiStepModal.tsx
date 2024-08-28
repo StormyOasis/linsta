@@ -24,12 +24,12 @@ const ModalInnerWrapper = styled.div`
   display: block;
   flex-shrink: 1;
   margin: 20px;
-  max-width: ${props => props.theme['sizes'].modalWidth};
+  max-width: ${props => props.theme['sizes'].maxModalWidth};
   max-height: calc(100% - 40px);
   min-width: 260px;
   pointer-events: all;
   position: relative;
-  width: ${props => props.theme['sizes'].modalWidth};;
+  width: 100%;
   border-radius: 12px;
   background-color: ${props => props.theme['colors'].backgroundColor};
 `;
@@ -54,7 +54,7 @@ const ModalTitleBarInnerWrapper = styled.div`
   height: 42px;
   pointer-events: all;
   position: relative;
-  width: ${props => props.theme['sizes'].modalWidth};
+  width: 100%;
 `;
 
 const ModalTitleBarInnerWrapper2 = styled.div`
@@ -69,7 +69,7 @@ const ModalTitleBarInnerWrapper2 = styled.div`
   justify-content: center;
   overflow: visible;
   pointer-events: all;
-  width: ${props => props.theme['sizes'].modalWidth};
+  width: 100%;
   position: absolute;
 `;
 
@@ -230,7 +230,7 @@ export default class MultiStepModal extends React.Component<MultiStepModalProps,
         <ModalWrapper role="dialog">
           <ModalInnerWrapper>
             <ModalInnerWrapper2>
-              <div style={{ display: "flex", flexDirection: "column", height: "100%", maxWidth: "100%" }}>
+              <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
                 <ModalTitleBarWrapper>
                   <ModalTitleBarInnerWrapper>
                     <ModalTitleBarInnerWrapper2>

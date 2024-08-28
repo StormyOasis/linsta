@@ -38,6 +38,7 @@ const renderHtml = (title: string, styles: any, html: any, preloadState: any) =>
             </script>          
             <script type="application/javascript" src="main.bundle.js"></script>
             <script type="application/javascript" src="vendor.bundle.js"></script>
+            <script crossorigin type="application/javascript" src="public/Pixels.js"></script>
         </body>
     </html>`;
 };
