@@ -1,15 +1,12 @@
-import React, { useEffect, useState } from "react";
-import Theme from "../../../../../Components/Themes/Theme";
-import styled from "styled-components";
-import * as styles from '../../Main.module.css';
+import React, { RefObject, useEffect, useState } from "react";
 
 import MultiStepModal from "../../../../../Components/Common/MultiStepModal";
 import CreatePostModalCrop, { CropData, defaultCropData } from "./CreatePostModalCrop";
 import CreatePostModalSelectMedia from "./CreatePostModalSelectMedia";
-import { isVideoFileFromType } from "../../../../../utils/utils";
+import { base64ToBlob, blobToBase64, isVideoFileFromType } from "../../../../../utils/utils";
 import getCroppedImg from "../../../../../utils/cropImage";
 import CreatePostModalEdit, { EditData } from "./CreatePostModalEdit";
-
+import { clear, del, get, set } from 'idb-keyval';
 
 export type CreatePostModalProps = {
     onClose: any
@@ -59,7 +56,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
         initEditorData(newImageUrls);
     };
 
-    const initEditorData = (newImageUrls: string[]) => {
+    const initEditorData = async (newImageUrls: string[]) => {
         const newEditorData = [];
         
         for(let idx in files) {
@@ -76,26 +73,79 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
                 filterName: 'original'
             }
             newEditorData[index] = data;
+
+            if(!isVideoFile) {
+                set(newImageUrls[index], await blobToBase64(newImageUrls[index]));
+            }             
         } 
 
         setEditData(newEditorData);
     }
 
-    const onEditedFile = (updatedEditData: EditData, newUrl: string, newFilterName: string) => {            
+    const onEditedFile = async (updatedEditData: EditData, newUrl: string, newFilterName: string) => {            
         const newEditData = [...editData];
         const oldBlob = newEditData[updatedEditData.index].editedUrl;
         newEditData[updatedEditData.index].editedUrl = newUrl;
         newEditData[updatedEditData.index].filterName = newFilterName;
 
-        console.log(updatedEditData, oldBlob, newUrl);
-
         if(oldBlob !== newEditData[updatedEditData.index].originalUrl && oldBlob !== newUrl) {
             // Want to revoke the url to any blobs created unless it is the original image
             // Or if it matches the new one for some reason
-            URL.revokeObjectURL(oldBlob);
+            await del(oldBlob);
+            URL.revokeObjectURL(oldBlob);                        
         }
 
+        // add to the image cache in indexdb
+        if(!updatedEditData.isVideoFile) {
+            set(newUrl, await blobToBase64(newUrl));
+        }
+        
         setEditData(newEditData);
+    }
+
+    const loadImage = (updatedEditData: EditData, url: string, imageRef:RefObject<HTMLImageElement>):string => {
+        (async () => {
+            let imageSrc = url;
+            try {
+                const result = await fetch(imageSrc);
+                if(result.status === 200) {
+                    return await result.blob();
+                }
+
+            } catch (err) {
+                // assume it's a 404
+                // load the image from the cache
+                const value = await get(url);
+                const file = base64ToBlob(value, url);
+                if(file === null) {
+                    throw new Error("Invalid cache key");
+                }
+
+                const newUrl = URL.createObjectURL(file);
+                
+                // update the state
+                const newEditData = [...editData];
+                const oldBlob = newEditData[updatedEditData.index].editedUrl;
+                newEditData[updatedEditData.index].editedUrl = newUrl;
+
+                if(oldBlob !== newEditData[updatedEditData.index].originalUrl && oldBlob !== newUrl) {
+                    // Want to revoke the url to any blobs created unless it is the original image
+                    // Or if it matches the new one for some reason
+                    await del(oldBlob);
+                    URL.revokeObjectURL(oldBlob);                        
+                }
+
+                setEditData(newEditData);  
+
+                if(imageRef && imageRef.current) {
+                    imageRef.current.src = newUrl;             
+                }
+            }
+
+            return null;
+        })();
+
+        return url;
     }
     
     const clearAllFileData = () => {
@@ -108,6 +158,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
         setImageUrls([]);
         setEditData([]);
         setHasFileRejections(false);
+        clear(); //clear out the indexdb cache
     }
 
     const steps = [
@@ -130,7 +181,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
         },
         {
             title: "Edit",
-            element: <CreatePostModalEdit editData={editData} onEditedFile={onEditedFile} />,
+            element: <CreatePostModalEdit editData={editData} onEditedFile={onEditedFile} loadImage={loadImage}/>,
             options: {
                 showFooter: true,
                 footerNextPageText: "Next"

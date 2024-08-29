@@ -1,9 +1,10 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { Ref, RefObject, useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { ModalSectionWrapper } from "../../../../../Components/Common/MultiStepModal";
 import LeftArrowSVG from "/public/images/left_arrow.svg";
 import RightArrowSVG from "/public/images/right_arrow.svg";
 import Slider from "../../../../../Components/Common/Slider";
+import { get } from "idb-keyval";
 
 const EditContainer = styled.div`
     display: flex;
@@ -126,6 +127,7 @@ export type EditData = {
 export type CreatePostModalEditProps = {
     editData: EditData[];
     onEditedFile: (editData: EditData, newUrl: string, newFilter: string) => void;   
+    loadImage: (editData:EditData, newUrl: string, imageRef:RefObject<HTMLImageElement>) => string;
 }
 
 const CreatePostModalEdit: React.FC<CreatePostModalEditProps> = (props: CreatePostModalEditProps) => {
@@ -152,6 +154,7 @@ const CreatePostModalEdit: React.FC<CreatePostModalEditProps> = (props: CreatePo
                 onPrevFile={onPrevFile}
                 editData={props.editData[currentFileIndex]}
                 onEditedFile={props.onEditedFile}
+                loadImage={props.loadImage}
             />
         </>
     );
@@ -164,6 +167,7 @@ type CreatePostModalEditorProps = {
     onNextFile: () => void;
     onPrevFile: () => void;    
     onEditedFile: (editData:EditData, newUrl:string, newFilter: string) => void;
+    loadImage: (editData:EditData, newUrl: string, imageRef:RefObject<HTMLImageElement>) => string;
 }
 
 const CreatePostModalEditor: React.FC<CreatePostModalEditorProps> = (props: CreatePostModalEditorProps) => {
@@ -409,13 +413,14 @@ const CreatePostModalEditor: React.FC<CreatePostModalEditorProps> = (props: Crea
 
     if(isFlaggedForReset) {
         resetState();        
-    }   
+    } 
     
     return (
         <ModalSectionWrapper>
             <EditContainer>
                 <ImageContainer>
-                    {!props.editData.isVideoFile && <PreviewImage src={props.editData.editedUrl} ref={imageRef} />}
+                    {!props.editData.isVideoFile && 
+                        <PreviewImage ref={imageRef} src={props.loadImage(props.editData, props.editData.editedUrl, imageRef)} />}
                     {props.editData.isVideoFile && <video src={props.editData.originalUrl}></video>}
 
                     {props.hasPrev && 

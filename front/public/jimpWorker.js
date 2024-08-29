@@ -69,7 +69,7 @@ self.addEventListener("message", (e) => {
       self.postMessage({
         prevUrl: e.data.url,
         newUrl: URL.createObjectURL(
-          base64ToBlob(src.substring(src.indexOf(',') + 1), img._originalMime, "out"))
+          base64ToBlob(src.substring(src.indexOf(',') + 1), img._originalMime, e.data.url))
       });
     });
   }).catch((err) => console.error(err))

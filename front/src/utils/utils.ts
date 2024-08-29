@@ -55,7 +55,17 @@ export const isVideoFileFromType = (type: string): boolean => {
     return type.toLowerCase().includes("video");
 }
 
-export const base64ToBlob = (base64String, contentType, outFileName) => {
+export const base64ToBlob = (base64String: string, outFileName: string):File|null => {
+    if(base64String === null || base64String.length === 0)
+        return null;
+
+    const contentType = base64String.substring(5, base64String.indexOf(';'));
+    const data = base64String.substring(base64String.indexOf(",") + 1);
+
+    return base64ToBlobEx(data, contentType, outFileName);
+}
+
+export const base64ToBlobEx = (base64String: string, contentType: string, outFileName: string) => {
     const sliceSize = 512;
   
     var byteCharacters = atob(base64String);
@@ -76,3 +86,19 @@ export const base64ToBlob = (base64String, contentType, outFileName) => {
 
     return new File(byteArrays, outFileName, { type: contentType });
 }
+
+export const blobToBase64 = async (blob) => {
+    blob = await createBlob(blob);
+    
+    return new Promise((resolve, _reject) => {
+        const reader = new FileReader();        
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(blob);
+      });    
+}
+
+export const createBlob = async (url) => {
+    const response = await fetch(url);
+    const data = await response.blob();
+    return data;
+  }
