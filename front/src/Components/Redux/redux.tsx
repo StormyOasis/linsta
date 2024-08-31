@@ -15,6 +15,7 @@ export const buildStore = (initialState?: any) => {
   actions.authActions = authActions;
 
   const store = configureStore({
+    devTools: true,
     reducer: {
       auth: authReducer,
     },

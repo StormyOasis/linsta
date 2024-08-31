@@ -1,10 +1,10 @@
-import React, { Ref, RefObject, useEffect, useRef, useState } from "react";
+import React, { RefObject, useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { ModalSectionWrapper } from "../../../../../Components/Common/MultiStepModal";
 import LeftArrowSVG from "/public/images/left_arrow.svg";
 import RightArrowSVG from "/public/images/right_arrow.svg";
 import Slider from "../../../../../Components/Common/Slider";
-import { get } from "idb-keyval";
+import { EditData } from "./CreatePostModal";
 
 const EditContainer = styled.div`
     display: flex;
@@ -115,14 +115,6 @@ const FilterText = styled.div<{selected?: boolean}>`
     font-weight: ${props => props.selected ? 700 : 400};
     margin-left: 10px;
 `;
-
-export type EditData = {
-    isVideoFile: boolean;
-    index: number;
-    originalUrl: string;
-    editedUrl: string;
-    filterName: string;
-}
 
 export type CreatePostModalEditProps = {
     editData: EditData[];

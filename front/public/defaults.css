@@ -21,3 +21,11 @@ body {
         transform-origin: center
     }
 }
+
+.EmojiPickerReact * {
+    --epr-emoji-size: 20px;
+    --epr-category-label-height: 20px;    
+    --epr-horizontal-padding: 5px;
+    --epr-emoji-padding: 5px;
+    --epr-emoji-fullsize: calc(var(--epr-emoji-size) + var(--epr-emoji-padding)* 2);    
+}
