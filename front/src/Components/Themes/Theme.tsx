@@ -31,6 +31,8 @@ const defaultTheme = {
         maxModalWidth: "600px",
         maxModalHeight: "350px",
         minModalHeight: "300px",
+        minPostTextEditorHeight: "150px",
+        maxPostTextEditorHeight: "170px"
     },
 
     breakpoints: {
@@ -38,6 +40,11 @@ const defaultTheme = {
         md: "768",
         lg: "1280"
     }
+};
+
+export const LexicalEditorTheme = {
+    ltr: 'ltr',
+    rtl: 'rtl',
 };
 
 const Theme = ({children}: any) => {

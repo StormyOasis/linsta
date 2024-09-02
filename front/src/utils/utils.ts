@@ -87,7 +87,7 @@ export const base64ToBlobEx = (base64String: string, contentType: string, outFil
     return new File(byteArrays, outFileName, { type: contentType });
 }
 
-export const blobToBase64 = async (blob) => {
+export const blobToBase64 = async (blob:any) => {
     blob = await createBlob(blob);
     
     return new Promise((resolve, _reject) => {
@@ -97,8 +97,9 @@ export const blobToBase64 = async (blob) => {
       });    
 }
 
-export const createBlob = async (url) => {
+export const createBlob = async (url: string) => {
     const response = await fetch(url);
     const data = await response.blob();
     return data;
-  }
+}
+

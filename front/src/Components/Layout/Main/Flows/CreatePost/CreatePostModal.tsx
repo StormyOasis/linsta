@@ -5,11 +5,20 @@ import CreatePostModalCrop, { CropData, defaultCropData } from "./CreatePostModa
 import CreatePostModalSelectMedia from "./CreatePostModalSelectMedia";
 import { base64ToBlob, blobToBase64, isVideoFileFromType } from "../../../../../utils/utils";
 import getCroppedImg from "../../../../../utils/cropImage";
-import CreatePostModalEdit, { EditData } from "./CreatePostModalEdit";
+import CreatePostModalEdit from "./CreatePostModalEdit";
 import { clear, del, get, set } from 'idb-keyval';
+import CreatePostModalFinal from "./CreatePostModalFinal";
 
 export type CreatePostModalProps = {
     onClose: any
+}
+
+export type EditData = {
+    isVideoFile: boolean;
+    index: number;
+    originalUrl: string;
+    editedUrl: string;
+    filterName: string;
 }
 
 const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalProps) => {
@@ -147,6 +156,10 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
 
         return url;
     }
+
+    const submitPost = () => {
+        
+    }
     
     const clearAllFileData = () => {
         files.forEach((file:any) => URL.revokeObjectURL(file.blob));
@@ -188,7 +201,18 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
             },
             onNext: async () => {setStepNumber(stepNumber + 1)},
             onPrev: () => {setStepNumber(stepNumber - 1)}            
-        },        
+        },
+        {
+            title: "Create Post",
+            element: <CreatePostModalFinal editData={editData} />,
+            options: {
+                showFooter: true,
+                footerNextPageText: "Share"
+            },
+            onNext: async () => submitPost(),
+            onPrev: () => {setStepNumber(stepNumber - 1)}                 
+                        
+        }      
     ]; 
 
     useEffect(() => {

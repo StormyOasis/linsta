@@ -1,10 +1,10 @@
-import React, { Ref, RefObject, useEffect, useRef, useState } from "react";
+import React, { RefObject, useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { ModalSectionWrapper } from "../../../../../Components/Common/MultiStepModal";
 import LeftArrowSVG from "/public/images/left_arrow.svg";
 import RightArrowSVG from "/public/images/right_arrow.svg";
 import Slider from "../../../../../Components/Common/Slider";
-import { get } from "idb-keyval";
+import { EditData } from "./CreatePostModal";
 
 const EditContainer = styled.div`
     display: flex;
@@ -116,14 +116,6 @@ const FilterText = styled.div<{selected?: boolean}>`
     margin-left: 10px;
 `;
 
-export type EditData = {
-    isVideoFile: boolean;
-    index: number;
-    originalUrl: string;
-    editedUrl: string;
-    filterName: string;
-}
-
 export type CreatePostModalEditProps = {
     editData: EditData[];
     onEditedFile: (editData: EditData, newUrl: string, newFilter: string) => void;   
@@ -220,7 +212,7 @@ const CreatePostModalEditor: React.FC<CreatePostModalEditorProps> = (props: Crea
         const image:HTMLImageElement = new Image();
         image.src = props.editData.originalUrl;
         image.onload = async () => {            
-            const result = await window.pixelsJS.default.filterImg(image, filterName, true);            
+            const result = await window.pixelsJS.default.filterImgAsBlob(image, filterName);            
             props.onEditedFile(props.editData, result, filterName);
         }
     }
@@ -247,10 +239,7 @@ const CreatePostModalEditor: React.FC<CreatePostModalEditorProps> = (props: Crea
                         <FilterImage src={`/public/images/filters/original.png`} alt="Original" />
                         <FilterText selected={selectedFilter==="original"}>original</FilterText>
                     </FilterTile>                    
-                    {Object.keys(filters)
-                        // these 2 are listed but aren't implemented in the library
-                        .filter((filterName) => filterName !== "horizon" && filterName !== "a" )
-                        .map(key => {
+                    {Object.keys(filters).map(key => {
                             return (
                                 <FilterTile key={key} onClick={() => onFilterClick(key)}>
                                     <FilterImage src={`/public/images/filters/${key}.jfif`} alt={key} />
