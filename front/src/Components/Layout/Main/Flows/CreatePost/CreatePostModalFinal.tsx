@@ -5,13 +5,12 @@ import { ModalSectionWrapper } from "../../../../../Components/Common/MultiStepM
 import LeftArrowSVG from "/public/images/left_arrow.svg";
 import RightArrowSVG from "/public/images/right_arrow.svg";
 import { EditData } from "./CreatePostModal";
-import ContentEditable from "react-contenteditable";
-import sanitizeHtml from "sanitize-html";
 import EmojiPickerPopup from "../../../../../Components/Common/EmojiPickerPopup";
 import { AuthUser } from "../../../../../api/Auth";
 import { useSelector } from "react-redux";
-import { getCECursorPosition, setCEPosition, setCursorAtNodePosition, setCursorEditable } from "../../../../../utils/utils";
+import TextEditor from "../../../../Common/Lexical/TextEditor";
 
+const MAX_TEXT_LENGTH: number = 2047;
 
 const EditContainer = styled.div`
     display: flex;
@@ -94,7 +93,17 @@ const TextEditorContainer = styled.div`
     align-items: center;
     position: relative;
     width: 100%;  
-    height: 80%;
+`;
+
+const TextEditorBottomWrapper = styled.div`
+    display: flex;
+    align-items: center;
+    width: 100%;
+`;
+
+const CharacterCountContainer = styled.div`
+    color: ${props => props.theme['colors'].borderDarkColor};
+    font-size: .9em;
 `;
 
 export type CreatePostModalFinalProps = {
@@ -140,154 +149,82 @@ type CreatePostModalFinalEntryProps = {
     onPrevFile: () => void;    
 };
 
-type State = {
-    html: string;
-    isFlaggedForReset: boolean;
-    cursorPosition: number;
-    pendingEmojiInsert: string|null;
-};
+const CreatePostModalFinalEntry: React.FC<CreatePostModalFinalEntryProps> = (props:CreatePostModalFinalEntryProps) => {
+    const [isFlaggedForReset, setIsFlaggedForReset] = useState(false);
+    const [emoji, setEmoji] = useState(null);
+    const [charCount, setCharCount] = useState(0);
+    const [delCount, setDelCount] = useState(MAX_TEXT_LENGTH+1);
 
-/**
- * Note: This needs to be a class component due to a react-contenteeditable issue
- * See: https://github.com/lovasoa/react-contenteditable/issues/161
- */
-class CreatePostModalFinalEntry extends React.Component<CreatePostModalFinalEntryProps, State> {
-    contentEditable:React.RefObject<HTMLDivElement>;
-    
-    constructor(props:CreatePostModalFinalEntryProps) {
-        super(props);
-    
-        this.contentEditable = React.createRef();
-        this.state = {
-            html: "",
-            isFlaggedForReset: false,
-            cursorPosition: 0,
-            pendingEmojiInsert: null
-        };
-
-        document.addEventListener('selectionchange', this.handleSelectionChange);
-    }  
-
-    handleSelectionChange = () => {
-        console.log("handle selectionchange")
-        if (document.activeElement !== this.contentEditable.current) {
-            return;
-        }
-        const selection = window.getSelection();
-        const range = selection.getRangeAt(0);
-        const clonedRange = range.cloneRange();
-        clonedRange.selectNodeContents( this.contentEditable.current);
-        clonedRange.setEnd(range.endContainer, range.endOffset);
-        this.setState({cursorPosition: clonedRange.toString().length });
-    };    
-    
-    setIsFlaggedForReset = (value: boolean) => {
-        this.setState({isFlaggedForReset: value});
+    const resetState = () => { 
+        setIsFlaggedForReset(false);
+        setCharCount(0);
+        setDelCount(MAX_TEXT_LENGTH+1);
+        setEmoji(null);
     }
 
-    resetState = () => { 
-        this.setState({isFlaggedForReset: false});
+    const handleEmojiSelect = (emoji: any) => {
+        // If the user selects the same emoji twice(or more) in a row
+        // then the editor won't detect a change, so it won't print 
+        // the second emoji. Use a nonce to force the text editor's plugin's
+        // useEffect() to detect the change and rerun
+        emoji.nonce = crypto.randomUUID();
+        setEmoji(emoji);
     }
 
-    handleContentChange = (e: any) => {            
-        this.setState({html: e.target.value});//, cursorPosition: getCECursorPosition(this.contentEditable.current)});
+    const getCurrentLength = (count:number, delCount:number):void => {
+        setCharCount(count);
+        setDelCount(delCount);
     }
 
-    handleFocus = () => {
-        console.log("focus", this.state.cursorPosition);
-        //setCEPosition(this.contentEditable.current, this.state.cursorPosition);
-        //setCursorAtNodePosition(this.contentEditable.current, this.state.cursorPosition);
-
-        if(this.state.pendingEmojiInsert !== null) {
-            document.execCommand("insertText", false, this.state.pendingEmojiInsert);
-        }
+    if(isFlaggedForReset) {
+        resetState();
     }
 
-    sanitize = () => {
-        this.setState({ html: sanitizeHtml(this.state.html, {
-            allowedTags: ["b", "i", "em", "strong", "a", "p", "h1", "div", "span", "pre", "br", "img"],
-            allowedAttributes: { 
-                a: ["href", "style", "class"], 
-                span: ['style', 'class'], 
-                div:['style', 'class'],
-                p:['style',  'class'],
-                img:['src', 'alt']
-            }
-        }), cursorPosition: getCECursorPosition(this.contentEditable.current)});
-    }
+    return (
+        <ModalSectionWrapper>
+            <EditContainer>                 
+                <ImageContainer>
+                    {!props.editData.isVideoFile &&  <PreviewImage src={props.editData.editedUrl} />}
+                    {props.editData.isVideoFile && <video src={props.editData.originalUrl}></video>}
 
-    handleEmojiSelect = (emoji: string) => {        
-
-        
-        this.setState({pendingEmojiInsert: emoji}, () => {
-            //this.contentEditable?.current?.focus();
-            setCEPosition(this.contentEditable?.current, this.state.cursorPosition);
-        });
-
-        //setCEPosition(this.contentEditable.current, this.state.cursorPosition);     
-        //setCursorEditable(this.contentEditable.current, this.state.cursorPosition);        
-        //setCEPosition(this.contentEditable.current, this.state.cursorPosition);        
-        //document.execCommand("insertText", false, emoji);
-
-        //this.sanitize();
-    }
-
-    override render() {
-        if(this.state.isFlaggedForReset) {
-            this.resetState();        
-        } 
-
-        return (
-            <ModalSectionWrapper>
-                <EditContainer>                 
-                    <ImageContainer>
-                        {!this.props.editData.isVideoFile &&  <PreviewImage src={this.props.editData.editedUrl} />}
-                        {this.props.editData.isVideoFile && <video src={this.props.editData.originalUrl}></video>}
-
-                        {this.props.hasPrev && 
-                            <MediaSliderLeftWrapper>
-                                <MediaSliderButton onClick={() => {this.props.onPrevFile(); this.setIsFlaggedForReset(true)}}>
-                                    <LeftArrowSVG />
-                                </MediaSliderButton>
-                            </MediaSliderLeftWrapper>
-                        }
-                        {this.props.hasNext &&
-                            <MediaSliderRightWrapper>
-                                <MediaSliderButton onClick={() => {this.props.onNextFile(); this.setIsFlaggedForReset(true)}}>
-                                    <RightArrowSVG />
-                                </MediaSliderButton>
-                            </MediaSliderRightWrapper>                                                    
-                        }                    
-                    </ImageContainer>
-                    <ControlsContainer>
-                        <div style={{fontWeight: 700, paddingBottom: "10px"}}>
-                            {this.props.authUser.userName}
-                        </div>                           
-                        <ControlContentContainer>
-                            <TextEditorContainerWrapper>
-                                <TextEditorContainer>
-                                    <ContentEditable 
-                                        innerRef={this.contentEditable}                                     
-                                        aria-placeholder="Write a message" 
-                                        aria-label="Write a message"
-                                        role="textbox" 
-                                        spellCheck="true" 
-                                        className={styles.contentEditable}
-                                        tagName="div" 
-                                        html={this.state.html} 
-                                        onChange={this.handleContentChange} 
-                                        onBlur={this.sanitize} 
-                                        onFocus={this.handleFocus}
-                                        />                                                                                         
-                                </TextEditorContainer>                                                         
-                                <EmojiPickerPopup onEmojiClick={this.handleEmojiSelect} />
-                            </TextEditorContainerWrapper>                            
-                        </ControlContentContainer>
-                    </ControlsContainer>
-                </EditContainer>
-            </ModalSectionWrapper>    
-        )
-    }
+                    {props.hasPrev && 
+                        <MediaSliderLeftWrapper>
+                            <MediaSliderButton onClick={() => {props.onPrevFile(); setIsFlaggedForReset(true)}}>
+                                <LeftArrowSVG />
+                            </MediaSliderButton>
+                        </MediaSliderLeftWrapper>
+                    }
+                    {props.hasNext &&
+                        <MediaSliderRightWrapper>
+                            <MediaSliderButton onClick={() => {props.onNextFile(); setIsFlaggedForReset(true)}}>
+                                <RightArrowSVG />
+                            </MediaSliderButton>
+                        </MediaSliderRightWrapper>                                                    
+                    }                    
+                </ImageContainer>
+                <ControlsContainer>
+                    <div style={{fontWeight: 700, paddingBottom: "10px"}}>
+                        {props.authUser.userName}
+                    </div>                           
+                    <ControlContentContainer>
+                        <TextEditorContainerWrapper>
+                            <TextEditorContainer>
+                                <TextEditor maxTextLength={MAX_TEXT_LENGTH} emoji={emoji} getCurrentLength={getCurrentLength} />                                
+                            </TextEditorContainer>                                                         
+                            <TextEditorBottomWrapper>
+                                <span style={{flexBasis: "75%"}}>
+                                    <EmojiPickerPopup onEmojiClick={handleEmojiSelect} />
+                                </span>
+                                <CharacterCountContainer>
+                                    {charCount > (MAX_TEXT_LENGTH+1) ? `${(MAX_TEXT_LENGTH+1)} / ${MAX_TEXT_LENGTH + 1}` : `${charCount} / ${MAX_TEXT_LENGTH + 1}`}
+                                </CharacterCountContainer>
+                            </TextEditorBottomWrapper>
+                        </TextEditorContainerWrapper>                            
+                    </ControlContentContainer>
+                </ControlsContainer>
+            </EditContainer>
+        </ModalSectionWrapper>    
+    )    
 };
 
 export default CreatePostModalFinal;

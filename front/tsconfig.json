@@ -29,7 +29,8 @@
       "checkJs": true,
       "esModuleInterop": true,
       "isolatedModules": true,
-      "skipLibCheck": true
+      "skipLibCheck": true,
+      "resolveJsonModule": true,
     },
     "include": ["./src/**/**/*", "jest.config.js", "jest.polyfill.js"],
     "exclude": ["node_modules"]

@@ -42,6 +42,11 @@ const defaultTheme = {
     }
 };
 
+export const LexicalEditorTheme = {
+    ltr: 'ltr',
+    rtl: 'rtl',
+};
+
 const Theme = ({children}: any) => {
     return <ThemeProvider theme={defaultTheme}>{children}</ThemeProvider>
 };

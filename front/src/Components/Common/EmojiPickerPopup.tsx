@@ -1,4 +1,4 @@
-import React, { KeyboardEventHandler, SyntheticEvent, useState } from "react";
+import React, { SyntheticEvent, useState } from "react";
 import { styled } from "styled-components";
 import EmojiPicker, { EmojiClickData, EmojiStyle } from 'emoji-picker-react';
 
@@ -24,7 +24,7 @@ const EmojiPickerPopupContainer = styled.div<{$isOpen: boolean}>`
 `;
 
 type EmojiPickerPopupProps = {
-    onEmojiClick: (emoji: string) => void;
+    onEmojiClick: (emoji: EmojiClickData) => void;
 };
 
 const EmojiPickerPopup: React.FC<EmojiPickerPopupProps> = (props: EmojiPickerPopupProps) => {
@@ -35,13 +35,13 @@ const EmojiPickerPopup: React.FC<EmojiPickerPopupProps> = (props: EmojiPickerPop
         setIsOpen(!isOpen);
     }
 
-    const handleEmojiClick = (emojiData: EmojiClickData, _event: MouseEvent) => {
+    const handleEmojiClick = (emojiData: EmojiClickData, _event: MouseEvent) => {        
         setIsOpen(false);
-        props.onEmojiClick(emojiData.emoji);
+        props.onEmojiClick(emojiData);
     }
 
     const handleKeyUp = (e:React.KeyboardEvent<HTMLDivElement>) => {
-        if(e.key === "Escape") { //escape key 
+        if(e.key === "Escape") { // On escape key press, close the picker
             setIsOpen(false);
         }
     }
@@ -49,11 +49,13 @@ const EmojiPickerPopup: React.FC<EmojiPickerPopupProps> = (props: EmojiPickerPop
     return (
         <>
             <div>
-                <EmojiPickerButton onClick={handleToggleClick}>😀</EmojiPickerButton>
+                <EmojiPickerButton onClick={handleToggleClick} 
+                    aria-label="Click to select Emoji" 
+                    aria-placeholder="Click to select Emoji">😀</EmojiPickerButton>
                 <EmojiPickerPopupContainer $isOpen={isOpen} onKeyUp={handleKeyUp}>
                     <EmojiPicker 
                         onEmojiClick={handleEmojiClick}
-                        emojiStyle={EmojiStyle.TWITTER} 
+                        emojiStyle={EmojiStyle.GOOGLE} 
                         open={isOpen} 
                         previewConfig={{showPreview: false}}/>
                 </EmojiPickerPopupContainer>
