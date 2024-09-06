@@ -17,12 +17,15 @@ import InsertEmojiPlugin from "./Plugins/InsertEmojiPlugin";
 import EmojiPlugin from "./Plugins/EmojiPlugin";
 import MATCHERS from "./Plugins/AutoLinkPluginMatcher";
 import { MaxLengthPlugin } from "./Plugins/MaxLengthPlugin";
-
+import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
+import { $generateHtmlFromNodes } from '@lexical/html';
+import { EditorState, LexicalEditor } from "lexical";
 
 type TextEditorProps = {
   emoji: any;
   maxTextLength: number,
-  getCurrentLength: (count: number, delCount: number) => void;
+  getCurrentLength: (count: number, delCount: number) => void,
+  onChange: (text: string) => void,
 }
 
 const TextEditor = (props: TextEditorProps) => {
@@ -35,6 +38,13 @@ const TextEditor = (props: TextEditorProps) => {
       throw error;
     },
   };
+
+  const handleChange = (editorState: EditorState, editor: LexicalEditor) => {
+    editorState.read(() => {
+      const html = $generateHtmlFromNodes(editor);
+      props.onChange(html);
+    });
+  }
 
   return (
     <div id="editor-selector-parent">
@@ -57,6 +67,7 @@ const TextEditor = (props: TextEditorProps) => {
           return <></>;
         }} />
         <MaxLengthPlugin maxLength={props.maxTextLength} getCurrentLength={props.getCurrentLength} />
+        <OnChangePlugin onChange={handleChange} />
       </LexicalComposer>
     </div>
   );

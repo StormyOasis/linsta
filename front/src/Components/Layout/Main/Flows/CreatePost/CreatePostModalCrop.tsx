@@ -11,6 +11,7 @@ import SixteenToNineSVG from "/public/images/16to9.svg";
 import LeftArrowSVG from "/public/images/left_arrow.svg";
 import RightArrowSVG from "/public/images/right_arrow.svg";
 import ImageSVG from "/public/images/image.svg";
+import { Flex } from "../../../../../Components/Common/CombinedStyling";
 
 const CropContainer = styled.div`
     height: ${props => props.theme['sizes'].cropperHeight};
@@ -31,10 +32,6 @@ const CropperContainer = styled.div`
     left: 0;
     right: 0;
     bottom: 5px;
-`;
-
-const CropperControlsWrapper = styled.div`
-  display: flex;
 `;
 
 const CropperAspectRatioButtonWrapper = styled.div`
@@ -371,7 +368,7 @@ const CreatePostModalCropper: React.FC<CropperProps> = (props: CropperProps) => 
                 </CropContainer>
             </ModalSectionWrapper>
             <ModalSectionWrapper style={{width: "100%"}}>
-                <CropperControlsWrapper>
+                <Flex>
                     <Slider
                         value={zoom}
                         min={0}
@@ -392,7 +389,7 @@ const CreatePostModalCropper: React.FC<CropperProps> = (props: CropperProps) => 
                         aria-labelledby="Rotation"
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => setRotation(Number.parseFloat(e.target.value))}
                     />                    
-                </CropperControlsWrapper>
+                </Flex>
             </ModalSectionWrapper>
         </>
     )

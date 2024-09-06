@@ -5,6 +5,8 @@ import LeftArrowSVG from "/public/images/left_arrow.svg";
 import RightArrowSVG from "/public/images/right_arrow.svg";
 import Slider from "../../../../../Components/Common/Slider";
 import { EditData } from "./CreatePostModal";
+import { FlexColumn } from "../../../../../Components/Common/CombinedStyling";
+import { extractFrameFromVideo } from "../../../../../utils/utils";
 
 const EditContainer = styled.div`
     display: flex;
@@ -94,11 +96,6 @@ const MediaSliderButton = styled.div`
     };    
 `;
 
-const FilterList = styled.div`
-    display: flex;
-    flex-direction: column;
-`;
-
 const FilterTile = styled.div`
     display: flex;
     cursor: pointer;
@@ -173,11 +170,11 @@ const CreatePostModalEditor: React.FC<CreatePostModalEditorProps> = (props: Crea
     const [sepia, setSepia] = useState(0);
     const [pixelate, setPixelate] = useState(0);
     const [jimpWorker, setJimpWorker] = useState<Worker | null>(null); //WebWorker
-    
+
     const imageRef = useRef(null);
 
     useEffect(() => {
-        //Some of the image manipulations are expensive, so offload all 
+        // Some of the image manipulations are expensive, so offload all 
         // image manipulations onto a web worker to keep the main thread responsive
         if(jimpWorker !== null) {
             jimpWorker.terminate();
@@ -234,7 +231,7 @@ const CreatePostModalEditor: React.FC<CreatePostModalEditorProps> = (props: Crea
 
         return (
             <>
-                <FilterList>
+                <FlexColumn>
                     <FilterTile key="original" onClick={() => onFilterClick("original")}>
                         <FilterImage src={`/public/images/filters/original.png`} alt="Original" />
                         <FilterText selected={selectedFilter==="original"}>original</FilterText>
@@ -248,7 +245,7 @@ const CreatePostModalEditor: React.FC<CreatePostModalEditorProps> = (props: Crea
                             );
                         })
                     }
-                </FilterList>
+                </FlexColumn>
             </>
         );
     }

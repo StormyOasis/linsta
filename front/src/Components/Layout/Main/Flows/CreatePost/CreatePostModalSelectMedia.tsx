@@ -25,7 +25,7 @@ const CreatePostModalSelectMedia: React.FC<CreatePostModalSelectMediaProps> = (p
         },
         onDrop: (acceptedFiles, fileRejections) => {
             props?.setFiles(fileRejections.length, acceptedFiles.map(file => Object.assign(file, {
-                blob: URL.createObjectURL(file)
+                blob: URL.createObjectURL(file),
             })));
         }
     });

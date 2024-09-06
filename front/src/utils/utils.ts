@@ -103,3 +103,26 @@ export const createBlob = async (url: string) => {
     return data;
 }
 
+export const extractFrameFromVideo = async (video:HTMLVideoElement):Promise<string|null> => {
+    if(video == null) {
+        return null;
+    }
+
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext('2d');
+  
+    if (ctx == null) {
+        return null;
+    }
+
+    canvas.height = video.videoHeight || parseInt(video.style.height);
+    canvas.width = video.videoWidth || parseInt(video.style.width);
+    
+    ctx.drawImage(video, 0, 0);
+    
+    return new Promise((resolve, _reject) => {
+        canvas.toBlob((file) => 
+          resolve(URL.createObjectURL(file))
+        , 'image/jpeg')
+      })
+}

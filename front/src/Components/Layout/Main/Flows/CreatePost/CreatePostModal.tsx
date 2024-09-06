@@ -8,6 +8,7 @@ import getCroppedImg from "../../../../../utils/cropImage";
 import CreatePostModalEdit from "./CreatePostModalEdit";
 import { clear, del, get, set } from 'idb-keyval';
 import CreatePostModalFinal from "./CreatePostModalFinal";
+import { postSubmitPost, putSubmitPost } from "../../../../../api/ServiceController";
 
 export type CreatePostModalProps = {
     onClose: any
@@ -28,16 +29,22 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
     const [files, setFiles] = useState([]);    
     const [hasFileRejections, setHasFileRejections] = useState(false);    
     const [stepNumber, setStepNumber] = useState(0);
+    const [lexicalText, setLexicalText] = useState<string|null>(null);
 
-    const onSetFiles = (rejectionsCount:number, files: any) => {
+    useEffect(() => {
+        // Make sure to revoke uri's to avoid memory leaks
+        return () => {clearAllFileData()}
+    }, []);
+    
+    const onSetFiles = async (rejectionsCount:number, files: any) => {
         if(rejectionsCount > 0) {
             setHasFileRejections(true);
             return;
         }
         if(files.length === 0) {
             return; //should never happen
-        }        
-        
+        }
+
         setFiles(files);
         setStepNumber(stepNumber + 1);
         setCropData(defaultCropData(files.length));
@@ -157,8 +164,13 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
         return url;
     }
 
+    const handleLexicalChange = (data: string) => {
+        setLexicalText(data);
+    }
+
     const submitPost = () => {
-        
+        console.log(lexicalText);
+        putSubmitPost({});
     }
     
     const clearAllFileData = () => {
@@ -204,7 +216,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
         },
         {
             title: "Create Post",
-            element: <CreatePostModalFinal editData={editData} />,
+            element: <CreatePostModalFinal editData={editData} onLexicalChange={handleLexicalChange}/>,
             options: {
                 showFooter: true,
                 footerNextPageText: "Share"
@@ -214,12 +226,6 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
                         
         }      
     ]; 
-
-    useEffect(() => {
-        // Make sure to revoke uri's to avoid memory leaks
-        return () => {clearAllFileData()}
-      }, []);
-    
 
     return (
         <>

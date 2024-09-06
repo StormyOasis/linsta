@@ -16,6 +16,7 @@ const defaultTheme = {
         navLinkTextColor: "rgb(0, 50, 100)",
         cropperAspectBkgnd: "rgba(25,25,25,.6)",
         cropperAspectBkgndNoTrans: "rgb(25,25,25)",
+        mediumTextColor: "rgb(120, 120, 120)",
     },    
 
     input: {
@@ -27,12 +28,12 @@ const defaultTheme = {
         sideBarNavWidthNarrow: "72px",
         sideBarNavBottomHeight: "50px",
         cropperHeight: "275px",
-        defaultModalWidth: "450px",
+        defaultModalWidth: "600px",
         maxModalWidth: "600px",
         maxModalHeight: "350px",
         minModalHeight: "300px",
-        minPostTextEditorHeight: "150px",
-        maxPostTextEditorHeight: "170px"
+        minPostTextEditorHeight: "140px",
+        maxPostTextEditorHeight: "140px"
     },
 
     breakpoints: {

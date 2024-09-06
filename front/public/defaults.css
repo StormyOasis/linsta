@@ -53,8 +53,8 @@ body {
 
 #editor-selector-parent:first-child {
     outline: none;
-    min-height: 115px;
-    max-height: 115px;
+    min-height: 105px;
+    max-height: 105px;
     overflow-y: auto;
 }
 
@@ -67,3 +67,5 @@ body {
     top: 0px;
     margin-top: 14px;
 }
+
+

@@ -101,9 +101,7 @@ export const createImage = (url) =>
     // As a blob
     // eslint-disable-next-line no-unused-vars
     return new Promise((resolve, _reject) => {
-      croppedCanvas.toBlob((file) => {
-        resolve(URL.createObjectURL(file))
-      }, 'image/jpeg')
+      croppedCanvas.toBlob((file) => resolve(URL.createObjectURL(file)),'image/jpeg')
     })
   }
   

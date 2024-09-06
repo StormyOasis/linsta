@@ -62,3 +62,12 @@ export const postChangePassword = async (data: any): Promise<ServiceResponse> =>
         statusText: res.statusText,
     }
 }
+
+export const putSubmitPost = async (data: any): Promise<ServiceResponse> => {
+    const res = await axios.put(`${host}/api/v1/put/addPost`, data);
+    return {
+        data: res.data,
+        status: res.status,
+        statusText: res.statusText,
+    }
+}
