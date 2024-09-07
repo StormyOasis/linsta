@@ -1,11 +1,12 @@
 import React from "react";
+import { createPortal } from "react-dom";
 import styled from "styled-components";
 
 export type ModalProps = {
-    children?: any;
-    title?: string;
-    onClose: any;
-  };
+  children?: any;
+  title?: string;
+  onClose: any;
+};
 
 const ModalWrapper = styled.div`
   align-items: center;
@@ -28,12 +29,12 @@ const ModalInnerWrapper = styled.div`
   display: block;
   flex-shrink: 1;
   margin: 20px;
-  max-width: 400px;
+  max-width: ${props => props.theme['sizes'].maxModalWidth};
   max-height: calc(100% - 40px);
   min-width: 260px;
   pointer-events: all;
   position: relative;
-  width: 400px;
+  width: ${props => props.theme['sizes'].defaultModalWidth};
   border-radius: 12px;
   background-color: white;
 `;
@@ -58,7 +59,8 @@ const ModalTitleBarInnerWrapper = styled.div`
   height: 42px;
   pointer-events: all;
   position: relative;
-  width: 400px;
+  width: ${props => props.theme['sizes'].defaultModalWidth};
+  max-width: width: ${props => props.theme['sizes'].maxModalWidth};
 `;
 
 const ModalTitleBarInnerWrapper2 = styled.div`
@@ -73,7 +75,8 @@ const ModalTitleBarInnerWrapper2 = styled.div`
   justify-content: center;
   overflow: visible;
   pointer-events: all;
-  width: 400px;
+  width: ${props => props.theme['sizes'].defaultModalWidth};
+  max-width: width: ${props => props.theme['sizes'].maxModalWidth};
   position: absolute;
 `;
 
@@ -126,9 +129,6 @@ const ModalCloseButton = styled.button`
   text-align: center;
 `;
 
-const ModalContentWrapper = styled.div`
-`;
-
 const CloseButton = styled.span`
   width: 12px;
   height: 12px;
@@ -136,44 +136,98 @@ const CloseButton = styled.span`
   background: url('/public/images/x.svg');
 `;
 
-export default class Modal extends React.Component<ModalProps> {
-    onClose = (event:React.ChangeEvent<HTMLSelectElement>) => {
-        this.props.onClose && this.props.onClose(event);
-    };
+export const ModalContentWrapper = styled.div`
+    align-content: stretch;
+    align-items: center;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 0;
+    flex-shrink: 0;
+    justify-content: flex-start;
+    overflow: visible;
+    pointer-events: all;
+    position: relative;
+    margin: 20px 28px 20px 28px;
+`;
 
-    override render() {
-        return (
-            <>
-                <ModalWrapper role="dialog">
-                    <ModalInnerWrapper>
-                        <ModalInnerWrapper2>
-                            <div style={{display: "flex", flexDirection: "column", height: "100%", maxWidth: "100%"}}>
-                                <ModalTitleBarWrapper>
-                                    <ModalTitleBarInnerWrapper>
-                                        <ModalTitleBarInnerWrapper2>
-                                            <ModalTitle>
-                                                <div>{this.props.title}</div>
-                                            </ModalTitle>
-                                        </ModalTitleBarInnerWrapper2>
-                                        <ModalCloseWrapper>
-                                            <ModalClose>
-                                                <ModalCloseButton title="data-modal-close" aria-label="Close" onClick={this.onClose}>
-                                                    <div style={{alignItems: "center", display: "flex", justifyContent: "center", cursor: "pointer"}}>
-                                                      <CloseButton />
-                                                    </div>
-                                                </ModalCloseButton>                                        
-                                            </ModalClose>
-                                        </ModalCloseWrapper>                                        
-                                    </ModalTitleBarInnerWrapper>
-                                </ModalTitleBarWrapper>
-                                <ModalContentWrapper>
-                                    {this.props.children}
-                                </ModalContentWrapper>
-                            </div>
-                        </ModalInnerWrapper2>
-                    </ModalInnerWrapper>
-                </ModalWrapper>
-            </>
-        );
+export const ModalSectionWrapper = styled.div`
+    align-content: stretch;
+    align-items: stretch;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 0;
+    flex-shrink: 0;
+    justify-content: flex-start;
+    overflow: visible;
+    position: relative;
+    pointer-events: all;
+`;
+
+export const EnableModal = (enable: boolean) => {
+  const cont = document.getElementById("modalContainer");
+  const sectionCont = document.getElementById("mainSectionContainer");
+
+  if (cont && sectionCont) {
+    if (enable) {
+      cont.style.height = "100%";
+      sectionCont.style.pointerEvents = "none";
     }
+    else {
+      cont.style.height = "0%";
+      sectionCont.style.pointerEvents = "auto";      
+    }
+  }
+}
+
+export default class Modal extends React.Component<ModalProps> {
+  onClose = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    this.props.onClose && this.props.onClose(event);
+    EnableModal(false);
+  };
+
+  override componentDidMount(): void {
+    EnableModal(true);
+  }
+
+  override render() {
+    const cont = document.getElementById("modalContainer");
+    if(cont == null) {
+      throw new Error("No modal container");
+    }
+
+    return createPortal(
+      <>
+        <ModalWrapper role="dialog">
+          <ModalInnerWrapper>
+            <ModalInnerWrapper2>
+              <div style={{ display: "flex", flexDirection: "column", height: "100%", maxWidth: "100%" }}>
+                <ModalTitleBarWrapper>
+                  <ModalTitleBarInnerWrapper>
+                    <ModalTitleBarInnerWrapper2>
+                      <ModalTitle>
+                        <div>{this.props.title}</div>
+                      </ModalTitle>
+                    </ModalTitleBarInnerWrapper2>
+                    <ModalCloseWrapper>
+                      <ModalClose>
+                        <ModalCloseButton title="data-modal-close" aria-label="Close" onClick={this.onClose}>
+                          <div style={{ alignItems: "center", display: "flex", justifyContent: "center", cursor: "pointer" }}>
+                            <CloseButton />
+                          </div>
+                        </ModalCloseButton>
+                      </ModalClose>
+                    </ModalCloseWrapper>
+                  </ModalTitleBarInnerWrapper>
+                </ModalTitleBarWrapper>
+                <ModalContentWrapper>
+                  {this.props.children}
+                </ModalContentWrapper>
+              </div>
+            </ModalInnerWrapper2>
+          </ModalInnerWrapper>
+        </ModalWrapper>
+      </>
+    , cont);
+  }
 }

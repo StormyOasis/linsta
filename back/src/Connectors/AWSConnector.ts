@@ -1,6 +1,8 @@
 import { Destination, SendTemplatedEmailCommand } from "@aws-sdk/client-ses";
 import { SESClient } from "@aws-sdk/client-ses";
 import { SNSClient, PublishCommand } from "@aws-sdk/client-sns";
+import { LocationClient, SearchPlaceIndexForTextCommand } from "@aws-sdk/client-location";
+import { withAPIKey } from "@aws/amazon-location-utilities-auth-helper";
 import config from 'config';
 import logger from "../logger/logger";
 import Metrics from "../metrics/Metrics";
@@ -57,3 +59,24 @@ export const sendSMS = async (phoneNumber:string, message: string) => {
         return false;
     }  
 }
+
+export const getLocationData = async (term: string) => {
+    const authHelper = await withAPIKey(config.get("aws.location.apiKey"));
+
+    const client = new LocationClient({
+        region: config.get("aws.region"),
+        ...authHelper.getLocationClientConfig()
+    });
+    
+    const input = {
+        IndexName: `${config.get("aws.location.index")}`,
+        Text: term
+    }
+
+    const command = new SearchPlaceIndexForTextCommand(input);
+    const response = await client.send(command);
+
+    return response;
+}
+
+

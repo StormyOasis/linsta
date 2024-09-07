@@ -7,7 +7,7 @@ import Theme from "../../../Components/Themes/Theme";
 import StyledLink from "../../../Components/Common/StyledLink";
 import StyledInput from "../../../Components/Common/StyledInput";
 import StyledButton from "../../../Components/Common/StyledButton";
-import Modal from "../../../Components/Common/Modal";
+import Modal, { ModalContentWrapper, ModalSectionWrapper } from "../../../Components/Common/Modal";
 import { postForgotPassword } from "../../../api/ServiceController";
 
 type ForgotProps = {
@@ -54,54 +54,16 @@ const SignupText = styled.div`
     text-align: center;
 `;
 
-const ModalContentWrapper = styled.div`
-    align-content: stretch;
-    align-items: center;
-    border: none;
-    display: flex;
-    flex-direction: column;
-    flex-grow: 0;
-    flex-shrink: 0;
-    justify-content: flex-start;
-    overflow: visible;
-    pointer-events: all;
-    position: relative;
-    margin: 20px 28px 20px 28px;
-`;
 
-const ModalSectionWrapper = styled.div`
-    align-content: stretch;
-    align-items: stretch;
-    display: flex;
-    flex-direction: column;
-    flex-grow: 0;
-    flex-shrink: 0;
-    justify-content: flex-start;
-    overflow: visible;
-    position: relative;
-    pointer-events: all;
-`;
-
-const renderModal = (showModal, setShowModal, queryResponse) => {
+const renderModal = (showModal: boolean, setShowModal:any, queryResponse:any) => {
     if(queryResponse == null) {
         throw new Error("Invalid query data");
-    }
-
-    const cont = document.getElementById("modalContainer");
-    const sectionCont = document.getElementById("mainSectionContainer");
-    if (cont && sectionCont) {
-        cont.style.height = "100%";
-        sectionCont.style.pointerEvents = "none";
     }
 
     return (
         <>
             <Modal title="Forgot Password" onClose={()=> {
-                setShowModal(false);
-                if (cont && sectionCont) {
-                    cont.style.height = "0%";
-                    sectionCont.style.pointerEvents = "auto";
-                }                
+                setShowModal(false);           
             }}>
                 <ModalContentWrapper data-testid="forgotModal">
                     <ModalSectionWrapper style={{ maxWidth: "350px", padding: "4px" }}>
@@ -116,7 +78,7 @@ const renderModal = (showModal, setShowModal, queryResponse) => {
     );
 }
 
-const onSubmit = async (userData: string, setShowModal, setQueryResponse) => {
+const onSubmit = async (userData: string, setShowModal:any, setQueryResponse:any) => {
     try {
         const result = await postForgotPassword({user: userData});
 

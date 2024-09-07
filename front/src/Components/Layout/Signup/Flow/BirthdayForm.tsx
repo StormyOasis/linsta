@@ -3,7 +3,7 @@ import { styled } from "styled-components";
 
 import Theme from "../../../../Components/Themes/Theme";
 import StyledButton from "../../../../Components/Common/StyledButton";
-import Modal from "../../../../Components/Common/Modal";
+import Modal, { ModalContentWrapper, ModalSectionWrapper } from "../../../../Components/Common/Modal";
 
 const FormWrapper = styled.div`
     align-content: stretch;
@@ -116,34 +116,6 @@ const BackButton = styled.button`
     text-wrap: wrap;
 `;
 
-const ModalContentWrapper = styled.div`
-    align-content: stretch;
-    align-items: center;
-    border: none;
-    display: flex;
-    flex-direction: column;
-    flex-grow: 0;
-    flex-shrink: 0;
-    justify-content: flex-start;
-    overflow: visible;
-    pointer-events: all;
-    position: relative;
-    margin: 20px 28px 20px 28px;
-`;
-
-const ModalSectionWrapper = styled.div`
-    align-content: stretch;
-    align-items: stretch;
-    display: flex;
-    flex-direction: column;
-    flex-grow: 0;
-    flex-shrink: 0;
-    justify-content: flex-start;
-    overflow: visible;
-    position: relative;
-    pointer-events: all;
-`;
-
 export type BirthdayFormProps = {
     month: number;
     day: number;
@@ -166,19 +138,8 @@ export default class BirthdayForm extends React.Component<BirthdayFormProps> {
             return null;
         }
 
-        const cont = document.getElementById("modalContainer");
-        const sectionCont = document.getElementById("mainSectionContainer");
-        if (cont && sectionCont) {
-            cont.style.height = "100%";
-            sectionCont.style.pointerEvents = "none";
-        }
-
         return (
             <Modal title="Birthdays" onClose={() => {
-                if (cont && sectionCont) {
-                    cont.style.height = "0%";
-                    sectionCont.style.pointerEvents = "auto";
-                }
                 this.props.changeState("showBirthdayModal", false);
             }}>
                 {this.renderBirthdayModalContent()}

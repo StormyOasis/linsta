@@ -1,21 +1,28 @@
-import React from "react";
+import React, { useState } from "react";
+import Theme from "../../../Components/Themes/Theme";
 import styled from "styled-components";
+import SideBar from "./SideBar";
+import MainContent from "./MainContent";
+import * as styles from './Main.module.css';
+import CreatePostModal from "./Flows/CreatePost/CreatePostModal";
 
-const MainWrapper = styled.main`
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-`;
 
-export class MainLayout extends React.Component {
+const MainLayout: React.FC = () => {
+    const [createPostModalVisible, setCreatePostModalVisible] = useState(false);
 
-    override render() {
-        return (
-            <>
-                <MainWrapper role="main">
-                    MainLayout
-                </MainWrapper>
-            </>
-        );
+    const createPostHandler = () => {
+        setCreatePostModalVisible(true);
     }
+
+    return (
+        <Theme>
+            {createPostModalVisible && <CreatePostModal onClose={() => setCreatePostModalVisible(false)}/>}
+            <div className={styles.mainWrapper}>
+                <SideBar createPostHandler={createPostHandler}/>
+                <MainContent />
+            </div>
+        </Theme>
+    );
 }
+
+export default MainLayout;

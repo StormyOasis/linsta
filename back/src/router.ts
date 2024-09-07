@@ -8,6 +8,7 @@ import {
     changePassword 
 } from './controllers/accountsController';
 import { verifyJWT } from "./auth/Auth";
+import { getLocation } from "./controllers/locationsController";
 
 
 const router = new Router();
@@ -20,8 +21,7 @@ router.post("/api/v1/accounts/login", loginUser);
 router.post("/api/v1/accounts/forgot", forgotPassword);
 router.post("/api/v1/accounts/change_password", changePassword);
 
-router.get("/test", verifyJWT, () => {
-    console.log("Inside /test");
-})
+// location handlers
+router.get("/api/v1/locations/get", verifyJWT, getLocation);
 
 export default router;

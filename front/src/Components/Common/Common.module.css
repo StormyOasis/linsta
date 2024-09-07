@@ -1,6 +1,6 @@
 .validationPass {
     position: relative;
-    width: 100%;   
+    width: 100%;
 }
 
 .validationPass::after {
@@ -12,7 +12,7 @@
     bottom: 0;
     height: 16px;
     background: url("/public/images/check-circle.svg");
-} 
+}
 
 .validationFail {
     position: relative;
@@ -78,3 +78,60 @@
     font-weight: 600;
     color: rgb(115, 115, 115);
 }
+
+/******************** Slider overrides ***************/
+
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    cursor: pointer;
+    width: 100%;
+}
+
+input[type="range"]:focus {
+    outline: none;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+    background-color: #dcdcdc;
+    border-radius: 8px;
+    height: 0.5rem;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    margin-top: -8px;
+    background-color: #0096f5;
+    border-radius: 1.5rem;
+    height: 1.5rem;
+    width: 1.5rem;
+}
+
+input[type="range"]:focus::-webkit-slider-thumb {
+    outline: 3px solid #0096f5;
+    outline-offset: 0.125rem;
+}
+
+input[type="range"]::-moz-range-track {
+    background-color: #dcdcdc;
+    border-radius: 8px;
+    height: 0.5rem;
+}
+
+
+input[type="range"]::-moz-range-thumb {
+    background-color: #0096f5;
+    border: none;
+    border-radius: 1.5rem;
+    height: 1.5rem;
+    width: 1.5rem;
+}
+
+input[type="range"]:focus::-moz-range-thumb {
+    outline: 3px solid #0096f5;
+    outline-offset: 0.125rem;
+}
+
+/*************** End Slider overrides ************/

@@ -1,3 +1,4 @@
+import styled from 'styled-components';
 import * as styles1 from "/src/Components/Layout/Login/LoginLayout.module.css";
 import * as styles2 from "/src/Components/Common/Common.module.css";
 import * as styles3 from "/src/Components/Layout/Signup/SignupLayout.module.css";
@@ -11,3 +12,15 @@ export default {
    ...styles4,
    ...styles5
 }
+
+export const Flex = styled.div`
+    display: flex;
+`;
+
+export const FlexRow = styled(Flex)`
+    flex-direction: row;
+`;
+
+export const FlexColumn = styled(Flex)`
+    flex-direction: column;
+`;

@@ -25,7 +25,7 @@ const App: React.FC<any> = ({children}) => {
   return (
     <React.StrictMode>      
       <ErrorBoundary FallbackComponent={({ error }) => <div data-testid="fallback">{error.stack}</div>}>
-      {children}
+        {children}
         <Theme>
           <Layout />
         </Theme>

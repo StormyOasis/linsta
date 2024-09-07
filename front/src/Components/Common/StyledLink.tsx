@@ -6,8 +6,9 @@ export type StyledLinkProps = {
   to?: string;
   children?: any;
   onClick?: any;
-  styleOverride?:any;
-  datatestid?:string
+  styleOverride?: any;
+  className?: any;
+  datatestid?: string
 };
 
 const StyledLinkWrapper = styled(Link)`
@@ -15,6 +16,10 @@ const StyledLinkWrapper = styled(Link)`
   text-decoration: none;
   display: contents;
   font-weight: 600;
+
+  &:hover {
+    color: ${(props) => props.theme['colors'].buttonOnHoverColor};
+  }
 `;
 
 const StyledLink: React.FC<StyledLinkProps> = (props: StyledLinkProps) => {
@@ -22,8 +27,8 @@ const StyledLink: React.FC<StyledLinkProps> = (props: StyledLinkProps) => {
   const to = props.to ? props.to : "";
 
   return (
-    <StyledLinkWrapper data-testid={props.datatestid} to={to} onClick={onClick} className={props.styleOverride}>
-        {props.children}
+    <StyledLinkWrapper data-testid={props.datatestid} to={to} onClick={onClick} className={props.className} style={props.styleOverride}>
+      {props.children}
     </StyledLinkWrapper>
   );
 };

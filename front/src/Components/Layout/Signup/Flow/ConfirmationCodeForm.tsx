@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { styled } from "styled-components";
 
 import { getAccountsSendVerifyNotification, postAccountsAttempt } from "../../../../api/ServiceController";
@@ -97,20 +97,11 @@ export type ConfirmationCodeFormProps = {
     changePage: any,
 }
 
-let emailStep = 0;
 const ConfirmationCodeForm: React.FC<ConfirmationCodeFormProps> = (props: ConfirmationCodeFormProps) => {
     const dispatch = useDispatch<AppDispatch>();
     
     useEffect(() => {
-        if(emailStep === 1) {
-            //automatically send the message the very first time this component is mounted
-            //every subsequent resend requires a user click the link 
-            //(Note: Using this emailStep variable bc in dev mode React.StrictMode double calls the 
-            //useEffect so have to track it outside react. yuk...)
-            
-           resendCode();
-        }
-        emailStep++;
+           resendCode(); //initial send
     }, [])
 
     function resendCode() {
