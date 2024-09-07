@@ -22,8 +22,10 @@
   },
   "homepage": "https://github.com/StormyOasis/linsta#readme",
   "dependencies": {
+    "@aws-sdk/client-location": "^3.645.0",
     "@aws-sdk/client-ses": "^3.623.0",
     "@aws-sdk/client-sns": "^3.623.0",
+    "@aws/amazon-location-utilities-auth-helper": "^1.0.7",
     "@koa/cors": "^5.0.0",
     "@koa/multer": "^3.0.2",
     "aws": "^0.0.3-2",
