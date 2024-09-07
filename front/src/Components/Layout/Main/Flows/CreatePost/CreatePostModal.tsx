@@ -8,7 +8,7 @@ import getCroppedImg from "../../../../../utils/cropImage";
 import CreatePostModalEdit from "./CreatePostModalEdit";
 import { clear, del, get, set } from 'idb-keyval';
 import CreatePostModalFinal from "./CreatePostModalFinal";
-import { postSubmitPost, putSubmitPost } from "../../../../../api/ServiceController";
+import { putSubmitPost } from "../../../../../api/ServiceController";
 
 export type CreatePostModalProps = {
     onClose: any
@@ -20,6 +20,7 @@ export type EditData = {
     originalUrl: string;
     editedUrl: string;
     filterName: string;
+    altText?: string;
 }
 
 const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalProps) => {
@@ -27,9 +28,11 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
     const [imageUrls, setImageUrls] = useState<string[]>([]);
     const [editData, setEditData] = useState<EditData[]>([]);
     const [files, setFiles] = useState([]);    
-    const [hasFileRejections, setHasFileRejections] = useState(false);    
-    const [stepNumber, setStepNumber] = useState(0);
+    const [hasFileRejections, setHasFileRejections] = useState<boolean>(false);    
+    const [stepNumber, setStepNumber] = useState<number>(0);
     const [lexicalText, setLexicalText] = useState<string|null>(null);
+    const [commentsDisabled, setCommentsDisabled] = useState<boolean>(false); 
+    const [likesDisabled, setLikesDisabled] = useState<boolean>(false);
 
     useEffect(() => {
         // Make sure to revoke uri's to avoid memory leaks
@@ -98,7 +101,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
         setEditData(newEditorData);
     }
 
-    const onEditedFile = async (updatedEditData: EditData, newUrl: string, newFilterName: string) => {            
+    const onEditedFile = async (updatedEditData: EditData, newUrl: string, newFilterName: string) => {         
         const newEditData = [...editData];
         const oldBlob = newEditData[updatedEditData.index].editedUrl;
         newEditData[updatedEditData.index].editedUrl = newUrl;
@@ -108,7 +111,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
             // Want to revoke the url to any blobs created unless it is the original image
             // Or if it matches the new one for some reason
             await del(oldBlob);
-            URL.revokeObjectURL(oldBlob);                        
+            URL.revokeObjectURL(oldBlob);
         }
 
         // add to the image cache in indexdb
@@ -119,7 +122,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
         setEditData(newEditData);
     }
 
-    const loadImage = (updatedEditData: EditData, url: string, imageRef:RefObject<HTMLImageElement>):string => {
+    const loadImage = (updatedEditData: EditData, url: string):string => {
         (async () => {
             let imageSrc = url;
             try {
@@ -133,12 +136,13 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
                 // load the image from the cache
                 const value = await get(url);
                 const file = base64ToBlob(value, url);
+                
                 if(file === null) {
                     throw new Error("Invalid cache key");
                 }
 
-                const newUrl = URL.createObjectURL(file);
-                
+                const newUrl = URL.createObjectURL(file);                
+                                
                 // update the state
                 const newEditData = [...editData];
                 const oldBlob = newEditData[updatedEditData.index].editedUrl;
@@ -148,14 +152,12 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
                     // Want to revoke the url to any blobs created unless it is the original image
                     // Or if it matches the new one for some reason
                     await del(oldBlob);
-                    URL.revokeObjectURL(oldBlob);                        
+                    URL.revokeObjectURL(oldBlob);                    
                 }
 
                 setEditData(newEditData);  
 
-                if(imageRef && imageRef.current) {
-                    imageRef.current.src = newUrl;             
-                }
+                return newUrl;
             }
 
             return null;
@@ -168,9 +170,26 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
         setLexicalText(data);
     }
 
-    const handleChange = (field: string, data: any) => {
+    const handleChange = (field: string, data: any) => {        
         switch(field) {
             case "altInput": {
+                const altText = data.value;
+                const index = data.index;
+
+                const newEditData:any[] = [...editData];
+                const entry = newEditData[index];
+                entry.altText = altText;
+                newEditData[index] = entry;
+                setEditData(newEditData);
+
+                break;
+            }
+            case "turnOffComments": {
+                setCommentsDisabled(data);
+                break;
+            }
+            case "hideLikes": {
+                setLikesDisabled(data);
                 break;
             }
         }
@@ -191,6 +210,8 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
         setImageUrls([]);
         setEditData([]);
         setHasFileRejections(false);
+        setCommentsDisabled(false);
+        setLikesDisabled(false);
         clear(); //clear out the indexdb cache
     }
 
@@ -224,14 +245,16 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
         },
         {
             title: "Create Post",
-            element: <CreatePostModalFinal editData={editData} onLexicalChange={handleLexicalChange} onChange={handleChange} />,
+            element: <CreatePostModalFinal editData={editData} 
+                        isCommentsDisabled={commentsDisabled} isLikesDisabled={likesDisabled}
+                        onLexicalChange={handleLexicalChange} 
+                        onChange={handleChange} />,
             options: {
                 showFooter: true,
                 footerNextPageText: "Share"
             },
-            onNext: async () => submitPost(),
-            onPrev: () => {setStepNumber(stepNumber - 1)}                 
-                        
+            onNext: async () => await submitPost(),
+            onPrev: () => {setStepNumber(stepNumber - 1)}
         }      
     ]; 
 

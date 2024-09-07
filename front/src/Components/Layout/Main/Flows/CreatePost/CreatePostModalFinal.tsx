@@ -225,6 +225,8 @@ const LocationEntry = styled.div`
 `;
 
 export type CreatePostModalFinalProps = {
+    isCommentsDisabled: boolean;
+    isLikesDisabled: boolean;
     editData: EditData[];
     onLexicalChange: (data: string) => void;
     onChange: (field: string, data: any) => void;
@@ -389,6 +391,7 @@ const CreatePostModalFinal: React.FC<CreatePostModalFinalProps> = (props: Create
                         <AltInput type="text" placeholder="Add Alt Text" spellCheck={true} 
                             aria-label="Add Alt Text" aria-placeholder="Add Alt Text"
                             name="altInput" id={`altInputId_${data.index}`}
+                            value={data.altText || ""}
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => props.onChange("altInput", 
                             {
                                 index: data.index,
@@ -418,7 +421,7 @@ const CreatePostModalFinal: React.FC<CreatePostModalFinalProps> = (props: Create
         <ModalSectionWrapper>
             <EditContainer>                 
                 <ImageContainer>
-                    {!data.isVideoFile &&  <PreviewImage src={data.editedUrl} />}
+                    {!data.isVideoFile && <PreviewImage src={data.editedUrl} />}
                     {data.isVideoFile && <video src={data.originalUrl}></video>}
 
                     {(currentFileIndex > 0) && 
@@ -517,7 +520,7 @@ const CreatePostModalFinal: React.FC<CreatePostModalFinalProps> = (props: Create
                                             <AdvancedDropdownLabel>
                                                 Hide like and view counts    
                                             </AdvancedDropdownLabel>
-                                            <ToggleSwitch onChange={(checked: boolean) => 
+                                            <ToggleSwitch isChecked={props.isLikesDisabled} onChange={(checked: boolean) => 
                                                 props.onChange("hideLikes", {
                                                     index: null,
                                                     value: checked
@@ -532,7 +535,7 @@ const CreatePostModalFinal: React.FC<CreatePostModalFinalProps> = (props: Create
                                             <AdvancedDropdownLabel>
                                                 Turn off commenting
                                             </AdvancedDropdownLabel>
-                                            <ToggleSwitch onChange={(checked: boolean) => 
+                                            <ToggleSwitch isChecked={props.isCommentsDisabled} onChange={(checked: boolean) => 
                                                 props.onChange("turnOffComments", {
                                                     index: null,
                                                     value: checked

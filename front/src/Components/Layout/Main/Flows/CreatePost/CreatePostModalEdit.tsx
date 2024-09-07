@@ -116,7 +116,7 @@ const FilterText = styled.div<{selected?: boolean}>`
 export type CreatePostModalEditProps = {
     editData: EditData[];
     onEditedFile: (editData: EditData, newUrl: string, newFilter: string) => void;   
-    loadImage: (editData:EditData, newUrl: string, imageRef:RefObject<HTMLImageElement>) => string;
+    loadImage: (editData:EditData, newUrl: string) => string;
 }
 
 const CreatePostModalEdit: React.FC<CreatePostModalEditProps> = (props: CreatePostModalEditProps) => {
@@ -156,7 +156,7 @@ type CreatePostModalEditorProps = {
     onNextFile: () => void;
     onPrevFile: () => void;    
     onEditedFile: (editData:EditData, newUrl:string, newFilter: string) => void;
-    loadImage: (editData:EditData, newUrl: string, imageRef:RefObject<HTMLImageElement>) => string;
+    loadImage: (editData:EditData, newUrl: string) => string;
 }
 
 const CreatePostModalEditor: React.FC<CreatePostModalEditorProps> = (props: CreatePostModalEditorProps) => {
@@ -170,8 +170,6 @@ const CreatePostModalEditor: React.FC<CreatePostModalEditorProps> = (props: Crea
     const [sepia, setSepia] = useState(0);
     const [pixelate, setPixelate] = useState(0);
     const [jimpWorker, setJimpWorker] = useState<Worker | null>(null); //WebWorker
-
-    const imageRef = useRef(null);
 
     useEffect(() => {
         // Some of the image manipulations are expensive, so offload all 
@@ -406,7 +404,7 @@ const CreatePostModalEditor: React.FC<CreatePostModalEditorProps> = (props: Crea
             <EditContainer>
                 <ImageContainer>
                     {!props.editData.isVideoFile && 
-                        <PreviewImage ref={imageRef} src={props.loadImage(props.editData, props.editData.editedUrl, imageRef)} />}
+                        <PreviewImage src={props.loadImage(props.editData, props.editData.editedUrl)} />}
                     {props.editData.isVideoFile && <video src={props.editData.originalUrl}></video>}
 
                     {props.hasPrev && 
