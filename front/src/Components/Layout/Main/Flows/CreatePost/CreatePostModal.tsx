@@ -168,6 +168,14 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
         setLexicalText(data);
     }
 
+    const handleChange = (field: string, data: any) => {
+        switch(field) {
+            case "altInput": {
+                break;
+            }
+        }
+    }
+
     const submitPost = () => {
         console.log(lexicalText);
         putSubmitPost({});
@@ -216,7 +224,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
         },
         {
             title: "Create Post",
-            element: <CreatePostModalFinal editData={editData} onLexicalChange={handleLexicalChange}/>,
+            element: <CreatePostModalFinal editData={editData} onLexicalChange={handleLexicalChange} onChange={handleChange} />,
             options: {
                 showFooter: true,
                 footerNextPageText: "Share"
