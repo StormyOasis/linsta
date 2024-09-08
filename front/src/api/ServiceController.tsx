@@ -1,5 +1,6 @@
 import axios from "axios";
 import { authHeader } from "./Auth";
+import { base64ToBlob, extractMimeTypeFromBase64 } from "..//utils/utils";
 
 let host = "http://localhost:3001"; //TODO: From config or env
 
@@ -64,7 +65,37 @@ export const postChangePassword = async (data: any): Promise<ServiceResponse> =>
 }
 
 export const putSubmitPost = async (data: any): Promise<ServiceResponse> => {
-    const res = await axios.put(`${host}/api/v1/posts/addPost`, data, {headers: authHeader()});
+    // Need to use multipart-formdata since we are uploading files
+    const form = new FormData();
+
+    // Data that pertains to entire post, not just the images/videos contained within
+    form.append("global", JSON.stringify({
+        commentsDisabled: data.commentsDisabled,
+        likesDisabled: data.likesDisabled,
+        locationText: data.locationText,
+        text: data.text
+    }));
+
+    const fileData:any[] = [];    
+    const entries = data.entries.map((entry:any) => {
+        fileData.push({id: entry.id, data: base64ToBlob(entry.data, entry.id)});
+        return {
+            id: entry.id,
+            index: entry.index,
+            isVideofile: entry.isVideoFile,
+            alt: entry.altText,
+        }
+    });
+
+    // Add the file list and associated info for each file
+    form.append("entries", JSON.stringify(entries));
+
+    // finally add the data for each file    
+    fileData.map(entry => {
+        form.append(entry.id, entry.data);
+    });
+
+    const res = await axios.putForm(`${host}/api/v1/posts/addPost`, form, {headers: authHeader()});
     return {
         data: res.data,
         status: res.status,

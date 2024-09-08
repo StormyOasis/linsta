@@ -4,16 +4,16 @@ export type HistoryType = {
     isServer: boolean
 };
 
-export const historyUtils:HistoryType = {
+export const historyUtils: HistoryType = {
     navigate: null,
     location: null,
     isServer: true
 }
 
 export const validatePassword = (value: string): boolean => {
-    const regex:RegExp =
+    const regex: RegExp =
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@.#$!%*?&^])[A-Za-z\d@.#$!%*?&]{8,15}$/;
-        
+
     return regex.test(value);
 };
 
@@ -37,26 +37,26 @@ export const validateFullName = (value: string): boolean => {
 };
 
 export const isVideoFileFromPath = (path: string): boolean => {
-    if(path == null || path.trim().length < 4) {
+    if (path == null || path.trim().length < 4) {
         throw new Error("Invalid path");
     }
 
-    const validVideoExtentions:string[] = ["avif", "ogm", "wmv", "mpg", "webm", "ogv", "mov", "asx", "mpeg", "mp4", "m4v", "avi"];
+    const validVideoExtentions: string[] = ["avif", "ogm", "wmv", "mpg", "webm", "ogv", "mov", "asx", "mpeg", "mp4", "m4v", "avi"];
     const ext = path.toLowerCase().substring(path.lastIndexOf(".") + 1);
-    
-    return validVideoExtentions.includes(ext);    
+
+    return validVideoExtentions.includes(ext);
 }
 
 export const isVideoFileFromType = (type: string): boolean => {
-    if(type == null || type.trim().length < 4) {
+    if (type == null || type.trim().length < 4) {
         throw new Error("Invalid type");
     }
-        
+
     return type.toLowerCase().includes("video");
 }
 
-export const base64ToBlob = (base64String: string, outFileName: string):File|null => {
-    if(base64String === null || base64String.length === 0)
+export const base64ToBlob = (base64String: string, outFileName: string): File | null => {
+    if (base64String === null || base64String.length === 0)
         return null;
 
     const contentType = base64String.substring(5, base64String.indexOf(';'));
@@ -67,75 +67,91 @@ export const base64ToBlob = (base64String: string, outFileName: string):File|nul
 
 export const base64ToBlobEx = (base64String: string, contentType: string, outFileName: string) => {
     const sliceSize = 512;
-  
+
     var byteCharacters = atob(base64String);
     var byteArrays = [];
-  
+
     for (var offset = 0; offset < byteCharacters.length; offset += sliceSize) {
-      var slice = byteCharacters.slice(offset, offset + sliceSize);
-  
-      var byteNumbers = new Array(slice.length);
-      for (var i = 0; i < slice.length; i++) {
-        byteNumbers[i] = slice.charCodeAt(i);
-      }
-  
-      var byteArray = new Uint8Array(byteNumbers);
-  
-      byteArrays.push(byteArray);
+        var slice = byteCharacters.slice(offset, offset + sliceSize);
+
+        var byteNumbers = new Array(slice.length);
+        for (var i = 0; i < slice.length; i++) {
+            byteNumbers[i] = slice.charCodeAt(i);
+        }
+
+        var byteArray = new Uint8Array(byteNumbers);
+
+        byteArrays.push(byteArray);
     }
 
     return new File(byteArrays, outFileName, { type: contentType });
 }
 
-export const blobToBase64 = async (blob:any) => {
+export const blobToBase64 = async (blob: any) => {
     blob = await createBlob(blob);
-    
+
     return new Promise((resolve, _reject) => {
-        const reader = new FileReader();        
+        const reader = new FileReader();
         reader.onloadend = () => resolve(reader.result);
         reader.readAsDataURL(blob);
-      });    
+    });
 }
 
 export const createBlob = async (url: string) => {
     try {
         const response = await fetch(url);
-        const data = await response.blob();        
+        const data = await response.blob();
         return data;
-    } catch(err) {
+    } catch (err) {
         console.log(err);
     }
     return null;
 }
 
-export const extractMimeTypeFromBase64 = (data: string):string|null => {
-    if(data == null || data.length === 0) {
+export const extractMimeTypeFromBase64 = (data: string): string | null => {
+    if (data == null || data.length === 0) {
         return null;
-    }        
+    }
 
     return data.substring(5, data.indexOf(';') + 1);
 }
 
-export const extractFrameFromVideo = async (video:HTMLVideoElement):Promise<string|null> => {
-    if(video == null) {
+export const extractFrameFromVideo = async (video: HTMLVideoElement): Promise<string | null> => {
+    if (video == null) {
         return null;
     }
 
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext('2d');
-  
+
     if (ctx == null) {
         return null;
     }
 
     canvas.height = video.videoHeight || parseInt(video.style.height);
     canvas.width = video.videoWidth || parseInt(video.style.width);
-    
+
     ctx.drawImage(video, 0, 0);
-    
+
     return new Promise((resolve, _reject) => {
-        canvas.toBlob((file:any) => 
-          resolve(URL.createObjectURL(file))
-        , 'image/jpeg')
-      })
+        canvas.toBlob((file: any) =>
+            resolve(URL.createObjectURL(file))
+            , 'image/jpeg')
+    })
+}
+
+export const enableModal = (enable: boolean) => {
+    const cont = document.getElementById("modalContainer");
+    const sectionCont = document.getElementById("mainSectionContainer");
+
+    if (cont && sectionCont) {
+        if (enable) {
+            cont.style.height = "100%";
+            sectionCont.style.pointerEvents = "none";
+        }
+        else {
+            cont.style.height = "0%";
+            sectionCont.style.pointerEvents = "auto";
+        }
+    }
 }

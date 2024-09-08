@@ -35,6 +35,8 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
     const [commentsDisabled, setCommentsDisabled] = useState<boolean>(false); 
     const [likesDisabled, setLikesDisabled] = useState<boolean>(false);
     const [locationText, setLocationText] = useState<string>("");
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+    const [hasErrorOccured, setHasErrorOccured] = useState<boolean>(false);
 
     useEffect(() => {
         // Make sure to revoke uri's to avoid memory leaks
@@ -168,20 +170,34 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
         setHasFileRejections(false);
         setCommentsDisabled(false);
         setLikesDisabled(false);
+        setHasErrorOccured(false);
+        setIsSubmitting(false);
         setLocationText("");
         clearCache();
     }
 
     const submitPost = async () => {
+        setIsSubmitting(true);
+        setHasErrorOccured(false);
+
         const data = {
             commentsDisabled: commentsDisabled,
             likesDisabled: likesDisabled,
             locationText: locationText,
             text: lexicalText,
+            entries: editData.map((entry:EditData) => {return entry})
         };
 
         const result = await putSubmitPost(data);
-        console.log(result);
+
+        setIsSubmitting(false);
+
+        if(result.status === 200) {
+            setHasErrorOccured(false);
+            props.onClose();
+        } else {
+            setHasErrorOccured(true);
+        }
     }    
 
     const steps = [
@@ -216,6 +232,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
             title: "Create Post",
             element: <CreatePostModalFinal editData={editData} locationText={locationText}
                         isCommentsDisabled={commentsDisabled} isLikesDisabled={likesDisabled}
+                        hasErrorOccured={hasErrorOccured}
                         onAltImageChanged={handleAltInputChanged}
                         onLocationChanged={handleLocationChanged}
                         onLexicalChange={handleLexicalChange} 
@@ -232,7 +249,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
 
     return (
         <>
-            <MultiStepModal steps={steps} onClose={props.onClose} stepNumber={stepNumber} />
+            <MultiStepModal steps={steps} onClose={props.onClose} stepNumber={stepNumber} showLoadingAnimation={isSubmitting} />
         </>
     );
 }

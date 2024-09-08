@@ -9,6 +9,7 @@ import {
 } from './controllers/accountsController';
 import { verifyJWT } from "./auth/Auth";
 import { getLocation } from "./controllers/locationsController";
+import { addPost } from "./controllers/postsController";
 
 
 const router = new Router();
@@ -23,5 +24,8 @@ router.post("/api/v1/accounts/change_password", changePassword);
 
 // location handlers
 router.get("/api/v1/locations/get", verifyJWT, getLocation);
+
+// posts handlers
+router.put("/api/v1/posts/addPost", verifyJWT, addPost);
 
 export default router;
