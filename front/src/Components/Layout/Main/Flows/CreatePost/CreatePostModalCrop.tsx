@@ -8,10 +8,9 @@ import CropSVG from "/public/images/crop.svg";
 import OneToOneSVG from "/public/images/1to1.svg";
 import FourToFiveSVG from "/public/images/4to5.svg";
 import SixteenToNineSVG from "/public/images/16to9.svg";
-import LeftArrowSVG from "/public/images/left_arrow.svg";
-import RightArrowSVG from "/public/images/right_arrow.svg";
 import ImageSVG from "/public/images/image.svg";
 import { Flex } from "../../../../../Components/Common/CombinedStyling";
+import MediaSliderButton from "../../../../../Components/Common/MediaSliderButton";
 
 const CropContainer = styled.div`
     height: ${props => props.theme['sizes'].cropperHeight};
@@ -93,38 +92,6 @@ const AspectPopupMenuItemContent = styled.div`
     flex-direction: row;
     justify-content: space-between;
     width: 100%;
-`;
-
-const MediaSliderLeftWrapper = styled.div`
-    z-index: 20;
-    position: absolute;
-    bottom: 0;
-    right: 44px;
-`;
-
-const MediaSliderRightWrapper = styled.div`
-    z-index: 20;
-    position: absolute;
-    bottom: 0;
-    right: 5px;
-`;
-
-const MediaSliderButton = styled.div`
-    width: 24px;
-    height: 24px;
-    color: ${props => props.theme['colors'].borderDefaultColor};
-    background-color: ${props => props.theme['colors'].cropperAspectBkgnd};
-    border-radius: 50%;
-    padding: 5px; 
-    cursor: pointer;
-    display: flex;
-    margin-left: 5px;
-    margin-bottom: 10px;
-    
-    &:hover {
-        color: ${props => props.theme['colors'].borderDefaultColor};
-        background-color: ${props => props.theme['colors'].cropperAspectBkgndNoTrans};
-    };    
 `;
 
 export type CreatePostModalCropProps = {
@@ -351,18 +318,10 @@ const CreatePostModalCropper: React.FC<CropperProps> = (props: CropperProps) => 
                             </CropperAspectRatioButton>                            
                         </CropperAspectRatioButtonWrapper>
                         {props.hasPrev && 
-                            <MediaSliderLeftWrapper>
-                                <MediaSliderButton onClick={() => {props.onPrevFile(); setIsFlaggedForReset(true)}}>
-                                    <LeftArrowSVG />
-                                </MediaSliderButton>
-                            </MediaSliderLeftWrapper>
+                            <MediaSliderButton direction="bottomLeft" onClick={() => {props.onPrevFile(); setIsFlaggedForReset(true)}} />
                         }
                         {props.hasNext &&
-                            <MediaSliderRightWrapper>
-                                <MediaSliderButton onClick={() => {props.onNextFile(); setIsFlaggedForReset(true)}}>
-                                    <RightArrowSVG />
-                                </MediaSliderButton>
-                            </MediaSliderRightWrapper>                                                    
+                            <MediaSliderButton direction="bottomRight" onClick={() => {props.onNextFile(); setIsFlaggedForReset(true)}} />
                         }
                     </CropperWrapper>
                 </CropContainer>

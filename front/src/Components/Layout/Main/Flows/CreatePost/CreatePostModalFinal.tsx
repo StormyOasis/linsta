@@ -2,8 +2,7 @@ import React, { SyntheticEvent, useState } from "react";
 import styled from "styled-components";
 import * as styles from '../../Main.module.css';
 import { ModalSectionWrapper } from "../../../../../Components/Common/MultiStepModal";
-import LeftArrowSVG from "/public/images/left_arrow.svg";
-import RightArrowSVG from "/public/images/right_arrow.svg";
+
 import CircleXSVG from "/public/images/x-circle.svg";
 import CollabSVG from "/public/images/image-user-plus.svg";
 import { EditData } from "./CreatePostModal";
@@ -15,6 +14,7 @@ import Dropdown from "../../../../../Components/Common/Dropdown";
 import ToggleSwitch from "../../../../../Components/Common/ToggleSwitch";
 import { FlexColumn, FlexRow } from "../../../../../Components/Common/CombinedStyling";
 import LocationPopup from "../../../../../Components/Common/LocationPopup";
+import MediaSliderButton from "../../../../../Components/Common/MediaSliderButton";
 
 const MAX_TEXT_LENGTH: number = 2047;
 
@@ -53,36 +53,6 @@ const ControlContentContainer = styled.div`
 const PreviewImage = styled.img`
     display:flex;
     max-height: 100%;
-`;
-
-const MediaSliderLeftWrapper = styled.div`
-    z-index: 20;
-    position: absolute;
-    bottom: 43%;
-    left: -3%;
-`;
-
-const MediaSliderRightWrapper = styled.div`
-    z-index: 20;
-    position: absolute;
-    bottom: 43%;
-    right: 51%;
-`;
-
-const MediaSliderButton = styled.div`
-    width: 24px;
-    height: 24px;
-    color: ${props => props.theme['colors'].borderDefaultColor};
-    background-color: ${props => props.theme['colors'].cropperAspectBkgnd};
-    border-radius: 50%;
-    padding: 5px; 
-    cursor: pointer;
-    display: flex;
-    
-    &:hover {
-        color: ${props => props.theme['colors'].borderDefaultColor};
-        background-color: ${props => props.theme['colors'].cropperAspectBkgndNoTrans};
-    };    
 `;
 
 const TextEditorContainerWrapper = styled.div`
@@ -332,18 +302,10 @@ const CreatePostModalFinal: React.FC<CreatePostModalFinalProps> = (props: Create
                     {data.isVideoFile && <video src={data.originalUrl}></video>}
 
                     {(currentFileIndex > 0) && 
-                        <MediaSliderLeftWrapper>
-                            <MediaSliderButton onClick={() => {handlePrevFile(); setIsFlaggedForReset(true)}}>
-                                <LeftArrowSVG />
-                            </MediaSliderButton>
-                        </MediaSliderLeftWrapper>
+                        <MediaSliderButton direction="left" onClick={() => {handlePrevFile(); setIsFlaggedForReset(true)}} />
                     }
                     {(currentFileIndex < props.editData.length-1) &&
-                        <MediaSliderRightWrapper>
-                            <MediaSliderButton onClick={() => {handleNextFile(); setIsFlaggedForReset(true)}}>
-                                <RightArrowSVG />
-                            </MediaSliderButton>
-                        </MediaSliderRightWrapper>                                                    
+                        <MediaSliderButton direction="right" onClick={() => {handleNextFile(); setIsFlaggedForReset(true)}} />
                     }                    
                 </ImageContainer>
                 <ControlsContainer>

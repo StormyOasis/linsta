@@ -1,12 +1,11 @@
-import React, { RefObject, useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { ModalSectionWrapper } from "../../../../../Components/Common/MultiStepModal";
-import LeftArrowSVG from "/public/images/left_arrow.svg";
-import RightArrowSVG from "/public/images/right_arrow.svg";
 import Slider from "../../../../../Components/Common/Slider";
 import { EditData } from "./CreatePostModal";
 import { FlexColumn } from "../../../../../Components/Common/CombinedStyling";
-import { blobToBase64, extractFrameFromVideo } from "../../../../../utils/utils";
+import { blobToBase64 } from "../../../../../utils/utils";
+import MediaSliderButton from "../../../../../Components/Common/MediaSliderButton";
 
 const EditContainer = styled.div`
     display: flex;
@@ -20,7 +19,7 @@ const EditContainer = styled.div`
 
 const ImageContainer = styled.div`    
     display: flex;
-    width: 54%;
+    width: 50%;
     justify-content: flex-end;
     vertical-align: middle;
 `;
@@ -28,7 +27,7 @@ const ImageContainer = styled.div`
 const ControlsContainer = styled.div`
     display: flex;    
     flex-direction: column;
-    width: 46%;  
+    width: 50%;  
     padding-left: 5px;
     pointer-events: all;
 `;
@@ -64,36 +63,6 @@ const ControlContentContainer = styled.div`
 const PreviewImage = styled.img`
     display:flex;
     max-height: 100%;
-`;
-
-const MediaSliderLeftWrapper = styled.div`
-    z-index: 20;
-    position: absolute;
-    bottom: 43%;
-    left: -20px;
-`;
-
-const MediaSliderRightWrapper = styled.div`
-    z-index: 20;
-    position: absolute;
-    bottom: 43%;
-    right: 47%;
-`;
-
-const MediaSliderButton = styled.div`
-    width: 24px;
-    height: 24px;
-    color: ${props => props.theme['colors'].borderDefaultColor};
-    background-color: ${props => props.theme['colors'].cropperAspectBkgnd};
-    border-radius: 50%;
-    padding: 5px; 
-    cursor: pointer;
-    display: flex;
-    
-    &:hover {
-        color: ${props => props.theme['colors'].borderDefaultColor};
-        background-color: ${props => props.theme['colors'].cropperAspectBkgndNoTrans};
-    };    
 `;
 
 const FilterTile = styled.div`
@@ -410,6 +379,13 @@ const CreatePostModalEditor: React.FC<CreatePostModalEditorProps> = (props: Crea
                     {props.editData.isVideoFile && <video src={props.editData.originalUrl}></video>}
 
                     {props.hasPrev && 
+                        <MediaSliderButton direction="left" onClick={() => {props.onPrevFile(); setIsFlaggedForReset(true)}} />
+                    }
+                    {props.hasNext &&
+                        <MediaSliderButton direction="right" onClick={() => {props.onNextFile(); setIsFlaggedForReset(true)}} />
+                    } 
+{/*
+                    {props.hasPrev && 
                         <MediaSliderLeftWrapper>
                             <MediaSliderButton onClick={() => {props.onPrevFile(); setIsFlaggedForReset(true)}}>
                                 <LeftArrowSVG />
@@ -422,7 +398,7 @@ const CreatePostModalEditor: React.FC<CreatePostModalEditorProps> = (props: Crea
                                 <RightArrowSVG />
                             </MediaSliderButton>
                         </MediaSliderRightWrapper>                                                    
-                    }                    
+                    }   */}                 
                 </ImageContainer>
                 <ControlsContainer>
                 {props.editData.isVideoFile && 
