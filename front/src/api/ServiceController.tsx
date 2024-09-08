@@ -64,7 +64,7 @@ export const postChangePassword = async (data: any): Promise<ServiceResponse> =>
 }
 
 export const putSubmitPost = async (data: any): Promise<ServiceResponse> => {
-    const res = await axios.put(`${host}/api/v1/put/addPost`, data);
+    const res = await axios.put(`${host}/api/v1/posts/addPost`, data, {headers: authHeader()});
     return {
         data: res.data,
         status: res.status,

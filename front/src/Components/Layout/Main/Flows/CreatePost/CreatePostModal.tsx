@@ -122,7 +122,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
         setEditData(newEditData);
     }
 
-    const loadImage =  (updatedEditData: EditData, url: string) => {
+    const loadImage = (updatedEditData: EditData, url: string) => {
         (async () => {
             const img = await loadImageCached(updatedEditData.id, url);
             return img;
@@ -172,9 +172,16 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
         clearCache();
     }
 
-    const submitPost = () => {
-        console.log(lexicalText);
-        putSubmitPost({});
+    const submitPost = async () => {
+        const data = {
+            commentsDisabled: commentsDisabled,
+            likesDisabled: likesDisabled,
+            locationText: locationText,
+            text: lexicalText,
+        };
+
+        const result = await putSubmitPost(data);
+        console.log(result);
     }    
 
     const steps = [
