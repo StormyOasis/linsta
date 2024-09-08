@@ -6,7 +6,7 @@ import RightArrowSVG from "/public/images/right_arrow.svg";
 import Slider from "../../../../../Components/Common/Slider";
 import { EditData } from "./CreatePostModal";
 import { FlexColumn } from "../../../../../Components/Common/CombinedStyling";
-import { extractFrameFromVideo } from "../../../../../utils/utils";
+import { blobToBase64, extractFrameFromVideo } from "../../../../../utils/utils";
 
 const EditContainer = styled.div`
     display: flex;
@@ -115,8 +115,8 @@ const FilterText = styled.div<{selected?: boolean}>`
 
 export type CreatePostModalEditProps = {
     editData: EditData[];
-    onEditedFile: (editData: EditData, newUrl: string, newFilter: string) => void;   
-    loadImage: (editData:EditData, newUrl: string) => string;
+    onEditedFile: (editData: EditData, data: string, newFilter: string) => void;   
+    loadImage: (editData:EditData, data: string) => string;
 }
 
 const CreatePostModalEdit: React.FC<CreatePostModalEditProps> = (props: CreatePostModalEditProps) => {
@@ -155,8 +155,8 @@ type CreatePostModalEditorProps = {
     hasPrev: boolean;
     onNextFile: () => void;
     onPrevFile: () => void;    
-    onEditedFile: (editData:EditData, newUrl:string, newFilter: string) => void;
-    loadImage: (editData:EditData, newUrl: string) => string;
+    onEditedFile: (editData:EditData, data:string, newFilter: string) => void;
+    loadImage: (editData:EditData, data: string) => string;
 }
 
 const CreatePostModalEditor: React.FC<CreatePostModalEditorProps> = (props: CreatePostModalEditorProps) => {
@@ -171,6 +171,8 @@ const CreatePostModalEditor: React.FC<CreatePostModalEditorProps> = (props: Crea
     const [pixelate, setPixelate] = useState(0);
     const [jimpWorker, setJimpWorker] = useState<Worker | null>(null); //WebWorker
 
+    const imageRef = React.useRef();
+
     useEffect(() => {
         // Some of the image manipulations are expensive, so offload all 
         // image manipulations onto a web worker to keep the main thread responsive
@@ -182,7 +184,7 @@ const CreatePostModalEditor: React.FC<CreatePostModalEditorProps> = (props: Crea
         worker.onmessage = (e) => {
             const data = e.data;
 
-            props.onEditedFile(props.editData, data.newUrl, props.editData.filterName);
+            props.onEditedFile(props.editData, data.data, props.editData.filterName);
         }
 
         worker.onerror = (e) => {
@@ -197,7 +199,7 @@ const CreatePostModalEditor: React.FC<CreatePostModalEditorProps> = (props: Crea
     const onFilterClick = async (filterName: string) => {
         if(filterName === "original" || filterName === props.editData.filterName) {
             //reset when clicking the original filter or the current filter to toggle
-            props.onEditedFile(props.editData, props.editData.originalUrl, "original");
+            props.onEditedFile(props.editData,  await blobToBase64(props.editData.originalUrl) as string, "original");
             return;
         }        
 
@@ -208,7 +210,7 @@ const CreatePostModalEditor: React.FC<CreatePostModalEditorProps> = (props: Crea
         image.src = props.editData.originalUrl;
         image.onload = async () => {            
             const result = await window.pixelsJS.default.filterImgAsBlob(image, filterName);            
-            props.onEditedFile(props.editData, result, filterName);
+            props.onEditedFile(props.editData, await blobToBase64(result) as string, filterName);
         }
     }
 
@@ -264,7 +266,7 @@ const CreatePostModalEditor: React.FC<CreatePostModalEditorProps> = (props: Crea
 
                         if(jimpWorker) {
                             jimpWorker.postMessage({
-                                url: props.editData.editedUrl,
+                                data: props.editData.data,
                                 type: "brightness",
                                 value
                             });
@@ -284,7 +286,7 @@ const CreatePostModalEditor: React.FC<CreatePostModalEditorProps> = (props: Crea
 
                         if(jimpWorker) {
                             jimpWorker.postMessage({
-                                url: props.editData.editedUrl,
+                                data: props.editData.data,
                                 type: "contrast",
                                 value
                             });
@@ -304,7 +306,7 @@ const CreatePostModalEditor: React.FC<CreatePostModalEditorProps> = (props: Crea
 
                         if(jimpWorker) {
                             jimpWorker.postMessage({
-                                url: props.editData.editedUrl,
+                                data: props.editData.data,
                                 type: "greyscale",
                                 value
                             });
@@ -324,7 +326,7 @@ const CreatePostModalEditor: React.FC<CreatePostModalEditorProps> = (props: Crea
 
                         if(jimpWorker) {
                             jimpWorker.postMessage({
-                                url: props.editData.editedUrl,
+                                data: props.editData.data,
                                 type: "invert",
                                 value
                             });
@@ -344,7 +346,7 @@ const CreatePostModalEditor: React.FC<CreatePostModalEditorProps> = (props: Crea
 
                         if(jimpWorker) {
                             jimpWorker.postMessage({
-                                url: props.editData.editedUrl,
+                                data: props.editData.data,
                                 type: "blur",
                                 value
                             });
@@ -364,7 +366,7 @@ const CreatePostModalEditor: React.FC<CreatePostModalEditorProps> = (props: Crea
 
                         if(jimpWorker) {
                             jimpWorker.postMessage({
-                                url: props.editData.editedUrl,
+                                data: props.editData.data,
                                 type: "sepia",
                                 value
                             });
@@ -384,7 +386,7 @@ const CreatePostModalEditor: React.FC<CreatePostModalEditorProps> = (props: Crea
 
                         if(jimpWorker) {
                             jimpWorker.postMessage({
-                                url: props.editData.editedUrl,
+                                data: props.editData.data,
                                 type: "pixelate",
                                 value
                             });
@@ -393,7 +395,7 @@ const CreatePostModalEditor: React.FC<CreatePostModalEditorProps> = (props: Crea
                 />                                                                                                    
             </>
         );
-    }       
+    }
 
     if(isFlaggedForReset) {
         resetState();        
@@ -404,7 +406,7 @@ const CreatePostModalEditor: React.FC<CreatePostModalEditorProps> = (props: Crea
             <EditContainer>
                 <ImageContainer>
                     {!props.editData.isVideoFile && 
-                        <PreviewImage src={props.loadImage(props.editData, props.editData.editedUrl)} />}
+                        <PreviewImage ref={imageRef} src={props.loadImage(props.editData, props.editData.data)} />}
                     {props.editData.isVideoFile && <video src={props.editData.originalUrl}></video>}
 
                     {props.hasPrev && 

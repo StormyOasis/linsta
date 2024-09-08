@@ -98,9 +98,22 @@ export const blobToBase64 = async (blob:any) => {
 }
 
 export const createBlob = async (url: string) => {
-    const response = await fetch(url);
-    const data = await response.blob();
-    return data;
+    try {
+        const response = await fetch(url);
+        const data = await response.blob();        
+        return data;
+    } catch(err) {
+        console.log(err);
+    }
+    return null;
+}
+
+export const extractMimeTypeFromBase64 = (data: string):string|null => {
+    if(data == null || data.length === 0) {
+        return null;
+    }        
+
+    return data.substring(5, data.indexOf(';') + 1);
 }
 
 export const extractFrameFromVideo = async (video:HTMLVideoElement):Promise<string|null> => {
@@ -121,7 +134,7 @@ export const extractFrameFromVideo = async (video:HTMLVideoElement):Promise<stri
     ctx.drawImage(video, 0, 0);
     
     return new Promise((resolve, _reject) => {
-        canvas.toBlob((file) => 
+        canvas.toBlob((file:any) => 
           resolve(URL.createObjectURL(file))
         , 'image/jpeg')
       })

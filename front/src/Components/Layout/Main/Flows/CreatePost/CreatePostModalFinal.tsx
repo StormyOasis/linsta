@@ -192,7 +192,7 @@ const AltInput = styled(Input)`
 `;
 
 const AltImage = styled.div<{$editData:EditData}>`
-    background-image: url('${props => props.$editData.editedUrl}');
+    background-image: url('${props => props.$editData.data}');
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
@@ -421,7 +421,7 @@ const CreatePostModalFinal: React.FC<CreatePostModalFinalProps> = (props: Create
         <ModalSectionWrapper>
             <EditContainer>                 
                 <ImageContainer>
-                    {!data.isVideoFile && <PreviewImage src={data.editedUrl} />}
+                    {!data.isVideoFile && <PreviewImage src={data.data} />}
                     {data.isVideoFile && <video src={data.originalUrl}></video>}
 
                     {(currentFileIndex > 0) && 

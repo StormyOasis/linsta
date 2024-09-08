@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-undef
 importScripts("https://cdn.jsdelivr.net/npm/jimp@0.22.12/browser/lib/jimp.min.js");
 
 const base64ToBlob = (base64String, contentType, outFileName) => {
@@ -22,8 +23,22 @@ const base64ToBlob = (base64String, contentType, outFileName) => {
   return new File(byteArrays, outFileName, { type: contentType });
 }
 
+const extractMimeTypeFromBase64 = (data) => {
+  if(data == null || data.length === 0) {
+      return null;
+  }        
+
+  return data.substring(5, data.indexOf(';') + 1);
+}
+
 self.addEventListener("message", (e) => {
-  Jimp.read(e.data.url).then((img) => {
+  const data = e.data.data;
+  const mimeType = extractMimeTypeFromBase64(data);
+  const blob = base64ToBlob(data.substring(data.indexOf(',') + 1), mimeType, null);    
+  const url = URL.createObjectURL(blob);
+
+  // eslint-disable-next-line no-undef
+  Jimp.read(url).then((img) => {
     switch(e.data.type) {
       case "brightness": {
         img.brightness(e.data.value)
@@ -61,15 +76,14 @@ self.addEventListener("message", (e) => {
       }             
     }
 
+    URL.revokeObjectURL(url);
 
     img.getBase64(img._originalMime, (err, src) => {
       if (err) {
         throw new Error(err);
       }
       self.postMessage({
-        prevUrl: e.data.url,
-        newUrl: URL.createObjectURL(
-          base64ToBlob(src.substring(src.indexOf(',') + 1), img._originalMime, e.data.url))
+        data: src
       });
     });
   }).catch((err) => console.error(err))
