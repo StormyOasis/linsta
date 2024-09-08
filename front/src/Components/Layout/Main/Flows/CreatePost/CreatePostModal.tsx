@@ -64,6 +64,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
             const isVideo:boolean = isVideoFileFromType(file.type);
             let imageUrl = null;
 
+            // Don't crop video files, just skipp
             if(isVideo) {
                 imageUrl = file.blob;
             } else {
@@ -80,6 +81,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
     const initEditorData = async (newImageUrls: string[]) => {
         const newEditorData = [];
         
+        // Prepopulate the editor info for each file that has been selected
         for(let idx in files) {
             const index:number = parseInt(idx);
             const file:any = files[index];
@@ -87,6 +89,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
             const isVideoFile:boolean = isVideoFileFromType(file.type);
             const imgData:string = (await blobToBase64(newImageUrls[index]) as string);
 
+            // Populate with the data that we have
             const data:EditData = {
                 id: crypto.randomUUID(),
                 isVideoFile,
@@ -97,7 +100,8 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
             }
             newEditorData[index] = data;
 
-            if(!isVideoFile) {                
+            if(!isVideoFile) {             
+                // only adding images to the cache   
                 await setImage(data.id, imgData);
             }             
         } 
@@ -131,38 +135,25 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
         setLexicalText(data);
     }
 
-    const handleGlobalChanges = (field: string, data: any) => {        
-        switch(field) {
-            case "altInput": {
-                const altText = data.value;
-                const index = data.index;
-
-                const newEditData:EditData[] = [...editData];
-                const entry = newEditData[index];
-                entry.altText = altText;
-                newEditData[index] = entry;
-                setEditData(newEditData);
-
-                break;
-            }
-            case "turnOffComments": {
-                setCommentsDisabled(data.value);
-                break;
-            }
-            case "hideLikes": {
-                setLikesDisabled(data.value);
-                break;
-            }
-        }
+    const handleAltInputChanged = (index: number, value: string) => {
+        const altText = value;
+        const newEditData:EditData[] = [...editData];
+        const entry = newEditData[index];
+        entry.altText = altText;
+        newEditData[index] = entry;
+        setEditData(newEditData);        
     }
+
+    const handleDisableCommentsChanged = (value: boolean) => {
+        setCommentsDisabled(value);
+    }
+
+    const handleDisableLikesChanged = (value: boolean) => {
+        setLikesDisabled(value);
+    }      
     
     const handleLocationChanged = (value: string) => {
         setLocationText(value);
-    }
-
-    const submitPost = () => {
-        console.log(lexicalText);
-        putSubmitPost({});
     }
     
     const clearAllFileData = () => {
@@ -177,8 +168,14 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
         setHasFileRejections(false);
         setCommentsDisabled(false);
         setLikesDisabled(false);
+        setLocationText("");
         clearCache();
     }
+
+    const submitPost = () => {
+        console.log(lexicalText);
+        putSubmitPost({});
+    }    
 
     const steps = [
         {
@@ -212,9 +209,11 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
             title: "Create Post",
             element: <CreatePostModalFinal editData={editData} locationText={locationText}
                         isCommentsDisabled={commentsDisabled} isLikesDisabled={likesDisabled}
+                        onAltImageChanged={handleAltInputChanged}
                         onLocationChanged={handleLocationChanged}
                         onLexicalChange={handleLexicalChange} 
-                        onChange={handleGlobalChanges} />,
+                        onDisableCommentsChanged={handleDisableCommentsChanged}
+                        onDisableLikesChanged={handleDisableLikesChanged}/>,
             options: {
                 showFooter: true,
                 footerNextPageText: "Share"
