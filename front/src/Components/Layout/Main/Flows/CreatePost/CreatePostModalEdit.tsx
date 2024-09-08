@@ -383,22 +383,7 @@ const CreatePostModalEditor: React.FC<CreatePostModalEditorProps> = (props: Crea
                     }
                     {props.hasNext &&
                         <MediaSliderButton direction="right" onClick={() => {props.onNextFile(); setIsFlaggedForReset(true)}} />
-                    } 
-{/*
-                    {props.hasPrev && 
-                        <MediaSliderLeftWrapper>
-                            <MediaSliderButton onClick={() => {props.onPrevFile(); setIsFlaggedForReset(true)}}>
-                                <LeftArrowSVG />
-                            </MediaSliderButton>
-                        </MediaSliderLeftWrapper>
-                    }
-                    {props.hasNext &&
-                        <MediaSliderRightWrapper>
-                            <MediaSliderButton onClick={() => {props.onNextFile(); setIsFlaggedForReset(true)}}>
-                                <RightArrowSVG />
-                            </MediaSliderButton>
-                        </MediaSliderRightWrapper>                                                    
-                    }   */}                 
+                    }               
                 </ImageContainer>
                 <ControlsContainer>
                 {props.editData.isVideoFile && 
