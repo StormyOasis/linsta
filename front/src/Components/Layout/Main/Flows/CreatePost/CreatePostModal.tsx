@@ -1,24 +1,25 @@
-import React, { RefObject, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import MultiStepModal from "../../../../../Components/Common/MultiStepModal";
 import CreatePostModalCrop, { CropData, defaultCropData } from "./CreatePostModalCrop";
 import CreatePostModalSelectMedia from "./CreatePostModalSelectMedia";
-import { base64ToBlob, blobToBase64, isVideoFileFromType } from "../../../../../utils/utils";
+import { blobToBase64, isVideoFileFromType } from "../../../../../utils/utils";
 import getCroppedImg from "../../../../../utils/cropImage";
 import CreatePostModalEdit from "./CreatePostModalEdit";
-import { clear, del, get, set } from 'idb-keyval';
 import CreatePostModalFinal from "./CreatePostModalFinal";
 import { putSubmitPost } from "../../../../../api/ServiceController";
+import { clearCache, loadImageCached, setImage } from "../../../../../utils/CachedImageLoader";
 
 export type CreatePostModalProps = {
     onClose: any
 }
 
 export type EditData = {
+    id: string;
     isVideoFile: boolean;
     index: number;
     originalUrl: string;
-    editedUrl: string;
+    data: string;
     filterName: string;
     altText?: string;
 }
@@ -83,84 +84,43 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
             const file:any = files[index];
 
             const isVideoFile:boolean = isVideoFileFromType(file.type);
-            
+            const imgData:string = (await blobToBase64(newImageUrls[index]) as string);
+
             const data:EditData = {
+                id: crypto.randomUUID(),
                 isVideoFile,
                 index,
                 originalUrl: newImageUrls[index],
-                editedUrl: newImageUrls[index],
+                data: imgData,
                 filterName: 'original'
             }
             newEditorData[index] = data;
 
-            if(!isVideoFile) {
-                set(newImageUrls[index], await blobToBase64(newImageUrls[index]));
+            if(!isVideoFile) {                
+                await setImage(data.id, imgData);
             }             
         } 
 
         setEditData(newEditorData);
     }
 
-    const onEditedFile = async (updatedEditData: EditData, newUrl: string, newFilterName: string) => {         
-        const newEditData = [...editData];
-        const oldBlob = newEditData[updatedEditData.index].editedUrl;
-        newEditData[updatedEditData.index].editedUrl = newUrl;
+    const onEditedFile = async (updatedEditData: EditData, data: string, newFilterName: string) => { 
+        const newEditData = [...editData];        
+        newEditData[updatedEditData.index].data = data;
         newEditData[updatedEditData.index].filterName = newFilterName;
-
-        if(oldBlob !== newEditData[updatedEditData.index].originalUrl && oldBlob !== newUrl) {
-            // Want to revoke the url to any blobs created unless it is the original image
-            // Or if it matches the new one for some reason
-            await del(oldBlob);
-            URL.revokeObjectURL(oldBlob);
-        }
 
         // add to the image cache in indexdb
         if(!updatedEditData.isVideoFile) {
-            set(newUrl, await blobToBase64(newUrl));
+            setImage(updatedEditData.id, data);
         }
-        
+
         setEditData(newEditData);
     }
 
-    const loadImage = (updatedEditData: EditData, url: string):string => {
+    const loadImage =  (updatedEditData: EditData, url: string) => {
         (async () => {
-            let imageSrc = url;
-            try {
-                const result = await fetch(imageSrc);
-                if(result.status === 200) {
-                    return await result.blob();
-                }
-
-            } catch (err) {
-                // assume it's a 404
-                // load the image from the cache
-                const value = await get(url);
-                const file = base64ToBlob(value, url);
-                
-                if(file === null) {
-                    throw new Error("Invalid cache key");
-                }
-
-                const newUrl = URL.createObjectURL(file);                
-                                
-                // update the state
-                const newEditData = [...editData];
-                const oldBlob = newEditData[updatedEditData.index].editedUrl;
-                newEditData[updatedEditData.index].editedUrl = newUrl;
-
-                if(oldBlob !== newEditData[updatedEditData.index].originalUrl && oldBlob !== newUrl) {
-                    // Want to revoke the url to any blobs created unless it is the original image
-                    // Or if it matches the new one for some reason
-                    await del(oldBlob);
-                    URL.revokeObjectURL(oldBlob);                    
-                }
-
-                setEditData(newEditData);  
-
-                return newUrl;
-            }
-
-            return null;
+            const img = await loadImageCached(updatedEditData.id, url);
+            return img;
         })();
 
         return url;
@@ -176,7 +136,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
                 const altText = data.value;
                 const index = data.index;
 
-                const newEditData:any[] = [...editData];
+                const newEditData:EditData[] = [...editData];
                 const entry = newEditData[index];
                 entry.altText = altText;
                 newEditData[index] = entry;
@@ -203,8 +163,8 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
     const clearAllFileData = () => {
         files.forEach((file:any) => URL.revokeObjectURL(file.blob));
         imageUrls.forEach((imageUrl:string) => URL.revokeObjectURL(imageUrl));
-        editData.forEach((data:EditData) => URL.revokeObjectURL(data.editedUrl));
-
+        editData.forEach((data:EditData) => URL.revokeObjectURL(data.originalUrl));
+    
         setFiles([]);
         setCropData([]);
         setImageUrls([]);
@@ -212,7 +172,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
         setHasFileRejections(false);
         setCommentsDisabled(false);
         setLikesDisabled(false);
-        clear(); //clear out the indexdb cache
+        clearCache();
     }
 
     const steps = [
