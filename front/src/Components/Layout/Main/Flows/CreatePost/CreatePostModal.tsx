@@ -34,6 +34,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
     const [lexicalText, setLexicalText] = useState<string|null>(null);
     const [commentsDisabled, setCommentsDisabled] = useState<boolean>(false); 
     const [likesDisabled, setLikesDisabled] = useState<boolean>(false);
+    const [locationText, setLocationText] = useState<string>("");
 
     useEffect(() => {
         // Make sure to revoke uri's to avoid memory leaks
@@ -130,7 +131,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
         setLexicalText(data);
     }
 
-    const handleChange = (field: string, data: any) => {        
+    const handleGlobalChanges = (field: string, data: any) => {        
         switch(field) {
             case "altInput": {
                 const altText = data.value;
@@ -145,14 +146,18 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
                 break;
             }
             case "turnOffComments": {
-                setCommentsDisabled(data);
+                setCommentsDisabled(data.value);
                 break;
             }
             case "hideLikes": {
-                setLikesDisabled(data);
+                setLikesDisabled(data.value);
                 break;
             }
         }
+    }
+    
+    const handleLocationChanged = (value: string) => {
+        setLocationText(value);
     }
 
     const submitPost = () => {
@@ -205,10 +210,11 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
         },
         {
             title: "Create Post",
-            element: <CreatePostModalFinal editData={editData} 
+            element: <CreatePostModalFinal editData={editData} locationText={locationText}
                         isCommentsDisabled={commentsDisabled} isLikesDisabled={likesDisabled}
+                        onLocationChanged={handleLocationChanged}
                         onLexicalChange={handleLexicalChange} 
-                        onChange={handleChange} />,
+                        onChange={handleGlobalChanges} />,
             options: {
                 showFooter: true,
                 footerNextPageText: "Share"

@@ -1,10 +1,9 @@
-import React, { RefObject, SyntheticEvent, useEffect, useState } from "react";
+import React, { SyntheticEvent, useState } from "react";
 import styled from "styled-components";
 import * as styles from '../../Main.module.css';
 import { ModalSectionWrapper } from "../../../../../Components/Common/MultiStepModal";
 import LeftArrowSVG from "/public/images/left_arrow.svg";
 import RightArrowSVG from "/public/images/right_arrow.svg";
-import LocationSVG from "/public/images/location.svg";
 import CircleXSVG from "/public/images/x-circle.svg";
 import CollabSVG from "/public/images/image-user-plus.svg";
 import { EditData } from "./CreatePostModal";
@@ -15,7 +14,7 @@ import TextEditor from "../../../../Common/Lexical/TextEditor";
 import Dropdown from "../../../../../Components/Common/Dropdown";
 import ToggleSwitch from "../../../../../Components/Common/ToggleSwitch";
 import { FlexColumn, FlexRow } from "../../../../../Components/Common/CombinedStyling";
-import { getLocation } from "../../../../../api/ServiceController";
+import LocationPopup from "../../../../../Components/Common/LocationPopup";
 
 const MAX_TEXT_LENGTH: number = 2047;
 
@@ -148,20 +147,6 @@ const Input = styled.input`
     }
 `;
 
-const LocationPopupContainer = styled.div<{$isOpen: boolean}>`
-    display: ${props => props.$isOpen ? "flex" : "none"};
-    position: fixed;
-    top: 10px;
-    width: 20%;
-    height: 50%;
-    z-index: 9;
-    background-color: ${props => props.theme['colors'].backgroundColor};
-    border: 1px solid ${props => props.theme['colors'].borderDefaultColor};
-    border-radius: 8px;
-    overflow-y: auto;
-    overflow-x: clip;
-`;
-
 const CollabPopupContainer = styled.div<{$isOpen: boolean}>`
     display: ${props => props.$isOpen ? "flex" : "none"};
     position: fixed;
@@ -213,23 +198,14 @@ const AdvancedDropdownLabel = styled.label`
     font-size: 16px;
 `;
 
-const LocationEntry = styled.div`
-    padding: 8px;
-    width: 100%;
-    max-height: 36px;
-    cursor: pointer;
-
-    &:hover {
-        background-color: ${props => props.theme['colors'].borderDefaultColor};
-    }; 
-`;
-
 export type CreatePostModalFinalProps = {
+    locationText?: string;
     isCommentsDisabled: boolean;
     isLikesDisabled: boolean;
     editData: EditData[];
     onLexicalChange: (data: string) => void;
     onChange: (field: string, data: any) => void;
+    onLocationChanged: (value: string) => void;
 }
 
 const CreatePostModalFinal: React.FC<CreatePostModalFinalProps> = (props: CreatePostModalFinalProps) => {
@@ -237,12 +213,9 @@ const CreatePostModalFinal: React.FC<CreatePostModalFinalProps> = (props: Create
     const [isFlaggedForReset, setIsFlaggedForReset] = useState(false);
     const [emoji, setEmoji] = useState(null);
     const [charCount, setCharCount] = useState(0);
-    const [isLocationOpen, setIsLocationOpen] = useState(false);
-    const [locationData, setLocationData] = useState<{Place: any, Relevance: number}[]>([]);
-    const [locationText, setLocationText] = useState<string>("");
     const [collabText, setCollabText] = useState<string>("");
     const [isCollabOpen, setIsCollabOpen] = useState(false);
-    const [collabData, setCollabData] = useState(null);    
+    const [collabData, setCollabData] = useState(null);
 
     const authUser:AuthUser = useSelector((state:any) => state.auth.user);
 
@@ -258,11 +231,8 @@ const CreatePostModalFinal: React.FC<CreatePostModalFinalProps> = (props: Create
         setIsFlaggedForReset(false);
         setCharCount(0);
         setEmoji(null);
-        setIsLocationOpen(false);
-        setIsCollabOpen(false);  
-        setLocationText("");      
+        setIsCollabOpen(false);             
         setCollabText("");
-        setLocationData([]);
         setCollabData(null);
     }
 
@@ -277,48 +247,6 @@ const CreatePostModalFinal: React.FC<CreatePostModalFinalProps> = (props: Create
 
     const getCurrentLength = (count:number, _delCount:number):void => {
         setCharCount(count);
-    }
-
-    const handleLocationClick = () => {
-        setIsLocationOpen(true);
-    }
-
-    const handleSelectLocationClick = (event: SyntheticEvent, label: string) => {        
-        event.stopPropagation();
-        event.preventDefault();
-
-        setIsLocationOpen(false);
-        setLocationData([]);
-        setLocationText(label);
-    }    
-
-    const handleLocationKeyUp = (e:React.KeyboardEvent<HTMLDivElement>) => {        
-        if(e.key === "Escape") { // On escape key press, close the picker            
-            setIsLocationOpen(false);
-            return;
-        }
-    } 
-
-    const handleLocationTextChange = async (e: React.ChangeEvent<HTMLInputElement>) => {                
-        if(e.currentTarget.value === null || e.currentTarget.value.length === 0) {            
-            setLocationText("");
-            setLocationData([]);
-            return;
-        }
-        setLocationText(e.currentTarget.value);
-
-        const result = await getLocation(e.currentTarget.value);
-        
-        setLocationData(result.data);        
-    }     
-    
-    const handleLocationClear = (e:React.SyntheticEvent<HTMLInputElement>) => {
-        e.stopPropagation();
-        e.preventDefault();
-
-        setIsLocationOpen(false);
-        setLocationData([]);
-        setLocationText("");
     }
 
     const handleCollabTextChange = async (e: React.ChangeEvent<HTMLInputElement>) => {        
@@ -350,25 +278,6 @@ const CreatePostModalFinal: React.FC<CreatePostModalFinalProps> = (props: Create
         setCollabText("");
     } 
     
-    const renderLocationEntries = () => {
-        if(locationData == null) {
-            return <></>;
-        }
-        const entries:any[] = [];
-
-        locationData.map(entry => {
-            entries.push(
-                <LocationEntry key={entries.length} onClick={(e) => handleSelectLocationClick(e, entry.Place.Label)}>
-                    <span>
-                        {entry.Place.Label}
-                    </span>
-                </LocationEntry>                        
-            );
-        });
-
-        return entries;
-    }
-
     const renderAltImages = () => {
         const altImages:any = [];
         
@@ -462,26 +371,7 @@ const CreatePostModalFinal: React.FC<CreatePostModalFinalProps> = (props: Create
                         </TextEditorContainerWrapper>
                         <AdditionalControlsContainer>
                             <InputContainer>
-                                <Label>
-                                    <Input type="text" placeholder="Add Location" spellCheck={true} 
-                                            aria-label="Add Location" aria-placeholder="Add Location"
-                                            name="locationInput" value={locationText}
-                                            onClick={handleLocationClick} 
-                                            onKeyUp={handleLocationKeyUp}
-                                            onChange={handleLocationTextChange}>
-                                    </Input>
-                                    <SVGContainer>
-                                        {(locationText && locationText.length > 0) ?                                              
-                                            <CircleXSVG style={{cursor: "pointer" }} onClick={handleLocationClear} /> :
-                                            <LocationSVG />
-                                        }                                        
-                                    </SVGContainer>
-                                    <LocationPopupContainer $isOpen={isLocationOpen}>
-                                        <FlexColumn>
-                                            {renderLocationEntries()}
-                                        </FlexColumn>
-                                    </LocationPopupContainer>
-                                </Label>
+                                <LocationPopup locationText={props.locationText} onLocationChanged={props.onLocationChanged} />
                             </InputContainer>
                             <InputContainer>
                                 <Label>
