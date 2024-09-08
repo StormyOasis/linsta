@@ -20,6 +20,7 @@ import { MaxLengthPlugin } from "./Plugins/MaxLengthPlugin";
 import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
 import { $generateHtmlFromNodes } from '@lexical/html';
 import { EditorState, LexicalEditor } from "lexical";
+import Placeholder from "./Plugins/Placeholder";
 
 type TextEditorProps = {
   emoji: any;
@@ -51,10 +52,7 @@ const TextEditor = (props: TextEditorProps) => {
       <LexicalComposer initialConfig={initialConfig}>
         <RichTextPlugin
           contentEditable={<ContentEditable />}
-          placeholder={
-            <div className="editor-placeholder" aria-label="Write a caption" aria-placeholder="Write a caption">
-              Write a caption...
-            </div>}
+          placeholder={<Placeholder/>}
           ErrorBoundary={LexicalErrorBoundary}
         />
         <HistoryPlugin />
