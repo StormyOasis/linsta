@@ -9,6 +9,8 @@ import CreatePostModalEdit from "./CreatePostModalEdit";
 import CreatePostModalFinal from "./CreatePostModalFinal";
 import { putSubmitPost } from "../../../../../api/ServiceController";
 import { clearCache, loadImageCached, setImage } from "../../../../../utils/CachedImageLoader";
+import { AuthUser } from "../../../../../api/Auth";
+import { useSelector } from "react-redux";
 
 export type CreatePostModalProps = {
     onClose: any
@@ -37,6 +39,8 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
     const [locationText, setLocationText] = useState<string>("");
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [hasErrorOccured, setHasErrorOccured] = useState<boolean>(false);
+
+    const authUser:AuthUser = useSelector((state:any) => state.auth.user);
 
     useEffect(() => {
         // Make sure to revoke uri's to avoid memory leaks
@@ -188,7 +192,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
             entries: editData.map((entry:EditData) => {return entry})
         };
 
-        const result = await putSubmitPost(data);
+        const result = await putSubmitPost(data, authUser);
 
         setIsSubmitting(false);
 

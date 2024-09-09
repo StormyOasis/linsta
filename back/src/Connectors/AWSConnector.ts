@@ -3,9 +3,13 @@ import { SESClient } from "@aws-sdk/client-ses";
 import { SNSClient, PublishCommand } from "@aws-sdk/client-sns";
 import { LocationClient, SearchPlaceIndexForTextCommand } from "@aws-sdk/client-location";
 import { withAPIKey } from "@aws/amazon-location-utilities-auth-helper";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+
+import formidable from 'formidable';
 import config from 'config';
 import logger from "../logger/logger";
 import Metrics from "../metrics/Metrics";
+import { readFileSync } from "fs";
 
 export const SEND_CONFIRM_TEMPLATE = `sendconfirmemail`;
 export const FORGOT_PASSWORD_TEMPLATE = `forgotpasswordemail`;
@@ -79,4 +83,24 @@ export const getLocationData = async (term: string) => {
     return response;
 }
 
+export const uploadFile = async (file: formidable.File, entryId: string, userId: string, fileExt?: string):Promise<string> => {
+    if(file === null) {
+        throw new Error("Invalid filename");
+    }
 
+    try {
+        const REGION:string = config.get("aws.region");        
+        const s3Client = new S3Client({region: REGION});
+
+        const result = await s3Client.send(new PutObjectCommand({
+            Bucket: config.get("aws.s3.userMediaBucket"),
+            Key: `${userId}/${entryId}${fileExt}`,
+            Body: readFileSync(file.filepath)
+        }));
+        
+        return result.ETag as string;
+
+    } catch(err) {
+        throw new Error("Error uploading to s3");
+    }
+}
