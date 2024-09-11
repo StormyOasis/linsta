@@ -16,7 +16,6 @@ services:
   linsta-jenkins:
     image: jenkins/jenkins
     container_name: linsta_jenkins
-    restart: always
     privileged: true
     user: root
     ports:

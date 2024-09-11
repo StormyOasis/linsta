@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest --config=jest.config.js",
-    "start": "tsc -p tsconfig.json && node build/index.js",
+    "start": "NODE_EXTRA_CA_CERTS='/usr/share/es/certs/ca.crt' tsc -p tsconfig.json && node build/index.js",
     "clean": "rm -rf ./dist/* ./build/* ./package/*",
     "build": "tsc -p tsconfig.json --skipLibCheck",
     "lint": "eslint src/ --ext .js,.jsx,.ts,.tsx",

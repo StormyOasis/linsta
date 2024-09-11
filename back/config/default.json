@@ -46,5 +46,11 @@
         "s3": {
             "userMediaBucket": "linsta-public"
         }
+    },
+
+    "es": {
+        "node": "https://localhost:9200",
+        "apiKey": "YmVEeTJaRUJWVVYxaktGVGs5V2c6d3F6UEIyMDlTM0tNTlhzR3I0Q3hpdw==",
+        "index": "main"
     }
 }
