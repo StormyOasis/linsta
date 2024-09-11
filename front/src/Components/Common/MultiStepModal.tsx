@@ -2,6 +2,7 @@ import React from "react";
 import { createPortal } from "react-dom";
 import styled from "styled-components";
 import StyledLink from "./StyledLink";
+import { enableModal } from "../../utils/utils";
 
 const ModalWrapper = styled.div`
   align-items: center;
@@ -172,27 +173,11 @@ const PrevButton = styled.div`
   width: 22px;
 `;
 
-
-export const EnableModal = (enable: boolean) => {
-  const cont = document.getElementById("modalContainer");
-  const sectionCont = document.getElementById("mainSectionContainer");
-
-  if (cont && sectionCont) {
-    if (enable) {
-      cont.style.height = "100%";
-      sectionCont.style.pointerEvents = "none";
-    }
-    else {
-      cont.style.height = "0%";
-      sectionCont.style.pointerEvents = "auto";
-    }
-  }
-}
-
 export type MultiStepModalProps = {
   steps: Array<{ title: string, options: any, element: JSX.Element, onNext?: any, onPrev?: any }>;
   onClose: any;
   stepNumber: number;
+  showLoadingAnimation: boolean;
 };
 
 type MultiStepModalState = {
@@ -210,11 +195,11 @@ export default class MultiStepModal extends React.Component<MultiStepModalProps,
 
   onClose = (event: React.ChangeEvent<HTMLSelectElement>) => {
     this.props.onClose && this.props.onClose(event);
-    EnableModal(false);
+    enableModal(false);
   };
 
   override componentDidMount(): void {
-    EnableModal(true);
+    enableModal(true);
   }
 
   override render() {
@@ -229,7 +214,7 @@ export default class MultiStepModal extends React.Component<MultiStepModalProps,
       <>
         <ModalWrapper role="dialog">
           <ModalInnerWrapper>
-            <ModalInnerWrapper2>
+            <ModalInnerWrapper2>              
               <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
                 <ModalTitleBarWrapper>
                   <ModalTitleBarInnerWrapper>
@@ -250,10 +235,15 @@ export default class MultiStepModal extends React.Component<MultiStepModalProps,
                   </ModalTitleBarInnerWrapper>
                 </ModalTitleBarWrapper>
                 <ModalContentWrapper>
-                  {step.element}
+                  {this.props.showLoadingAnimation &&
+                    <div>
+                      <img src="/public/images/loading.gif" />
+                    </div>                        
+                  }
+                  {!this.props.showLoadingAnimation && step.element}
                 </ModalContentWrapper>
               </div>
-              {step.options.showFooter &&
+              {(step.options.showFooter && !this.props.showLoadingAnimation) &&
                 <ModalFooter>
                   <PrevButton onClick={step?.onPrev} />
                   <StyledLink to="#" onClick={step?.onNext}>{step.options.footerNextPageText}</StyledLink>

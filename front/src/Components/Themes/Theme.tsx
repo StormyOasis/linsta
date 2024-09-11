@@ -5,6 +5,7 @@ const defaultTheme = {
     colors: {
         buttonTextColorDefault: "white",
         backgroundColor: "white",
+        backgroundDisabled: "rgba(0, 0, 0, .6)",
         borderDefaultColor: "rgb(220, 220, 220)",
         borderDarkColor: "rgb(180,180, 180)",
         inputBackgroundColor: "rgb(250, 250, 250)",
@@ -16,7 +17,7 @@ const defaultTheme = {
         navLinkTextColor: "rgb(0, 50, 100)",
         cropperAspectBkgnd: "rgba(25,25,25,.6)",
         cropperAspectBkgndNoTrans: "rgb(25,25,25)",
-        mediumTextColor: "rgb(120, 120, 120)",
+        mediumTextColor: "rgb(120, 120, 120)",        
     },    
 
     input: {

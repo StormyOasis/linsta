@@ -172,6 +172,7 @@ export type CreatePostModalFinalProps = {
     locationText?: string;
     isCommentsDisabled: boolean;
     isLikesDisabled: boolean;
+    hasErrorOccured: boolean;
     editData: EditData[];
     onLexicalChange: (data: string) => void;
     onDisableCommentsChanged: (value: boolean) => void;
@@ -295,105 +296,108 @@ const CreatePostModalFinal: React.FC<CreatePostModalFinalProps> = (props: Create
     const data = props.editData[currentFileIndex];
 
     return (
-        <ModalSectionWrapper>
-            <EditContainer>                 
-                <ImageContainer>
-                    {!data.isVideoFile && <PreviewImage src={data.data} />}
-                    {data.isVideoFile && <video src={data.originalUrl}></video>}
+        <>
+            {props.hasErrorOccured && <div style={{fontWeight: 700, color: "red", textAlign: "center", marginBottom: "5px"}}>An error occured when submitting your post</div>}
+            <ModalSectionWrapper>
+                <EditContainer>                 
+                    <ImageContainer>
+                        {!data.isVideoFile && <PreviewImage src={data.data} />}
+                        {data.isVideoFile && <video src={data.originalUrl}></video>}
 
-                    {(currentFileIndex > 0) && 
-                        <MediaSliderButton direction="left" onClick={() => {handlePrevFile(); setIsFlaggedForReset(true)}} />
-                    }
-                    {(currentFileIndex < props.editData.length-1) &&
-                        <MediaSliderButton direction="right" onClick={() => {handleNextFile(); setIsFlaggedForReset(true)}} />
-                    }                    
-                </ImageContainer>
-                <ControlsContainer>
-                    <div style={{fontWeight: 700, paddingBottom: "10px"}}>
-                        {authUser.userName}
-                    </div>                           
-                    <ControlContentContainer>
-                        <TextEditorContainerWrapper>
-                            <TextEditorContainer>
-                                <TextEditor onChange={props.onLexicalChange} 
-                                    maxTextLength={MAX_TEXT_LENGTH} emoji={emoji} getCurrentLength={getCurrentLength} />                                
-                            </TextEditorContainer>                                                         
-                            <TextEditorBottomWrapper>
-                                <span style={{flexBasis: "75%"}}>
-                                    <EmojiPickerPopup onEmojiClick={handleEmojiSelect} />
-                                </span>
-                                <CharacterCountContainer>
-                                    {charCount > (MAX_TEXT_LENGTH+1) ? 
-                                        `${(MAX_TEXT_LENGTH+1)} / ${MAX_TEXT_LENGTH + 1}` : 
-                                        `${charCount} / ${MAX_TEXT_LENGTH + 1}`}
-                                </CharacterCountContainer>
-                            </TextEditorBottomWrapper>
-                        </TextEditorContainerWrapper>
-                        <AdditionalControlsContainer>
-                            <InputContainer>
-                                <LocationPopup locationText={props.locationText} onLocationChanged={props.onLocationChanged} />
-                            </InputContainer>
-                            <InputContainer>
-                                <Label>
-                                    <Input type="text" placeholder="Add Collaborators" spellCheck={true} 
-                                            aria-label="Add Collaborators" aria-placeholder="Add Collaborators"
-                                            name="collabInput" value={collabText}                                       
-                                            onClick={handleCollabClick} 
-                                            onKeyUp={handleCollabKeyUp}
-                                            onChange={handleCollabTextChange}>                                            
-                                    </Input>
-                                    <SVGContainer>
-                                        {(collabText && collabText.length > 0) ?                                              
-                                            <CircleXSVG style={{cursor: "pointer" }} onClick={handleCollabClear} /> :
-                                            <CollabSVG />
-                                        }                              
-                                    </SVGContainer>
-                                    <CollabPopupContainer $isOpen={isCollabOpen}>
-                                        <FlexColumn>
-                                            collab stuff here
-                                        </FlexColumn>                                    
-                                    </CollabPopupContainer>
-                                </Label>
-                            </InputContainer>        
-                            <Dropdown title="Accessibility">
-                                <div>
-                                    <Text>
-                                        Alt text describes your photos and videos for people with visual impairments.
-                                    </Text>
-                                    {renderAltImages()}
-                                </div>
-                            </Dropdown>
-                            <Dropdown title="Advanced Settings">
-                                <FlexColumn>
-                                    <div style={{paddingTop: "5px"}}>
-                                        <FlexRow>
-                                            <AdvancedDropdownLabel>
-                                                Hide like and view counts    
-                                            </AdvancedDropdownLabel>
-                                            <ToggleSwitch isChecked={props.isLikesDisabled} onChange={props.onDisableLikesChanged} />
-                                        </FlexRow>
+                        {(currentFileIndex > 0) && 
+                            <MediaSliderButton direction="left" onClick={() => {handlePrevFile(); setIsFlaggedForReset(true)}} />
+                        }
+                        {(currentFileIndex < props.editData.length-1) &&
+                            <MediaSliderButton direction="right" onClick={() => {handleNextFile(); setIsFlaggedForReset(true)}} />
+                        }                    
+                    </ImageContainer>
+                    <ControlsContainer>
+                        <div style={{fontWeight: 700, paddingBottom: "10px"}}>
+                            {authUser.userName}
+                        </div>                           
+                        <ControlContentContainer>
+                            <TextEditorContainerWrapper>
+                                <TextEditorContainer>
+                                    <TextEditor onChange={props.onLexicalChange} 
+                                        maxTextLength={MAX_TEXT_LENGTH} emoji={emoji} getCurrentLength={getCurrentLength} />                                
+                                </TextEditorContainer>                                                         
+                                <TextEditorBottomWrapper>
+                                    <span style={{flexBasis: "75%"}}>
+                                        <EmojiPickerPopup onEmojiClick={handleEmojiSelect} />
+                                    </span>
+                                    <CharacterCountContainer>
+                                        {charCount > (MAX_TEXT_LENGTH+1) ? 
+                                            `${(MAX_TEXT_LENGTH+1)} / ${MAX_TEXT_LENGTH + 1}` : 
+                                            `${charCount} / ${MAX_TEXT_LENGTH + 1}`}
+                                    </CharacterCountContainer>
+                                </TextEditorBottomWrapper>
+                            </TextEditorContainerWrapper>
+                            <AdditionalControlsContainer>
+                                <InputContainer>
+                                    <LocationPopup locationText={props.locationText} onLocationChanged={props.onLocationChanged} />
+                                </InputContainer>
+                                <InputContainer>
+                                    <Label>
+                                        <Input type="text" placeholder="Add Collaborators" spellCheck={true} 
+                                                aria-label="Add Collaborators" aria-placeholder="Add Collaborators"
+                                                name="collabInput" value={collabText}                                       
+                                                onClick={handleCollabClick} 
+                                                onKeyUp={handleCollabKeyUp}
+                                                onChange={handleCollabTextChange}>                                            
+                                        </Input>
+                                        <SVGContainer>
+                                            {(collabText && collabText.length > 0) ?                                              
+                                                <CircleXSVG style={{cursor: "pointer" }} onClick={handleCollabClear} /> :
+                                                <CollabSVG />
+                                            }                              
+                                        </SVGContainer>
+                                        <CollabPopupContainer $isOpen={isCollabOpen}>
+                                            <FlexColumn>
+                                                collab stuff here
+                                            </FlexColumn>                                    
+                                        </CollabPopupContainer>
+                                    </Label>
+                                </InputContainer>        
+                                <Dropdown title="Accessibility">
+                                    <div>
                                         <Text>
-                                            Only you will see the total number of likes and views on this post. You can change this later by going to the menu at the top of the post.  
+                                            Alt text describes your photos and videos for people with visual impairments.
                                         </Text>
+                                        {renderAltImages()}
                                     </div>
-                                    <div style={{paddingTop: "5px"}}>
-                                        <FlexRow>
-                                            <AdvancedDropdownLabel>
-                                                Turn off commenting
-                                            </AdvancedDropdownLabel>
-                                            <ToggleSwitch isChecked={props.isCommentsDisabled} onChange={props.onDisableCommentsChanged} />
-                                        </FlexRow>
-                                        <Text>
-                                            You can change this later by going to the menu at the top of the post.
-                                        </Text>
-                                    </div>                                
-                                </FlexColumn>
-                            </Dropdown>                                           
-                        </AdditionalControlsContainer>                            
-                    </ControlContentContainer>
-                </ControlsContainer>
-            </EditContainer>
-        </ModalSectionWrapper>    
+                                </Dropdown>
+                                <Dropdown title="Advanced Settings">
+                                    <FlexColumn>
+                                        <div style={{paddingTop: "5px"}}>
+                                            <FlexRow>
+                                                <AdvancedDropdownLabel>
+                                                    Hide like and view counts    
+                                                </AdvancedDropdownLabel>
+                                                <ToggleSwitch isChecked={props.isLikesDisabled} onChange={props.onDisableLikesChanged} />
+                                            </FlexRow>
+                                            <Text>
+                                                Only you will see the total number of likes and views on this post. You can change this later by going to the menu at the top of the post.  
+                                            </Text>
+                                        </div>
+                                        <div style={{paddingTop: "5px"}}>
+                                            <FlexRow>
+                                                <AdvancedDropdownLabel>
+                                                    Turn off commenting
+                                                </AdvancedDropdownLabel>
+                                                <ToggleSwitch isChecked={props.isCommentsDisabled} onChange={props.onDisableCommentsChanged} />
+                                            </FlexRow>
+                                            <Text>
+                                                You can change this later by going to the menu at the top of the post.
+                                            </Text>
+                                        </div>                                
+                                    </FlexColumn>
+                                </Dropdown>                                           
+                            </AdditionalControlsContainer>                            
+                        </ControlContentContainer>
+                    </ControlsContainer>
+                </EditContainer>
+            </ModalSectionWrapper>    
+        </>
     )    
 };
 

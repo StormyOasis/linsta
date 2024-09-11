@@ -5,6 +5,7 @@ import SideBar from "./SideBar";
 import MainContent from "./MainContent";
 import * as styles from './Main.module.css';
 import CreatePostModal from "./Flows/CreatePost/CreatePostModal";
+import { enableModal } from "../../../utils/utils";
 
 
 const MainLayout: React.FC = () => {
@@ -16,7 +17,7 @@ const MainLayout: React.FC = () => {
 
     return (
         <Theme>
-            {createPostModalVisible && <CreatePostModal onClose={() => setCreatePostModalVisible(false)}/>}
+            {createPostModalVisible && <CreatePostModal onClose={() => {setCreatePostModalVisible(false), enableModal(false)}}/>}
             <div className={styles.mainWrapper}>
                 <SideBar createPostHandler={createPostHandler}/>
                 <MainContent />

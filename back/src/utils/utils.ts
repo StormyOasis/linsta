@@ -1,3 +1,5 @@
+import sanitizeHtml from 'sanitize-html';
+
 export const isEmail = (str: string) : boolean => {
     const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
     return emailRegex.test(str);
@@ -32,4 +34,27 @@ export const obfuscatePhone = (phone: string):string => {
     const maxLength = phone.length;
     const starLength = maxLength - 5;
     return `${phone.substring(0,3)}${"*".repeat(starLength)}${phone.substring(maxLength - 2)}`;
+}
+
+export const sanitize = (html: string):string => {
+    return sanitizeHtml(html, {
+        allowedTags: ['b', 'i', 'a', 'strong', 'br'],
+        allowedAttributes: {
+            'a': ['href']
+        },
+    });
+}
+
+export const getFileExtByMimeType = (mimeType: string|null):string => {
+    switch(mimeType) {
+        case "image/jpeg": {
+            return ".jpg";
+        }
+        case "video/mp4": {
+            return ".mp4";
+        }
+        default: {
+            throw new Error("Unknown mime type");
+        }
+    }
 }

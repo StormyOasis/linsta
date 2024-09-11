@@ -42,6 +42,15 @@
         "location": {
             "apiKey": "v1.public.eyJqdGkiOiI3N2JkNDE0Mi1kNTU3LTQxYzEtODMwNy1hYWRhMzkwNDY0ZWIifUrA24NxtGEvaYFK0wE-6FeJX_1GHDZAenYpPMzA0p7-dYp8Fb_zg9Cpq3RZyh_ot3XwvcxntgsT6cKgrPBFY9kuuBdexuNaZABc-Ku95xbUeJS8ToSRXXiVhqMpgINlAXXKOABXUTcpxSoOVnYBfrUfXoQOZuVq9eh4PXX6UJIPAkc4BEuyqEoSxC3GfEp3v5qdyaBG6rUbVG_5ls5I6Zyj27emLT2ay3KIB-19qBFUsYkzEEvdVbb24JiL3f7jq_GZBQGSKZ574RTwB9Z4WO73CMikdmJIUEEKluvecZDIEDk9sq1yzF9gWeqOUk2kp_ZKcIwjAgVT8iL_CxyrmHA.MGFjMDA4ZmUtYWRiYy00NTgyLTg0Y2MtZTY3MzFlZDRmYTQ1",
             "index": "LinstaPlaceIndex"
+        },
+        "s3": {
+            "userMediaBucket": "linsta-public"
         }
+    },
+
+    "es": {
+        "node": "https://localhost:9200",
+        "apiKey": "YmVEeTJaRUJWVVYxaktGVGs5V2c6d3F6UEIyMDlTM0tNTlhzR3I0Q3hpdw==",
+        "index": "main"
     }
 }

@@ -1,7 +1,7 @@
 import Koa, { Context } from "koa";
 import cors from "@koa/cors";
 import json from 'koa-json';
-import bodyParser from "koa-bodyparser";
+import { koaBody } from "koa-body";
 import router from "./router";
 import Logger from "./logger/logger";
 import DBConnector from "./Connectors/DBConnector";
@@ -26,7 +26,9 @@ App.use(json())
     );
     await next();
   })
-  .use(bodyParser())
+  .use(koaBody({
+    multipart: true
+  }))
   .use(router.routes())
   .use(router.allowedMethods())
   .listen(PORT, () => {
