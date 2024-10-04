@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-import MultiStepModal from "../../../../../Components/Common/MultiStepModal";
+import MultiStepModal from "../../../../Common/MultiStepModal";
 import CreatePostModalCrop, { CropData, defaultCropData } from "./CreatePostModalCrop";
 import CreatePostModalSelectMedia from "./CreatePostModalSelectMedia";
 import { blobToBase64, isVideoFileFromType } from "../../../../../utils/utils";

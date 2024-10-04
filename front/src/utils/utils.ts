@@ -1,8 +1,6 @@
-export type HistoryType = {
-    navigate: any,
-    location: any,
-    isServer: boolean
-};
+import sanitizeHtml from 'sanitize-html';
+
+import { HistoryType, Post } from "../api/types";
 
 export const historyUtils: HistoryType = {
     navigate: null,
@@ -154,4 +152,62 @@ export const enableModal = (enable: boolean) => {
             sectionCont.style.pointerEvents = "auto";
         }
     }
+}
+
+export const isPostLiked = (userName: string, post: Post):boolean => {
+    if(post == null || userName == null) {
+        return false;
+    }
+
+    const result = post.global.likes.filter((like:any) => like.userName === userName);
+
+    return result.length > 0;
+}
+
+export const togglePostLikedState = (userName: string, userId: string, post: Post):(Post|null) => {
+    if(post == null || userName == null || userId == null) {
+        return null;
+    }
+
+    const index = post.global.likes.findIndex((value:any) => value.user === userName);
+
+    if(index === -1) {
+        // Username is not in the post's like list, so add it
+        post.global.likes.push({userName, userId});
+    } else {
+        // Remove the username from the post's like list
+        post.global.likes.splice(index, 1);
+    }
+
+    return post;
+}
+
+export const searchPostsIndexById = (postId: string, posts: Post[]):number => {
+    if(postId === null || posts === null) {
+        return -1;
+    }
+    
+    let postIndex = -1;
+    posts.forEach((post: Post, index: number) => {
+        if(post.global.id === postId) {
+            postIndex = index;
+        }
+    });
+
+    return postIndex;
+}
+
+export const getSanitizedText = (text: string):string => {
+    if(text == null || text.length === 0)
+        return text;
+
+    const result = sanitizeHtml(text, {
+        allowedTags: [ 'b', 'i', 'em', 'strong', 'a', 'p', 'br', 'sub', 'sup' ],
+        allowedAttributes: {
+          'a': [ 'href' ]
+        },
+        allowedIframeHostnames: []
+      }).trim();
+
+    return result;
 }

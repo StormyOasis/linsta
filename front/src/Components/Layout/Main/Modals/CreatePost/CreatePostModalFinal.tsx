@@ -1,20 +1,20 @@
 import React, { SyntheticEvent, useState } from "react";
 import styled from "styled-components";
 import * as styles from '../../Main.module.css';
-import { ModalSectionWrapper } from "../../../../../Components/Common/MultiStepModal";
+import { ModalSectionWrapper } from "../../../../Common/MultiStepModal";
 
 import CircleXSVG from "/public/images/x-circle.svg";
 import CollabSVG from "/public/images/image-user-plus.svg";
 import { EditData } from "./CreatePostModal";
-import EmojiPickerPopup from "../../../../../Components/Common/EmojiPickerPopup";
+import EmojiPickerPopup from "../../../../Common/EmojiPickerPopup";
 import { AuthUser } from "../../../../../api/Auth";
 import { useSelector } from "react-redux";
 import TextEditor from "../../../../Common/Lexical/TextEditor";
-import Dropdown from "../../../../../Components/Common/Dropdown";
-import ToggleSwitch from "../../../../../Components/Common/ToggleSwitch";
-import { FlexColumn, FlexRow } from "../../../../../Components/Common/CombinedStyling";
-import LocationPopup from "../../../../../Components/Common/LocationPopup";
-import MediaSliderButton from "../../../../../Components/Common/MediaSliderButton";
+import Dropdown from "../../../../Common/Dropdown";
+import ToggleSwitch from "../../../../Common/ToggleSwitch";
+import { FlexColumn, FlexRow } from "../../../../Common/CombinedStyling";
+import LocationPopup from "../../../../Common/LocationPopup";
+import MediaSliderButton from "../../../../Common/MediaSliderButton";
 
 const MAX_TEXT_LENGTH: number = 2047;
 

@@ -12,12 +12,14 @@ const defaultTheme = {
         navLinkHoverColor: "rgb(236, 236, 236)",
         buttonDefaultColor: "rgb(0, 150, 245)",
         buttonDefaultColorTrans: "rgba(0, 150, 245, .5)",
-        buttonOnHoverColor: "rgb(25, 120, 240)",
+        buttonOnHoverColor: "rgb(25, 120, 240)",        
         inputTextColor: "rgb(115,115,115)",
         navLinkTextColor: "rgb(0, 50, 100)",
         cropperAspectBkgnd: "rgba(25,25,25,.6)",
         cropperAspectBkgndNoTrans: "rgb(25,25,25)",
-        mediumTextColor: "rgb(120, 120, 120)",        
+        mediumTextColor: "rgb(120, 120, 120)",  
+        mediaSliderButtonColor: "rgba(0,0,0, .6)",
+        mediaSliderButtonBkgndColor: "rgba(225,225,225, .4)"      
     },    
 
     input: {
@@ -34,7 +36,8 @@ const defaultTheme = {
         maxModalHeight: "350px",
         minModalHeight: "300px",
         minPostTextEditorHeight: "140px",
-        maxPostTextEditorHeight: "140px"
+        maxPostTextEditorHeight: "140px",
+        feedPostMinWidth: "400px",
     },
 
     breakpoints: {

@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import { ModalSectionWrapper } from "../../../../../Components/Common/MultiStepModal";
-import Slider from "../../../../../Components/Common/Slider";
+import { ModalSectionWrapper } from "../../../../Common/MultiStepModal";
+import Slider from "../../../../Common/Slider";
 import { EditData } from "./CreatePostModal";
-import { FlexColumn } from "../../../../../Components/Common/CombinedStyling";
+import { FlexColumn } from "../../../../Common/CombinedStyling";
 import { blobToBase64 } from "../../../../../utils/utils";
-import MediaSliderButton from "../../../../../Components/Common/MediaSliderButton";
+import MediaSliderButton from "../../../../Common/MediaSliderButton";
 
 const EditContainer = styled.div`
     display: flex;

@@ -4,7 +4,7 @@ import { getFileExtByMimeType, sanitize } from "../utils/utils";
 import formidable from 'formidable';
 import { uploadFile } from "../Connectors/AWSConnector";
 import logger from "../logger/logger";
-import { buildDataSetForES, insert, search } from '../Connectors/ESConnector';
+import { buildDataSetForES, buildSearchResultSet, insert, search, update } from '../Connectors/ESConnector';
 
 export type User = {
     id: number;
@@ -16,6 +16,7 @@ export type Global = {
     commentsDisabled: boolean;
     likesDisabled: boolean;
     locationText: string;
+    likes: object[];
 };
 
 export type Entry = {
@@ -44,6 +45,7 @@ export const addPost = async (ctx: Context) => {
     // strip out any potentially problematic html tags
     global.text = sanitize(global.text);
     global.locationText = sanitize(global.locationText);
+    global.likes = [];
 
     try {
         // Upload each file to s3
@@ -76,8 +78,123 @@ export const addPost = async (ctx: Context) => {
     ctx.status = 200;
 }
 
-export const searchPosts = async () => {
-    const results = await search();
+export const getAllPosts = async (ctx: Context) => {
+    Metrics.increment("posts.getAll");
 
-    console.log(results);
+    try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const results:any = await search({
+            match_all: {}
+        });
+
+        const entries = buildSearchResultSet(results.body.hits.hits);
+        ctx.status = 200;
+        ctx.body = entries;
+    } catch(err) {
+        logger.error(err);
+        ctx.status = 400;
+    }
+}
+
+type GetPostByIdRequest = {
+    postId: string
+};
+
+export const getPostById = async(ctx: Context) => {
+    Metrics.increment("posts.getById");
+
+    const query = <GetPostByIdRequest>ctx.request.query;
+    const postId = query.postId;
+
+    if(postId == null || postId.trim().length === 0) {
+        ctx.status = 400;
+        return;
+    }
+
+    try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const results:any = await search({
+            bool: {
+                must: [{
+                    match: {_id: postId}                    
+                }]
+            }
+        });
+
+        const entries = buildSearchResultSet(results.body.hits.hits);
+        ctx.status = 200;
+        ctx.body = entries;
+    } catch(err) {
+        logger.error(err);
+        ctx.status = 400;
+    }    
+}
+
+type LikeRequest = {
+    postId: string;
+    userName: string;
+    userId: string;
+}
+
+export const toggleLikePost = async (ctx: Context) => {
+    Metrics.increment("posts.toggleLike");
+
+    const data = <LikeRequest>ctx.request.body;
+
+    if (data.userName == null || data.postId == null || data.userId == null) {
+        ctx.status = 400;
+        ctx.body = { status: "Invalid params passed" };
+        return;
+    }
+
+    let isLiked:boolean = false;
+
+    try {
+        // Check if user currently likes this post or not
+        const results = await search(
+            {
+                bool: {
+                  must: [
+                    {
+                      match: { _id: data.postId }
+                    },
+                    {
+                      nested: {
+                        path: "post.global",
+                        query: {
+                          nested: {
+                            path: "post.global.likes",
+                            query: {
+                              bool: {
+                                must: [
+                                  {match: { "post.global.likes.user": data.userName}}
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+            });   
+            
+        isLiked = (results.body.hits.hits.length === 1);
+
+        // Toggle the like in ES
+        await update(data.postId, {
+            source: "if(ctx._source.post.global.likes.contains(params.newLikes)) {ctx._source.post.global.likes.remove(ctx._source.post.global.likes.indexOf(params.newLikes));} else {ctx._source.post.global.likes.add(params.newLikes)}",
+            lang: "painless",
+            params: {
+                newLikes: {userName: data.userName, userId: data.userId}
+            }
+        });
+
+        ctx.body = {liked: !isLiked};
+        ctx.status = 200;
+    } catch(err) {
+        console.log(err)
+        ctx.status = 400;
+        return;
+    }
 }

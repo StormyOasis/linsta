@@ -193,7 +193,7 @@ export default class MultiStepModal extends React.Component<MultiStepModalProps,
     }
   }
 
-  onClose = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  onClose = (event: React.MouseEvent<HTMLButtonElement>) => {
     this.props.onClose && this.props.onClose(event);
     enableModal(false);
   };
