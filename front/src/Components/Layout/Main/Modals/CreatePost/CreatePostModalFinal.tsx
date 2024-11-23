@@ -174,7 +174,7 @@ export type CreatePostModalFinalProps = {
     isLikesDisabled: boolean;
     hasErrorOccured: boolean;
     editData: EditData[];
-    onLexicalChange: (data: string) => void;
+    onLexicalChange: (data: string, charCount: number) => void;
     onDisableCommentsChanged: (value: boolean) => void;
     onDisableLikesChanged: (value: boolean) => void;
     onLocationChanged: (value: string) => void;
@@ -220,6 +220,10 @@ const CreatePostModalFinal: React.FC<CreatePostModalFinalProps> = (props: Create
 
     const getCurrentLength = (count:number, _delCount:number):void => {
         setCharCount(count);
+    }
+
+    const handleLexicalChange = (data: string) => {
+        props.onLexicalChange(data, charCount);
     }
 
     const handleCollabTextChange = async (e: React.ChangeEvent<HTMLInputElement>) => {        
@@ -318,7 +322,7 @@ const CreatePostModalFinal: React.FC<CreatePostModalFinalProps> = (props: Create
                         <ControlContentContainer>
                             <TextEditorContainerWrapper>
                                 <TextEditorContainer>
-                                    <TextEditor onChange={props.onLexicalChange} 
+                                    <TextEditor onChange={handleLexicalChange} 
                                         maxTextLength={MAX_TEXT_LENGTH} emoji={emoji} getCurrentLength={getCurrentLength} />                                
                                 </TextEditorContainer>                                                         
                                 <TextEditorBottomWrapper>

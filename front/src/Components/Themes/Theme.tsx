@@ -3,16 +3,22 @@ import { ThemeProvider } from "styled-components";
 
 const defaultTheme = {
     colors: {
-        buttonTextColorDefault: "white",
+        defaultLinkColor: "black",
+        defaultTextColor: "black",
         backgroundColor: "white",
         backgroundDisabled: "rgba(0, 0, 0, .6)",
         borderDefaultColor: "rgb(220, 220, 220)",
         borderDarkColor: "rgb(180,180, 180)",
         inputBackgroundColor: "rgb(250, 250, 250)",
         navLinkHoverColor: "rgb(236, 236, 236)",
+        buttonTextColorDefault: "white",
+        buttonSecondaryTextColorDefault: "black",
         buttonDefaultColor: "rgb(0, 150, 245)",
+        buttonDefaultSecondaryColor: "rgb(240, 240, 240)",
         buttonDefaultColorTrans: "rgba(0, 150, 245, .5)",
+        buttonSecondaryDefaultColorTrans: "rgba(240, 240, 240, .5)",
         buttonOnHoverColor: "rgb(25, 120, 240)",        
+        buttonSecondaryOnHoverColor: "rgb(220, 220, 220)",        
         inputTextColor: "rgb(115,115,115)",
         navLinkTextColor: "rgb(0, 50, 100)",
         cropperAspectBkgnd: "rgba(25,25,25,.6)",

@@ -137,8 +137,12 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
         return url;
     }
 
-    const handleLexicalChange = (data: string) => {
-        setLexicalText(data);
+    const handleLexicalChange = (data: string, charCount: number) => {
+        if(charCount === 0) {
+            setLexicalText(null);
+        } else {
+            setLexicalText(data);
+        }
     }
 
     const handleAltInputChanged = (index: number, value: string) => {
@@ -188,7 +192,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
             commentsDisabled: commentsDisabled,
             likesDisabled: likesDisabled,
             locationText: locationText,
-            text: lexicalText,
+            captionText: lexicalText,
             entries: editData.map((entry:EditData) => {return entry})
         };
 

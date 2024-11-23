@@ -2,7 +2,7 @@ import {Client} from '@elastic/elasticsearch';
 import logger from "../logger/logger";
 import Metrics from "../metrics/Metrics";
 import config from 'config';
-import { Entry, User, Global } from '../controllers/postsController';
+import { Entry, User, Global, Post } from '../utils/types';
 import fs from 'fs';
 
 const client = new Client({
@@ -15,10 +15,13 @@ const client = new Client({
     }
 });
 
-export const search = async (query: object) => {
+export const search = async (query: object, resultSize: number|null) => {
+    const size: number = resultSize ? resultSize : config.get("es.defaultResultSize");
+
     const result = await client.search({
-        index: config.get("es.index"),
+        index: config.get("es.mainIndex"),
         query,
+        size,
         sort: [
             {
               "post.global.dateTime": {
@@ -35,7 +38,16 @@ export const search = async (query: object) => {
 
 export const insert = async (dataSet: object) => {
     const result = await client.index({
-        index: config.get("es.index"),
+        index: config.get("es.mainIndex"),
+        document: dataSet
+    });
+
+    return result;
+}
+
+export const insertComment = async (dataSet: object) => {
+    const result = await client.index({
+        index: config.get("es.commentIndex"),
         document: dataSet
     });
 
@@ -44,7 +56,16 @@ export const insert = async (dataSet: object) => {
 
 export const update = async (id: string, script: object) => {
     const result = await client.update({
-        index: config.get("es.index"),
+        index: config.get("es.mainIndex"),
+        id,
+        script
+    });
+    return result;
+}
+
+export const updateComment = async (id: string, script: object) => {
+    const result = await client.update({
+        index: config.get("es.commentIndex"),
         id,
         script
     });
@@ -55,12 +76,12 @@ export const buildDataSetForES = (user:User, global:Global, entries:Entry[]):obj
     const dataSet = {
         post: {
             user: {
-                userId: user.id,
-                userName: user.name
+                userId: user.userId,
+                userName: user.userName,
             },
             global: {
                 dateTime: new Date(),
-                captionText: global.text,
+                captionText: global.captionText,
                 commentsDisabled: global.commentsDisabled,
                 likesDisabled: global.likesDisabled,
                 locationText: global.locationText,     
@@ -80,8 +101,8 @@ export const buildDataSetForES = (user:User, global:Global, entries:Entry[]):obj
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const buildSearchResultSet = (hits: any[]):object[] => {    
-    const results = hits.map((entry) => {
+export const buildSearchResultSet = (hits: any[]):Post[] => {    
+    const results:Post[] = hits.map((entry):Post => {
         const source = entry._source.post;
         return {
             user: {
@@ -95,7 +116,7 @@ export const buildSearchResultSet = (hits: any[]):object[] => {
                 commentsDisabled: source.global.commentsDisabled,
                 likesDisabled: source.global.likesDisabled,
                 locationText: source.global.locationText,
-                likes: source.global.likes
+                likes: source.global.likes,
             },
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             media: source.media.map((media:any) => {

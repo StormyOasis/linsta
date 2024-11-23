@@ -19,7 +19,11 @@
         "host": "localhost",
         "userName": "redis",
         "password": "password",
-        "port": 6379
+        "port": 6379,
+        "connectTimeout": 10000,
+        "maxRetries": 20,
+        "defaultTTL": 300,
+        "metricsIntervalMs": 5000
     },
 
     "logging": {
@@ -50,7 +54,9 @@
 
     "es": {
         "node": "https://localhost:9200",
-        "apiKey": "YmVEeTJaRUJWVVYxaktGVGs5V2c6d3F6UEIyMDlTM0tNTlhzR3I0Q3hpdw==",
-        "index": "main"
+        "apiKey": "cXRyM1ZwSUJrZFl6Z3FPYVB1bHM6MFpEb0FGLUFRSTJjYTdfUVd3QWJRZw==",
+        "mainIndex": "main",
+        "commentIndex": "comments",
+        "defaultResultSize": 100
     }
 }

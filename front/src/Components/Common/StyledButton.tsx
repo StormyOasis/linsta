@@ -9,9 +9,10 @@ type StyledButtonProps = {
     text: string;
     style?: any;
     datatestid?: string;
+    useSecondaryColors?: boolean;
 };
 
-const StyledButtonComponent = styled.button<{ $props?: any }>`
+const StyledButtonComponent = styled.button<{ $props?: any, $useSecondaryColors?: boolean|undefined}>`
   border: none;
   border-radius: 8px;
   text-decoration: none;
@@ -19,9 +20,10 @@ const StyledButtonComponent = styled.button<{ $props?: any }>`
   font-weight: 600;
   justify-content: center;
   text-wrap: nowrap;
-  color: ${props => props.theme['colors'].buttonTextColorDefault};
-  background-color: ${(props) =>
-        props.disabled ? props.theme['colors'].buttonDefaultColorTrans : props.theme['colors'].buttonDefaultColor};
+  color: ${props => props.$useSecondaryColors ? props.theme['colors'].buttonSecondaryTextColorDefault : props.theme['colors'].buttonTextColorDefault};
+  background-color: ${(props) => props.disabled ? 
+        (props.$useSecondaryColors ? props.theme['colors'].buttonSecondaryDefaultColorTrans : props.theme['colors'].buttonDefaultColorTrans) : 
+        (props.$useSecondaryColors ? props.theme['colors'].buttonDefaultSecondaryColor : props.theme['colors'].buttonDefaultColor)};
   display: flex;
   height: 34px;
   position: relative;
@@ -38,7 +40,9 @@ const StyledButtonComponent = styled.button<{ $props?: any }>`
 
   &:hover {
     background-color: ${(props) =>
-        props.disabled ? props.theme['colors'].buttonDefaultColorTrans : props.theme['colors'].buttonOnHoverColor};
+        props.disabled ? 
+        (props.$useSecondaryColors ? props.theme['colors'].buttonSecondaryDefaultColorTrans : props.theme['colors'].buttonDefaultColorTrans) : 
+        (props.$useSecondaryColors ? props.theme['colors'].buttonSecondaryOnHoverColor : props.theme['colors'].buttonOnHoverColor)};
   }
 `;
 
@@ -50,6 +54,7 @@ const StyledButton: React.FC<StyledButtonProps> = (props: StyledButtonProps) => 
             disabled={props.disabled} 
             onClick={props.onClick}
             style={props.style}
+            $useSecondaryColors={props.useSecondaryColors}
             data-testid={props.datatestid}>
                 {props.text}
         </StyledButtonComponent>

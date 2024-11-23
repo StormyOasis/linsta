@@ -1,9 +1,12 @@
+PUT main
 {
   "mappings": {
     "properties": {
       "post": {
+        "type": "nested",
         "properties": {
           "user": {
+            "type": "nested",
             "properties": {
               "userId": {
                 "type": "long"
@@ -14,6 +17,7 @@
             }
           },
           "global": {
+            "type": "nested",
             "properties": {
               "dateTime": {
                 "type": "date"
@@ -30,25 +34,19 @@
               "captionText": {
                 "type": "text"
               },
-              "comments": {
-                "type": "nested",
-                "properties": {
-                  "dateTime": {
-                    "type": "date"
-                  },
-                  "user": {
-                    "type": "text"
-                  },
-                  "comment": {
-                    "type": "text"
-                  }
-                }
-              },
               "likes": {
                 "type": "nested",
                 "properties": {
                   "user": {
-                    "type": "text"
+                    "type": "nested",
+                    "properties": {
+                      "userName": {
+                        "type": "text"
+                      },
+                      "userId": {
+                        "type": "long"
+                      }                      
+                    }
                   }
                 }
               }
@@ -74,6 +72,63 @@
               }
             }
           }
+        }
+      }
+    }
+  }
+}
+
+PUT comments 
+{
+  "mappings": {
+    "properties": {
+      "comment": {
+        "type": "nested",
+        "properties": {
+          "dateTime": {
+            "type": "date"
+          },
+          "text": {
+            "type": "text"
+          },
+          "parent": {
+            "type": "nested",
+            "properties": {
+              "postId": {
+                "type": "long"
+              },
+              "commentId": {
+                "type": "long"
+              }              
+            }
+          },
+          "user": {
+            "type": "nested",
+            "properties": {
+              "userName": {
+                "type": "text"
+              },
+              "userId": {
+                "type": "long"
+              }                      
+            }
+          },
+          "likes": {
+            "type": "nested",
+            "properties": {
+              "user": {
+                "type": "nested",
+                "properties": {
+                  "userName": {
+                    "type": "text"
+                  },
+                  "userId": {
+                    "type": "long"
+                  }                      
+                }
+              }
+            }
+          }          
         }
       }
     }

@@ -1,31 +1,12 @@
 import { Context } from "koa";
-import Metrics from "../metrics/Metrics";
-import { getFileExtByMimeType, sanitize } from "../utils/utils";
 import formidable from 'formidable';
-import { uploadFile } from "../Connectors/AWSConnector";
+import Metrics from "../metrics/Metrics";
 import logger from "../logger/logger";
+import { getFileExtByMimeType, sanitize } from "../utils/utils";
+import { uploadFile } from "../Connectors/AWSConnector";
 import { buildDataSetForES, buildSearchResultSet, insert, search, update } from '../Connectors/ESConnector';
-
-export type User = {
-    id: number;
-    name: string;
-};
-
-export type Global = {
-    text: string;
-    commentsDisabled: boolean;
-    likesDisabled: boolean;
-    locationText: string;
-    likes: object[];
-};
-
-export type Entry = {
-    id: string;
-    alt: string;
-    entityTag: string;
-    url: string;
-    mimeType: string|null;
-}
+import { User, Global, Entry, Post } from "../utils/types";
+import RedisConnector from "../Connectors/RedisConnector";
 
 export const addPost = async (ctx: Context) => {
     Metrics.increment("posts.addPost");
@@ -43,7 +24,7 @@ export const addPost = async (ctx: Context) => {
     const entries:Entry[] = JSON.parse(data.entries);
 
     // strip out any potentially problematic html tags
-    global.text = sanitize(global.text);
+    global.captionText = sanitize(global.captionText);
     global.locationText = sanitize(global.locationText);
     global.likes = [];
 
@@ -52,7 +33,7 @@ export const addPost = async (ctx: Context) => {
         for(const entry of entries) {
             const file:formidable.File = (files[entry.id] as formidable.File);            
 
-            const result = await uploadFile(file, entry.id, user.id, getFileExtByMimeType(file.mimetype));
+            const result = await uploadFile(file, entry.id, user.userId, getFileExtByMimeType(file.mimetype));
             entry.entityTag = result.tag.replace('"', '').replace('"', '');
             entry.url = result.url;
             entry.mimeType = file.mimetype;
@@ -62,19 +43,20 @@ export const addPost = async (ctx: Context) => {
         // Now add the data to ES
         const dataSet = buildDataSetForES(user, global, entries);
 
-        const result = await insert(dataSet);
-
+        const result = await insert(dataSet);        
         if(result.result !== 'created') {
             throw new Error("Error adding post");
         }
+
+        // Now add the post data to redis
+        await RedisConnector.set(result._id, JSON.stringify(dataSet));
 
     } catch(err) {
         logger.error(err);
         ctx.status = 400;
         return;
     }
-
-    //ctx.body = 
+    
     ctx.status = 200;
 }
 
@@ -84,15 +66,22 @@ export const getAllPosts = async (ctx: Context) => {
     try {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const results:any = await search({
-            match_all: {}
-        });
+            match_all: {}            
+        }, null);
 
         const entries = buildSearchResultSet(results.body.hits.hits);
+
+        // Update redis with results
+        entries.forEach((entry) => {
+            RedisConnector.set(entry.global.id, JSON.stringify(entry));
+        });
+
         ctx.status = 200;
         ctx.body = entries;
     } catch(err) {
         logger.error(err);
         ctx.status = 400;
+        ctx.body = err;
     }
 }
 
@@ -112,16 +101,30 @@ export const getPostById = async(ctx: Context) => {
     }
 
     try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const results:any = await search({
-            bool: {
-                must: [{
-                    match: {_id: postId}                    
-                }]
-            }
-        });
+        // Attempt to get it from redis first
+        const data = await RedisConnector.get(postId);
+        let entries:Post[] = [];
+        if(data) {
+            entries[0] = JSON.parse(data);
+        } else {
+            // Pull from ES
 
-        const entries = buildSearchResultSet(results.body.hits.hits);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const results:any = await search({
+                bool: {
+                    must: [{
+                        match: {_id: postId}                    
+                    }]
+                }
+            }, 1);
+
+            entries = buildSearchResultSet(results.body.hits.hits);
+            if(entries.length > 0) {
+                // Add to Redis
+                await RedisConnector.set(postId, JSON.stringify(entries[0]));
+            }
+        }
+
         ctx.status = 200;
         ctx.body = entries;
     } catch(err) {
@@ -167,7 +170,7 @@ export const toggleLikePost = async (ctx: Context) => {
                             query: {
                               bool: {
                                 must: [
-                                  {match: { "post.global.likes.user": data.userName}}
+                                  {match: { "post.global.likes.userName": data.userName}}
                                 ]
                               }
                             }
@@ -177,7 +180,7 @@ export const toggleLikePost = async (ctx: Context) => {
                     }
                   ]
                 }
-            });   
+            }, 1);   
             
         isLiked = (results.body.hits.hits.length === 1);
 
@@ -193,7 +196,6 @@ export const toggleLikePost = async (ctx: Context) => {
         ctx.body = {liked: !isLiked};
         ctx.status = 200;
     } catch(err) {
-        console.log(err)
         ctx.status = 400;
         return;
     }

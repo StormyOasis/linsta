@@ -1,7 +1,12 @@
 export type HistoryType = {
-    navigate: any,
-    location: any,
-    isServer: boolean
+    navigate: any;
+    location: any;
+    isServer: boolean;
+};
+
+export type User = {
+    userName: string;
+    userId: string;
 };
 
 export type Media = {
@@ -16,11 +21,15 @@ export type Like = {
     userId: string;
 };
 
+export type Comment = {
+    dateTime: Date;
+    comment: string;
+    user: User;
+    comments: Comment[];
+};
+
 export type Post = {
-    user: {
-        userName: string;
-        userId: string;
-    },
+    user: User;
     global: {
         id: string;
         dateTime: Date;
@@ -29,6 +38,7 @@ export type Post = {
         likesDisabled: boolean;
         locationText: string;
         likes: Like[];
+        comments: Comment[];
     },
     media: Media[];
 };

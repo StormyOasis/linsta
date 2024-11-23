@@ -5,6 +5,7 @@ import { koaBody } from "koa-body";
 import router from "./router";
 import Logger from "./logger/logger";
 import DBConnector from "./Connectors/DBConnector";
+import RedisConnector from "./Connectors/RedisConnector";
 
 const PORT = process.env["PORT"] || 3001;
 const HOST = process.env["HOST"] || "http://localhost";
@@ -35,4 +36,5 @@ App.use(json())
     Logger.info(`Server Started and listening at ${HOST}:${PORT}/`);
 
     DBConnector.connect();
+    RedisConnector.connect();
   });

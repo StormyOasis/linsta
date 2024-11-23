@@ -1,6 +1,7 @@
 import sanitizeHtml from 'sanitize-html';
 
 import { HistoryType, Post } from "../api/types";
+import { postSetFollowStatus } from '../api/ServiceController';
 
 export const historyUtils: HistoryType = {
     navigate: null,
@@ -169,7 +170,7 @@ export const togglePostLikedState = (userName: string, userId: string, post: Pos
         return null;
     }
 
-    const index = post.global.likes.findIndex((value:any) => value.user === userName);
+    const index = post.global.likes.findIndex((value:any) => value.userName === userName);
 
     if(index === -1) {
         // Username is not in the post's like list, so add it
@@ -197,17 +198,49 @@ export const searchPostsIndexById = (postId: string, posts: Post[]):number => {
     return postIndex;
 }
 
-export const getSanitizedText = (text: string):string => {
+export const getSanitizedText = (text: string):[string, string] => {
     if(text == null || text.length === 0)
-        return text;
+        return [text, text];
 
-    const result = sanitizeHtml(text, {
-        allowedTags: [ 'b', 'i', 'em', 'strong', 'a', 'p', 'br', 'sub', 'sup' ],
+    const textHtml = sanitizeHtml(text, {
+        allowedTags: [ 'b', 'i', 'em', 'strong', 'a', 'br', 'sub', 'sup' ],
         allowedAttributes: {
           'a': [ 'href' ]
         },
         allowedIframeHostnames: []
-      }).trim();
+    }).trim();
 
-    return result;
+    const textStripped = sanitizeHtml(text, {
+        allowedTags: [],
+        allowedAttributes: {},
+        allowedIframeHostnames: []
+    }).trim();      
+
+    return [textHtml, textStripped];
+}
+
+export const isOverflowed = (id: string):boolean => {
+    const element = document.getElementById(id);
+    
+    if(element == null) {
+        return false;
+    }
+    //console.log( element.offsetHeight , element.scrollHeight)
+    return element.offsetHeight < element.scrollHeight;
+}
+
+export const followUser = async (userId: string, followUserId: string, shouldFollow: boolean) => {
+    if(userId === followUserId) {
+        return true;
+    }
+
+    const data = {
+        follow: shouldFollow,
+        userId: userId,
+        followerId: followUserId
+    };
+
+    const result = await postSetFollowStatus(data);
+    
+    return result.status === 200;
 }

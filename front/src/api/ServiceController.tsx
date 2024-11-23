@@ -78,14 +78,14 @@ export const putSubmitPost = async (data: any, authUser:AuthUser): Promise<Servi
     const form = new FormData();
 
     // Include basic user info
-    form.append("user", JSON.stringify({id: authUser.id, name: authUser.userName}));
+    form.append("user", JSON.stringify({userId: authUser.id, userName: authUser.userName}));
 
     // Data that pertains to entire post, not just the images/videos contained within
     form.append("global", JSON.stringify({
         commentsDisabled: data.commentsDisabled,
         likesDisabled: data.likesDisabled,
         locationText: data.locationText,
-        text: data.text
+        captionText: data.captionText
     }));
 
     const fileData:any[] = [];    
@@ -135,6 +135,24 @@ export const getPostById = async (postId: string): Promise<ServiceResponse> => {
 
 export const postToggleLike = async (data: any): Promise<ServiceResponse> => {
     const res = await axios.post(`${host}/api/v1/posts/likePost`, data, {headers: authHeader()});
+    return {
+        data: res.data,
+        status: res.status,
+        statusText: res.statusText,
+    }
+}
+
+export const postBulkGetInfoAndFollowStatus = async (data: any): Promise<ServiceResponse> => {
+    const res = await axios.post(`${host}/api/v1/accounts/bulkGetInfoAndFollowStatus`, data, {headers: authHeader()});
+    return {
+        data: res.data,
+        status: res.status,
+        statusText: res.statusText,
+    }
+}
+
+export const postSetFollowStatus = async (data: any): Promise<ServiceResponse> => {
+    const res = await axios.post(`${host}/api/v1/accounts/follow`, data, {headers: authHeader()});
     return {
         data: res.data,
         status: res.status,

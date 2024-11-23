@@ -83,7 +83,7 @@ export const getLocationData = async (term: string) => {
     return response;
 }
 
-export const uploadFile = async (file: formidable.File, entryId: string, userId: number, fileExt?: string)
+export const uploadFile = async (file: formidable.File, entryId: string, userId: string, fileExt?: string)
     :Promise<{ tag: string, url: string }> => {
 
     try {
@@ -108,7 +108,7 @@ export const uploadFile = async (file: formidable.File, entryId: string, userId:
         };
 
     } catch (err) {
-        logger.error(err);
-        throw new Error("Error uploading to s3");
+        logger.error("Error uploading to s3", err);
+        throw err;
     }
 }
