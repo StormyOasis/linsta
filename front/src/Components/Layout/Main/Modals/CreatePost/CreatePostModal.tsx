@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-import MultiStepModal from "../../../../../Components/Common/MultiStepModal";
+import MultiStepModal from "../../../../Common/MultiStepModal";
 import CreatePostModalCrop, { CropData, defaultCropData } from "./CreatePostModalCrop";
 import CreatePostModalSelectMedia from "./CreatePostModalSelectMedia";
 import { blobToBase64, isVideoFileFromType } from "../../../../../utils/utils";
@@ -137,8 +137,12 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
         return url;
     }
 
-    const handleLexicalChange = (data: string) => {
-        setLexicalText(data);
+    const handleLexicalChange = (data: string, charCount: number) => {
+        if(charCount === 0) {
+            setLexicalText(null);
+        } else {
+            setLexicalText(data);
+        }
     }
 
     const handleAltInputChanged = (index: number, value: string) => {
@@ -188,7 +192,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
             commentsDisabled: commentsDisabled,
             likesDisabled: likesDisabled,
             locationText: locationText,
-            text: lexicalText,
+            captionText: lexicalText,
             entries: editData.map((entry:EditData) => {return entry})
         };
 

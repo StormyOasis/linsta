@@ -1,0 +1,45 @@
+export type User = {
+    userName: string;
+    userId: string;
+};
+
+export type Like = {
+    userName: string;
+    userId: string;
+};
+
+export type Global = {
+    id: string;
+    dateTime: string;
+    captionText: string;
+    commentsDisabled: boolean;
+    likesDisabled: boolean;
+    locationText: string;
+    likes: Like[];
+};
+
+export type Entry = {
+    id: string;
+    alt: string;
+    entityTag: string;
+    url: string;
+    mimeType: string|null;
+};
+
+export type Post = {
+    user:User;
+    global:Global;
+    media:Entry[];
+}
+
+export type Comment = {
+    commentId: string;
+    dateTime: string;
+    text: string;
+    user: User;
+    parent: {
+        postId: string;
+        commentId: string;
+    }|null;
+    likes: Like[];
+};

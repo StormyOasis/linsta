@@ -135,3 +135,21 @@ input[type="range"]:focus::-moz-range-thumb {
 }
 
 /*************** End Slider overrides ************/
+
+.mediaSliderMedia {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    overflow: clip;
+}
+
+.mediaCircles {
+    bottom: 15px;
+    position: absolute;
+    justify-content: center;
+    left: 5px;
+    right: 5px;
+    align-items: center;
+    display: flex;
+    flex-direction: row;
+}

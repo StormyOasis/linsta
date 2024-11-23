@@ -2,11 +2,11 @@ import React, { SyntheticEvent, useState } from "react";
 import { styled } from "styled-components";
 import EmojiPicker, { EmojiClickData, EmojiStyle } from 'emoji-picker-react';
 
-const EmojiPickerButton = styled.button`
+const EmojiPickerButton = styled.button<{$noPadding: boolean|undefined}>`
     position: relative;
     cursor: pointer;
     outline: none;
-    padding: 8px;
+    padding: ${props => props.$noPadding ? 0 : "8px"};
     border: none;
     display: flex;
     justify-content: center;
@@ -20,11 +20,12 @@ const EmojiPickerPopupContainer = styled.div<{$isOpen: boolean}>`
     top: 10px;
     width: 20%;
     height: 50%;
-    z-index: 9;
+    z-index: 9999;
 `;
 
 type EmojiPickerPopupProps = {
     onEmojiClick: (emoji: EmojiClickData) => void;
+    noPadding?: boolean;
 };
 
 const EmojiPickerPopup: React.FC<EmojiPickerPopupProps> = (props: EmojiPickerPopupProps) => {
@@ -49,7 +50,7 @@ const EmojiPickerPopup: React.FC<EmojiPickerPopupProps> = (props: EmojiPickerPop
     return (
         <>
             <div>
-                <EmojiPickerButton onClick={handleToggleClick} 
+                <EmojiPickerButton onClick={handleToggleClick} $noPadding={props.noPadding}
                     aria-label="Click to select Emoji" 
                     aria-placeholder="Click to select Emoji">😀</EmojiPickerButton>
                 <EmojiPickerPopupContainer $isOpen={isOpen} onKeyUp={handleKeyUp}>

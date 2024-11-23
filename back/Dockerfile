@@ -1,4 +1,4 @@
-FROM node:22 as build
+FROM node:22 AS build
 
 WORKDIR /app
 
@@ -8,7 +8,7 @@ RUN npm install typescript@4.0.5 -g --silent
 RUN npm install
 RUN npm run build
 
-FROM node:22 as container
+FROM node:22 AS container
 WORKDIR /dist
 
 COPY --from=build /app /dist/

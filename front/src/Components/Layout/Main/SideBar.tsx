@@ -15,6 +15,7 @@ import { Link } from "react-router-dom";
 import { useMediaQuery } from "react-responsive";
 
 const SideBarWrapper = styled.div`
+    z-index: 50;
     margin: 0;
     padding: 0;
     width: ${props => props.theme["sizes"].sideBarNavWidthDefault};
@@ -120,7 +121,7 @@ const SideBar: React.FC<SideBarProps> = (props: SideBarProps) => {
                 </div>
             }
             <NavWrapper>
-                {renderMenuItem("Home", "#", <HomeSVG/>, null)}
+                {renderMenuItem("Home", "/", <HomeSVG/>, null)}
                 {renderMenuItem("Search", "#", <SearchSVG/>, null)}
                 {renderMenuItem("Explore", "/explore", <ExploreSVG/>, null)}
                 {renderMenuItem("Reels", "/reels", <ReelsSVG/>, null)}

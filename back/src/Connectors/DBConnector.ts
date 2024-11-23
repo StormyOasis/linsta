@@ -1,7 +1,7 @@
 import mysql, {Pool} from 'mysql2';
 import { PoolConnection, Pool as PromisePool, QueryResult, ResultSetHeader } from 'mysql2/promise';
 import config from 'config';
-import Logger from '../logger/logger';
+import logger from '../logger/logger';
 import Metrics from '../metrics/Metrics';
 
 export type DbResult = {
@@ -19,7 +19,7 @@ export class DBConnector {
     }
 
     public connect = () => {
-        Logger.info("Creating DB connection pool...");
+        logger.info("Creating DB connection pool...");
         
         const host:string = config.get("database.host");
         const user:string = config.get("database.user");
@@ -42,7 +42,7 @@ export class DBConnector {
 
         this.dbPromisePool = this.dbConnectionPool.promise();
         
-        Logger.info("Connection Pool created");     
+        logger.info("Connection Pool created");     
     }
 
     public static getInstance() : DBConnector {
@@ -53,8 +53,8 @@ export class DBConnector {
         return DBConnector.instance;
     }
 
-    public query = async (query: string, params : string []) => {
-        Logger.debug(`Query: ${query} Params: ${params}`);
+    public query = async (query: string, params : any) => {
+        logger.debug(`Query: ${query} Params: ${params}`);
         try {
             if(!this.dbPromisePool) {
                 throw new Error("Invalid connection");
@@ -65,13 +65,13 @@ export class DBConnector {
 
         } catch(err) {
             Metrics.increment("db.error.counts");
-            Logger.error(`Error querying db: ${err}`);
+            logger.error(`Error querying db: ${err}`);
             throw err;            
         }
     }
 
     public execute = async (query: string, params : string []) => {
-        Logger.debug(`Execute: ${query} Params: ${params}`);
+        logger.debug(`Execute: ${query} Params: ${params}`);
         try {
             if(!this.dbPromisePool) {
                 throw new Error("Invalid connection");
@@ -82,7 +82,7 @@ export class DBConnector {
 
         } catch(err) {
             Metrics.increment("db.error.counts");
-            Logger.error(`Error executing against db: ${err}`);
+            logger.error(`Error executing against db: ${err}`);
             throw err;
         }
     }

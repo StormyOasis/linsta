@@ -2,15 +2,15 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import Cropper, { Area, Point } from 'react-easy-crop';
 import { isVideoFileFromType } from "../../../../../utils/utils";
-import { ModalSectionWrapper } from "../../../../../Components/Common/MultiStepModal";
-import Slider from "../../../../../Components/Common/Slider";
+import { ModalSectionWrapper } from "../../../../Common/MultiStepModal";
+import Slider from "../../../../Common/Slider";
 import CropSVG from "/public/images/crop.svg";
 import OneToOneSVG from "/public/images/1to1.svg";
 import FourToFiveSVG from "/public/images/4to5.svg";
 import SixteenToNineSVG from "/public/images/16to9.svg";
 import ImageSVG from "/public/images/image.svg";
-import { Flex } from "../../../../../Components/Common/CombinedStyling";
-import MediaSliderButton from "../../../../../Components/Common/MediaSliderButton";
+import { Flex } from "../../../../Common/CombinedStyling";
+import MediaSliderButton from "../../../../Common/MediaSliderButton";
 
 const CropContainer = styled.div`
     height: ${props => props.theme['sizes'].cropperHeight};
@@ -208,7 +208,7 @@ const CreatePostModalCropper: React.FC<CropperProps> = (props: CropperProps) => 
     const [zoom, setZoom] = useState(props.cropData.zoom);    
     const [rotation, setRotation] = useState(props.cropData.rotation);
     const [aspect, setAspect] = useState(props.cropData.aspect);    
-    const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area|null>(props.cropData.croppedAreaPixels);
+    const [_croppedAreaPixels, setCroppedAreaPixels] = useState<Area|null>(props.cropData.croppedAreaPixels);
     const [isAspectMenuOpen, setIsAspectMenuOpen] = useState(false);
     const [isFlaggedForReset, setIsFlaggedForReset] = useState(false);
 
@@ -231,7 +231,7 @@ const CreatePostModalCropper: React.FC<CropperProps> = (props: CropperProps) => 
         });
     }    
 
-    const onCropComplete = async (croppedArea: Area, croppedAreaPixels: Area) => {
+    const onCropComplete = async (_croppedArea: Area, croppedAreaPixels: Area) => {
         let newCrop = crop;
         if(aspect.value === 0) {            
             const {width, height} = await getImageDimensions(props.file.blob);

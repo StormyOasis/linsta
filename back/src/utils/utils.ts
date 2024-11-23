@@ -1,4 +1,7 @@
 import sanitizeHtml from 'sanitize-html';
+import { Post } from './types';
+import { buildSearchResultSet, search } from '../Connectors/ESConnector';
+import RedisConnector from '../Connectors/RedisConnector';
 
 export const isEmail = (str: string) : boolean => {
     const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
@@ -38,11 +41,11 @@ export const obfuscatePhone = (phone: string):string => {
 
 export const sanitize = (html: string):string => {
     return sanitizeHtml(html, {
-        allowedTags: ['b', 'i', 'a', 'strong', 'br'],
+        allowedTags: [ 'b', 'i', 'em', 'strong', 'a', 'br', 'sub', 'sup' ],
         allowedAttributes: {
             'a': ['href']
         },
-    });
+    }).trim();
 }
 
 export const getFileExtByMimeType = (mimeType: string|null):string => {
@@ -56,5 +59,55 @@ export const getFileExtByMimeType = (mimeType: string|null):string => {
         default: {
             throw new Error("Unknown mime type");
         }
+    }
+}
+
+export interface RedisInfo {
+    [key: string]: any;
+};
+
+export const parseRedisInfo = (infoString: string): RedisInfo => {
+    const info: RedisInfo = {};
+
+    const lines = infoString.split('\r\n');
+    for (let i = 0; i < lines.length; ++i) {
+        const parts = lines[i].split(':');
+        if (parts[1]) {
+            info[parts[0]] = parts[1];
+        }
+    }
+    return info;
+};
+
+export const getPostById = async (postId: string):Promise<Post|null> => {
+    try {
+        // Attempt to pull from redis first
+        const result = await RedisConnector.get(postId);
+        if(result !== null) {
+            // Found in redis
+            return JSON.parse(result) as Post;
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const results:any = await search({
+            bool: {
+                must: [{
+                    match: {_id: postId}                    
+                }]
+            }
+        }, null);
+
+        const entries:Post[] = buildSearchResultSet(results.body.hits.hits);
+        if(entries.length === 0) {
+            throw new Error("Post not found");
+        }
+
+        // add to redis
+        await RedisConnector.set(postId, JSON.stringify(entries[0]));
+        
+        return entries[0];
+
+    } catch(err) {
+        throw err;
     }
 }

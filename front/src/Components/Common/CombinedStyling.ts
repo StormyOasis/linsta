@@ -24,3 +24,8 @@ export const FlexRow = styled(Flex)`
 export const FlexColumn = styled(Flex)`
     flex-direction: column;
 `;
+
+export const Link = styled.a`
+    color: ${props => props.theme['colors'].defaultLinkColor};
+    text-decoration: none;
+`;

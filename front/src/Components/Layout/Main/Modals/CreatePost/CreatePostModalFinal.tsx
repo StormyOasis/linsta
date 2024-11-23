@@ -1,20 +1,20 @@
 import React, { SyntheticEvent, useState } from "react";
 import styled from "styled-components";
 import * as styles from '../../Main.module.css';
-import { ModalSectionWrapper } from "../../../../../Components/Common/MultiStepModal";
+import { ModalSectionWrapper } from "../../../../Common/MultiStepModal";
 
 import CircleXSVG from "/public/images/x-circle.svg";
 import CollabSVG from "/public/images/image-user-plus.svg";
 import { EditData } from "./CreatePostModal";
-import EmojiPickerPopup from "../../../../../Components/Common/EmojiPickerPopup";
+import EmojiPickerPopup from "../../../../Common/EmojiPickerPopup";
 import { AuthUser } from "../../../../../api/Auth";
 import { useSelector } from "react-redux";
 import TextEditor from "../../../../Common/Lexical/TextEditor";
-import Dropdown from "../../../../../Components/Common/Dropdown";
-import ToggleSwitch from "../../../../../Components/Common/ToggleSwitch";
-import { FlexColumn, FlexRow } from "../../../../../Components/Common/CombinedStyling";
-import LocationPopup from "../../../../../Components/Common/LocationPopup";
-import MediaSliderButton from "../../../../../Components/Common/MediaSliderButton";
+import Dropdown from "../../../../Common/Dropdown";
+import ToggleSwitch from "../../../../Common/ToggleSwitch";
+import { FlexColumn, FlexRow } from "../../../../Common/CombinedStyling";
+import LocationPopup from "../../../../Common/LocationPopup";
+import MediaSliderButton from "../../../../Common/MediaSliderButton";
 
 const MAX_TEXT_LENGTH: number = 2047;
 
@@ -174,7 +174,7 @@ export type CreatePostModalFinalProps = {
     isLikesDisabled: boolean;
     hasErrorOccured: boolean;
     editData: EditData[];
-    onLexicalChange: (data: string) => void;
+    onLexicalChange: (data: string, charCount: number) => void;
     onDisableCommentsChanged: (value: boolean) => void;
     onDisableLikesChanged: (value: boolean) => void;
     onLocationChanged: (value: string) => void;
@@ -220,6 +220,10 @@ const CreatePostModalFinal: React.FC<CreatePostModalFinalProps> = (props: Create
 
     const getCurrentLength = (count:number, _delCount:number):void => {
         setCharCount(count);
+    }
+
+    const handleLexicalChange = (data: string) => {
+        props.onLexicalChange(data, charCount);
     }
 
     const handleCollabTextChange = async (e: React.ChangeEvent<HTMLInputElement>) => {        
@@ -318,7 +322,7 @@ const CreatePostModalFinal: React.FC<CreatePostModalFinalProps> = (props: Create
                         <ControlContentContainer>
                             <TextEditorContainerWrapper>
                                 <TextEditorContainer>
-                                    <TextEditor onChange={props.onLexicalChange} 
+                                    <TextEditor onChange={handleLexicalChange} 
                                         maxTextLength={MAX_TEXT_LENGTH} emoji={emoji} getCurrentLength={getCurrentLength} />                                
                                 </TextEditorContainer>                                                         
                                 <TextEditorBottomWrapper>

@@ -67,6 +67,7 @@
     "react-router-dom": "^6.23.1",
     "redux": "^5.0.1",
     "redux-store": "^0.0.0",
+    "sanitize-html": "^2.13.1",
     "utils": "^0.3.1"
   },
   "devDependencies": {

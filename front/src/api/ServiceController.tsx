@@ -64,19 +64,28 @@ export const postChangePassword = async (data: any): Promise<ServiceResponse> =>
     }
 }
 
+export const getLocation = async (data: any): Promise<ServiceResponse> => {
+    const res = await axios.get(`${host}/api/v1/locations/get?term=${data}`, {headers: authHeader()});
+    return {
+        data: res.data,
+        status: res.status,
+        statusText: res.statusText,
+    }
+}
+
 export const putSubmitPost = async (data: any, authUser:AuthUser): Promise<ServiceResponse> => {    
     // Need to use multipart-formdata since we are uploading files
     const form = new FormData();
 
     // Include basic user info
-    form.append("user", JSON.stringify({id: authUser.id, name: authUser.userName}));
+    form.append("user", JSON.stringify({userId: authUser.id, userName: authUser.userName}));
 
     // Data that pertains to entire post, not just the images/videos contained within
     form.append("global", JSON.stringify({
         commentsDisabled: data.commentsDisabled,
         likesDisabled: data.likesDisabled,
         locationText: data.locationText,
-        text: data.text
+        captionText: data.captionText
     }));
 
     const fileData:any[] = [];    
@@ -106,8 +115,44 @@ export const putSubmitPost = async (data: any, authUser:AuthUser): Promise<Servi
     }
 }
 
-export const getLocation = async (data: any): Promise<ServiceResponse> => {
-    const res = await axios.get(`${host}/api/v1/locations/get?term=${data}`, {headers: authHeader()});
+export const getPosts = async (): Promise<ServiceResponse> => {
+    const res = await axios.get(`${host}/api/v1/posts/getAll`, {headers: authHeader()});
+    return {
+        data: res.data,
+        status: res.status,
+        statusText: res.statusText,
+    }
+}
+
+export const getPostById = async (postId: string): Promise<ServiceResponse> => {
+    const res = await axios.get(`${host}/api/v1/posts/getPostById?postId=${postId}`, {headers: authHeader()});
+    return {
+        data: res.data,
+        status: res.status,
+        statusText: res.statusText,
+    }
+}
+
+export const postToggleLike = async (data: any): Promise<ServiceResponse> => {
+    const res = await axios.post(`${host}/api/v1/posts/likePost`, data, {headers: authHeader()});
+    return {
+        data: res.data,
+        status: res.status,
+        statusText: res.statusText,
+    }
+}
+
+export const postBulkGetInfoAndFollowStatus = async (data: any): Promise<ServiceResponse> => {
+    const res = await axios.post(`${host}/api/v1/accounts/bulkGetInfoAndFollowStatus`, data, {headers: authHeader()});
+    return {
+        data: res.data,
+        status: res.status,
+        statusText: res.statusText,
+    }
+}
+
+export const postSetFollowStatus = async (data: any): Promise<ServiceResponse> => {
+    const res = await axios.post(`${host}/api/v1/accounts/follow`, data, {headers: authHeader()});
     return {
         data: res.data,
         status: res.status,

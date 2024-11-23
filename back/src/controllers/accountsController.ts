@@ -11,7 +11,6 @@ import { SEND_CONFIRM_TEMPLATE,
          FORGOT_PASSWORD_TEMPLATE, 
          sendEmailByTemplate, sendSMS } from "../Connectors/AWSConnector";
 
-
 export const getIsUnqiueUsername = async (ctx: Context) => {
     Metrics.increment("accounts.checkunique");
 
@@ -585,6 +584,7 @@ export const changePassword = async (ctx: Context) => {
             await DBConnector.execute("COMMIT", []);
         }
     } catch (err) {
+        logger.error(err);
         await DBConnector.execute("ROLLBACK", []);
 
         ctx.status = 400;
@@ -594,4 +594,106 @@ export const changePassword = async (ctx: Context) => {
 
     ctx.status = 200;
     ctx.body = { status: "OK" };
+}
+
+type FollowingType = {
+    userId: string;
+    followerId: string;
+    follow: boolean;
+}
+
+export const toggleFollowing = async (ctx: Context) => {
+    Metrics.increment("accounts.toggleFollowing");
+
+    const data = <FollowingType>ctx.request.body;
+
+    try {
+        await DBConnector.query("START TRANSACTION", []);
+
+        if(data.follow) {
+            //Adding a new follower
+            //Need the on duplicate clause to prevent exception when trying to re-add existing
+            //followers
+            let result = await DBConnector.execute(
+                `INSERT INTO Follows(USER_ID, FOLLOWS_USER_ID) VALUES(?,?)
+                 ON DUPLICATE KEY UPDATE id=id`, [data.userId, data.followerId]);
+
+            if (result.affectedRows == 0) {
+                throw new Error("Error adding follower");
+            }
+        } else {
+            // unfollow the given follower
+            await DBConnector.execute(
+                `DELETE FROM Follows WHERE USER_ID = ? AND FOLLOWS_USER_ID = ?`,
+                [data.userId, data.followerId]);
+        }
+
+        await DBConnector.execute("COMMIT", []);
+
+    } catch(err) {
+        logger.error(err);
+        await DBConnector.execute("ROLLBACK", []);
+
+        ctx.status = 400;
+        ctx.body = { status: "Error changing follower status" };
+        return;        
+    }
+
+    ctx.status = 200;
+    ctx.body = { status: "OK" };   
+}
+
+type BulkFollowResultEntry = {
+    firstName: string;
+    lastName: string;
+    userName: string;
+    userId: string;
+    followId?: string|null;
+    pfp?: string|null;
+}
+
+interface BulkFollowResultEntryInt {
+    [key: string]: BulkFollowResultEntry;
+}
+
+type BulkFollowDataType = {
+    userId: string;
+    userIds: string[];
+};
+
+export const postBulkGetInfoAndFollowStatus = async(ctx: Context) => {
+    Metrics.increment("accounts.postBulkGetInfoAndFollowStatus");
+
+    const data = <BulkFollowDataType>ctx.request.body;
+    
+    try {
+        const results = await DBConnector.query(`
+            SELECT 
+                u.FIRST_NAME AS firstName, 
+                u.LAST_NAME AS lastName, 
+                u.USERNAME AS userName, 
+                u.ID AS userId, 
+                f.USER_ID as followId, 
+                p.PROFILE_IMAGE_URL as pfp
+            FROM Users u 
+            LEFT OUTER JOIN Follows f on f.FOLLOWS_USER_ID = u.id AND f.USER_ID = ?
+            INNER JOIN Profiles p on p.USER_ID = u.ID
+            WHERE u.ID IN (?)`, [data.userId, data.userIds]);
+
+        const resultMap:BulkFollowResultEntryInt = {};
+        results.data.map(entry => {            
+            const e = entry as BulkFollowResultEntry;
+            resultMap[e.userId] = e;
+        });            
+
+        ctx.body = resultMap;
+
+    } catch(err) {
+        logger.error(err);
+        ctx.status = 400;
+        ctx.body = { status: "Error getting follower statuses" };
+        return
+    }
+
+    ctx.status = 200;    
 }
