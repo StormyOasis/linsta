@@ -57,6 +57,6 @@
         "apiKey": "cXRyM1ZwSUJrZFl6Z3FPYVB1bHM6MFpEb0FGLUFRSTJjYTdfUVd3QWJRZw==",
         "mainIndex": "main",
         "commentIndex": "comments",
-        "defaultResultSize": 100
+        "defaultResultSize": 10000
     }
 }

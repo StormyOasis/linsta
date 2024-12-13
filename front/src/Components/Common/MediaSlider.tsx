@@ -49,8 +49,6 @@ const SlideItem = styled.div`
     min-width: 100%;
     height: auto;
     overflow: hidden;
-    object-fit: cover;
-    height: auto;
     transform: translateX(0);
     transition: transform .5s ease;
 `;

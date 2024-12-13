@@ -13,6 +13,7 @@ export type Global = {
     dateTime: string;
     captionText: string;
     commentsDisabled: boolean;
+    commentCount: number;
     likesDisabled: boolean;
     locationText: string;
     likes: Like[];
@@ -37,9 +38,10 @@ export type Comment = {
     dateTime: string;
     text: string;
     user: User;
-    parent: {
-        postId: string;
+    postId: string;
+    parentCommentId: string | null;
+    children: {        
         commentId: string;
-    }|null;
+    }[];
     likes: Like[];
 };

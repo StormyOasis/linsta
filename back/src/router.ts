@@ -12,7 +12,7 @@ import {
 import { verifyJWT } from "./auth/Auth";
 import { getLocation } from "./controllers/locationsController";
 import { addPost, getAllPosts, getPostById, toggleLikePost } from "./controllers/postsController";
-import { addComment } from "./controllers/commentsHandler";
+import { addComment, getCommentsByPostId, toggleCommentLike } from "./controllers/commentsController";
 
 
 const router = new Router();
@@ -40,5 +40,7 @@ router.post("/api/v1/posts/likePost", verifyJWT, toggleLikePost);
 
 // comment handlers
 router.post("/api/v1/comment/add", verifyJWT, addComment);
+router.post("/api/v1/comment/getByPostId", verifyJWT, getCommentsByPostId);
+router.post("/api/v1/comment/toggleLike", verifyJWT, toggleCommentLike);
 
 export default router;

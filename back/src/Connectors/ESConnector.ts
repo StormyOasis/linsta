@@ -36,6 +36,27 @@ export const search = async (query: object, resultSize: number|null) => {
     return result;
 }
 
+export const searchComment = async (query: object, resultSize: number|null) => {
+    const size: number = resultSize ? resultSize : config.get("es.defaultResultSize");
+
+    const result = await client.search({
+        index: config.get("es.commentIndex"),
+        query,
+        size,
+        sort: [
+            {
+              "comment.dateTime": {
+                "nested" : {
+                  "path": "comment"
+                }
+              }
+            }
+          ]
+    }, { meta: true});
+
+    return result;
+}
+
 export const insert = async (dataSet: object) => {
     const result = await client.index({
         index: config.get("es.mainIndex"),
@@ -83,6 +104,7 @@ export const buildDataSetForES = (user:User, global:Global, entries:Entry[]):obj
                 dateTime: new Date(),
                 captionText: global.captionText,
                 commentsDisabled: global.commentsDisabled,
+                commentCount: 0,
                 likesDisabled: global.likesDisabled,
                 locationText: global.locationText,     
                 likes: global.likes,       
@@ -114,6 +136,7 @@ export const buildSearchResultSet = (hits: any[]):Post[] => {
                 dateTime: source.global.dateTime,
                 captionText: source.global.captionText,
                 commentsDisabled: source.global.commentsDisabled,
+                commentCount: source.global.commentCount,
                 likesDisabled: source.global.likesDisabled,
                 locationText: source.global.locationText,
                 likes: source.global.likes,

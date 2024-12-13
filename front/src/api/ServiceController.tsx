@@ -159,3 +159,30 @@ export const postSetFollowStatus = async (data: any): Promise<ServiceResponse> =
         statusText: res.statusText,
     }
 }
+
+export const postAddComment = async (data: any): Promise<ServiceResponse> => {
+    const res = await axios.post(`${host}/api/v1/comment/add`, data, {headers: authHeader()});
+    return {
+        data: res.data,
+        status: res.status,
+        statusText: res.statusText,
+    }
+}
+
+export const postGetCommentsByPostId = async (data: any): Promise<ServiceResponse> => {
+    const res = await axios.post(`${host}/api/v1/comment/getByPostId`, data, {headers: authHeader()});
+    return {
+        data: res.data,
+        status: res.status,
+        statusText: res.statusText,
+    }
+}
+
+export const postToggleCommentLike = async (data: any): Promise<ServiceResponse> => {
+    const res = await axios.post(`${host}/api/v1/comment/toggleLike`, data, {headers: authHeader()});
+    return {
+        data: res.data,
+        status: res.status,
+        statusText: res.statusText,
+    }
+}

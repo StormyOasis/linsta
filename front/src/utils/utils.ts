@@ -1,6 +1,6 @@
 import sanitizeHtml from 'sanitize-html';
 
-import { HistoryType, Post } from "../api/types";
+import { Comment, HistoryType, Post, CommentUiData } from "../api/types";
 import { postSetFollowStatus } from '../api/ServiceController';
 
 export const historyUtils: HistoryType = {
@@ -139,6 +139,43 @@ export const extractFrameFromVideo = async (video: HTMLVideoElement): Promise<st
     })
 }
 
+export const dateDiff = (dateTime: Date) => {
+    if(dateTime == null) {
+        return "now";
+    }
+    
+    const now = new Date().getTime();
+    const dateTimeMilli = new Date(dateTime).getTime();
+    const diff = new Date(now - dateTimeMilli);
+    let diffMilli = diff.getTime();
+
+    const days = Math.floor(diffMilli / 1000 / 60 / 60 / 24);
+    diffMilli = diffMilli - (days * 1000*60*60*24);
+
+    const weeks = Math.floor(days / 7.0);
+    const hours = Math.floor(diffMilli / 1000 / 60 / 60);
+    diffMilli = diffMilli - (hours * 1000 * 60 * 60);
+    const mins = Math.floor(diffMilli / 1000 / 60);
+
+    if(weeks >= 1) {
+        return weeks + "w";
+    }
+
+    if(days >= 1) {
+        return days + "d";
+    }
+
+    if(hours >= 1) {
+        return hours + "h";
+    } 
+    
+    if(mins >= 1) {
+        return mins + "m";
+    }
+
+    return "now";
+}
+
 export const enableModal = (enable: boolean) => {
     const cont = document.getElementById("modalContainer");
     const sectionCont = document.getElementById("mainSectionContainer");
@@ -165,6 +202,16 @@ export const isPostLiked = (userName: string, post: Post):boolean => {
     return result.length > 0;
 }
 
+export const isCommentLiked = (userName: string, comment: Comment):boolean => {
+    if(comment == null || userName == null) {
+        return false;
+    }
+
+    const result = comment.likes.filter((like:any) => like.userName === userName);
+
+    return result.length > 0;
+}
+
 export const togglePostLikedState = (userName: string, userId: string, post: Post):(Post|null) => {
     if(post == null || userName == null || userId == null) {
         return null;
@@ -183,12 +230,31 @@ export const togglePostLikedState = (userName: string, userId: string, post: Pos
     return post;
 }
 
+export const toggleCommentLikedState = (userName: string, userId: string, comment: Comment):(Comment|null) => {
+    if(comment == null || userName == null || userId == null) {
+        return null;
+    }
+
+    const index = comment.likes.findIndex((value:any) => value.userName === userName);
+
+    if(index === -1) {
+        // Username is not in the commets's like list, so add it
+        comment.likes.push({userName, userId});
+    } else {
+        // Remove the username from the comment's like list
+        comment.likes.splice(index, 1);
+    }
+
+    return comment;
+}
+
 export const searchPostsIndexById = (postId: string, posts: Post[]):number => {
     if(postId === null || posts === null) {
         return -1;
     }
     
     let postIndex = -1;
+
     posts.forEach((post: Post, index: number) => {
         if(post.global.id === postId) {
             postIndex = index;
@@ -196,6 +262,36 @@ export const searchPostsIndexById = (postId: string, posts: Post[]):number => {
     });
 
     return postIndex;
+}
+
+export const searchCommentsById = (commentId: string, comments: any):CommentUiData|null => {
+    if(commentId === null || comments == null || comments.length === 0) {
+        return null;
+    }
+
+    // Check if it's a root comment
+    let foundComment:CommentUiData|null = comments[commentId as keyof typeof comments];
+    
+    if(foundComment == null) {
+        // Not a root comment so we need to check child ids
+        for (const e of comments) {
+            const entry:CommentUiData = e;
+            
+            for(const c of entry.children) {
+                const child:CommentUiData = c;
+                if(child.comment.commentId === commentId) {
+                    foundComment = child;
+                    break;
+                }                
+            }
+
+            if(foundComment != null) {
+                break;
+            }
+        }
+    }
+
+    return foundComment;
 }
 
 export const getSanitizedText = (text: string):[string, string] => {
@@ -243,4 +339,28 @@ export const followUser = async (userId: string, followUserId: string, shouldFol
     const result = await postSetFollowStatus(data);
     
     return result.status === 200;
+}
+
+export const mapCommentsToCommentData = (comments: Comment[]) => {
+    if(comments == null || comments.length === 0) {
+        return {};
+    }
+
+    const map:any = {};
+
+    // Add the root comments to the map first
+    comments.map((comment:Comment) => {        
+        if(comment.parentCommentId === null) {
+            map[comment.commentId as keyof typeof map] = {comment, children: []};
+        }
+    });
+
+    // Add the child comments to the root comments
+    comments.map((comment:Comment) => {        
+        if(comment.parentCommentId !== null) {
+            map[comment.parentCommentId as keyof typeof map].children.push({comment, children: []});
+        }
+    });
+
+    return map;
 }

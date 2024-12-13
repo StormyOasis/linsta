@@ -1,7 +1,7 @@
-import React, { SyntheticEvent, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import * as styles from './Main.module.css';
-import { getPostById, getPosts, postToggleLike } from "../../../api/ServiceController";
+import { getPosts, postAddComment, postToggleLike } from "../../../api/ServiceController";
 import { Post } from "../../../api/types";
 import MediaSlider from "../../../Components/Common/MediaSlider";
 
@@ -16,8 +16,9 @@ import LikesModal from "./Modals/Main/LikesModal";
 import { Flex, FlexColumn, FlexRow, Link } from "../../../Components/Common/CombinedStyling";
 import EmojiPickerPopup from "../../../Components/Common/EmojiPickerPopup";
 import StyledLink from "../../../Components/Common/StyledLink";
-
-const host = "http://localhost:8080"; //TODO: From config or env
+import CommentModal from "./Modals/Main/CommentsModal";
+import { HOST } from "../../../api/config";
+import ProfileLink from "../../../Components/Common/ProfileLink";
 
 const MainContentWrapper = styled.div`
     overflow-y: auto;
@@ -96,9 +97,10 @@ interface CommentTextType {
 const MainContent: React.FC<MainContentProps> = (props: MainContentProps) => {
     const [posts, setPosts] = useState<Post[]>([]);
     const [viewLikesModalPost, setViewLikesModalPost] = useState<Post|null>(null);
+    const [viewCommentModalPost, setViewCommentModalPost] = useState<Post|null>(null);
     const [viewShowMoreStates, setViewMoreStates] = useState<{}>({});
     const [commentText, setCommentText] = useState<CommentTextType>({});
-
+    
     const authUser:AuthUser = useSelector((state:any) => state.auth.user);
 
     useEffect(() => {
@@ -133,7 +135,7 @@ const MainContent: React.FC<MainContentProps> = (props: MainContentProps) => {
 
         return (
             <div style={{marginTop: "5px", marginBottom: "5px", lineHeight: "18px"}}>
-                <span>Liked by <Link role="link" href={`${host}/${post.global.likes[0].userName}`} style={{fontWeight: "600"}}>{post.global.likes[0].userName}</Link> 
+                <span>Liked by <Link role="link" href={`${HOST}/${post.global.likes[0].userName}`} style={{fontWeight: "600"}}>{post.global.likes[0].userName}</Link> 
                     {post.global.likes.length > 1 && <span> and <Link role="link" href="#" onClick={() => setViewLikesModalPost(post)} style={{fontWeight: "600"}}>others</Link></span>}
                 </span>
             </div>
@@ -147,6 +149,25 @@ const MainContent: React.FC<MainContentProps> = (props: MainContentProps) => {
         setViewMoreStates(newState);
     }
 
+    const handleSubmitComment = async (text: string, post: Post) => {
+        const data = {
+            text,
+            postId: post.global.id,
+            parentCommentId: null,
+            userName: authUser.userName,
+            userId: authUser.id,
+        };
+
+        const result = await postAddComment(data);
+
+        if(result.status === 200) {
+            // Success adding comment, clear out comment text box
+            const newCommentText = {...commentText};
+            newCommentText[`${post.global.id}`] = '';
+            setCommentText(newCommentText);   
+        }
+    }
+
     const renderCommentsSection = (post: Post) => {
         const [sanitizedHtml, sanitizedText] = getSanitizedText(post.global.captionText);
         const overflowed:boolean = isOverflowed(`postid_${post.global.id}`);
@@ -156,19 +177,22 @@ const MainContent: React.FC<MainContentProps> = (props: MainContentProps) => {
         return (
             <>
                 {sanitizedText?.length > 0 &&
+                <>
                     <CaptionContainer className={!isExpanded ? styles.lineClamp2 : {}}> 
                         <div id={`postid_${post.global.id}`}>
-                            <Link role="link" href={`${host}/${post.user.userName}`} style={{fontWeight: "600", marginRight: "5px"}}>{post.user.userName}</Link>
-                            <span dangerouslySetInnerHTML={{__html: sanitizedHtml}}></span>                            
+                            <span>
+                                <ProfileLink showUserName={true} showPfp={false} url={`${HOST}/${post.user.userName}`} text={post.user.userName}></ProfileLink>
+                                <span dangerouslySetInnerHTML={{__html: sanitizedHtml}}></span>
+                            </span>                                          
                         </div>
-                        {(overflowed && !isExpanded) && <Link href="#" 
-                                        onClick={() => toggleCaptionViewMoreState(post.global.id)}
-                                        style={{position: "absolute", bottom: "-16px", left: 0, color: "rgb(120, 120, 120)"}}>More</Link>}
                     </CaptionContainer>
-                }
-                { post.global?.comments?.length > 0 &&
-                    <div>
-                        <Link href="#" onClick={() => {}} style={{color: "rgb(120, 120, 120)"}}>View all {post.global.comments.length} comments</Link>
+                    {(overflowed && !isExpanded) && <Link href="#" 
+                        onClick={() => toggleCaptionViewMoreState(post.global.id)}
+                        style={{color: "rgb(120, 120, 120)"}}>More</Link>}                    
+                </>}
+                { post.global.commentCount > 0 &&
+                    <div style={{marginBottom: "4px", marginTop: "4px"}}>
+                        <Link href="#" onClick={() => setViewCommentModalPost(post)} style={{color: "rgb(120, 120, 120)"}}>View all {post.global.commentCount} comments</Link>
                     </div>
                 }
                 { !post.global?.commentsDisabled && 
@@ -177,25 +201,35 @@ const MainContent: React.FC<MainContentProps> = (props: MainContentProps) => {
                             <CommentTextArea value={commentText[`${post.global.id}`]}
                                 placeholder="Add a new comment..." 
                                 aria-label="Add a new comment..." 
-                                onChange={(e) => {                                    
+                                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {                               
                                         const newCommentText = {...commentText};
-                                        newCommentText[`${post.global.id}`] = e.target.value;
+                                        newCommentText[`${post.global.id}`] = e.currentTarget.value;
                                         setCommentText(newCommentText);
                                     }                             
                                 }
-                                onInput={(e) => {
+                                onInput={(e:React.KeyboardEvent<HTMLTextAreaElement>) => {
                                     const element = e.currentTarget;
                                     element.style.height = "";
                                     element.style.height = element.scrollHeight + "px";
-                                }
-                            }/>
+                                }}
+                                onKeyDown={async (e:React.KeyboardEvent<HTMLTextAreaElement>) => {
+                                    if (e.key === "Enter") {
+                                        // Prevent adding a new line
+                                        e.preventDefault();
+
+                                        await handleSubmitComment(commentText[`${post.global.id}`], post);                                        
+                                    }                                    
+                                }}
+                            />
                             <Flex style={{marginTop: "auto", marginBottom: "auto"}}>
                                 {
-                                    (commentText[`${post.global.id}`] && commentText[`${post.global.id}`]) &&
+                                    (commentText[`${post.global.id}`] && commentText[`${post.global.id}`].length > 0) &&
                                     <div style={{paddingLeft: "5px", paddingRight: "5px"}}>
-                                        <StyledLink onClick={(event) => {
-                                            //call/create the add comment service
-                                        }}>Post</StyledLink>
+                                        <StyledLink onClick={async () => 
+                                            await handleSubmitComment(commentText[`${post.global.id}`], post)
+                                        }>
+                                            Post
+                                        </StyledLink>
                                     </div>
                                 }
                                 <EmojiPickerPopup noPadding={true} onEmojiClick={(emoji: any) => {
@@ -214,8 +248,9 @@ const MainContent: React.FC<MainContentProps> = (props: MainContentProps) => {
     return (
         <>
             {viewLikesModalPost !== null && <LikesModal post={viewLikesModalPost} onClose={() => {setViewLikesModalPost(null)}}/>}
+            {viewCommentModalPost !== null && <CommentModal post={viewCommentModalPost} onClose={() => {setViewCommentModalPost(null)}}/>}
             <MainContentWrapper>
-                <section style={{display: "flex", flexDirection: "column", minHeight: "100vh"}}>
+                <section style={{display: "flex", flexDirection: "column", minHeight: "100vh", paddingTop: "10px"}}>
                     <main role="main" style={{flexDirection: "column", display: "flex", flexGrow: "1", overflow: "hidden"}}>
                         <FlexRow style={{justifyContent: "center", width: "100%"}}>                    
                             <FeedContainer>
@@ -224,56 +259,42 @@ const MainContent: React.FC<MainContentProps> = (props: MainContentProps) => {
                                     return (
                                         <article key={post.global.id}>
                                             <PostContainer>
-                                                <div style={{paddingBottom: "12px"}}>
-                                                    <div>
-                                                        <div>                                                            
-                                                            <Link role="link" href={`${host}/${post.user.userName}`} style={{fontWeight: "600"}}>{post.user.userName}</Link>
-                                                        </div>
-                                                    </div>
+                                                <div style={{paddingBottom: "12px"}}>                                                                                                          
+                                                    <ProfileLink showUserName={true} showPfp={true} text={post.user.userName} url={`${HOST}/${post.user.userName}`}></ProfileLink>                                                    
                                                 </div>
-                                                <FlexColumn style={{justifyContent: "center", overflow: "hidden"}}>
-                                                    <FlexColumn style={{position: "relative"}}>
-                                                        <div style={{width: "min(470px, 100vw)"}}>
-                                                            <MediaSlider media={post.media} />
-                                                        </div>
-                                                    </FlexColumn>
+                                                <FlexColumn style={{justifyContent: "center", overflow: "hidden", position: "relative", width: "min(470px, 100vw)"}}>                                                                                                        
+                                                    <MediaSlider media={post.media} />                                                                                                       
                                                 </FlexColumn>
                                                 <div style={{position: "relative"}}>
                                                     <FlexColumn style={{height: "100%", position: "relative"}}>
-                                                        <FlexRow style={{marginTop: "5px", marginBottom: "5px"}}>
-                                                            <Flex>
-                                                                <span>
-                                                                    <div style={{cursor: "pointer"}}>
-                                                                        <Flex style={{paddingRight: "8px"}}>
-                                                                            <ActionSVGContainer $isLiked={isLiked} onClick={async () => await toggleLike(post.global.id, authUser.userName, authUser.id)}>
-                                                                                {isLiked ? <HeartFilledSVG />: <HeartSVG /> }
-                                                                            </ActionSVGContainer>
-                                                                        </Flex>
-                                                                    </div>
-                                                                </span>
-                                                            </Flex>
-                                                            <Flex style={{display: "flex"}}>
-                                                                <span>
-                                                                    <div style={{cursor: "pointer"}}>
-                                                                        <Flex style={{display: "flex", paddingRight: "8px"}}>
-                                                                            <ActionSVGContainer>
-                                                                                <MessageSVG />
-                                                                            </ActionSVGContainer>
-                                                                        </Flex>
-                                                                    </div>
-                                                                </span>
-                                                            </Flex>
-                                                            <Flex style={{display: "flex"}}>
-                                                                <span>
-                                                                    <div style={{cursor: "pointer"}}>
-                                                                        <Flex style={{paddingRight: "8px"}}>
-                                                                            <ActionSVGContainer>
-                                                                                <ShareSVG/>
-                                                                            </ActionSVGContainer>
-                                                                        </Flex>
-                                                                    </div>
-                                                                </span>
-                                                            </Flex>                                                                                                                     
+                                                        <FlexRow style={{marginTop: "5px", marginBottom: "5px"}}>                                                            
+                                                            <span>
+                                                                <div style={{cursor: "pointer"}}>
+                                                                    <Flex style={{paddingRight: "8px"}}>
+                                                                        <ActionSVGContainer $isLiked={isLiked} onClick={async () => await toggleLike(post.global.id, authUser.userName, authUser.id)}>
+                                                                            {isLiked ? <HeartFilledSVG />: <HeartSVG /> }
+                                                                        </ActionSVGContainer>
+                                                                    </Flex>
+                                                                </div>
+                                                            </span>                                                    
+                                                            <span>
+                                                                <div style={{cursor: "pointer"}}>
+                                                                    <Flex style={{paddingRight: "8px"}}>
+                                                                        <ActionSVGContainer>
+                                                                            <MessageSVG onClick={() => setViewCommentModalPost(post)}/>
+                                                                        </ActionSVGContainer>
+                                                                    </Flex>
+                                                                </div>
+                                                            </span>                                    
+                                                            <span>
+                                                                <div style={{cursor: "pointer"}}>
+                                                                    <Flex style={{paddingRight: "8px"}}>
+                                                                        <ActionSVGContainer>
+                                                                            <ShareSVG/>
+                                                                        </ActionSVGContainer>
+                                                                    </Flex>
+                                                                </div>
+                                                            </span>                                                                                                                 
                                                         </FlexRow>
                                                         <div>
                                                             {renderLikes(post)}

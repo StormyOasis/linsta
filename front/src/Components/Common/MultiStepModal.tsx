@@ -28,16 +28,16 @@ const ModalInnerWrapper = styled.div`
   max-width: ${props => props.theme['sizes'].maxModalWidth};
   max-height: calc(100% - 40px);
   min-width: 260px;
+  overflow: hidden;
   pointer-events: all;
   position: relative;
-  width: 100%;
   border-radius: 12px;
   background-color: ${props => props.theme['colors'].backgroundColor};
 `;
 
 const ModalInnerWrapper2 = styled.div`  
   display: block;
-  overflow: auto;
+  overflow: hidden;
   pointer-events: all;
 `;
 
@@ -130,9 +130,9 @@ const CloseButton = styled.span`
   background: url('/public/images/x.svg');
 `;
 
-export const ModalContentWrapper = styled.div`
+export const ModalContentWrapper = styled.div<{$hideMargins?:boolean|undefined, $alignItems: string}>`
     align-content: stretch;
-    align-items: center;
+    align-items: ${props => props.$alignItems};
     border: none;
     display: flex;
     flex-direction: column;
@@ -142,7 +142,7 @@ export const ModalContentWrapper = styled.div`
     overflow: visible;
     pointer-events: all;
     position: relative;
-    margin: 20px 28px 20px 28px;
+    margin: ${props => props.$hideMargins ? 0 : "20px 28px 20px 28px"};
 `;
 
 export const ModalSectionWrapper = styled.div`
@@ -173,8 +173,15 @@ const PrevButton = styled.div`
   width: 22px;
 `;
 
+export type MultiStepModalStepOptions = {
+  showFooter?: boolean;
+  hideMargins?: boolean;
+  footerNextPageText?: string;
+  alignItems?: string;
+}
+
 export type MultiStepModalProps = {
-  steps: Array<{ title: string, options: any, element: JSX.Element, onNext?: any, onPrev?: any }>;
+  steps: Array<{ title: string, options: MultiStepModalStepOptions, element: JSX.Element, onNext?: any, onPrev?: any }>;
   onClose: any;
   stepNumber: number;
   showLoadingAnimation: boolean;
@@ -209,6 +216,7 @@ export default class MultiStepModal extends React.Component<MultiStepModalProps,
     }
 
     const step = this.props.steps[this.props.stepNumber];
+    const alignItems = step.options.alignItems ? step.options.alignItems : "center";
 
     return createPortal(
       <>
@@ -234,7 +242,7 @@ export default class MultiStepModal extends React.Component<MultiStepModalProps,
                     </ModalCloseWrapper>
                   </ModalTitleBarInnerWrapper>
                 </ModalTitleBarWrapper>
-                <ModalContentWrapper>
+                <ModalContentWrapper $hideMargins={step.options.hideMargins} $alignItems={alignItems}>
                   {this.props.showLoadingAnimation &&
                     <div>
                       <img src="/public/images/loading.gif" />
