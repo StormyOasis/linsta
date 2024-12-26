@@ -76,6 +76,7 @@ export const addComment = async (ctx: Context) => {
         }
 
         ctx.status = 200;
+        ctx.body = {id: result._id};
     } catch(err) {
         logger.error(err);
         ctx.status = 400;
@@ -129,7 +130,7 @@ export const getCommentsByPostId = async (ctx: Context) => {
                     userId: entry._source.comment.user.userId
                 },
                 children: entry._source.comment.children.map((comment: any) => {
-                    return {commentId: comment.childCommentId};
+                    return comment.childCommentId;
                 }),
                 likes: entry._source.comment.likes.map((like: any):Like => { 
                     return  {userName: like.userName, userId: like.userId};

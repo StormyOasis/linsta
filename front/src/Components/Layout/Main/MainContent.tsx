@@ -11,12 +11,12 @@ import MessageSVG from "/public/images/message.svg";
 import ShareSVG from "/public/images/send.svg";
 import { useSelector } from "react-redux";
 import { AuthUser } from "../../../api/Auth";
-import { isOverflowed, getSanitizedText, isPostLiked, searchPostsIndexById, togglePostLikedState } from "../../../utils/utils";
+import { isOverflowed, getSanitizedText, isPostLiked, searchPostsIndexById, togglePostLikedState, toggleLike } from "../../../utils/utils";
 import LikesModal from "./Modals/Main/LikesModal";
 import { Flex, FlexColumn, FlexRow, Link } from "../../../Components/Common/CombinedStyling";
 import EmojiPickerPopup from "../../../Components/Common/EmojiPickerPopup";
 import StyledLink from "../../../Components/Common/StyledLink";
-import CommentModal from "./Modals/Main/CommentsModal";
+import CommentModal from "./Modals/Comments/CommentsModal";
 import { HOST } from "../../../api/config";
 import ProfileLink from "../../../Components/Common/ProfileLink";
 
@@ -109,25 +109,6 @@ const MainContent: React.FC<MainContentProps> = (props: MainContentProps) => {
         }).catch(err => console.error(err));
     }, []);
 
-    const toggleLike = async (postId: string, userName: string, userId: string) => {
-        let result = await postToggleLike({postId, userName, userId});
-        if(result.status === 200) {            
-            // update the post list by updating the post instance in the post state array
-            const index = searchPostsIndexById(postId, posts);
-            if(index === -1) {
-                return;
-            }
-
-            const newPostsList = [...posts];
-            const newPost:Post|null = togglePostLikedState(userName, userId, newPostsList[index]);
-
-            if(newPost === null) { return }
-
-            newPostsList[index] = newPost;
-            setPosts(newPostsList);            
-        }
-    }
-
     const renderLikes = (post: Post) => {
         if(post.global.likesDisabled || post.global.likes.length === 0) {
             return null;
@@ -167,6 +148,14 @@ const MainContent: React.FC<MainContentProps> = (props: MainContentProps) => {
             setCommentText(newCommentText);   
         }
     }
+
+    const handleUpdateFromCommentModal = (post: Post) => {
+        const newPosts: Post[] = [...posts];
+        const index: number = searchPostsIndexById(post.global.id, posts);
+        newPosts[index] = post;
+
+        setPosts(newPosts);        
+    }    
 
     const renderCommentsSection = (post: Post) => {
         const [sanitizedHtml, sanitizedText] = getSanitizedText(post.global.captionText);
@@ -248,7 +237,7 @@ const MainContent: React.FC<MainContentProps> = (props: MainContentProps) => {
     return (
         <>
             {viewLikesModalPost !== null && <LikesModal post={viewLikesModalPost} onClose={() => {setViewLikesModalPost(null)}}/>}
-            {viewCommentModalPost !== null && <CommentModal post={viewCommentModalPost} onClose={() => {setViewCommentModalPost(null)}}/>}
+            {viewCommentModalPost !== null && <CommentModal updatePost={handleUpdateFromCommentModal} post={viewCommentModalPost} onClose={() => {setViewCommentModalPost(null)}}/>}
             <MainContentWrapper>
                 <section style={{display: "flex", flexDirection: "column", minHeight: "100vh", paddingTop: "10px"}}>
                     <main role="main" style={{flexDirection: "column", display: "flex", flexGrow: "1", overflow: "hidden"}}>
@@ -271,7 +260,8 @@ const MainContent: React.FC<MainContentProps> = (props: MainContentProps) => {
                                                             <span>
                                                                 <div style={{cursor: "pointer"}}>
                                                                     <Flex style={{paddingRight: "8px"}}>
-                                                                        <ActionSVGContainer $isLiked={isLiked} onClick={async () => await toggleLike(post.global.id, authUser.userName, authUser.id)}>
+                                                                        <ActionSVGContainer $isLiked={isLiked} onClick={async () => {
+                                                                            setPosts(await toggleLike(post.global.id, authUser.userName, authUser.id, posts))}}>
                                                                             {isLiked ? <HeartFilledSVG />: <HeartSVG /> }
                                                                         </ActionSVGContainer>
                                                                     </Flex>

@@ -1,7 +1,7 @@
 import sanitizeHtml from 'sanitize-html';
 
 import { Comment, HistoryType, Post, CommentUiData } from "../api/types";
-import { postSetFollowStatus } from '../api/ServiceController';
+import { postSetFollowStatus, postToggleLike } from '../api/ServiceController';
 
 export const historyUtils: HistoryType = {
     navigate: null,
@@ -230,6 +230,26 @@ export const togglePostLikedState = (userName: string, userId: string, post: Pos
     return post;
 }
 
+export const toggleLike = async (postId: string, userName: string, userId: string, posts: Post[]):Promise<Post[]> => {
+    const result = await postToggleLike({postId, userName, userId});
+    if(result.status === 200) {            
+        // update the post list by updating the post instance in the post state array
+        const index = searchPostsIndexById(postId, posts);
+        if(index === -1) {
+            return [];
+        }
+
+        const newPostsList = [...posts];
+        const newPost:Post|null = togglePostLikedState(userName, userId, newPostsList[index]);
+
+        if(newPost === null) { return [] }
+
+        newPostsList[index] = newPost;
+        return newPostsList;            
+    }
+    return [];
+}
+
 export const toggleCommentLikedState = (userName: string, userId: string, comment: Comment):(Comment|null) => {
     if(comment == null || userName == null || userId == null) {
         return null;
@@ -264,8 +284,8 @@ export const searchPostsIndexById = (postId: string, posts: Post[]):number => {
     return postIndex;
 }
 
-export const searchCommentsById = (commentId: string, comments: any):CommentUiData|null => {
-    if(commentId === null || comments == null || comments.length === 0) {
+export const searchCommentsById = (commentId: string, comments:any):CommentUiData|null => {
+    if(commentId === null || comments == null) {
         return null;
     }
 
@@ -273,19 +293,31 @@ export const searchCommentsById = (commentId: string, comments: any):CommentUiDa
     let foundComment:CommentUiData|null = comments[commentId as keyof typeof comments];
     
     if(foundComment == null) {
-        // Not a root comment so we need to check child ids
-        for (const e of comments) {
-            const entry:CommentUiData = e;
-            
-            for(const c of entry.children) {
-                const child:CommentUiData = c;
-                if(child.comment.commentId === commentId) {
-                    foundComment = child;
-                    break;
-                }                
+        // Not a root comment so we need to check children ids
+        
+        // Variation of a DFS tree traversal
+        const traverse = (commentId: string, node: CommentUiData):CommentUiData|null => {
+            if(node == null) {
+                return null;
             }
 
-            if(foundComment != null) {
+            if(node.comment.commentId === commentId) {
+                return node;
+            }
+
+            for (const [, value] of Object.entries(node.children)) {
+                foundComment = traverse(commentId, value as CommentUiData);
+                if(foundComment != null) {
+                    return foundComment;
+                }
+            }
+            return null;
+        };
+
+        // Start the DFS (Note: we can have multiple root nodes hence the array/map)
+        for (const [, value] of Object.entries(comments)) {
+            foundComment = traverse(commentId, value as CommentUiData);
+            if(foundComment !== null) {
                 break;
             }
         }
@@ -321,7 +353,7 @@ export const isOverflowed = (id: string):boolean => {
     if(element == null) {
         return false;
     }
-    //console.log( element.offsetHeight , element.scrollHeight)
+
     return element.offsetHeight < element.scrollHeight;
 }
 
@@ -341,26 +373,52 @@ export const followUser = async (userId: string, followUserId: string, shouldFol
     return result.status === 200;
 }
 
-export const mapCommentsToCommentData = (comments: Comment[]) => {
+export const mapCommentsToCommentData = (comments: Comment[], existingComments: CommentUiData[]):any => {
     if(comments == null || comments.length === 0) {
         return {};
     }
 
-    const map:any = {};
+    const tmpMap:any = {};
+    const rootNodes:CommentUiData[] = [];  
 
-    // Add the root comments to the map first
-    comments.map((comment:Comment) => {        
+    //Store all comments in a key-value pairing by commentId for easy retrieval
+    comments.forEach((comment:Comment) => { 
+        const existingComment: CommentUiData|null = existingComments[comment.commentId as keyof typeof existingComments] as CommentUiData;
+        const repliesVisibleFlag = existingComment != null ? existingComment.repliesVisibleFlag : false;
+        tmpMap[comment.commentId as keyof typeof tmpMap] = {comment, parentCommentId: comment.parentCommentId, children: [], repliesVisibleFlag}; 
         if(comment.parentCommentId === null) {
-            map[comment.commentId as keyof typeof map] = {comment, children: []};
+            rootNodes.push(tmpMap[comment.commentId as keyof typeof tmpMap]);
         }
     });
 
-    // Add the child comments to the root comments
-    comments.map((comment:Comment) => {        
-        if(comment.parentCommentId !== null) {
-            map[comment.parentCommentId as keyof typeof map].children.push({comment, children: []});
+    //Convert the comments into a proper hierarchy
+    comments.forEach((comment:Comment) => {
+        comment.children.forEach((child: string) => {
+            tmpMap[comment.commentId as keyof typeof tmpMap].children.push(tmpMap[child]);
         }
+    )});
+
+    // Convert back to key-value pairs
+    const finalMap:any = {};
+    rootNodes.forEach((entry: CommentUiData) => {
+        finalMap[entry.comment.commentId as keyof typeof finalMap] = entry;
     });
 
-    return map;
+    return finalMap;
+}
+
+export const toggleCommentReplyUiData = (commentUiData: CommentUiData, commentList:any):any => {
+    if(commentList.length === 0) {
+        return [];
+    }
+    
+    const newCommentsList = JSON.parse(JSON.stringify(commentList));
+    const comment = searchCommentsById(commentUiData.comment.commentId, newCommentsList);
+
+    if(comment != null) {
+        comment.repliesVisibleFlag = !comment.repliesVisibleFlag;
+    }    
+
+    return newCommentsList;
+
 }

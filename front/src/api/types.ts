@@ -28,9 +28,7 @@ export type Comment = {
     user: User;
     postId: string;
     parentCommentId: string | null;
-    children: {        
-        commentId: string;
-    }[];
+    children: string[];
     likes: Like[];
 };
 
@@ -50,6 +48,7 @@ export type Post = {
 };
 
 export type CommentUiData = {
+    repliesVisibleFlag: boolean;
     comment: Comment;
     children: CommentUiData[];
 }
