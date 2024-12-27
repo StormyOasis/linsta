@@ -1,24 +1,23 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import * as styles from './Main.module.css';
-import { getPosts, postAddComment, postToggleLike } from "../../../api/ServiceController";
+import { getPosts, postAddComment } from "../../../api/ServiceController";
 import { Post } from "../../../api/types";
 import MediaSlider from "../../../Components/Common/MediaSlider";
 
-import HeartSVG from "/public/images/heart.svg";
-import HeartFilledSVG from "/public/images/heart-fill.svg";
 import MessageSVG from "/public/images/message.svg";
 import ShareSVG from "/public/images/send.svg";
 import { useSelector } from "react-redux";
 import { AuthUser } from "../../../api/Auth";
-import { isOverflowed, getSanitizedText, isPostLiked, searchPostsIndexById, togglePostLikedState, toggleLike } from "../../../utils/utils";
+import { isOverflowed, getSanitizedText, isPostLiked, searchPostsIndexById, toggleLike } from "../../../utils/utils";
 import LikesModal from "./Modals/Main/LikesModal";
-import { Flex, FlexColumn, FlexRow, Link } from "../../../Components/Common/CombinedStyling";
+import { BoldLink, CursorPointerDiv, DivWithMarginPadding, Flex, FlexColumn, FlexRow, FlexRowFullWidth, Link } from "../../../Components/Common/CombinedStyling";
 import EmojiPickerPopup from "../../../Components/Common/EmojiPickerPopup";
 import StyledLink from "../../../Components/Common/StyledLink";
 import CommentModal from "./Modals/Comments/CommentsModal";
 import { HOST } from "../../../api/config";
 import ProfileLink from "../../../Components/Common/ProfileLink";
+import { LikeToggler, ViewLikesText } from "../../../Components/Common/Likes";
 
 const MainContentWrapper = styled.div`
     overflow-y: auto;
@@ -57,11 +56,11 @@ const PostContainer = styled.div`
     border-bottom: 1px solid ${props => props.theme["colors"].borderDefaultColor};
 `;
 
-const ActionSVGContainer = styled.div<{$isLiked?:boolean}>`
+const ActionContainer = styled(CursorPointerDiv) <{ $isLiked?: boolean }>`
     width: 28px;
     height: 28px;
-
-    color: ${props => props.$isLiked ? "red" : "black" };
+    margin-left: auto;
+    color: ${props => props.$isLiked ? "red" : "black"};
 
     &:hover {
         color: ${props => props.theme["colors"].borderDarkColor};
@@ -87,14 +86,11 @@ const CommentTextArea = styled.textarea`
     color: ${props => props.theme["colors"].defaultTextColor };
 `;
 
-type MainContentProps = {
-}
-
 interface CommentTextType {
     [key: string]: string;
 }
 
-const MainContent: React.FC<MainContentProps> = (props: MainContentProps) => {
+const MainContent: React.FC = () => {
     const [posts, setPosts] = useState<Post[]>([]);
     const [viewLikesModalPost, setViewLikesModalPost] = useState<Post|null>(null);
     const [viewCommentModalPost, setViewCommentModalPost] = useState<Post|null>(null);
@@ -108,20 +104,6 @@ const MainContent: React.FC<MainContentProps> = (props: MainContentProps) => {
             setPosts(result.data)
         }).catch(err => console.error(err));
     }, []);
-
-    const renderLikes = (post: Post) => {
-        if(post.global.likesDisabled || post.global.likes.length === 0) {
-            return null;
-        }
-
-        return (
-            <div style={{marginTop: "5px", marginBottom: "5px", lineHeight: "18px"}}>
-                <span>Liked by <Link role="link" href={`${HOST}/${post.global.likes[0].userName}`} style={{fontWeight: "600"}}>{post.global.likes[0].userName}</Link> 
-                    {post.global.likes.length > 1 && <span> and <Link role="link" href="#" onClick={() => setViewLikesModalPost(post)} style={{fontWeight: "600"}}>others</Link></span>}
-                </span>
-            </div>
-        );
-    }
 
     const toggleCaptionViewMoreState = (postId: string) => {
         const newState:any = Object.assign({}, viewShowMoreStates);
@@ -180,9 +162,9 @@ const MainContent: React.FC<MainContentProps> = (props: MainContentProps) => {
                         style={{color: "rgb(120, 120, 120)"}}>More</Link>}                    
                 </>}
                 { post.global.commentCount > 0 &&
-                    <div style={{marginBottom: "4px", marginTop: "4px"}}>
+                    <DivWithMarginPadding $marginBottom="4px" $marginTop="4px">
                         <Link href="#" onClick={() => setViewCommentModalPost(post)} style={{color: "rgb(120, 120, 120)"}}>View all {post.global.commentCount} comments</Link>
-                    </div>
+                    </DivWithMarginPadding>
                 }
                 { !post.global?.commentsDisabled && 
                     <div>
@@ -210,16 +192,16 @@ const MainContent: React.FC<MainContentProps> = (props: MainContentProps) => {
                                     }                                    
                                 }}
                             />
-                            <Flex style={{marginTop: "auto", marginBottom: "auto"}}>
+                            <Flex $marginTop="auto" $marginBottom="auto">
                                 {
                                     (commentText[`${post.global.id}`] && commentText[`${post.global.id}`].length > 0) &&
-                                    <div style={{paddingLeft: "5px", paddingRight: "5px"}}>
+                                    <DivWithMarginPadding $paddingLeft="5px" $paddingRight="5px">
                                         <StyledLink onClick={async () => 
                                             await handleSubmitComment(commentText[`${post.global.id}`], post)
                                         }>
                                             Post
                                         </StyledLink>
-                                    </div>
+                                    </DivWithMarginPadding>
                                 }
                                 <EmojiPickerPopup noPadding={true} onEmojiClick={(emoji: any) => {
                                     const newCommentText = {...commentText};
@@ -241,16 +223,16 @@ const MainContent: React.FC<MainContentProps> = (props: MainContentProps) => {
             <MainContentWrapper>
                 <section style={{display: "flex", flexDirection: "column", minHeight: "100vh", paddingTop: "10px"}}>
                     <main role="main" style={{flexDirection: "column", display: "flex", flexGrow: "1", overflow: "hidden"}}>
-                        <FlexRow style={{justifyContent: "center", width: "100%"}}>                    
+                        <FlexRowFullWidth style={{justifyContent: "center"}}>                    
                             <FeedContainer>
                                 {posts.length > 0 && posts.map(post => {
                                     const isLiked = isPostLiked(authUser.userName, post);
                                     return (
                                         <article key={post.global.id}>
                                             <PostContainer>
-                                                <div style={{paddingBottom: "12px"}}>                                                                                                          
+                                                <DivWithMarginPadding $paddingBottom="12px">                                                                                                          
                                                     <ProfileLink showUserName={true} showPfp={true} text={post.user.userName} url={`${HOST}/${post.user.userName}`}></ProfileLink>                                                    
-                                                </div>
+                                                </DivWithMarginPadding>
                                                 <FlexColumn style={{justifyContent: "center", overflow: "hidden", position: "relative", width: "min(470px, 100vw)"}}>                                                                                                        
                                                     <MediaSlider media={post.media} />                                                                                                       
                                                 </FlexColumn>
@@ -258,36 +240,38 @@ const MainContent: React.FC<MainContentProps> = (props: MainContentProps) => {
                                                     <FlexColumn style={{height: "100%", position: "relative"}}>
                                                         <FlexRow style={{marginTop: "5px", marginBottom: "5px"}}>                                                            
                                                             <span>
-                                                                <div style={{cursor: "pointer"}}>
-                                                                    <Flex style={{paddingRight: "8px"}}>
-                                                                        <ActionSVGContainer $isLiked={isLiked} onClick={async () => {
-                                                                            setPosts(await toggleLike(post.global.id, authUser.userName, authUser.id, posts))}}>
-                                                                            {isLiked ? <HeartFilledSVG />: <HeartSVG /> }
-                                                                        </ActionSVGContainer>
+                                                                <CursorPointerDiv>
+                                                                    <Flex $paddingRight="8px">
+                                                                    <LikeToggler
+                                                                        isLiked={isLiked}
+                                                                        handleClick={async () => {
+                                                                            setPosts(await toggleLike(post.global.id, authUser.userName, authUser.id, posts))}} />
                                                                     </Flex>
-                                                                </div>
+                                                                </CursorPointerDiv>
                                                             </span>                                                    
                                                             <span>
-                                                                <div style={{cursor: "pointer"}}>
-                                                                    <Flex style={{paddingRight: "8px"}}>
-                                                                        <ActionSVGContainer>
+                                                                <CursorPointerDiv>
+                                                                    <Flex $paddingRight="8px">
+                                                                        <ActionContainer>
                                                                             <MessageSVG onClick={() => setViewCommentModalPost(post)}/>
-                                                                        </ActionSVGContainer>
+                                                                        </ActionContainer>
                                                                     </Flex>
-                                                                </div>
+                                                                </CursorPointerDiv>
                                                             </span>                                    
                                                             <span>
-                                                                <div style={{cursor: "pointer"}}>
-                                                                    <Flex style={{paddingRight: "8px"}}>
-                                                                        <ActionSVGContainer>
+                                                                <CursorPointerDiv>
+                                                                    <Flex $paddingRight="8px">
+                                                                        <ActionContainer>
                                                                             <ShareSVG/>
-                                                                        </ActionSVGContainer>
+                                                                        </ActionContainer>
                                                                     </Flex>
-                                                                </div>
+                                                                </CursorPointerDiv>
                                                             </span>                                                                                                                 
                                                         </FlexRow>
                                                         <div>
-                                                            {renderLikes(post)}
+                                                            <DivWithMarginPadding $marginTop="5px" $marginBottom="5px">
+                                                                <ViewLikesText post={post} handleClick={() => setViewLikesModalPost(post)}></ViewLikesText>
+                                                            </DivWithMarginPadding>
                                                         </div>
                                                         <div>                                                        
                                                             {renderCommentsSection(post)}
@@ -299,7 +283,7 @@ const MainContent: React.FC<MainContentProps> = (props: MainContentProps) => {
                                     );
                                 })}
                             </FeedContainer>
-                        </FlexRow>
+                        </FlexRowFullWidth>
                     </main>
                 </section>
             </MainContentWrapper> 

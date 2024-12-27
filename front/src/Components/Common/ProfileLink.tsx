@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { Link } from './CombinedStyling';
+import { BoldLink, Link } from './CombinedStyling';
 import { DEFAULT_PFP } from '../../api/config';
 
 type ProfileLinkProps = {
@@ -44,10 +44,10 @@ const ProfileLink: React.FC<ProfileLinkProps> = (props: ProfileLinkProps) => {
             }
             {props.showUserName &&
                 <ProfileLinkWrapper>
-                    <Link
+                    <BoldLink
                         role="link"
                         href={props.url}
-                        style={{ fontWeight: "600", marginRight: "5px" }}>{props.text}</Link>
+                        style={{ marginRight: "5px" }}>{props.text}</BoldLink>
                 </ProfileLinkWrapper>        
             }                   
         </span>

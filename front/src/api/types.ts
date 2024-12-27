@@ -46,9 +46,3 @@ export type Post = {
     },
     media: Media[];
 };
-
-export type CommentUiData = {
-    repliesVisibleFlag: boolean;
-    comment: Comment;
-    children: CommentUiData[];
-}

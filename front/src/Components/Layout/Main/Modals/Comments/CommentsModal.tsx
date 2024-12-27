@@ -1,28 +1,27 @@
 import React, { ReactNode, useEffect, useRef, useState } from "react";
+import { useSelector } from "react-redux";
+import { renderToString } from "react-dom/server";
 import styled from "styled-components";
 
 import MultiStepModal from "../../../../Common/MultiStepModal";
-import { CommentUiData,  Post, User } from "../../../../../api/types";
-import { Flex, FlexColumn, FlexRow, Link } from "../../../../Common/CombinedStyling";
+import { Post, User } from "../../../../../api/types";
+import { BoldLink, CursorPointerDiv, CursorPointerSpan, DivWithMarginPadding, Flex, FlexColumn, FlexColumnFullWidth, FlexRow, FlexRowFullWidth, Link, SpanWithMarginPadding } from "../../../../Common/CombinedStyling";
 import MediaSlider from "../../../../Common/MediaSlider";
 import { HOST } from "../../../../../api/config";
 import ProfileLink from "../../../../Common/ProfileLink";
-import { postAddComment, postGetCommentsByPostId, postToggleCommentLike, postToggleLike } from "../../../../../api/ServiceController";
-import { Comment } from '../../../../../api/types';
-import { dateDiff, getSanitizedText, isCommentLiked, isPostLiked, mapCommentsToCommentData, searchCommentsById, toggleCommentLikedState, toggleCommentReplyUiData, togglePostLikedState} from "../../../../../utils/utils";
-import { renderToString } from "react-dom/server";
+import { postAddComment, postGetCommentsByPostId, postToggleLike } from "../../../../../api/ServiceController";
+import { dateDiff, getDateAsText, getSanitizedText, isPostLiked, togglePostLikedState } from "../../../../../utils/utils";
 import Theme from "../../../../Themes/Theme";
-import HeartSVG from "/public/images/heart.svg";
-import HeartFilledSVG from "/public/images/heart-fill.svg";
 import MessageSVG from "/public/images/message.svg";
 import ShareSVG from "/public/images/send.svg";
-import { useSelector } from "react-redux";
 import { AuthUser } from "../../../../../api/Auth";
 import EmojiPickerPopup from "../../../../Common/EmojiPickerPopup";
 import StyledLink from "../../../../Common/StyledLink";
 import LikesModal from "../Main/LikesModal";
+import { CommentUiData, mapCommentsToCommentData, toggleCommentLike, toggleCommentReplyUiData, isCommentLiked } from "./CommentsModalUtils";
+import { LikeToggler, ViewLikesText } from "../../../../../Components/Common/Likes";
 
-const MediaSliderWrapper = styled.div<{$width: number}>`
+const MediaSliderWrapper = styled.div<{ $width: number }>`
     align-content: center;
     background-color: black;          
     overflow: hidden;
@@ -58,15 +57,13 @@ const ActionWrapper = styled(FlexRow)`
     border-top: 1px solid ${props => props.theme['colors'].borderDefaultColor};
 `;
 
-const ActionSVGContainer = styled.span<{$level: number, $width: number, $height: number, $isLiked?:boolean}>`
+const ActionContainer = styled(CursorPointerSpan) <{ $isLiked?: boolean }>`
     position: relative;
-    transform: ${props => `translateX(${25*props.$level}px)`};
     top: 2px;
-    width: ${props => props.$width}px;
-    height: ${props => props.$height}px;
+    width: 28px;
+    height: 28px;
     margin-left: auto;
-    cursor: pointer;
-    color: ${props => props.$isLiked ? "red" : "black" };
+    color: ${props => props.$isLiked ? "red" : "black"};
 
     &:hover {
         color: ${props => props.theme["colors"].borderDarkColor};
@@ -91,7 +88,32 @@ const CommentTextArea = styled.textarea`
     border: none;
     outline: none;
     overflow: hidden;
-    color: ${props => props.theme["colors"].defaultTextColor };
+    color: ${props => props.theme["colors"].defaultTextColor};
+`;
+
+const ViewHideRepliesButton = styled.button`
+    cursor: pointer;
+    background-color: ${props => props.theme["colors"].backgroundColor};
+    border: 0;
+    margin-top: 10px;
+`;
+
+const ViewHideRepliesLine = styled.div`
+    border-bottom: 1px solid ${props => props.theme["colors"].mediumTextColor};
+    width: 24px;
+    display: inline-block;
+    position: relative;
+    vertical-align: middle;
+    margin-right: 16px;
+`;
+
+const CommentReplyButton = styled.button`
+    font-size: 13px;
+    font-weight: 500;
+    background: none;
+    cursor: pointer;
+    border: none;
+    padding: 0;
 `;
 
 type CommentModalProps = {
@@ -105,63 +127,28 @@ type CommentModalContentProps = {
     updatePost: any;
 }
 
-const CommentModalContent : React.FC<CommentModalContentProps> = (props: CommentModalContentProps) => {    
+const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentModalContentProps) => {
     const [comments, setComments] = useState<any>({});
     const [commentText, setCommentText] = useState<string>("");
-    const [parentCommentId, setParentCommentId] = useState<string|null>(null);
-    const [viewLikesModalPost, setViewLikesModalPost] = useState<Post|null>(null);
+    const [parentCommentId, setParentCommentId] = useState<string | null>(null);
+    const [viewLikesModalPost, setViewLikesModalPost] = useState<Post | null>(null);
 
-    const authUser:AuthUser = useSelector((state:any) => state.auth.user);
+    const authUser: AuthUser = useSelector((state: any) => state.auth.user);
     const commentTextAreaRef = useRef(null);
 
     useEffect(() => {
-        postGetCommentsByPostId({postId: props.post.global.id}).then((results) => {
-            setComments(mapCommentsToCommentData(results.data, comments));            
+        postGetCommentsByPostId({ postId: props.post.global.id }).then((results) => {
+            setComments(mapCommentsToCommentData(results.data, comments));
         }).catch(e => console.error(e))
     }, []);
 
-    const toggleCommentLike = async (commentId: string, userName: string, userId: string) => {
-        let result = await postToggleCommentLike({commentId, userName, userId});
-        if(result.status === 200) {            
-            const newCommentsList:any= JSON.parse(JSON.stringify(comments));
+    const renderSingleComment = (key: string, text: string, user: User, dateTime: Date, repliesEnabled: boolean,
+        isLiked: boolean, showLikeToggle: boolean, commentUiData: CommentUiData | null, level: number) => {
 
-            // update the comment list by updating the comment instance in the comment state array
-            const comment:CommentUiData|null = searchCommentsById(commentId, newCommentsList);
-
-            if(comment === null) {
-                return;
-            }
-            
-            // toggle the like flag
-            const newComment:Comment|null = toggleCommentLikedState(userName, userId, comment.comment);
-
-            // Update the state
-            if(newComment === null) { return }
-            comment.comment = newComment;
-
-            setComments(newCommentsList);      
-        }
-    }
-    
-    const renderLikes = (post: Post) => {
-        if (post.global.likesDisabled || post.global.likes.length === 0) {
-            return null;
-        }
-
-        return (
-            <div style={{ lineHeight: "18px" }}>
-                <span>Liked by <Link role="link" href={`${HOST}/${post.global.likes[0].userName}`} style={{ fontWeight: "600" }}>{post.global.likes[0].userName}</Link>
-                    {post.global.likes.length > 1 && <span> and <Link role="link" href="#" onClick={() => setViewLikesModalPost(post)} style={{ fontWeight: "600" }}>others</Link></span>}
-                </span>
-            </div>
-        );
-    }
-
-    const renderSingleComment = (key: string, text: string, user: User, dateTime: Date, repliesEnabled: boolean, isLiked: boolean, showLikeToggle: boolean, commentUiData: CommentUiData|null, level: number) => {
         let [sanitizedHtml] = getSanitizedText(text);
         sanitizedHtml = renderToString(
             <Theme>
-                <ProfileLink 
+                <ProfileLink
                     showUserName={true}
                     showPfp={false}
                     url={`${HOST}/${user.userName}`}
@@ -170,99 +157,98 @@ const CommentModalContent : React.FC<CommentModalContentProps> = (props: Comment
         ) + sanitizedHtml;
 
         return (
-            <Flex key={key} style={{padding: "15px 10px"}}>
-                <FlexRow style={{width: "100%"}}>
-                    <ProfileLink 
+            <Flex key={key} style={{ padding: "15px 10px" }}>
+                <FlexRowFullWidth>
+                    <ProfileLink
                         showUserName={false}
                         showPfp={true}
                         url={`${HOST}/${user.userName}`}
-                        text={user.userName}>                        
+                        text={user.userName}>
                     </ProfileLink>
-                    <FlexColumn style={{position: "relative", width: "100%"}}>                        
-                        <span style={{marginLeft: "2px", alignContent: "center"}} dangerouslySetInnerHTML={{__html: sanitizedHtml}}>
-                        </span>
+                    <FlexColumnFullWidth>
+                        <SpanWithMarginPadding $marginLeft="2px" style={{ alignContent: "center" }} dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />
                         <div>
-                            <span style={{fontSize: "13px", marginRight: "10px"}}>{dateDiff(dateTime)}</span>
-                            { repliesEnabled &&
-                                <button 
-                                    style={{fontSize: "13px", fontWeight: 500, background: "none", cursor: "pointer", border: "none", padding: 0}}
+                            <SpanWithMarginPadding $marginRight="10px" style={{ fontSize: "13px" }}>{dateDiff(dateTime)}</SpanWithMarginPadding>
+                            {repliesEnabled &&
+                                <CommentReplyButton
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                    
-                                        if(commentTextAreaRef.current) {                                                                           
+
+                                        if (commentTextAreaRef.current) {
                                             const textArea = (commentTextAreaRef.current as HTMLTextAreaElement);
-                                            const str: string = `@${user.userName} `;                                  
+                                            const str: string = `@${user.userName} `;
                                             textArea.selectionStart = str.length;
-                                            textArea.focus();                                                                  
+                                            textArea.focus();
 
                                             setCommentText(str);
-                                            setParentCommentId(key);                                                      
+                                            setParentCommentId(key);
                                         }
-                                    }
-                                }>Reply</button>
-                            }                            
+                                    }}>
+                                    Reply
+                                </CommentReplyButton>
+                            }
                         </div>
-                        <div>                                
-                        {
-                            (commentUiData && commentUiData.children && commentUiData.children.length > 0) && 
+                        <div>
+                            {
+                                (commentUiData && commentUiData.children && commentUiData.children.length > 0) &&
                                 <>
-                                    <button onClick={(e => {
+                                    <ViewHideRepliesButton onClick={(e => {
                                         e.stopPropagation();
-
                                         setComments(toggleCommentReplyUiData(commentUiData, comments));
-                                        
-                                    })} style={{cursor: "pointer", backgroundColor: "white", border: 0, marginTop: "10px"}}>
-                                        <div style={{borderBottom: "1px solid rgb(120, 120, 120)", width: "24px", display:"inline-block", position: "relative", verticalAlign: "middle", marginRight: "16px"}}></div>
+                                    })}>
+                                        <ViewHideRepliesLine />
                                         {!commentUiData.repliesVisibleFlag && <span>{`View replies (${commentUiData.children.length})`}</span>}
                                         {commentUiData.repliesVisibleFlag && <span>Hide replies</span>}
-                                    </button>
+                                    </ViewHideRepliesButton>
 
-                                    {commentUiData.repliesVisibleFlag &&  
-                                        <div> 
-                                        {                                                                         
-                                            commentUiData.children.map(c => {
-                                                return renderSingleComment(
-                                                    c.comment.commentId, 
-                                                    c.comment.text, 
-                                                    c.comment.user, 
-                                                    c.comment.dateTime,
-                                                    !props.post.global.commentsDisabled,
-                                                    isCommentLiked(authUser.userName, c.comment), 
-                                                    true,
-                                                    c,
-                                                    level + 1                                                    
-                                                )
-                                            })
-                                        }   
-                                        </div> 
+                                    {commentUiData.repliesVisibleFlag &&
+                                        <div>
+                                            {
+                                                commentUiData.children.map((c: CommentUiData) => {
+                                                    return renderSingleComment(
+                                                        c.comment.commentId,
+                                                        c.comment.text,
+                                                        c.comment.user,
+                                                        c.comment.dateTime,
+                                                        !props.post.global.commentsDisabled,
+                                                        isCommentLiked(authUser.userName, c.comment),
+                                                        true,
+                                                        c,
+                                                        level + 1
+                                                    )
+                                                })
+                                            }
+                                        </div>
                                     }
-                                </>                              
-                        }
-                    </div>                                   
-                    </FlexColumn>
-                    { showLikeToggle &&
-                        <ActionSVGContainer $level={level} $width={18} $height={18} $isLiked={isLiked} 
-                            onClick={async () => await toggleCommentLike(key, authUser.userName, authUser.id)}>
-                                {isLiked ? <HeartFilledSVG style={{width: "18px", height: "18px" }}/> : <HeartSVG style={{width: "18px", height: "18px" }} /> }
-                        </ActionSVGContainer>                    
-                    }                            
-                </FlexRow>
-            </Flex>       
-        ) 
+                                </>
+                            }
+                        </div>
+                    </FlexColumnFullWidth>
+                    {showLikeToggle &&
+                        <LikeToggler
+                            offsetIndex={level}
+                            width="18px"
+                            height="18px"
+                            isLiked={isLiked}
+                            handleClick={async () => await toggleCommentLike(key, authUser.userName, authUser.id, comments, setComments)} />
+                    }
+                </FlexRowFullWidth>
+            </Flex>
+        )
     }
 
     const renderComments = () => {
-        if(comments == null || comments.length === 0) {
-            return <></>;             
+        if (comments == null || comments.length === 0) {
+            return <></>;
         }
-        
-        const nodes:ReactNode[] = [];
+
+        const nodes: ReactNode[] = [];
 
         // Render the caption first
         nodes.push(renderSingleComment(
-            props.post.global.id, 
-            props.post.global.captionText, 
-            props.post.user, 
+            props.post.global.id,
+            props.post.global.captionText,
+            props.post.user,
             props.post.global.dateTime,
             false,
             false,
@@ -273,18 +259,17 @@ const CommentModalContent : React.FC<CommentModalContentProps> = (props: Comment
 
         // Now populate all other user comments
         nodes.push(Object.values(comments).map(entry => {
-            const commentUiData:CommentUiData = entry as CommentUiData;
-            const isLiked = isCommentLiked(authUser.userName, commentUiData.comment);
+            const commentUiData: CommentUiData = entry as CommentUiData;
 
             return renderSingleComment(
-                commentUiData.comment.commentId, 
-                commentUiData.comment.text, 
-                commentUiData.comment.user, 
+                commentUiData.comment.commentId,
+                commentUiData.comment.text,
+                commentUiData.comment.user,
                 commentUiData.comment.dateTime,
                 !props.post.global.commentsDisabled,
-                isLiked, 
+                isCommentLiked(authUser.userName, commentUiData.comment),
                 true,
-                commentUiData, 
+                commentUiData,
                 0);
         }));
 
@@ -302,7 +287,7 @@ const CommentModalContent : React.FC<CommentModalContentProps> = (props: Comment
 
         const result = await postAddComment(data);
 
-        if(result.status === 200) {
+        if (result.status === 200) {
             // Success adding comment, clear out comment text box
             setCommentText("");
             setParentCommentId(null);
@@ -310,172 +295,164 @@ const CommentModalContent : React.FC<CommentModalContentProps> = (props: Comment
             // Update comment list with new comment
             // TODO: Fix this..shouldn't need to wrap this in a delay but ES doesn't always get updated in time when inserting
             setTimeout(async () => {
-                const results = await postGetCommentsByPostId({postId: post.global.id});
-                setComments(mapCommentsToCommentData(results.data, comments)); 
+                const results = await postGetCommentsByPostId({ postId: post.global.id });
+                setComments(mapCommentsToCommentData(results.data, comments));
             }, 1000);
-        }        
-    }    
+        }
+    }
 
-    if(props.post == null) {
+    if (props.post == null) {
         return <></>;
-    }    
-    
+    }
+
     const sliderWidth = document.body.clientWidth >= 470 ? 470 : document.body.clientWidth;
     const isLiked = isPostLiked(authUser.userName, props.post);
 
     return (
         <>
-        {viewLikesModalPost !== null && <LikesModal post={viewLikesModalPost} onClose={() => {setViewLikesModalPost(null)}}/>}
-        <div>
-            <Flex>
-                <FlexRow>
-                    <MediaSliderWrapper $width={sliderWidth}>
-                        <MediaSlider media={props.post.media}>                    
-                        </MediaSlider>
-                    </MediaSliderWrapper>                
-                    <Flex>                    
-                        <FlexColumn style={{maxWidth: "500px"}}>
-                            <HeadingWrapper>
-                                <div style={{marginLeft: "10px", paddingTop: "10px", paddingBottom: "10px", paddingRight: "10px"}}>
-                                    <FlexRow style={{justifyContent: "space-between"}}>
-                                        <ProfileLink 
-                                            showPfp={true}
-                                            showUserName={true}
-                                            url={`${HOST}/${props.post.user.userName}`}
-                                            text={props.post.user.userName}
-                                        >
-                                        </ProfileLink>                                    
-                                        <PostOptionsWrapper>
-                                            <Link href="#" onClick={() => 1} style={{fontWeight: "600", fontSize: "1.5em"}}>...</Link>
-                                        </PostOptionsWrapper>
-                                    </FlexRow>
-                                    {props.post.global.locationText.length > 0 &&
-                                        <div style={{marginLeft: "42px", marginTop:"-9px", fontSize: "13px"}}>
-                                            <Link href={`${HOST}/explore?text=${encodeURIComponent(props.post.global.locationText)}`}>
-                                                {props.post.global.locationText}
-                                            </Link>
-                                        </div>
-                                    }
-                                </div>
-                            </HeadingWrapper>
-                            <CommentsWrapper>
-                                {renderComments()}
-                            </CommentsWrapper>
-                            <ActionWrapper>                                                            
-                                <span>
-                                    <div style={{cursor: "pointer"}}>
-                                        <Flex style={{paddingRight: "8px"}}>
-                                            <ActionSVGContainer $level={0} $width={28} $height={28} $isLiked={isLiked} 
-                                                onClick={async () => {
+            {viewLikesModalPost !== null && <LikesModal post={viewLikesModalPost} onClose={() => { setViewLikesModalPost(null) }} />}
+            <div>
+                <Flex>
+                    <FlexRow>
+                        <MediaSliderWrapper $width={sliderWidth}>
+                            <MediaSlider media={props.post.media}>
+                            </MediaSlider>
+                        </MediaSliderWrapper>
+                        <Flex>
+                            <FlexColumn style={{ maxWidth: "500px" }}>
+                                <HeadingWrapper>
+                                    <DivWithMarginPadding $marginLeft="10px" $paddingTop="10px" $paddingBottom="10px" $paddingRight="10px">
+                                        <FlexRow style={{ justifyContent: "space-between" }}>
+                                            <ProfileLink
+                                                showPfp={true}
+                                                showUserName={true}
+                                                url={`${HOST}/${props.post.user.userName}`}
+                                                text={props.post.user.userName}
+                                            >
+                                            </ProfileLink>
+                                            <PostOptionsWrapper>
+                                                <BoldLink href="#" onClick={() => 1} style={{ fontSize: "1.5em" }}>...</BoldLink>
+                                            </PostOptionsWrapper>
+                                        </FlexRow>
+                                        {props.post.global.locationText.length > 0 &&
+                                            <DivWithMarginPadding $marginLeft="42px" $marginTop="-9px" style={{ fontSize: "13px" }}>
+                                                <Link href={`${HOST}/explore?text=${encodeURIComponent(props.post.global.locationText)}`}>
+                                                    {props.post.global.locationText}
+                                                </Link>
+                                            </DivWithMarginPadding>
+                                        }
+                                    </DivWithMarginPadding>
+                                </HeadingWrapper>
+                                <CommentsWrapper>
+                                    {renderComments()}
+                                </CommentsWrapper>
+                                <ActionWrapper>
+                                    <CursorPointerDiv>
+                                        <Flex $paddingRight="8px" style={{position: "relative", top: "2px"}}>
+                                            <LikeToggler
+                                                isLiked={isLiked}
+                                                handleClick={async () => {
                                                     const result = await postToggleLike({
-                                                        postId: props.post.global.id, 
+                                                        postId: props.post.global.id,
                                                         userName: props.post.user.userName,
                                                         userId: props.post.user.userId
                                                     });
 
-                                                    if(result.status === 200) {
+                                                    if (result.status === 200) {
                                                         const post = togglePostLikedState(
                                                             props.post.user.userName,
                                                             props.post.user.userId,
-                                                            props.post                                                       
+                                                            props.post
                                                         );
-                                                        if(post != null) {
+                                                        if (post != null) {
                                                             props.updatePost(post);
                                                         }
                                                     }
                                                 }}>
-                                                    
-                                                {isLiked ? <HeartFilledSVG />: <HeartSVG /> }
-                                            </ActionSVGContainer>
+                                            </LikeToggler>
                                         </Flex>
-                                    </div>
-                                </span>                                                    
-                                <span>
-                                    <div style={{cursor: "pointer"}}>
-                                        <Flex style={{paddingRight: "8px"}}>
-                                            <ActionSVGContainer $level={0} $width={28} $height={28}>
+                                    </CursorPointerDiv>
+                                    <CursorPointerDiv>
+                                        <Flex $paddingRight="8px">
+                                            <ActionContainer>
                                                 <MessageSVG onClick={() => {
-                                                    if(commentTextAreaRef.current) {
+                                                    if (commentTextAreaRef.current) {
                                                         const textArea = (commentTextAreaRef.current as HTMLTextAreaElement);
                                                         textArea.innerText = `@${props.post.user.userName} `;
                                                         textArea.focus();
                                                         textArea.selectionStart = textArea.value.length;
                                                         setParentCommentId(null);
-                                                    }    
+                                                    }
                                                 }
-                                            } />
-                                            </ActionSVGContainer>
+                                                } />
+                                            </ActionContainer>
                                         </Flex>
-                                    </div>
-                                </span>                                    
-                                <span>
-                                    <div style={{cursor: "pointer"}}>
-                                        <Flex style={{paddingRight: "8px"}}>
-                                            <ActionSVGContainer $level={0} $width={28} $height={28}>
-                                                <ShareSVG/>
-                                            </ActionSVGContainer>
+                                    </CursorPointerDiv>
+                                    <CursorPointerDiv>
+                                        <Flex $paddingRight="8px">
+                                            <ActionContainer>
+                                                <ShareSVG />
+                                            </ActionContainer>
                                         </Flex>
-                                    </div>
-                                </span>                                                                                                                 
-                            </ActionWrapper>
-                            <div style={{paddingLeft: "10px", paddingBottom: "10px"}}>
-                                {renderLikes(props.post)}
-                                <span style={{fontSize: "13px", marginRight: "10px"}}>{new Date(props.post.global.dateTime).toLocaleDateString('en-us', { year:"numeric", month:"long", day: "numeric"})}</span>                                
-                            </div>                            
-                        { !props.post.global?.commentsDisabled && 
-                        <div>
-                        <CommentInputWrapper>
-                            <CommentTextArea value={commentText} ref={commentTextAreaRef}
-                                placeholder="Add a new comment..." 
-                                aria-label="Add a new comment..." 
-                                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
-                                        setCommentText(e.currentTarget.value);
-                                    }                             
-                                }
-                                onInput={(e:React.KeyboardEvent<HTMLTextAreaElement>) => {
-                                    const element = e.currentTarget;
-                                    element.style.height = "";
-                                    element.style.height = element.scrollHeight + "px";
-                                }}
-                                onKeyDown={async (e:React.KeyboardEvent<HTMLTextAreaElement>) => {
-                                    if (e.key === "Enter") {
-                                        // Prevent adding a new line
-                                        e.preventDefault();
+                                    </CursorPointerDiv>
+                                </ActionWrapper>
+                                <DivWithMarginPadding $paddingLeft="10px" $paddingBottom="10px">
+                                    <ViewLikesText post={props.post} handleClick={setViewLikesModalPost}></ViewLikesText>
+                                    <SpanWithMarginPadding $marginRight="10px" style={{ fontSize: "13px" }}>
+                                        {getDateAsText(props.post.global.dateTime)}
+                                    </SpanWithMarginPadding>
+                                </DivWithMarginPadding>
+                                {!props.post.global?.commentsDisabled &&
+                                    <div>
+                                        <CommentInputWrapper>
+                                            <CommentTextArea value={commentText} ref={commentTextAreaRef}
+                                                placeholder="Add a new comment..."
+                                                aria-label="Add a new comment..."
+                                                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+                                                    setCommentText(e.currentTarget.value);
+                                                }
+                                                }
+                                                onInput={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+                                                    const element = e.currentTarget;
+                                                    element.style.height = "";
+                                                    element.style.height = element.scrollHeight + "px";
+                                                }}
+                                                onKeyDown={async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+                                                    if (e.key === "Enter") {
+                                                        // Prevent adding a new line
+                                                        e.preventDefault();
 
-                                        await handleSubmitComment(commentText, props.post);                                        
-                                    }                                    
-                                }}
-                            />
-                            <Flex style={{marginTop: "auto", marginBottom: "auto"}}>
-                                {
-                                    (commentText && commentText.length > 0) &&
-                                    <div style={{paddingLeft: "5px", paddingRight: "5px"}}>
-                                        <StyledLink onClick={async () => 
-                                            await handleSubmitComment(commentText, props.post)}>
-                                            Post
-                                        </StyledLink>
+                                                        await handleSubmitComment(commentText, props.post);
+                                                    }
+                                                }}
+                                            />
+                                            <Flex $marginTop="auto" $marginBottom="auto">
+                                                {
+                                                    (commentText && commentText.length > 0) &&
+                                                    <DivWithMarginPadding $paddingLeft="5px" $paddingRight="5px">
+                                                        <StyledLink onClick={async () =>
+                                                            await handleSubmitComment(commentText, props.post)}>
+                                                            Post
+                                                        </StyledLink>
+                                                    </DivWithMarginPadding>
+                                                }
+                                                <EmojiPickerPopup noPadding={true} onEmojiClick={(emoji: any) => {
+                                                    setCommentText(commentText + emoji.emoji);
+                                                }}></EmojiPickerPopup>
+                                            </Flex>
+                                        </CommentInputWrapper>
                                     </div>
                                 }
-                                <EmojiPickerPopup noPadding={true} onEmojiClick={(emoji: any) => {
-                                    let newCommentText = commentText;
-                                    newCommentText += emoji.emoji;
-                                    setCommentText(newCommentText);                                
-                                }}></EmojiPickerPopup>
-                            </Flex>
-                        </CommentInputWrapper>
-                    </div>
-                    }                                                        
-                        </FlexColumn>
-                    </Flex>
-                </FlexRow>
-            </Flex>
-        </div>
+                            </FlexColumn>
+                        </Flex>
+                    </FlexRow>
+                </Flex>
+            </div>
         </>
     );
 }
 
 const CommentModal: React.FC<CommentModalProps> = (props: CommentModalProps) => {
-    
     const steps = [
         {
             title: "Comments",
