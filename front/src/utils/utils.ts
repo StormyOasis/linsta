@@ -1,7 +1,7 @@
 import sanitizeHtml from 'sanitize-html';
 
 import { HistoryType, Post } from "../api/types";
-import { postSetFollowStatus } from '../api/ServiceController';
+import { postSetFollowStatus, postToggleLike } from '../api/ServiceController';
 
 export const historyUtils: HistoryType = {
     navigate: null,
@@ -139,6 +139,47 @@ export const extractFrameFromVideo = async (video: HTMLVideoElement): Promise<st
     })
 }
 
+export const dateDiff = (dateTime: Date) => {
+    if(dateTime == null) {
+        return "now";
+    }
+    
+    const now = new Date().getTime();
+    const dateTimeMilli = new Date(dateTime).getTime();
+    const diff = new Date(now - dateTimeMilli);
+    let diffMilli = diff.getTime();
+
+    const days = Math.floor(diffMilli / 1000 / 60 / 60 / 24);
+    diffMilli = diffMilli - (days * 1000*60*60*24);
+
+    const weeks = Math.floor(days / 7.0);
+    const hours = Math.floor(diffMilli / 1000 / 60 / 60);
+    diffMilli = diffMilli - (hours * 1000 * 60 * 60);
+    const mins = Math.floor(diffMilli / 1000 / 60);
+
+    if(weeks >= 1) {
+        return weeks + "w";
+    }
+
+    if(days >= 1) {
+        return days + "d";
+    }
+
+    if(hours >= 1) {
+        return hours + "h";
+    } 
+    
+    if(mins >= 1) {
+        return mins + "m";
+    }
+
+    return "now";
+}
+
+export const getDateAsText = (date: Date) => {
+    return new Date(date).toLocaleDateString('en-us', { year: "numeric", month: "long", day: "numeric" });
+}
+
 export const enableModal = (enable: boolean) => {
     const cont = document.getElementById("modalContainer");
     const sectionCont = document.getElementById("mainSectionContainer");
@@ -183,12 +224,33 @@ export const togglePostLikedState = (userName: string, userId: string, post: Pos
     return post;
 }
 
+export const toggleLike = async (postId: string, userName: string, userId: string, posts: Post[]):Promise<Post[]> => {
+    const result = await postToggleLike({postId, userName, userId});
+    if(result.status === 200) {            
+        // update the post list by updating the post instance in the post state array
+        const index = searchPostsIndexById(postId, posts);
+        if(index === -1) {
+            return [];
+        }
+
+        const newPostsList = [...posts];
+        const newPost:Post|null = togglePostLikedState(userName, userId, newPostsList[index]);
+
+        if(newPost === null) { return [] }
+
+        newPostsList[index] = newPost;
+        return newPostsList;            
+    }
+    return [];
+}
+
 export const searchPostsIndexById = (postId: string, posts: Post[]):number => {
     if(postId === null || posts === null) {
         return -1;
     }
     
     let postIndex = -1;
+
     posts.forEach((post: Post, index: number) => {
         if(post.global.id === postId) {
             postIndex = index;
@@ -225,7 +287,7 @@ export const isOverflowed = (id: string):boolean => {
     if(element == null) {
         return false;
     }
-    //console.log( element.offsetHeight , element.scrollHeight)
+
     return element.offsetHeight < element.scrollHeight;
 }
 

@@ -69,6 +69,7 @@ const FilterTile = styled.div`
     display: flex;
     cursor: pointer;
     align-items: center;
+    width: 75%;
 `;
 
 const FilterImage = styled.img`

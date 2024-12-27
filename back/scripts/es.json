@@ -25,6 +25,9 @@ PUT main
               "commentsDisabled": {
                 "type": "boolean"
               },
+              "commentCount": {
+                "type": "long"
+              },
               "likesDisabled": {
                 "type": "boolean"
               },
@@ -91,17 +94,25 @@ PUT comments
           "text": {
             "type": "text"
           },
-          "parent": {
+          "postId": {
+            "type": "text"
+          },
+          "parentCommentId": {
+            "type": "text"
+          },              
+          "children": {
             "type": "nested",
             "properties": {
-              "postId": {
-                "type": "long"
-              },
-              "commentId": {
-                "type": "long"
-              }              
-            }
-          },
+                "comments": {
+                  "type": "nested",
+                  "properties": {
+                    "commentId": {
+                      "type": "text"
+                    }
+                  }                 
+                }
+              }
+          },       
           "user": {
             "type": "nested",
             "properties": {
@@ -128,7 +139,7 @@ PUT comments
                 }
               }
             }
-          }          
+          }
         }
       }
     }

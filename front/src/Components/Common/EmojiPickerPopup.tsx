@@ -51,6 +51,7 @@ const EmojiPickerPopup: React.FC<EmojiPickerPopupProps> = (props: EmojiPickerPop
         <>
             <div>
                 <EmojiPickerButton onClick={handleToggleClick} $noPadding={props.noPadding}
+                    role="button"
                     aria-label="Click to select Emoji" 
                     aria-placeholder="Click to select Emoji">😀</EmojiPickerButton>
                 <EmojiPickerPopupContainer $isOpen={isOpen} onKeyUp={handleKeyUp}>

@@ -22,10 +22,14 @@ export type Like = {
 };
 
 export type Comment = {
+    commentId: string;
     dateTime: Date;
-    comment: string;
+    text: string;
     user: User;
-    comments: Comment[];
+    postId: string;
+    parentCommentId: string | null;
+    children: string[];
+    likes: Like[];
 };
 
 export type Post = {
@@ -35,10 +39,10 @@ export type Post = {
         dateTime: Date;
         captionText: string;
         commentsDisabled: boolean;
+        commentCount: number;
         likesDisabled: boolean;
         locationText: string;
         likes: Like[];
-        comments: Comment[];
     },
     media: Media[];
 };

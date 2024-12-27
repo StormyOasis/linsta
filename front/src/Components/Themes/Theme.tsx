@@ -25,7 +25,7 @@ const defaultTheme = {
         cropperAspectBkgndNoTrans: "rgb(25,25,25)",
         mediumTextColor: "rgb(120, 120, 120)",  
         mediaSliderButtonColor: "rgba(0,0,0, .6)",
-        mediaSliderButtonBkgndColor: "rgba(225,225,225, .4)"      
+        mediaSliderButtonBkgndColor: "rgba(225,225,225, .4)",
     },    
 
     input: {
@@ -38,12 +38,14 @@ const defaultTheme = {
         sideBarNavBottomHeight: "50px",
         cropperHeight: "275px",
         defaultModalWidth: "600px",
-        maxModalWidth: "600px",
-        maxModalHeight: "350px",
+        maxModalWidth: "75vw",
+        maxModalHeight: "75vh",
         minModalHeight: "300px",
         minPostTextEditorHeight: "140px",
         maxPostTextEditorHeight: "140px",
         feedPostMinWidth: "400px",
+        maxCommentModalContentHeight: "75vh",
+        minCommentModalContentHeight: "300px",
     },
 
     breakpoints: {
