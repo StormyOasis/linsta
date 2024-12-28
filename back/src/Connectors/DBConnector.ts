@@ -54,7 +54,7 @@ export class DBConnector {
     }
 
     public query = async (query: string, params : any) => {
-        logger.debug(`Query: ${query} Params: ${params}`);
+        //logger.debug(`Query: ${query} Params: ${params}`);
         try {
             if(!this.dbPromisePool) {
                 throw new Error("Invalid connection");

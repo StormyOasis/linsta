@@ -1,7 +1,8 @@
 import Koa from "koa";
 import Router from "@koa/router";
 import http from "http";
-import compress from "compression";
+import compress from 'koa-compress';
+import zlib from "node:zlib";
 import cors from "@koa/cors";
 import serve from "koa-static";
 import path from "path";
@@ -73,14 +74,22 @@ router.get(/.*/, async (ctx) => {
   return null;
 });
 
+app.use(compress({
+  filter: (contentType) => {
+    return /text|javascript|json/.test(contentType); 
+  },
+  gzip: {
+    flush: zlib.constants.Z_SYNC_FLUSH
+  },
+  deflate: {
+    flush: zlib.constants.Z_SYNC_FLUSH,
+  },
+  br: {}  
+}));
 app.use(serve(path.resolve(__dirname)));
 app.use(cors());
 app.use(router.routes());
 app.use(router.allowedMethods());
-app.use(async (ctx, next) => {
-  compress();
-  await next();
-});
 
 const server = http.createServer(app.callback());
 

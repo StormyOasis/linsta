@@ -614,7 +614,7 @@ export const toggleFollowing = async (ctx: Context) => {
             //Adding a new follower
             //Need the on duplicate clause to prevent exception when trying to re-add existing
             //followers
-            let result = await DBConnector.execute(
+            const result = await DBConnector.execute(
                 `INSERT INTO Follows(USER_ID, FOLLOWS_USER_ID) VALUES(?,?)
                  ON DUPLICATE KEY UPDATE id=id`, [data.userId, data.followerId]);
 
