@@ -1,6 +1,5 @@
 {
   "name": "linsta_front",
-  "sideEffects": false,
   "version": "1.0.0",
   "description": "Lauren's Instagram Clone",
   "main": "dist/server.js",
