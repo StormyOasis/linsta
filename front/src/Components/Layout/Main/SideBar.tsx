@@ -94,7 +94,7 @@ const SideBar: React.FC<SideBarProps> = (props: SideBarProps) => {
         const onClickHandler = onClick ? onClick : () => true;
 
         return (
-            <NavLink to={to} onClick={onClickHandler}>
+            <NavLink to={to} onClick={onClickHandler} aria-label={text}>
                 <InnerNavLinkWrapper>
                     <div className={styles.iconWrapper}>
                         <div className={styles.iconWrapper}>
@@ -115,7 +115,7 @@ const SideBar: React.FC<SideBarProps> = (props: SideBarProps) => {
         <SideBarWrapper>
             {!matchesSmallestBP && 
                 <div className={styles.logoWrapper}>
-                    <Link to="/">
+                    <Link to="/" aria-label="Home">
                         {matchesLargestBP ? <LogoSVG /> : <MainSVG />}
                     </Link>
                 </div>

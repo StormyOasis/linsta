@@ -1,6 +1,7 @@
 import React, { SyntheticEvent, useState } from "react";
 import { styled } from "styled-components";
 import EmojiPicker, { EmojiClickData, EmojiStyle } from 'emoji-picker-react';
+import { Flex } from "./CombinedStyling";
 
 const EmojiPickerButton = styled.button<{$noPadding: boolean|undefined}>`
     position: relative;
@@ -12,6 +13,9 @@ const EmojiPickerButton = styled.button<{$noPadding: boolean|undefined}>`
     justify-content: center;
     background-color: transparent;
     z-index: 9;
+    width: 24px;
+    height: 24px;
+    align-items: center;
 `;
 
 const EmojiPickerPopupContainer = styled.div<{$isOpen: boolean}>`
@@ -49,11 +53,10 @@ const EmojiPickerPopup: React.FC<EmojiPickerPopupProps> = (props: EmojiPickerPop
 
     return (
         <>
-            <div>
-                <EmojiPickerButton onClick={handleToggleClick} $noPadding={props.noPadding}
+            <Flex>
+                <EmojiPickerButton onClick={handleToggleClick} $noPadding={props.noPadding}                    
                     role="button"
-                    aria-label="Click to select Emoji" 
-                    aria-placeholder="Click to select Emoji">😀</EmojiPickerButton>
+                    aria-pressed={isOpen}>😀</EmojiPickerButton>
                 <EmojiPickerPopupContainer $isOpen={isOpen} onKeyUp={handleKeyUp}>
                     <EmojiPicker 
                         onEmojiClick={handleEmojiClick}
@@ -61,7 +64,7 @@ const EmojiPickerPopup: React.FC<EmojiPickerPopupProps> = (props: EmojiPickerPop
                         open={isOpen} 
                         previewConfig={{showPreview: false}}/>
                 </EmojiPickerPopupContainer>
-            </div>
+            </Flex>
         </>
     );
 };
