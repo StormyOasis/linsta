@@ -33,7 +33,7 @@ const ProfileLink: React.FC<ProfileLinkProps> = (props: ProfileLinkProps) => {
         <span style={{display: "inline-flex"}}>
             {props.showPfp &&
                 <ProfilePicWrapper>
-                    <Link role="link" href={props.url}>
+                    <Link role="link" href={props.url} aria-label={`${props.text}'s profile picture link`}>
                         <img
                             src={pfpUrl}
                             alt={`${props.text}'s profile picture`}
@@ -45,6 +45,7 @@ const ProfileLink: React.FC<ProfileLinkProps> = (props: ProfileLinkProps) => {
             {props.showUserName &&
                 <ProfileLinkWrapper>
                     <BoldLink
+                        aria-label={`${props.text}'s profile link`}
                         role="link"
                         href={props.url}
                         style={{ marginRight: "5px" }}>{props.text}</BoldLink>
