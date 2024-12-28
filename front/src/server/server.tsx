@@ -29,6 +29,8 @@ const renderHtml = (title: string, styles: any, html: any, preloadState: any) =>
             <meta name="viewport" content="width=device-width, initial-scale=1">    
             <meta name="description" content="Linstagram - An instagram clone">    
             <title>${title}</title>
+            <link rel="preconnect" href="https://linsta-public.s3.us-west-2.amazonaws.com">
+            <link rel="preconnect" href="http://localhost:3001">
             <link rel="stylesheet" href="public/defaults.css">
             <link rel="icon" href="public/images/logo_small.png">
             ${styles}
@@ -38,9 +40,9 @@ const renderHtml = (title: string, styles: any, html: any, preloadState: any) =>
             <script>
                 window.__PRELOADED_STATE__ = ${JSON.stringify(preloadState).replace(/</g,'\\u003c')}
             </script>
-            <script type="application/javascript" src="main.bundle.js"></script>
-            <script type="application/javascript" src="vendor.bundle.js"></script>
-            <script crossorigin type="application/javascript" src="public/Pixels.js"></script>            
+            <script type="application/javascript" src="vendor.bundle.js" async></script>
+            <script type="application/javascript" src="main.bundle.js"></script>            
+            <script crossorigin type="application/javascript" src="public/Pixels.js" defer></script>            
         </body>
     </html>`;
 };

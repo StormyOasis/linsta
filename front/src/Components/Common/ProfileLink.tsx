@@ -35,6 +35,7 @@ const ProfileLink: React.FC<ProfileLinkProps> = (props: ProfileLinkProps) => {
                 <ProfilePicWrapper>
                     <Link role="link" href={props.url} aria-label={`${props.text}'s profile picture link`}>
                         <img
+                            style={{width:"32px", height: "32px"}}
                             src={pfpUrl}
                             alt={`${props.text}'s profile picture`}
                             aria-label={`${props.text}'s profile picture`}

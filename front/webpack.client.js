@@ -1,8 +1,10 @@
+/* eslint-disable no-undef */
 const webpack = require("webpack");
 const path = require('path');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const ESLintPlugin = require("eslint-webpack-plugin");
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+const TerserPlugin = require('terser-webpack-plugin');
 const isDevelopment = process.env.NODE_ENV === "development";
 const isProduction = !isDevelopment;
 
@@ -24,6 +26,30 @@ module.exports = {
     publicPath: '/',
     chunkFilename: '[id].chunk.js',
   },
+
+  optimization: {
+    usedExports: true,
+    splitChunks: {
+      cacheGroups: {
+        vendor: {
+          test: /[\\/]node_modules[\\/]/,
+          name: 'vendor',
+          chunks: 'all',
+        },
+      },
+    },
+    minimize: true,
+    minimizer: [
+      new TerserPlugin({
+        terserOptions: {
+          compress: {
+            unused: true,
+            dead_code: true,
+          },
+        },
+      }),
+    ],    
+  },  
 
   module: {
     rules: [   
@@ -83,17 +109,7 @@ module.exports = {
       statsOptions: { source: false },
     }),
   ].filter(Boolean),
-  optimization: {
-    splitChunks: {
-      cacheGroups: {
-        vendor: {
-          test: /[\\/]node_modules[\\/]/,
-          name: 'vendor',
-          chunks: 'all',
-        },
-      },
-    },
-  },
+
   stats: {
     children: false,
     chunks: false,
