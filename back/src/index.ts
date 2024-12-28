@@ -2,6 +2,8 @@ import Koa, { Context } from "koa";
 import cors from "@koa/cors";
 import json from 'koa-json';
 import { koaBody } from "koa-body";
+import compress from 'koa-compress';
+import zlib from "node:zlib";
 import router from "./router";
 import Logger from "./logger/logger";
 import DBConnector from "./Connectors/DBConnector";
@@ -14,6 +16,15 @@ const App = new Koa();
 
 App.use(json())
   .use(cors())
+  .use(compress({
+    gzip: {
+      flush: zlib.constants.Z_SYNC_FLUSH
+    },
+    deflate: {
+      flush: zlib.constants.Z_SYNC_FLUSH,
+    },
+    br: {}  
+  }))  
   .use(async (ctx: Context, next) => {
     ctx.res.appendHeader(
       "Access-Control-Allow-Headers",
