@@ -26,7 +26,8 @@ const renderHtml = (title: string, styles: any, html: any, preloadState: any) =>
     <html lang="en">
         <head>
             <meta charset="utf-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1">        
+            <meta name="viewport" content="width=device-width, initial-scale=1">    
+            <meta name="description" content="Linstagram - An instagram clone">    
             <title>${title}</title>
             <link rel="stylesheet" href="public/defaults.css">
             <link rel="icon" href="public/images/logo_small.png">

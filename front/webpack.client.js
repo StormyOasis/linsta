@@ -73,6 +73,7 @@ module.exports = {
           from: path.resolve(__dirname, 'public'),
           to: path.resolve(__dirname, 'dist', 'public'),
         },
+        { from: "robots.txt", to: "robots.txt" },
       ],
     }),
     isProduction &&
