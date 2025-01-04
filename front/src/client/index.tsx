@@ -7,7 +7,6 @@ import App from "../Components/App";
 import { historyUtils } from "../utils/utils";
 import {buildStore} from "../Components/Redux/redux";
 
-
 const rootElement = document.querySelector("#root");
 if (!rootElement) 
   throw new Error("Failed to find root element");

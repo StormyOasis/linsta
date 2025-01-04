@@ -180,22 +180,6 @@ export const getDateAsText = (date: Date) => {
     return new Date(date).toLocaleDateString('en-us', { year: "numeric", month: "long", day: "numeric" });
 }
 
-export const enableModal = (enable: boolean) => {
-    const cont = document.getElementById("modalContainer");
-    const sectionCont = document.getElementById("mainSectionContainer");
-
-    if (cont && sectionCont) {
-        if (enable) {
-            cont.style.height = "100%";
-            sectionCont.style.pointerEvents = "none";
-        }
-        else {
-            cont.style.height = "0%";
-            sectionCont.style.pointerEvents = "auto";
-        }
-    }
-}
-
 export const isPostLiked = (userName: string, post: Post):boolean => {
     if(post == null || userName == null) {
         return false;

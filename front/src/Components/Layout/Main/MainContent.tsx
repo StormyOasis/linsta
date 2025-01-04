@@ -7,17 +7,17 @@ import MediaSlider from "../../../Components/Common/MediaSlider";
 
 import MessageSVG from "/public/images/message.svg";
 import ShareSVG from "/public/images/send.svg";
-import { useSelector } from "react-redux";
 import { AuthUser } from "../../../api/Auth";
 import { isOverflowed, getSanitizedText, isPostLiked, searchPostsIndexById, toggleLike } from "../../../utils/utils";
 import LikesModal from "./Modals/Main/LikesModal";
-import { BoldLink, CursorPointerDiv, DivWithMarginPadding, Flex, FlexColumn, FlexRow, FlexRowFullWidth, Link } from "../../../Components/Common/CombinedStyling";
+import { CursorPointerDiv, DivWithMarginPadding, Flex, FlexColumn, FlexColumnFullWidth, FlexRow, FlexRowFullWidth, Link } from "../../../Components/Common/CombinedStyling";
 import EmojiPickerPopup from "../../../Components/Common/EmojiPickerPopup";
 import StyledLink from "../../../Components/Common/StyledLink";
 import CommentModal from "./Modals/Comments/CommentsModal";
 import { HOST } from "../../../api/config";
 import ProfileLink from "../../../Components/Common/ProfileLink";
 import { LikeToggler, ViewLikesText } from "../../../Components/Common/Likes";
+import { useAppDispatch, useAppSelector, actions } from "../../../Components/Redux/redux";
 
 const MainContentWrapper = styled.div`
     overflow-y: auto;
@@ -36,21 +36,16 @@ const MainContentWrapper = styled.div`
     }
 `;
 
-const FeedContainer = styled.div`
-    display: flex;
+const FeedContainer = styled(FlexColumn)`
     max-width: 700px;
     width: 100%;
     overflow: visible;
-    flex-direction: column;
     align-items: center;
     position: relative;
 `;
 
-const PostContainer = styled.div`
-    display: flex;
-    flex-direction: column;
+const PostContainer = styled(FlexColumnFullWidth)`
     min-width: min(${props => props.theme["sizes"].feedPostMinWidth}, 100%);
-    width: 100%;
     padding-bottom: 16px;
     margin-bottom: 20px;
     border-bottom: 1px solid ${props => props.theme["colors"].borderDefaultColor};
@@ -97,7 +92,9 @@ const MainContent: React.FC = () => {
     const [viewShowMoreStates, setViewMoreStates] = useState<{}>({});
     const [commentText, setCommentText] = useState<CommentTextType>({});
     
-    const authUser:AuthUser = useSelector((state:any) => state.auth.user);
+    const authUser:AuthUser = useAppSelector((state:any) => state.auth.user);
+
+    const dispatch = useAppDispatch();
 
     useEffect(() => {
         getPosts().then(result => {
@@ -197,8 +194,7 @@ const MainContent: React.FC = () => {
                                     (commentText[`${post.global.id}`] && commentText[`${post.global.id}`].length > 0) &&
                                     <DivWithMarginPadding $paddingLeft="5px" $paddingRight="5px">
                                         <StyledLink onClick={async () => 
-                                            await handleSubmitComment(commentText[`${post.global.id}`], post)
-                                        }>
+                                            await handleSubmitComment(commentText[`${post.global.id}`], post)}>
                                             Post
                                         </StyledLink>
                                     </DivWithMarginPadding>
@@ -218,8 +214,6 @@ const MainContent: React.FC = () => {
 
     return (
         <>
-            {viewLikesModalPost !== null && <LikesModal post={viewLikesModalPost} onClose={() => {setViewLikesModalPost(null)}}/>}
-            {viewCommentModalPost !== null && <CommentModal updatePost={handleUpdateFromCommentModal} post={viewCommentModalPost} onClose={() => {setViewCommentModalPost(null)}}/>}
             <MainContentWrapper>
                 <section style={{display: "flex", flexDirection: "column", minHeight: "100vh", paddingTop: "10px"}}>
                     <main role="main" style={{flexDirection: "column", display: "flex", flexGrow: "1", overflow: "hidden"}}>
@@ -253,7 +247,7 @@ const MainContent: React.FC = () => {
                                                                 <CursorPointerDiv>
                                                                     <Flex $paddingRight="8px">
                                                                         <ActionContainer>
-                                                                            <MessageSVG onClick={() => setViewCommentModalPost(post)}/>
+                                                                            <MessageSVG onClick={() => handle}/>
                                                                         </ActionContainer>
                                                                     </Flex>
                                                                 </CursorPointerDiv>

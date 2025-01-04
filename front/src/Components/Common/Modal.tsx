@@ -1,6 +1,5 @@
 import React from "react";
 import { createPortal } from "react-dom";
-import { enableModal } from "../../utils/utils";
 import styled from "styled-components";
 
 export type ModalProps = {
@@ -168,11 +167,9 @@ export const ModalSectionWrapper = styled.div`
 export default class Modal extends React.Component<ModalProps> {
   onClose = (event: React.ChangeEvent<HTMLSelectElement>) => {
     this.props.onClose && this.props.onClose(event);
-    enableModal(false);
   };
 
   override componentDidMount(): void {
-    enableModal(true);
   }
 
   override render() {

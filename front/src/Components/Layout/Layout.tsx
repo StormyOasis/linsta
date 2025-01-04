@@ -10,23 +10,14 @@ import ChangePasswordLayout from "../../Components/Layout/Login/ChangePasswordLa
 import { historyUtils } from "../../utils/utils";
 import { useSelector } from "react-redux";
 import Private from "../Common/Private";
+import { FlexColumn } from "../Common/CombinedStyling";
+import ModalManager from "../../Components/Layout/Main/Modals/ModalManager";
 
-const Section = styled.div`
+const Section = styled(FlexColumn)`
     display: flex;
-    flex-direction: column;
     flex-grow: 1;
 `;
 
-const ModalContainer = styled.div`
-    justify-content: center;  
-    display: flex;
-    align-items: flex-start;
-    background-color: rgba(0,0,0,.6);
-    min-width: 100%;
-    max-width: 100%;
-    z-index: 9999;
-    position: fixed;
-`
 const Layout: React.FC = () => {
     const authUser = useSelector((value:any) => value?.auth?.user);
     
@@ -44,9 +35,9 @@ const Layout: React.FC = () => {
     }
 
     return (
-        <>
-            <ModalContainer id="modalContainer" />
+        <>            
             <Section id="mainSectionContainer">
+                <ModalManager />
                 {renderHeader()}
                 <Routes>
                     <Route path="/" element={<Private><MainLayout /></Private>} />                        
