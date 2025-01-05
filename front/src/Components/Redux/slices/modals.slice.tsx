@@ -1,5 +1,6 @@
-import { ActionReducerMapBuilder, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { ActionReducerMapBuilder, createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { historyUtils } from "../../../utils/utils";
+import { Post } from '../../../api/types';
 
 export const NEW_POST_MODAL = "newPostModal";
 export const COMMENT_MODAL = "commentModal";
@@ -16,8 +17,14 @@ export interface GlobalModalState {
 
 const defaultState:GlobalModalState = {
     openModalStack: [],
-    isOverlayEnabled: false
+    isOverlayEnabled: false,    
 };
+
+export const openModal = createAsyncThunk('modals/openModal', async (data: any) => {    
+    return {
+        ...data
+    }
+});
 
 const modalSliceCreator = (preloadedState?: any) => {
     const name = "modals";
@@ -62,13 +69,18 @@ const modalSliceCreator = (preloadedState?: any) => {
             state.openModalStack = state.openModalStack
                 .filter((val:ModalState, _idx: number, _arr: ModalState[]) => val.modalName !== modalName);
 
-            // Turn off the overlay background if necessary
-            if(state.openModalStack.length === 0) {
+            // Turn off the overlay background if necessary and clear the current post state
+            if(state.openModalStack.length === 0) {                
                 state.isOverlayEnabled = false;
             }
         };
 
+        const updateModalPost = (state: GlobalModalState, action: PayloadAction<ModalState>) => {
+           // state.post = action.payload.data;
+        };
+
         return {
+            updateModalPost,
             openModal,
             closeModal
         };

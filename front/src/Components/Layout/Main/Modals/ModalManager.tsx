@@ -18,7 +18,10 @@ const ModalOverlay = styled(Flex) <{ $isOverlayEnabled: boolean }>`
     height: ${props => props.$isOverlayEnabled ? "100%" : "0"};
 `;
 
-const ModalManager: React.FC = () => {
+type ModalManagerProps = {
+};
+
+const ModalManager: React.FC<ModalManagerProps> = (props: ModalManagerProps) => {    
     const isOverlayEnabled: boolean = useAppSelector((state) => state.modal.isOverlayEnabled);
     const openModals: ModalState[] = useAppSelector((state) => state.modal.openModalStack);
 
@@ -41,15 +44,17 @@ const ModalManager: React.FC = () => {
             switch (modalState.modalName) {
                 case NEW_POST_MODAL: {
                     modals.push(
-                        <CreatePostModal key={NEW_POST_MODAL} 
+                        <CreatePostModal 
+                            key={NEW_POST_MODAL} 
                             onClose={() => closeModal(NEW_POST_MODAL, {})} />);
                     break;
                 }
                 case COMMENT_MODAL: {
                     modals.push(
-                        <CommentModal key={COMMENT_MODAL}
+                        <CommentModal 
+                            key={COMMENT_MODAL}
                             post={modalState.data.post}
-                            updatePost={modalState.data.updatePost}
+                            updatePost={() => null}
                             onClose={() => closeModal(COMMENT_MODAL, {})} />);
                     break;
                 }
@@ -65,7 +70,7 @@ const ModalManager: React.FC = () => {
 
     return (
         <>
-            {isOverlayEnabled && <ModalOverlay id="modalOverlay" $isOverlayEnabled={isOverlayEnabled} />}
+            <ModalOverlay id="modalOverlay" $isOverlayEnabled={isOverlayEnabled} />
             {isOverlayEnabled && renderModals()}
         </>
     );

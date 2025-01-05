@@ -9,15 +9,14 @@ import MessageSVG from "/public/images/message.svg";
 import ShareSVG from "/public/images/send.svg";
 import { AuthUser } from "../../../api/Auth";
 import { isOverflowed, getSanitizedText, isPostLiked, searchPostsIndexById, toggleLike } from "../../../utils/utils";
-import LikesModal from "./Modals/Main/LikesModal";
 import { CursorPointerDiv, DivWithMarginPadding, Flex, FlexColumn, FlexColumnFullWidth, FlexRow, FlexRowFullWidth, Link } from "../../../Components/Common/CombinedStyling";
 import EmojiPickerPopup from "../../../Components/Common/EmojiPickerPopup";
 import StyledLink from "../../../Components/Common/StyledLink";
-import CommentModal from "./Modals/Comments/CommentsModal";
 import { HOST } from "../../../api/config";
 import ProfileLink from "../../../Components/Common/ProfileLink";
 import { LikeToggler, ViewLikesText } from "../../../Components/Common/Likes";
 import { useAppDispatch, useAppSelector, actions } from "../../../Components/Redux/redux";
+import { COMMENT_MODAL, GlobalModalState, openModal } from "../../../Components/Redux/slices/modals.slice";
 
 const MainContentWrapper = styled.div`
     overflow-y: auto;
@@ -87,8 +86,6 @@ interface CommentTextType {
 
 const MainContent: React.FC = () => {
     const [posts, setPosts] = useState<Post[]>([]);
-    const [viewLikesModalPost, setViewLikesModalPost] = useState<Post|null>(null);
-    const [viewCommentModalPost, setViewCommentModalPost] = useState<Post|null>(null);
     const [viewShowMoreStates, setViewMoreStates] = useState<{}>({});
     const [commentText, setCommentText] = useState<CommentTextType>({});
     
@@ -133,8 +130,21 @@ const MainContent: React.FC = () => {
         const index: number = searchPostsIndexById(post.global.id, posts);
         newPosts[index] = post;
 
-        setPosts(newPosts);        
-    }    
+        setPosts(newPosts);
+    }
+
+    const openCommentModal = (post: Post) => {
+        if(post === null) {
+            return;
+        }
+
+        // Open the comment dialog by setting the state in redux        
+        const payload = {
+            post     
+        };
+
+        dispatch(actions.modalActions.openModal({modalName: COMMENT_MODAL, data: payload}));
+    }
 
     const renderCommentsSection = (post: Post) => {
         const [sanitizedHtml, sanitizedText] = getSanitizedText(post.global.captionText);
@@ -160,7 +170,7 @@ const MainContent: React.FC = () => {
                 </>}
                 { post.global.commentCount > 0 &&
                     <DivWithMarginPadding $marginBottom="4px" $marginTop="4px">
-                        <Link href="#" onClick={() => setViewCommentModalPost(post)} style={{color: "rgb(120, 120, 120)"}}>View all {post.global.commentCount} comments</Link>
+                        <Link href="#" onClick={() => openCommentModal(post)} style={{color: "rgb(120, 120, 120)"}}>View all {post.global.commentCount} comments</Link>
                     </DivWithMarginPadding>
                 }
                 { !post.global?.commentsDisabled && 
@@ -247,7 +257,7 @@ const MainContent: React.FC = () => {
                                                                 <CursorPointerDiv>
                                                                     <Flex $paddingRight="8px">
                                                                         <ActionContainer>
-                                                                            <MessageSVG onClick={() => handle}/>
+                                                                            <MessageSVG onClick={() => openCommentModal(post)}/>
                                                                         </ActionContainer>
                                                                     </Flex>
                                                                 </CursorPointerDiv>
