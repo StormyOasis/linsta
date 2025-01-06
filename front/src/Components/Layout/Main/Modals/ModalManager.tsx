@@ -2,9 +2,12 @@ import React, { ReactNode } from "react";
 import { styled } from "styled-components";
 import { Flex } from "../../../Common/CombinedStyling";
 import { actions, useAppDispatch, useAppSelector } from "../../../../Components/Redux/redux";
-import { COMMENT_MODAL, GlobalModalState, ModalState, NEW_POST_MODAL } from "../../../../Components/Redux/slices/modals.slice";
+import { COMMENT_MODAL, LIKES_MODAL, ModalState, NEW_POST_MODAL } from "../../../../Components/Redux/slices/modals.slice";
 import CreatePostModal from "./CreatePost/CreatePostModal";
 import CommentModal from "./Comments/CommentsModal";
+import LikesModal from "./Main/LikesModal";
+import { Post } from "../../../../api/types";
+import { getPostFromListById } from "../../../../utils/utils";
 
 const ModalOverlay = styled(Flex) <{ $isOverlayEnabled: boolean }>`
     justify-content: center;  
@@ -21,7 +24,8 @@ const ModalOverlay = styled(Flex) <{ $isOverlayEnabled: boolean }>`
 type ModalManagerProps = {
 };
 
-const ModalManager: React.FC<ModalManagerProps> = (props: ModalManagerProps) => {    
+const ModalManager: React.FC<ModalManagerProps> = (_props: ModalManagerProps) => {
+    const posts: Post[] = useAppSelector((state) => state.post.posts);
     const isOverlayEnabled: boolean = useAppSelector((state) => state.modal.isOverlayEnabled);
     const openModals: ModalState[] = useAppSelector((state) => state.modal.openModalStack);
 
@@ -40,7 +44,7 @@ const ModalManager: React.FC<ModalManagerProps> = (props: ModalManagerProps) => 
 
         // Render each Modal in the stack
         for (let iter of openModals) {
-            const modalState: ModalState = iter as ModalState;
+            const modalState: ModalState = iter as ModalState;            
             switch (modalState.modalName) {
                 case NEW_POST_MODAL: {
                     modals.push(
@@ -53,11 +57,18 @@ const ModalManager: React.FC<ModalManagerProps> = (props: ModalManagerProps) => 
                     modals.push(
                         <CommentModal 
                             key={COMMENT_MODAL}
-                            post={modalState.data.post}
-                            updatePost={() => null}
+                            post={getPostFromListById(modalState.data.postId, posts)}
                             onClose={() => closeModal(COMMENT_MODAL, {})} />);
                     break;
                 }
+                case LIKES_MODAL: {
+                    modals.push(
+                        <LikesModal 
+                            key={LIKES_MODAL}
+                            post={getPostFromListById(modalState.data.postId, posts)}
+                            onClose={() => closeModal(LIKES_MODAL, {})} />);
+                    break;
+                }                
                 default: {
                     console.warn("Invalid modal");
                     break;
@@ -77,28 +88,3 @@ const ModalManager: React.FC<ModalManagerProps> = (props: ModalManagerProps) => 
 };
 
 export default ModalManager;
-
-/*
-
-            {createPostModalVisible && <CreatePostModal onClose={() => {setCreatePostModalVisible(false); enableModal(false);}} />}            
-            {viewLikesModalPost !== null && <LikesModal post={viewLikesModalPost} onClose={() => {setViewLikesModalPost(null)}}/>}
-            {viewCommentModalPost !== null && <CommentModal updatePost={handleUpdateFromCommentModal} post={viewCommentModalPost} onClose={() => {setViewCommentModalPost(null)}}/>}                
-
-export const enableModal = (enable: boolean) => {
-    const cont = document.getElementById("modalContainer");
-    const sectionCont = document.getElementById("mainSectionContainer");
-
-    if (cont && sectionCont) {
-        if (enable) {
-            cont.style.height = "100%";
-            sectionCont.style.pointerEvents = "none";
-        }
-        else {
-            cont.style.height = "0%";
-            sectionCont.style.pointerEvents = "auto";
-        }
-    }
-}
-
-
-*/

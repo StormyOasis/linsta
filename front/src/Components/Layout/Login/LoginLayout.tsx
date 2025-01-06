@@ -11,7 +11,8 @@ import StyledButton from "../../../Components/Common/StyledButton";
 import LoginWithFB from "../../../Components/Common/LoginWithFB";
 import { useDispatch, useSelector } from "react-redux";
 import { historyUtils, validatePassword } from "../../../utils/utils";
-import { AppDispatch, actions } from "../../../Components/Redux/redux";
+import { AppDispatch } from "../../../Components/Redux/redux";
+import { loginUser } from "../../../Components/Redux/slices/auth.slice";
 
 type LoginLayoutProps = {
 };
@@ -71,7 +72,7 @@ const LoginLayout: React.FC<LoginLayoutProps> = (props: LoginLayoutProps) => {
             return;
         }
         
-        return dispatch(actions.authActions.login({userName, password})).finally(() => setHasSubmitted(true));
+        return dispatch(loginUser({userName, password})).finally(() => setHasSubmitted(true));
     }
 
     function renderLoginForm() {

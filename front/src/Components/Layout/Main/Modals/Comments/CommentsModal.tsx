@@ -9,17 +9,19 @@ import { BoldLink, CursorPointerDiv, CursorPointerSpan, DivWithMarginPadding, Fl
 import MediaSlider from "../../../../Common/MediaSlider";
 import { HOST } from "../../../../../api/config";
 import ProfileLink from "../../../../Common/ProfileLink";
-import { postAddComment, postGetCommentsByPostId, postToggleLike } from "../../../../../api/ServiceController";
-import { dateDiff, getDateAsText, getSanitizedText, isPostLiked, togglePostLikedState } from "../../../../../utils/utils";
+import { postAddComment, postGetCommentsByPostId } from "../../../../../api/ServiceController";
+import { dateDiff, getDateAsText, getSanitizedText, isPostLiked } from "../../../../../utils/utils";
 import Theme from "../../../../Themes/Theme";
 import MessageSVG from "/public/images/message.svg";
 import ShareSVG from "/public/images/send.svg";
 import { AuthUser } from "../../../../../api/Auth";
 import EmojiPickerPopup from "../../../../Common/EmojiPickerPopup";
 import StyledLink from "../../../../Common/StyledLink";
-import LikesModal from "../Main/LikesModal";
 import { CommentUiData, mapCommentsToCommentData, toggleCommentLike, toggleCommentReplyUiData, isCommentLiked } from "./CommentsModalUtils";
 import { LikeToggler, ViewLikesText } from "../../../../../Components/Common/Likes";
+import { LIKES_MODAL } from "../../../../../Components/Redux/slices/modals.slice";
+import { togglePostLike } from "../../../../../Components/Redux/slices/post.slice";
+import { actions, useAppDispatch } from "../../../../../Components/Redux/redux";
 
 const MediaSliderWrapper = styled.div<{ $width: number }>`
     align-content: center;
@@ -118,23 +120,22 @@ const CommentReplyButton = styled.button`
 
 type CommentModalProps = {
     onClose: any;
-    updatePost: any;
     post: Post;
 }
 
 type CommentModalContentProps = {
     post: Post;
-    updatePost: any;
 }
 
 const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentModalContentProps) => {
     const [comments, setComments] = useState<any>({});
     const [commentText, setCommentText] = useState<string>("");
     const [parentCommentId, setParentCommentId] = useState<string | null>(null);
-    const [viewLikesModalPost, setViewLikesModalPost] = useState<Post | null>(null);
-
-    const authUser: AuthUser = useSelector((state: any) => state.auth.user);
+    
     const commentTextAreaRef = useRef(null);
+
+    const authUser: AuthUser = useSelector((state: any) => state.auth.user);    
+    const dispatch = useAppDispatch();
 
     useEffect(() => {
         postGetCommentsByPostId({ postId: props.post.global.id }).then((results) => {
@@ -301,6 +302,23 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
         }
     }
 
+    const openLikesModal = (post: Post) => {
+        if(post === null) {
+            return;
+        }
+
+        // Open the likes dialog by setting the state in redux        
+        const payload = {
+            postId: post.global.id     
+        };
+
+        dispatch(actions.modalActions.openModal({modalName: LIKES_MODAL, data: payload}));        
+    }
+        
+    const toggleLike = async (postId: string, userName: string, userId: string) => {
+        dispatch(await togglePostLike({postId, userName, userId}));
+    }
+
     if (props.post == null) {
         return <></>;
     }
@@ -310,7 +328,6 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
 
     return (
         <>
-            {viewLikesModalPost !== null && <LikesModal post={viewLikesModalPost} onClose={() => { setViewLikesModalPost(null) }} />}
             <div>
                 <Flex>
                     <FlexRow>
@@ -352,23 +369,7 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                                             <LikeToggler
                                                 isLiked={isLiked}
                                                 handleClick={async () => {
-                                                    const result = await postToggleLike({
-                                                        postId: props.post.global.id,
-                                                        userName: props.post.user.userName,
-                                                        userId: props.post.user.userId
-                                                    });
-
-                                                    if (result.status === 200) {
-                                                        const post = togglePostLikedState(
-                                                            props.post.user.userName,
-                                                            props.post.user.userId,
-                                                            props.post
-                                                        );
-                                                        if (post != null) {
-                                                            props.updatePost(post);
-                                                        }
-                                                    }
-                                                }}>
+                                                    await toggleLike(props.post.global.id, authUser.userName, authUser.id)}}>
                                             </LikeToggler>
                                         </Flex>
                                     </CursorPointerDiv>
@@ -397,7 +398,7 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                                     </CursorPointerDiv>
                                 </ActionWrapper>
                                 <DivWithMarginPadding $paddingLeft="10px" $paddingBottom="10px">
-                                    <ViewLikesText post={props.post} handleClick={setViewLikesModalPost}></ViewLikesText>
+                                    <ViewLikesText post={props.post} handleClick={()=> openLikesModal(props.post)}></ViewLikesText>
                                     <SpanWithMarginPadding $marginRight="10px" style={{ fontSize: "13px" }}>
                                         {getDateAsText(props.post.global.dateTime)}
                                     </SpanWithMarginPadding>
@@ -456,7 +457,7 @@ const CommentModal: React.FC<CommentModalProps> = (props: CommentModalProps) => 
     const steps = [
         {
             title: "Comments",
-            element: <CommentModalContent updatePost={props.updatePost} post={props.post} />,
+            element: <CommentModalContent post={props.post} />,
             options: {
                 showFooter: false,
                 hideMargins: true,

@@ -1,9 +1,11 @@
-import { ActionReducerMapBuilder, createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { ActionReducerMapBuilder, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { historyUtils } from "../../../utils/utils";
-import { Post } from '../../../api/types';
 
 export const NEW_POST_MODAL = "newPostModal";
 export const COMMENT_MODAL = "commentModal";
+export const LIKES_MODAL = "likeModal";
+
+const NAME = "modals";
 
 export interface ModalState {
     modalName: string;
@@ -20,14 +22,7 @@ const defaultState:GlobalModalState = {
     isOverlayEnabled: false,    
 };
 
-export const openModal = createAsyncThunk('modals/openModal', async (data: any) => {    
-    return {
-        ...data
-    }
-});
-
-const modalSliceCreator = (preloadedState?: any) => {
-    const name = "modals";
+const modalSliceCreator = (preloadedState?: any) => {    
     const initialState = createInitialState();
     const reducers = createReducers();
     const actions = createActions();
@@ -75,12 +70,7 @@ const modalSliceCreator = (preloadedState?: any) => {
             }
         };
 
-        const updateModalPost = (state: GlobalModalState, action: PayloadAction<ModalState>) => {
-           // state.post = action.payload.data;
-        };
-
         return {
-            updateModalPost,
             openModal,
             closeModal
         };
@@ -93,7 +83,7 @@ const modalSliceCreator = (preloadedState?: any) => {
     const extraReducers = (_builder: ActionReducerMapBuilder<any>) => {
     }
 
-    const slice = createSlice({ name, initialState, reducers, extraReducers });
+    const slice = createSlice({ name: NAME, initialState, reducers, extraReducers });
 
     const modalActions = { ...slice.actions, ...actions };
     const modalReducer = slice.reducer;
