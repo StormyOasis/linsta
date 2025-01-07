@@ -1,7 +1,7 @@
 import sanitizeHtml from 'sanitize-html';
 
 import { HistoryType, Post } from "../api/types";
-import { postSetFollowStatus, postToggleLike } from '../api/ServiceController';
+import { postSetFollowStatus } from '../api/ServiceController';
 
 export const historyUtils: HistoryType = {
     navigate: null,

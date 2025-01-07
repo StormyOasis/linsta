@@ -7,12 +7,12 @@ export type CommentUiData = {
     children: CommentUiData[];
 };
 
-export const isCommentLiked = (userName: string, comment: Comment):boolean => {
-    if(comment == null || userName == null) {
+export const isCommentLiked = (userName: string, comment: Comment): boolean => {
+    if (comment == null || userName == null) {
         return false;
     }
 
-    const result = comment.likes.filter((like:any) => like.userName === userName);
+    const result = comment.likes.filter((like: any) => like.userName === userName);
 
     return result.length > 0;
 }
@@ -71,8 +71,12 @@ export const mapCommentsToCommentData = (comments: Comment[], existingComments: 
     comments.forEach((comment: Comment) => {
         const existingComment: CommentUiData | null = existingComments[comment.commentId as keyof typeof existingComments] as CommentUiData;
         const repliesVisibleFlag = existingComment != null ? existingComment.repliesVisibleFlag : false;
-        tmpMap[comment.commentId as keyof typeof tmpMap] = { comment, parentCommentId: comment.parentCommentId, children: [], repliesVisibleFlag };
-        
+        tmpMap[comment.commentId as keyof typeof tmpMap] = { 
+            comment, 
+            parentCommentId: comment.parentCommentId, 
+            children: [], 
+            repliesVisibleFlag };
+
         if (comment.parentCommentId === null) {
             rootNodes.push(tmpMap[comment.commentId as keyof typeof tmpMap]);
         }
@@ -140,16 +144,16 @@ export const toggleCommentLike = async (commentId: string, userName: string, use
     }
 }
 
-export const toggleCommentLikedState = (userName: string, userId: string, comment: Comment):(Comment|null) => {
-    if(comment == null || userName == null || userId == null) {
+export const toggleCommentLikedState = (userName: string, userId: string, comment: Comment): (Comment | null) => {
+    if (comment == null || userName == null || userId == null) {
         return null;
     }
 
-    const index = comment.likes.findIndex((value:any) => value.userName === userName);
+    const index = comment.likes.findIndex((value: any) => value.userName === userName);
 
-    if(index === -1) {
+    if (index === -1) {
         // Username is not in the comments's like list, so add it
-        comment.likes.push({userName, userId});
+        comment.likes.push({ userName, userId });
     } else {
         // Remove the username from the comment's like list
         comment.likes.splice(index, 1);

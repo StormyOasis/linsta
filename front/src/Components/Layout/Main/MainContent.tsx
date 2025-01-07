@@ -9,7 +9,7 @@ import MessageSVG from "/public/images/message.svg";
 import ShareSVG from "/public/images/send.svg";
 import { AuthUser } from "../../../api/Auth";
 import { isOverflowed, getSanitizedText, isPostLiked } from "../../../utils/utils";
-import { CursorPointerDiv, DivWithMarginPadding, Flex, FlexColumn, FlexColumnFullWidth, FlexRow, FlexRowFullWidth, Link } from "../../../Components/Common/CombinedStyling";
+import { Div, Flex, FlexColumn, FlexColumnFullWidth, FlexRow, FlexRowFullWidth, LightLink } from "../../../Components/Common/CombinedStyling";
 import EmojiPickerPopup from "../../../Components/Common/EmojiPickerPopup";
 import StyledLink from "../../../Components/Common/StyledLink";
 import { HOST } from "../../../api/config";
@@ -30,7 +30,7 @@ const MainContentWrapper = styled.div`
         margin-left: ${props => props.theme["sizes"].sideBarNavWidthNarrow};
     }
         
-    @media (max-width: ${props => props.theme["breakpoints"].md-1}px) {
+    @media (max-width: ${props => props.theme["breakpoints"].md - 1}px) {
         margin-left: 0;
         padding-left: 0;
     }
@@ -51,10 +51,11 @@ const PostContainer = styled(FlexColumnFullWidth)`
     border-bottom: 1px solid ${props => props.theme["colors"].borderDefaultColor};
 `;
 
-const ActionContainer = styled(CursorPointerDiv) <{ $isLiked?: boolean }>`
+const ActionContainer = styled(Div) <{ $isLiked?: boolean }>`
     width: 28px;
     height: 28px;
     margin-left: auto;
+    cursor: pointer;
     color: ${props => props.$isLiked ? "red" : "black"};
 
     &:hover {
@@ -78,7 +79,21 @@ const CommentTextArea = styled.textarea`
     border: none;
     outline: none;
     overflow: hidden;
-    color: ${props => props.theme["colors"].defaultTextColor };
+    color: ${props => props.theme["colors"].defaultTextColor};
+`;
+
+const Section = styled.section`
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    padding-top: 10px;
+`;
+
+const Main = styled.main`
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    overflow: hidden;
 `;
 
 interface CommentTextType {
@@ -88,9 +103,9 @@ interface CommentTextType {
 const MainContent: React.FC = () => {
     const [viewShowMoreStates, setViewMoreStates] = useState<{}>({});
     const [commentText, setCommentText] = useState<CommentTextType>({});
-    
-    const authUser:AuthUser = useAppSelector((state:any) => state.auth.user);
-    const posts:Post[] = useAppSelector((state:any) => state.post.posts);
+
+    const authUser: AuthUser = useAppSelector((state: any) => state.auth.user);
+    const posts: Post[] = useAppSelector((state: any) => state.post.posts);
 
     const dispatch = useAppDispatch();
 
@@ -99,14 +114,14 @@ const MainContent: React.FC = () => {
     }, []);
 
     const toggleCaptionViewMoreState = (postId: string) => {
-        const newState:any = Object.assign({}, viewShowMoreStates);
+        const newState: any = Object.assign({}, viewShowMoreStates);
         newState[postId] = true;
 
         setViewMoreStates(newState);
     }
 
     const toggleLike = (postId: string, userName: string, userId: string) => {
-        dispatch(togglePostLike({postId, userName, userId}));
+        dispatch(togglePostLike({ postId, userName, userId }));
     }
 
     const handleSubmitComment = async (text: string, post: Post) => {
@@ -120,112 +135,111 @@ const MainContent: React.FC = () => {
 
         const result = await postAddComment(data);
 
-        if(result.status === 200) {
+        if (result.status === 200) {
             // Success adding comment, clear out comment text box
-            const newCommentText = {...commentText};
+            const newCommentText = { ...commentText };
             newCommentText[`${post.global.id}`] = '';
-            setCommentText(newCommentText);   
+            setCommentText(newCommentText);
         }
     }
 
     const openCommentModal = (post: Post) => {
-        if(post === null) {
+        if (post === null) {
             return;
         }
 
         // Open the comment dialog by setting the state in redux        
         const payload = {
-            postId: post.global.id     
+            postId: post.global.id
         };
 
-        dispatch(actions.modalActions.openModal({modalName: COMMENT_MODAL, data: payload}));
+        dispatch(actions.modalActions.openModal({ modalName: COMMENT_MODAL, data: payload }));
     }
 
     const openLikesModal = (post: Post) => {
-        if(post === null) {
+        if (post === null) {
             return;
         }
 
         // Open the comment dialog by setting the state in redux        
         const payload = {
-            postId: post.global.id     
+            postId: post.global.id
         };
 
-        dispatch(actions.modalActions.openModal({modalName: LIKES_MODAL, data: payload}));        
+        dispatch(actions.modalActions.openModal({ modalName: LIKES_MODAL, data: payload }));
     }
 
     const renderCommentsSection = (post: Post) => {
         const [sanitizedHtml, sanitizedText] = getSanitizedText(post.global.captionText);
-        const overflowed:boolean = isOverflowed(`postid_${post.global.id}`);
-        
+        const overflowed: boolean = isOverflowed(`postid_${post.global.id}`);
+
         const isExpanded = viewShowMoreStates[post.global.id as keyof typeof viewShowMoreStates]
 
         return (
             <>
                 {sanitizedText?.length > 0 &&
-                <>
-                    <CaptionContainer className={!isExpanded ? styles.lineClamp2 : {}}> 
-                        <div id={`postid_${post.global.id}`}>
-                            <span>
-                                <ProfileLink showUserName={true} showPfp={false} url={`${HOST}/${post.user.userName}`} text={post.user.userName}></ProfileLink>
-                                <span dangerouslySetInnerHTML={{__html: sanitizedHtml}}></span>
-                            </span>                                          
-                        </div>
-                    </CaptionContainer>
-                    {(overflowed && !isExpanded) && <Link href="#" 
-                        onClick={() => toggleCaptionViewMoreState(post.global.id)}
-                        style={{color: "rgb(120, 120, 120)"}}>More</Link>}                    
-                </>}
-                { post.global.commentCount > 0 &&
-                    <DivWithMarginPadding $marginBottom="4px" $marginTop="4px">
-                        <Link href="#" onClick={() => openCommentModal(post)} style={{color: "rgb(120, 120, 120)"}}>View all {post.global.commentCount} comments</Link>
-                    </DivWithMarginPadding>
+                    <>
+                        <CaptionContainer className={!isExpanded ? styles.lineClamp2 : {}}>
+                            <div id={`postid_${post.global.id}`}>
+                                <span>
+                                    <ProfileLink showUserName={true} showPfp={false} url={`${HOST}/${post.user.userName}`} text={post.user.userName}></ProfileLink>
+                                    <span dangerouslySetInnerHTML={{ __html: sanitizedHtml }}></span>
+                                </span>
+                            </div>
+                        </CaptionContainer>
+                        {(overflowed && !isExpanded) && <LightLink href="#"
+                            onClick={() => toggleCaptionViewMoreState(post.global.id)}>More</LightLink>}
+                    </>}
+                {post.global.commentCount > 0 &&
+                    <Div $marginBottom="4px" $marginTop="4px">
+                        <LightLink href="#" onClick={() => openCommentModal(post)}>View all {post.global.commentCount} comments</LightLink>
+                    </Div>
                 }
-                { !post.global?.commentsDisabled && 
+                {!post.global?.commentsDisabled &&
                     <div>
                         <FlexRow>
                             <CommentTextArea value={commentText[`${post.global.id}`]}
-                                placeholder="Add a new comment..." 
-                                aria-label="Add a new comment..." 
-                                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {                               
-                                        const newCommentText = {...commentText};
-                                        newCommentText[`${post.global.id}`] = e.currentTarget.value;
-                                        setCommentText(newCommentText);
-                                    }                             
+                                placeholder="Add a new comment..."
+                                aria-label="Add a new comment..."
+                                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+                                    const newCommentText = { ...commentText };
+                                    newCommentText[`${post.global.id}`] = e.currentTarget.value;
+                                    setCommentText(newCommentText);
                                 }
-                                onInput={(e:React.KeyboardEvent<HTMLTextAreaElement>) => {
+                                }
+                                onInput={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
                                     const element = e.currentTarget;
                                     element.style.height = "";
                                     element.style.height = element.scrollHeight + "px";
                                 }}
-                                onKeyDown={async (e:React.KeyboardEvent<HTMLTextAreaElement>) => {
+                                onKeyDown={async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
                                     if (e.key === "Enter") {
                                         // Prevent adding a new line
                                         e.preventDefault();
 
-                                        await handleSubmitComment(commentText[`${post.global.id}`], post);                                        
-                                    }                                    
+                                        await handleSubmitComment(commentText[`${post.global.id}`], post);
+                                    }
                                 }}
                             />
                             <Flex $marginTop="auto" $marginBottom="auto">
                                 {
                                     (commentText[`${post.global.id}`] && commentText[`${post.global.id}`].length > 0) &&
-                                    <DivWithMarginPadding $paddingLeft="5px" $paddingRight="5px">
-                                        <StyledLink onClick={async () => 
+                                    <Div $paddingLeft="5px" $paddingRight="5px">
+                                        <StyledLink onClick={async () =>
                                             await handleSubmitComment(commentText[`${post.global.id}`], post)}>
                                             Post
                                         </StyledLink>
-                                    </DivWithMarginPadding>
+                                    </Div>
                                 }
                                 <EmojiPickerPopup noPadding={true} onEmojiClick={(emoji: any) => {
-                                    const newCommentText = {...commentText};
+                                    const newCommentText = { ...commentText };
                                     newCommentText[`${post.global.id}`] += emoji.emoji;
-                                    setCommentText(newCommentText);                                
+                                    setCommentText(newCommentText);
                                 }}></EmojiPickerPopup>
                             </Flex>
                         </FlexRow>
                     </div>
-                }    
+                }
             </>
         );
     }
@@ -233,9 +247,9 @@ const MainContent: React.FC = () => {
     return (
         <>
             <MainContentWrapper>
-                <section style={{display: "flex", flexDirection: "column", minHeight: "100vh", paddingTop: "10px"}}>
-                    <main role="main" style={{flexDirection: "column", display: "flex", flexGrow: "1", overflow: "hidden"}}>
-                        <FlexRowFullWidth style={{justifyContent: "center"}}>                    
+                <Section>
+                    <Main role="main">
+                        <FlexRowFullWidth $justifyContent="center">
                             <FeedContainer>
                                 {posts && posts.length > 0 && posts.map(post => {
                                     const isLiked = isPostLiked(authUser.userName, post);
@@ -243,64 +257,64 @@ const MainContent: React.FC = () => {
                                     return (
                                         <article key={post.global.id}>
                                             <PostContainer>
-                                                <DivWithMarginPadding $paddingBottom="12px">                                                                                                          
-                                                    <ProfileLink showUserName={true} showPfp={true} text={post.user.userName} url={`${HOST}/${post.user.userName}`}></ProfileLink>                                                    
-                                                </DivWithMarginPadding>
-                                                <FlexColumn style={{justifyContent: "center", overflow: "hidden", position: "relative", width: "min(470px, 100vw)"}}>                                                                                                        
-                                                    <MediaSlider media={post.media} />                                                                                                       
+                                                <Div $paddingBottom="12px">
+                                                    <ProfileLink showUserName={true} showPfp={true} text={post.user.userName} url={`${HOST}/${post.user.userName}`}></ProfileLink>
+                                                </Div>
+                                                <FlexColumn $justifyContent="center" $overflow="hidden" $position="relative" $width="min(470px, 100vw)">
+                                                    <MediaSlider media={post.media} />
                                                 </FlexColumn>
-                                                <div style={{position: "relative"}}>
-                                                    <FlexColumn style={{height: "100%", position: "relative"}}>
-                                                        <FlexRow style={{marginTop: "5px", marginBottom: "5px"}}>                                                            
+                                                <Div $position="relative">
+                                                    <FlexColumn $height="100%" $position="relative">
+                                                        <FlexRow $marginTop="5px" $marginBottom="5px">
                                                             <span>
-                                                                <CursorPointerDiv>
+                                                                <Div $cursor="pointer">
                                                                     <Flex $paddingRight="8px">
                                                                         <LikeToggler
                                                                             isLiked={isLiked}
                                                                             handleClick={() => toggleLike(post.global.id, authUser.userName, authUser.id)} />
                                                                     </Flex>
-                                                                </CursorPointerDiv>
-                                                            </span>                                                    
+                                                                </Div>
+                                                            </span>
                                                             <span>
-                                                                <CursorPointerDiv>
+                                                                <Div $cursor="pointer">
                                                                     <Flex $paddingRight="8px">
                                                                         <ActionContainer>
-                                                                            <MessageSVG onClick={() => openCommentModal(post)}/>
+                                                                            <MessageSVG onClick={() => openCommentModal(post)} />
                                                                         </ActionContainer>
                                                                     </Flex>
-                                                                </CursorPointerDiv>
-                                                            </span>                                    
+                                                                </Div>
+                                                            </span>
                                                             <span>
-                                                                <CursorPointerDiv>
+                                                            <Div $cursor="pointer">
                                                                     <Flex $paddingRight="8px">
                                                                         <ActionContainer>
-                                                                            <ShareSVG/>
+                                                                            <ShareSVG />
                                                                         </ActionContainer>
                                                                     </Flex>
-                                                                </CursorPointerDiv>
-                                                            </span>                                                                                                                 
+                                                                </Div>
+                                                            </span>
                                                         </FlexRow>
                                                         <div>
-                                                            <DivWithMarginPadding $marginTop="5px" $marginBottom="5px">
-                                                                <ViewLikesText post={post} handleClick={()=> openLikesModal(post)}></ViewLikesText>
-                                                            </DivWithMarginPadding>
+                                                            <Div $marginTop="5px" $marginBottom="5px">
+                                                                <ViewLikesText post={post} handleClick={() => openLikesModal(post)}></ViewLikesText>
+                                                            </Div>
                                                         </div>
-                                                        <div>                                                        
+                                                        <div>
                                                             {renderCommentsSection(post)}
                                                         </div>
                                                     </FlexColumn>
-                                                </div>      
+                                                </Div>
                                             </PostContainer>
                                         </article>
                                     );
                                 })}
                             </FeedContainer>
                         </FlexRowFullWidth>
-                    </main>
-                </section>
-            </MainContentWrapper> 
-        </>       
-    );    
+                    </Main>
+                </Section>
+            </MainContentWrapper>
+        </>
+    );
 }
 
 export default MainContent;

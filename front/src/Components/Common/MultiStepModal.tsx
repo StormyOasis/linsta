@@ -17,6 +17,7 @@ const ModalWrapper = styled.div`
     left: 50%;
     top: 10px;
     transform: translateX(-50%);
+    width:100%;
 `;
 
 const ModalInnerWrapper = styled.div`
@@ -224,7 +225,7 @@ export default class MultiStepModal extends React.Component<MultiStepModalProps,
                 <ModalWrapper role="dialog" style={{zIndex: this.props.zIndex}}>
                     <ModalInnerWrapper>
                         <ModalInnerWrapper2>
-                            <FlexColumn style={{ height: "100%" }}>
+                            <FlexColumn $height="100%">
                                 <ModalTitleBarWrapper>
                                     <ModalTitleBarInnerWrapper>
                                         <ModalTitleBarInnerWrapper2>
@@ -235,7 +236,7 @@ export default class MultiStepModal extends React.Component<MultiStepModalProps,
                                         <ModalCloseWrapper>
                                             <ModalClose>
                                                 <ModalCloseButton title="data-modal-close" aria-label="Close" onClick={this.onClose}>
-                                                    <Flex style={{ alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                                                    <Flex $alignItems="center" $justifyContent="center" $cursor="pointer">
                                                         <CloseButton />
                                                     </Flex>
                                                 </ModalCloseButton>

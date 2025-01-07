@@ -5,7 +5,7 @@ import styled from "styled-components";
 
 import MultiStepModal from "../../../../Common/MultiStepModal";
 import { Post, User } from "../../../../../api/types";
-import { BoldLink, CursorPointerDiv, CursorPointerSpan, DivWithMarginPadding, Flex, FlexColumn, FlexColumnFullWidth, FlexRow, FlexRowFullWidth, Link, SpanWithMarginPadding } from "../../../../Common/CombinedStyling";
+import { BoldLink, Div, Flex, FlexColumn, FlexColumnFullWidth, FlexRow, FlexRowFullWidth, Link, Span } from "../../../../Common/CombinedStyling";
 import MediaSlider from "../../../../Common/MediaSlider";
 import { HOST } from "../../../../../api/config";
 import ProfileLink from "../../../../Common/ProfileLink";
@@ -59,12 +59,13 @@ const ActionWrapper = styled(FlexRow)`
     border-top: 1px solid ${props => props.theme['colors'].borderDefaultColor};
 `;
 
-const ActionContainer = styled(CursorPointerSpan) <{ $isLiked?: boolean }>`
+const ActionContainer = styled(Div) <{ $isLiked?: boolean }>`
     position: relative;
     top: 2px;
     width: 28px;
     height: 28px;
     margin-left: auto;
+    cursor: pointer;
     color: ${props => props.$isLiked ? "red" : "black"};
 
     &:hover {
@@ -132,10 +133,10 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
     const [comments, setComments] = useState<any>({});
     const [commentText, setCommentText] = useState<string>("");
     const [parentCommentId, setParentCommentId] = useState<string | null>(null);
-    
+
     const commentTextAreaRef = useRef(null);
 
-    const authUser: AuthUser = useSelector((state: any) => state.auth.user);    
+    const authUser: AuthUser = useSelector((state: any) => state.auth.user);
     const dispatch = useAppDispatch();
 
     useEffect(() => {
@@ -168,9 +169,9 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                         text={user.userName}>
                     </ProfileLink>
                     <FlexColumnFullWidth>
-                        <SpanWithMarginPadding $marginLeft="2px" style={{ alignContent: "center" }} dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />
+                        <Span $marginLeft="2px" $alignContent="center" dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />
                         <div>
-                            <SpanWithMarginPadding $marginRight="10px" style={{ fontSize: "13px" }}>{dateDiff(dateTime)}</SpanWithMarginPadding>
+                            <Span $marginRight="10px" $fontSize="13px">{dateDiff(dateTime)}</Span>
                             {repliesEnabled &&
                                 <CommentReplyButton
                                     onClick={(e) => {
@@ -304,20 +305,20 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
     }
 
     const openLikesModal = (post: Post) => {
-        if(post === null) {
+        if (post === null) {
             return;
         }
 
         // Open the likes dialog by setting the state in redux        
         const payload = {
-            postId: post.global.id     
+            postId: post.global.id
         };
 
-        dispatch(actions.modalActions.openModal({modalName: LIKES_MODAL, data: payload}));        
+        dispatch(actions.modalActions.openModal({ modalName: LIKES_MODAL, data: payload }));
     }
-        
+
     const toggleLike = async (postId: string, userName: string, userId: string) => {
-        dispatch(await togglePostLike({postId, userName, userId}));
+        dispatch(await togglePostLike({ postId, userName, userId }));
     }
 
     if (props.post == null) {
@@ -337,10 +338,10 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                             </MediaSlider>
                         </MediaSliderWrapper>
                         <Flex>
-                            <FlexColumn style={{ maxWidth: "500px" }}>
+                            <FlexColumn $maxWidth="500px">
                                 <HeadingWrapper>
-                                    <DivWithMarginPadding $marginLeft="10px" $paddingTop="10px" $paddingBottom="10px" $paddingRight="10px">
-                                        <FlexRow style={{ justifyContent: "space-between" }}>
+                                    <Div $marginLeft="10px" $paddingTop="10px" $paddingBottom="10px" $paddingRight="10px">
+                                        <FlexRow $justifyContent="space-between">
                                             <ProfileLink
                                                 showPfp={true}
                                                 showUserName={true}
@@ -349,32 +350,33 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                                             >
                                             </ProfileLink>
                                             <PostOptionsWrapper>
-                                                <BoldLink href="#" onClick={() => 1} style={{ fontSize: "1.5em" }}>...</BoldLink>
+                                                <BoldLink href="#" $fontSize="1.5em" onClick={() => 1}>...</BoldLink>
                                             </PostOptionsWrapper>
                                         </FlexRow>
                                         {props.post.global.locationText.length > 0 &&
-                                            <DivWithMarginPadding $marginLeft="42px" $marginTop="-9px" style={{ fontSize: "13px" }}>
+                                            <Div $marginLeft="42px" $marginTop="-9px" $fontSize="13px">
                                                 <Link href={`${HOST}/explore?text=${encodeURIComponent(props.post.global.locationText)}`}>
                                                     {props.post.global.locationText}
                                                 </Link>
-                                            </DivWithMarginPadding>
+                                            </Div>
                                         }
-                                    </DivWithMarginPadding>
+                                    </Div>
                                 </HeadingWrapper>
                                 <CommentsWrapper>
                                     {renderComments()}
                                 </CommentsWrapper>
                                 <ActionWrapper>
-                                    <CursorPointerDiv>
-                                        <Flex $paddingRight="8px" style={{position: "relative", top: "2px"}}>
+                                    <Div $cursor="pointer">
+                                        <Flex $paddingRight="8px" $position="relative" $top="2px">
                                             <LikeToggler
                                                 isLiked={isLiked}
                                                 handleClick={async () => {
-                                                    await toggleLike(props.post.global.id, authUser.userName, authUser.id)}}>
+                                                    await toggleLike(props.post.global.id, authUser.userName, authUser.id)
+                                                }}>
                                             </LikeToggler>
                                         </Flex>
-                                    </CursorPointerDiv>
-                                    <CursorPointerDiv>
+                                    </Div>
+                                    <Div $cursor="pointer">
                                         <Flex $paddingRight="8px">
                                             <ActionContainer>
                                                 <MessageSVG onClick={() => {
@@ -389,21 +391,21 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                                                 } />
                                             </ActionContainer>
                                         </Flex>
-                                    </CursorPointerDiv>
-                                    <CursorPointerDiv>
+                                    </Div>
+                                    <Div $cursor="pointer">
                                         <Flex $paddingRight="8px">
                                             <ActionContainer>
                                                 <ShareSVG />
                                             </ActionContainer>
                                         </Flex>
-                                    </CursorPointerDiv>
+                                    </Div>
                                 </ActionWrapper>
-                                <DivWithMarginPadding $paddingLeft="10px" $paddingBottom="10px">
-                                    <ViewLikesText post={props.post} handleClick={()=> openLikesModal(props.post)}></ViewLikesText>
-                                    <SpanWithMarginPadding $marginRight="10px" style={{ fontSize: "13px" }}>
+                                <Div $paddingLeft="10px" $paddingBottom="10px">
+                                    <ViewLikesText post={props.post} handleClick={() => openLikesModal(props.post)}></ViewLikesText>
+                                    <Span $marginRight="10px" $fontSize="13px">
                                         {getDateAsText(props.post.global.dateTime)}
-                                    </SpanWithMarginPadding>
-                                </DivWithMarginPadding>
+                                    </Span>
+                                </Div>
                                 {!props.post.global?.commentsDisabled &&
                                     <div>
                                         <CommentInputWrapper>
@@ -431,12 +433,12 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                                             <Flex $marginTop="auto" $marginBottom="auto">
                                                 {
                                                     (commentText && commentText.length > 0) &&
-                                                    <DivWithMarginPadding $paddingLeft="5px" $paddingRight="5px">
+                                                    <Div $paddingLeft="5px" $paddingRight="5px">
                                                         <StyledLink onClick={async () =>
                                                             await handleSubmitComment(commentText, props.post)}>
                                                             Post
                                                         </StyledLink>
-                                                    </DivWithMarginPadding>
+                                                    </Div>
                                                 }
                                                 <EmojiPickerPopup noPadding={true} onEmojiClick={(emoji: any) => {
                                                     setCommentText(commentText + emoji.emoji);

@@ -13,22 +13,77 @@ export default {
    ...styles5
 }
 
-export const Flex = styled.div.attrs<{ 
-    $paddingLeft?: string, $paddingRight?: string, 
-    $paddingTop?: string, $paddingBottom?: string,
-    $marginLeft?: string, $marginRight?: string, 
-    $marginTop?: string, $marginBottom?: string}>(props => ({
-        $paddingLeft: props.$paddingLeft || "0",
-        $paddingRight: props.$paddingRight || "0",
-        $paddingTop: props.$paddingTop || "0",
-        $paddingBottom: props.$paddingBottom || "0",
-        $marginLeft: props.$marginLeft || "0",
-        $marginRight: props.$marginRight || "0",
-        $marginTop: props.$marginTop || "0",
-        $marginBottom: props.$marginBottom || "0"
+export const Div = styled.div.attrs<{ 
+    $flexBasis?: string|null, $flexShrink?: string|null, 
+    $flexGrow?: string|null, $flexWrap?: string|null,     
+    $paddingLeft?: string|null, $paddingRight?: string|null, 
+    $paddingTop?: string|null, $paddingBottom?: string|null,
+    $marginLeft?: string|null, $marginRight?: string|null, 
+    $marginTop?: string|null, $marginBottom?: string|null,
+    $position?: string|null, $cursor?: string|null, $display?: string|null,
+    $overflow?: string|null, $justifyContent?: string|null, $verticalAlign?: string|null,
+    $minWidth?: string|null, $width?: string|null, $maxWidth?:string|null, $textAlign?: string|null,
+    $minHeight?: string|null, $height?: string|null, $maxHeight?:string|null, $fontWeight?: string|null,
+    $fontSize?: string|null, $alignItems?: string|null, $alignSelf?: string|null,
+    $alignContent?: string|null, $zIndex?: string|null, $flexDirection?: string|null,
+    $top?: string|null, $bottom?: string|null, $left?: string|null, $right?: string|null}>
+    (props => ({
+        $flexBasis: props.$flexBasis || null,
+        $flexGrow: props.$flexGrow || null,
+        $flexShrink: props.$flexShrink || null,
+        $flexWrap: props.$flexWrap || null,
+        $flexDirection: props.$flexDirection || null,
+        
+        $cursor: props.$cursor || null,
+        $display: props.$display || null,
+        $fontSize: props.$fontSize || null,
+        $fontWeight: props.$fontWeight || null,
+        $overflow: props.$overflow || null,     
+        $position: props.$position || null,
+        $textAlign: props.$textAlign || null,
+        $verticalAlign: props.$verticalAlign || null,
+        $zIndex: props.$zIndex || null,
+        
+        $alignContent: props.$alignContent || null,
+        $alignItems: props.$alignItems || null,
+        $alignSelf: props.$alignSelf || null,
+        $justifyContent: props.$justifyContent || null,
+
+        $marginLeft: props.$marginLeft || null,
+        $marginRight: props.$marginRight || null,
+        $marginTop: props.$marginTop || null,
+        $marginBottom: props.$marginBottom || null,          
+        $paddingLeft: props.$paddingLeft || null,
+        $paddingRight: props.$paddingRight || null,
+        $paddingTop: props.$paddingTop || null,
+        $paddingBottom: props.$paddingBottom || null,
+
+        $left: props.$left || null,
+        $right: props.$right || null,
+        $top: props.$top || null,
+        $bottom: props.$bottom || null,     
     }))`
     
-    display: flex;
+    flex-basis: ${(props) => props.$flexBasis};
+    flex-direction: ${(props) => props.$flexDirection};
+    flex-grow: ${(props) => props.$flexGrow};
+    flex-shrink: ${(props) => props.$flexShrink};
+    flex-wrap: ${(props) => props.$flexWrap};
+
+    position: ${(props) => props.$position};
+    cursor: ${(props) => props.$cursor};
+    display: ${(props) => props.$display};
+    font-size: ${(props) => props.$fontSize};
+    font-weight: ${(props) => props.$fontWeight};
+    overflow: ${(props) => props.$overflow};       
+    text-align: ${(props) => props.$textAlign};     
+    z-index: ${(props) => props.$zIndex};
+
+    align-content: ${(props) => props.$alignContent};
+    align-items: ${(props) => props.$alignItems};
+    align-self: ${(props) => props.$alignSelf};
+    justify-content: ${(props) => props.$justifyContent};
+    vertical-align: ${(props) => props.$verticalAlign};
 
     margin-left: ${(props) => props.$marginLeft};
     margin-right: ${(props) => props.$marginRight};
@@ -37,88 +92,132 @@ export const Flex = styled.div.attrs<{
     padding-left: ${(props) => props.$paddingLeft};
     padding-right: ${(props) => props.$paddingRight};
     padding-top: ${(props) => props.$paddingTop};
-    padding-bottom: ${(props) => props.$paddingBottom};     
+    padding-bottom: ${(props) => props.$paddingBottom}; 
+
+    left: ${(props) => props.$left};
+    right: ${(props) => props.$right};
+    top: ${(props) => props.$top};
+    bottom: ${(props) => props.$bottom};
+`;
+
+export const Span = styled.span.attrs<{ 
+    $flexBasis?: string|null, $flexShrink?: string|null, 
+    $flexGrow?: string|null, $flexWrap?: string|null,     
+    $paddingLeft?: string|null, $paddingRight?: string|null, 
+    $paddingTop?: string|null, $paddingBottom?: string|null,
+    $marginLeft?: string|null, $marginRight?: string|null, 
+    $marginTop?: string|null, $marginBottom?: string|null,
+    $position?: string|null, $cursor?: string|null, $display?: string|null,
+    $overflow?: string|null, $justifyContent?: string|null, $verticalAlign?: string|null,
+    $minWidth?: string|null, $width?: string|null, $maxWidth?:string|null, $textAlign?: string|null,
+    $minHeight?: string|null, $height?: string|null, $maxHeight?:string|null, $fontWeight?: string|null,
+    $fontSize?: string|null, $alignItems?: string|null, $alignSelf?: string|null,
+    $alignContent?: string|null, $zIndex?: string|null, $flexDirection?: string|null,
+    $top?: string|null, $bottom?: string|null, $left?: string|null, $right?: string|null}>
+    (props => ({
+        $flexBasis: props.$flexBasis || null,
+        $flexGrow: props.$flexGrow || null,
+        $flexShrink: props.$flexShrink || null,
+        $flexWrap: props.$flexWrap || null,
+        $flexDirection: props.$flexDirection || null,
+        
+        $cursor: props.$cursor || null,
+        $display: props.$display || null,
+        $fontSize: props.$fontSize || null,
+        $fontWeight: props.$fontWeight || null,
+        $overflow: props.$overflow || null,     
+        $position: props.$position || null,
+        $textAlign: props.$textAlign || null,
+        $verticalAlign: props.$verticalAlign || null,
+        $zIndex: props.$zIndex || null,
+        
+        $alignContent: props.$alignContent || null,
+        $alignItems: props.$alignItems || null,
+        $alignSelf: props.$alignSelf || null,
+        $justifyContent: props.$justifyContent || null,
+
+        $marginLeft: props.$marginLeft || null,
+        $marginRight: props.$marginRight || null,
+        $marginTop: props.$marginTop || null,
+        $marginBottom: props.$marginBottom || null,          
+        $paddingLeft: props.$paddingLeft || null,
+        $paddingRight: props.$paddingRight || null,
+        $paddingTop: props.$paddingTop || null,
+        $paddingBottom: props.$paddingBottom || null,
+
+        $left: props.$left || null,
+        $right: props.$right || null,
+        $top: props.$top || null,
+        $bottom: props.$bottom || null,     
+    }))`
+    
+    flex-basis: ${(props) => props.$flexBasis};
+    flex-direction: ${(props) => props.$flexDirection};
+    flex-grow: ${(props) => props.$flexGrow};
+    flex-shrink: ${(props) => props.$flexShrink};
+    flex-wrap: ${(props) => props.$flexWrap};
+
+    position: ${(props) => props.$position};
+    cursor: ${(props) => props.$cursor};
+    display: ${(props) => props.$display};
+    font-size: ${(props) => props.$fontSize};
+    font-weight: ${(props) => props.$fontWeight};
+    overflow: ${(props) => props.$overflow};   
+    text-align: ${(props) => props.$textAlign};  
+    z-index: ${(props) => props.$zIndex};
+
+    align-content: ${(props) => props.$alignContent};
+    align-items: ${(props) => props.$alignItems};
+    align-self: ${(props) => props.$alignSelf};
+    justify-content: ${(props) => props.$justifyContent};
+    vertical-align: ${(props) => props.$verticalAlign};
+
+    margin-left: ${(props) => props.$marginLeft};
+    margin-right: ${(props) => props.$marginRight};
+    margin-top: ${(props) => props.$marginTop};
+    margin-bottom: ${(props) => props.$marginBottom};
+    padding-left: ${(props) => props.$paddingLeft};
+    padding-right: ${(props) => props.$paddingRight};
+    padding-top: ${(props) => props.$paddingTop};
+    padding-bottom: ${(props) => props.$paddingBottom}; 
+
+    left: ${(props) => props.$left};
+    right: ${(props) => props.$right};
+    top: ${(props) => props.$top};
+    bottom: ${(props) => props.$bottom};
+`;
+
+
+export const Flex = styled(Div)`
+    display: flex;
 `;
 
 export const FlexRow = styled(Flex)`
     flex-direction: row;
 `;
 
-export const FlexRowFullWidth = styled(FlexRow)`
-    width: 100%;
-`;
-
 export const FlexColumn = styled(Flex)`
     flex-direction: column;
+`;
+
+export const FlexRowFullWidth = styled(FlexRow)`
+    width: 100%;
 `;
 
 export const FlexColumnFullWidth = styled(FlexColumn)`
     width: 100%;
 `;
 
-export const Link = styled.a`
+export const Link = styled.a<{$fontSize?: string}>`
     color: ${props => props.theme['colors'].defaultLinkColor};
+    font-size: ${props => props.$fontSize ? props.$fontSize : "14px"};
     text-decoration: none;
+`;
+
+export const LightLink = styled(Link)`
+    color: ${props => props.theme['colors'].mediumTextColor};
 `;
 
 export const BoldLink = styled(Link)`
     font-weight: 600;
-`;
-
-export const CursorPointerDiv = styled.div`
-    cursor: pointer;
-`;
-
-export const CursorPointerSpan = styled.span`
-    cursor: pointer;
-`;
-
-export const DivWithMarginPadding = styled.div.attrs<{ 
-    $paddingLeft?: string, $paddingRight?: string, 
-    $paddingTop?: string, $paddingBottom?: string,
-    $marginLeft?: string, $marginRight?: string, 
-    $marginTop?: string, $marginBottom?: string}>(props => ({
-        $paddingLeft: props.$paddingLeft || "0",
-        $paddingRight: props.$paddingRight || "0",
-        $paddingTop: props.$paddingTop || "0",
-        $paddingBottom: props.$paddingBottom || "0",
-        $marginLeft: props.$marginLeft || "0",
-        $marginRight: props.$marginRight || "0",
-        $marginTop: props.$marginTop || "0",
-        $marginBottom: props.$marginBottom || "0"
-    }))`
-
-    margin-left: ${(props) => props.$marginLeft};
-    margin-right: ${(props) => props.$marginRight};
-    margin-top: ${(props) => props.$marginTop};
-    margin-bottom: ${(props) => props.$marginBottom};
-    padding-left: ${(props) => props.$paddingLeft};
-    padding-right: ${(props) => props.$paddingRight};
-    padding-top: ${(props) => props.$paddingTop};
-    padding-bottom: ${(props) => props.$paddingBottom};    
-`;
-
-export const SpanWithMarginPadding = styled.span.attrs<{ 
-    $paddingLeft?: string, $paddingRight?: string, 
-    $paddingTop?: string, $paddingBottom?: string,
-    $marginLeft?: string, $marginRight?: string, 
-    $marginTop?: string, $marginBottom?: string}>(props => ({
-        $paddingLeft: props.$paddingLeft || "0",
-        $paddingRight: props.$paddingRight || "0",
-        $paddingTop: props.$paddingTop || "0",
-        $paddingBottom: props.$paddingBottom || "0",
-        $marginLeft: props.$marginLeft || "0",
-        $marginRight: props.$marginRight || "0",
-        $marginTop: props.$marginTop || "0",
-        $marginBottom: props.$marginBottom || "0"
-    }))`
-
-    margin-left: ${(props) => props.$marginLeft};
-    margin-right: ${(props) => props.$marginRight};
-    margin-top: ${(props) => props.$marginTop};
-    margin-bottom: ${(props) => props.$marginBottom};
-    padding-left: ${(props) => props.$paddingLeft};
-    padding-right: ${(props) => props.$paddingRight};
-    padding-top: ${(props) => props.$paddingTop};
-    padding-bottom: ${(props) => props.$paddingBottom};    
 `;

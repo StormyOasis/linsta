@@ -6,7 +6,7 @@ import { Post } from "../../../../../api/types";
 import { postBulkGetInfoAndFollowStatus } from "../../../../../../src/api/ServiceController";
 import StyledButton from "../../../../../Components/Common/StyledButton";
 import { followUser } from "../../../../../utils/utils";
-import { FlexColumn, FlexRow, Link } from "../../../../../Components/Common/CombinedStyling";
+import { Div, FlexColumn, FlexRow, Link, Span } from "../../../../../Components/Common/CombinedStyling";
 
 type LikesModalProps = {
     onClose: any;
@@ -87,21 +87,21 @@ const LikesModalContent: React.FC<LikesModalContentProps> = (props: LikesModalCo
 
             return (
                 <LikeEntryContainer key={entry.userId}>                        
-                    <FlexRow style={{paddingBottom: "8px", paddingTop: "8px"}}>
+                    <FlexRow $paddingBottom="8px" $paddingTop="8px">
                         <div>
-                            <div style={{marginRight: "10px"}}>
+                            <Div $marginRight="10px">
                                 <ProfilePicLink href={`/${lfd.userName}/`} role="link">
                                     <ProfilePicImg src={pfp} 
                                         aria-label={`${lfd.userName}'s profile picture`} 
                                         alt={`${lfd.userName}'s profile picture`} />
                                 </ProfilePicLink>
-                            </div>
+                            </Div>
                         </div>
-                        <FlexRow style={{flexBasis: "auto", flexShrink: 1, flexGrow: 1, flexWrap: "wrap", position: "relative", paddingTop: "5px"}}>
-                            <FlexColumn style={{flexGrow: 1, position: "relative"}}>
+                        <FlexRow $flexBasis="auto" $flexShrink="1" $flexGrow="1" $flexWrap="wrap" $position="relative" $paddingTop="5px">
+                            <FlexColumn $flexGrow="1" $position="relative">
                                 <div>
                                     <Link href={`/${lfd.userName}/`} role="link">
-                                        <span style={{fontWeight: 700}}>{lfd.userName}</span>
+                                        <Span $fontWeight="700">{lfd.userName}</Span>
                                     </Link>
                                 </div>
                                 <div>
@@ -145,7 +145,7 @@ const LikesModalContent: React.FC<LikesModalContentProps> = (props: LikesModalCo
     return (
         <div>
             <LikesModalInfoText>{props.post.user.userName} can see the number of people who liked this post</LikesModalInfoText>
-            <FlexColumn style={{alignItems: "stretch", paddingTop:"15px"}}>
+            <FlexColumn $alignItems="stretch" $paddingTop="15px">
                 { renderLikeList() }
             </FlexColumn>
         </div>
