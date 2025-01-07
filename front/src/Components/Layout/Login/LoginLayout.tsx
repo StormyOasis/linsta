@@ -39,7 +39,7 @@ const StatusText = styled.div`
     justify-content: center;
 `;
 
-const LoginLayout: React.FC<LoginLayoutProps> = (props: LoginLayoutProps) => {
+const LoginLayout: React.FC<LoginLayoutProps> = (_props: LoginLayoutProps) => {
     const dispatch = useDispatch<AppDispatch>();
     const authUser = useSelector((value:any) => value?.auth?.user);
     const [userName, setUserName] = useState("");
@@ -53,7 +53,7 @@ const LoginLayout: React.FC<LoginLayoutProps> = (props: LoginLayoutProps) => {
     }, []);
 
  
-    function loginWithFacebookClicked(event: React.MouseEventHandler<HTMLButtonElement>) {
+    function loginWithFacebookClicked(_event: React.MouseEventHandler<HTMLButtonElement>) {
         window.alert("todo");
     };
 

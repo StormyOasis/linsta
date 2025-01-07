@@ -257,7 +257,7 @@ const MainContent: React.FC = () => {
                                     return (
                                         <article key={post.global.id}>
                                             <PostContainer>
-                                                <Div $paddingBottom="12px">
+                                                <Div $paddingBottom="5px">
                                                     <ProfileLink showUserName={true} showPfp={true} text={post.user.userName} url={`${HOST}/${post.user.userName}`}></ProfileLink>
                                                 </Div>
                                                 <FlexColumn $justifyContent="center" $overflow="hidden" $position="relative" $width="min(470px, 100vw)">
@@ -285,7 +285,7 @@ const MainContent: React.FC = () => {
                                                                 </Div>
                                                             </span>
                                                             <span>
-                                                            <Div $cursor="pointer">
+                                                                <Div $cursor="pointer">
                                                                     <Flex $paddingRight="8px">
                                                                         <ActionContainer>
                                                                             <ShareSVG />

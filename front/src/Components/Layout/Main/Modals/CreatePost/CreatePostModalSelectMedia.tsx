@@ -1,9 +1,10 @@
 import React from "react";
 import MediaSVG from "/public/images/media.svg";
+import WarningSVG from "/public/images/warning.svg";
 import { ModalSectionWrapper } from "../../../../Common/MultiStepModal";
 import StyledButton from "../../../../Common/StyledButton";
-import WarningSVG from "/public/images/warning.svg";
 import { useDropzone } from "react-dropzone";
+import { Span } from "../../../../../Components/Common/CombinedStyling";
 
 export type CreatePostModalSelectMediaProps = {
     setFiles?: any;
@@ -39,14 +40,12 @@ const CreatePostModalSelectMedia: React.FC<CreatePostModalSelectMediaProps> = (p
                     {props.hasFileRejections && <WarningSVG />}
                 </ModalSectionWrapper>
                 <ModalSectionWrapper style={{ marginTop: "15px", padding: "10px" }}>
-                    <span style={{
-                        display: "block", fontSize: "20px", lineHeight: "25px",
-                        margin: 0, maxWidth: "100%", overflow: "visible", overflowWrap: "break-word",
-                        position: "relative", textWrap: "wrap", wordBreak: "break-word"
-                    }}>
-                        {!props.hasFileRejections && 'Drag photos and videos here'}
-                        {props.hasFileRejections && 'One or more files is not supported'}
-                    </span>
+                    <Span style={{textWrap: "wrap", wordBreak: "break-word", overflowWrap: "break-word", margin: 0}}
+                        $display="block" $fontSize="20px" $lineHeight="25px"
+                        $maxWidth="100%" $overflow="visible" $position="relative">
+                            {!props.hasFileRejections && 'Drag photos and videos here'}
+                            {props.hasFileRejections && 'One or more files is not supported'}
+                    </Span>
                 </ModalSectionWrapper>
                 <ModalSectionWrapper style={{ marginTop: "30px", padding: "10px" }}>
                     <StyledButton text="Select From Computer" onClick={open} type="button" name="selectImageFromComputer"></StyledButton>

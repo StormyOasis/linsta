@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { ModalSectionWrapper } from "../../../../Common/MultiStepModal";
 import Slider from "../../../../Common/Slider";
 import { EditData } from "./CreatePostModal";
-import { FlexColumn } from "../../../../Common/CombinedStyling";
+import { Div, FlexColumn } from "../../../../Common/CombinedStyling";
 import { blobToBase64 } from "../../../../../utils/utils";
 import MediaSliderButton from "../../../../Common/MediaSliderButton";
 
@@ -388,7 +388,7 @@ const CreatePostModalEditor: React.FC<CreatePostModalEditorProps> = (props: Crea
                 </ImageContainer>
                 <ControlsContainer>
                 {props.editData.isVideoFile && 
-                    <div style={{fontWeight: 700, color: "red", textAlign: "center"}}>Note: Editing video files is currently unsupported</div>
+                    <Div $fontWeight="700" $color="red" $textAlign="center">Note: Editing video files is currently unsupported</Div>
                 }
                 {!props.editData.isVideoFile && 
                     <>
