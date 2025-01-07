@@ -9,7 +9,7 @@ import MessageSVG from "/public/images/message.svg";
 import ShareSVG from "/public/images/send.svg";
 import { AuthUser } from "../../../api/Auth";
 import { isOverflowed, getSanitizedText, isPostLiked } from "../../../utils/utils";
-import { Div, Flex, FlexColumn, FlexColumnFullWidth, FlexRow, FlexRowFullWidth, LightLink } from "../../../Components/Common/CombinedStyling";
+import { Div, Flex, FlexColumn, FlexColumnFullWidth, FlexRow, FlexRowFullWidth, LightLink, Link } from "../../../Components/Common/CombinedStyling";
 import EmojiPickerPopup from "../../../Components/Common/EmojiPickerPopup";
 import StyledLink from "../../../Components/Common/StyledLink";
 import { HOST } from "../../../api/config";
@@ -259,6 +259,13 @@ const MainContent: React.FC = () => {
                                             <PostContainer>
                                                 <Div $paddingBottom="5px">
                                                     <ProfileLink showUserName={true} showPfp={true} text={post.user.userName} url={`${HOST}/${post.user.userName}`}></ProfileLink>
+                                                    {post.global.locationText.length > 0 &&
+                                                        <Div $marginLeft="42px" $marginTop="-9px" $fontSize="13px">
+                                                            <Link href={`${HOST}/explore?text=${encodeURIComponent(post.global.locationText)}`}>
+                                                                {post.global.locationText}
+                                                            </Link>
+                                                        </Div>
+                                                    }                                                    
                                                 </Div>
                                                 <FlexColumn $justifyContent="center" $overflow="hidden" $position="relative" $width="min(470px, 100vw)">
                                                     <MediaSlider media={post.media} />
