@@ -9,14 +9,16 @@ import LikesModal from "./Main/LikesModal";
 import { Post } from "../../../../api/types";
 import { getPostFromListById } from "../../../../utils/utils";
 
-const ModalOverlay = styled(Flex) <{ $isOverlayEnabled: boolean }>`
+const MODAL_ZINDEX_BASE: number = 9990;
+
+const ModalOverlayBackground = styled(Flex) <{ $isOverlayEnabled: boolean, $zIndex?: number }>`
     justify-content: center;  
     align-items: flex-start;
     background-color: rgba(0,0,0,.6);
     min-width: 100%;
     max-width: 100%;
-    z-index: 9990;
     position: fixed;
+    z-index: ${props => props.$zIndex ? MODAL_ZINDEX_BASE + props.$zIndex : MODAL_ZINDEX_BASE};   
     min-height: ${props => props.$isOverlayEnabled ? "100%" : "0"};
     height: ${props => props.$isOverlayEnabled ? "100%" : "0"};
 `;
@@ -43,13 +45,15 @@ const ModalManager: React.FC<ModalManagerProps> = (_props: ModalManagerProps) =>
         }
 
         // Render each Modal in the stack
+        let zIndex = MODAL_ZINDEX_BASE;
         for (let iter of openModals) {
             const modalState: ModalState = iter as ModalState;            
             switch (modalState.modalName) {
                 case NEW_POST_MODAL: {
-                    modals.push(
-                        <CreatePostModal 
+                    modals.push(                        
+                        <CreatePostModal                             
                             key={NEW_POST_MODAL} 
+                            zIndex={zIndex}
                             onClose={() => closeModal(NEW_POST_MODAL, {})} />);
                     break;
                 }
@@ -57,14 +61,16 @@ const ModalManager: React.FC<ModalManagerProps> = (_props: ModalManagerProps) =>
                     modals.push(
                         <CommentModal 
                             key={COMMENT_MODAL}
+                            zIndex={zIndex}
                             post={getPostFromListById(modalState.data.postId, posts)}
-                            onClose={() => closeModal(COMMENT_MODAL, {})} />);
+                            onClose={() => closeModal(COMMENT_MODAL, {})} />);                        
                     break;
                 }
                 case LIKES_MODAL: {
                     modals.push(
                         <LikesModal 
                             key={LIKES_MODAL}
+                            zIndex={zIndex}
                             post={getPostFromListById(modalState.data.postId, posts)}
                             onClose={() => closeModal(LIKES_MODAL, {})} />);
                     break;
@@ -74,6 +80,7 @@ const ModalManager: React.FC<ModalManagerProps> = (_props: ModalManagerProps) =>
                     break;
                 }
             }
+            zIndex++;
         }
 
         return modals;
@@ -81,8 +88,10 @@ const ModalManager: React.FC<ModalManagerProps> = (_props: ModalManagerProps) =>
 
     return (
         <>
-            <ModalOverlay id="modalOverlay" $isOverlayEnabled={isOverlayEnabled} />
-            {isOverlayEnabled && renderModals()}
+            <ModalOverlayBackground $isOverlayEnabled={isOverlayEnabled} $zIndex={openModals.length - 1} />
+            <div style={{position: "relative" }} id="modalOverlay" >                
+                { isOverlayEnabled && renderModals() }
+            </div>
         </>
     );
 };

@@ -121,6 +121,7 @@ const CommentReplyButton = styled.button`
 type CommentModalProps = {
     onClose: any;
     post: Post;
+    zIndex: number;
 }
 
 type CommentModalContentProps = {
@@ -468,7 +469,7 @@ const CommentModal: React.FC<CommentModalProps> = (props: CommentModalProps) => 
 
     return (
         <>
-            <MultiStepModal steps={steps} onClose={props.onClose} stepNumber={0} showLoadingAnimation={false} />
+            <MultiStepModal zIndex={props.zIndex} steps={steps} onClose={props.onClose} stepNumber={0} showLoadingAnimation={false} />
         </>
     );
 }

@@ -10,11 +10,13 @@ const ModalWrapper = styled.div`
     flex-direction: column;
     justify-content: center;
     overflow: hidden;
-    position: relative;
+    position: absolute;
     pointer-events: all;
-    z-index: 99999;
     border: none;
     box-sizing: content-box;
+    left: 50%;
+    top: 10px;
+    transform: translateX(-50%);
 `;
 
 const ModalInnerWrapper = styled.div`
@@ -185,6 +187,7 @@ export type MultiStepModalProps = {
     onClose: any;
     stepNumber: number;
     showLoadingAnimation: boolean;
+    zIndex: number;
 };
 
 type MultiStepModalState = {
@@ -212,13 +215,13 @@ export default class MultiStepModal extends React.Component<MultiStepModalProps,
         if (cont === null) {
             return null;
         }
-
+        
         const step = this.props.steps[this.props.stepNumber];
         const alignItems = step.options.alignItems ? step.options.alignItems : "center";
 
         return createPortal(
             <>
-                <ModalWrapper role="dialog">
+                <ModalWrapper role="dialog" style={{zIndex: this.props.zIndex}}>
                     <ModalInnerWrapper>
                         <ModalInnerWrapper2>
                             <FlexColumn style={{ height: "100%" }}>

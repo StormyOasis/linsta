@@ -11,6 +11,7 @@ import { FlexColumn, FlexRow, Link } from "../../../../../Components/Common/Comb
 type LikesModalProps = {
     onClose: any;
     post: Post;
+    zIndex: number;
 }
 
 type LikesModalContentProps = {
@@ -165,7 +166,7 @@ const LikesModal: React.FC<LikesModalProps> = (props: LikesModalProps) => {
 
     return (
         <>
-            <MultiStepModal steps={steps} onClose={props.onClose} stepNumber={0} showLoadingAnimation={false} />
+            <MultiStepModal zIndex={props.zIndex} steps={steps} onClose={props.onClose} stepNumber={0} showLoadingAnimation={false} />
         </>
     );
 }
