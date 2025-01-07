@@ -14,10 +14,11 @@ import { useSelector } from "react-redux";
 
 export type CreatePostModalProps = {
     onClose: any
+    zIndex: number;
 }
 
 export type EditData = {
-    id: string;
+    id: string;    
     isVideoFile: boolean;
     index: number;
     originalUrl: string;
@@ -257,7 +258,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
 
     return (
         <>
-            <MultiStepModal steps={steps} onClose={props.onClose} stepNumber={stepNumber} showLoadingAnimation={isSubmitting} />
+            <MultiStepModal zIndex={props.zIndex} steps={steps} onClose={props.onClose} stepNumber={stepNumber} showLoadingAnimation={isSubmitting} />
         </>
     );
 }

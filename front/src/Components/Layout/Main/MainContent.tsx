@@ -1,23 +1,23 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import * as styles from './Main.module.css';
-import { getPosts, postAddComment } from "../../../api/ServiceController";
+import { postAddComment } from "../../../api/ServiceController";
 import { Post } from "../../../api/types";
 import MediaSlider from "../../../Components/Common/MediaSlider";
 
 import MessageSVG from "/public/images/message.svg";
 import ShareSVG from "/public/images/send.svg";
-import { useSelector } from "react-redux";
 import { AuthUser } from "../../../api/Auth";
-import { isOverflowed, getSanitizedText, isPostLiked, searchPostsIndexById, toggleLike } from "../../../utils/utils";
-import LikesModal from "./Modals/Main/LikesModal";
-import { BoldLink, CursorPointerDiv, DivWithMarginPadding, Flex, FlexColumn, FlexRow, FlexRowFullWidth, Link } from "../../../Components/Common/CombinedStyling";
+import { isOverflowed, getSanitizedText, isPostLiked } from "../../../utils/utils";
+import { CursorPointerDiv, DivWithMarginPadding, Flex, FlexColumn, FlexColumnFullWidth, FlexRow, FlexRowFullWidth, Link } from "../../../Components/Common/CombinedStyling";
 import EmojiPickerPopup from "../../../Components/Common/EmojiPickerPopup";
 import StyledLink from "../../../Components/Common/StyledLink";
-import CommentModal from "./Modals/Comments/CommentsModal";
 import { HOST } from "../../../api/config";
 import ProfileLink from "../../../Components/Common/ProfileLink";
 import { LikeToggler, ViewLikesText } from "../../../Components/Common/Likes";
+import { useAppDispatch, useAppSelector, actions } from "../../../Components/Redux/redux";
+import { COMMENT_MODAL, LIKES_MODAL } from "../../../Components/Redux/slices/modals.slice";
+import { getPostList, togglePostLike } from "../../../Components/Redux/slices/post.slice";
 
 const MainContentWrapper = styled.div`
     overflow-y: auto;
@@ -36,21 +36,16 @@ const MainContentWrapper = styled.div`
     }
 `;
 
-const FeedContainer = styled.div`
-    display: flex;
+const FeedContainer = styled(FlexColumn)`
     max-width: 700px;
     width: 100%;
     overflow: visible;
-    flex-direction: column;
     align-items: center;
     position: relative;
 `;
 
-const PostContainer = styled.div`
-    display: flex;
-    flex-direction: column;
+const PostContainer = styled(FlexColumnFullWidth)`
     min-width: min(${props => props.theme["sizes"].feedPostMinWidth}, 100%);
-    width: 100%;
     padding-bottom: 16px;
     margin-bottom: 20px;
     border-bottom: 1px solid ${props => props.theme["colors"].borderDefaultColor};
@@ -91,18 +86,16 @@ interface CommentTextType {
 }
 
 const MainContent: React.FC = () => {
-    const [posts, setPosts] = useState<Post[]>([]);
-    const [viewLikesModalPost, setViewLikesModalPost] = useState<Post|null>(null);
-    const [viewCommentModalPost, setViewCommentModalPost] = useState<Post|null>(null);
     const [viewShowMoreStates, setViewMoreStates] = useState<{}>({});
     const [commentText, setCommentText] = useState<CommentTextType>({});
     
-    const authUser:AuthUser = useSelector((state:any) => state.auth.user);
+    const authUser:AuthUser = useAppSelector((state:any) => state.auth.user);
+    const posts:Post[] = useAppSelector((state:any) => state.post.posts);
+
+    const dispatch = useAppDispatch();
 
     useEffect(() => {
-        getPosts().then(result => {
-            setPosts(result.data)
-        }).catch(err => console.error(err));
+        dispatch(getPostList())
     }, []);
 
     const toggleCaptionViewMoreState = (postId: string) => {
@@ -110,6 +103,10 @@ const MainContent: React.FC = () => {
         newState[postId] = true;
 
         setViewMoreStates(newState);
+    }
+
+    const toggleLike = (postId: string, userName: string, userId: string) => {
+        dispatch(togglePostLike({postId, userName, userId}));
     }
 
     const handleSubmitComment = async (text: string, post: Post) => {
@@ -131,13 +128,31 @@ const MainContent: React.FC = () => {
         }
     }
 
-    const handleUpdateFromCommentModal = (post: Post) => {
-        const newPosts: Post[] = [...posts];
-        const index: number = searchPostsIndexById(post.global.id, posts);
-        newPosts[index] = post;
+    const openCommentModal = (post: Post) => {
+        if(post === null) {
+            return;
+        }
 
-        setPosts(newPosts);        
-    }    
+        // Open the comment dialog by setting the state in redux        
+        const payload = {
+            postId: post.global.id     
+        };
+
+        dispatch(actions.modalActions.openModal({modalName: COMMENT_MODAL, data: payload}));
+    }
+
+    const openLikesModal = (post: Post) => {
+        if(post === null) {
+            return;
+        }
+
+        // Open the comment dialog by setting the state in redux        
+        const payload = {
+            postId: post.global.id     
+        };
+
+        dispatch(actions.modalActions.openModal({modalName: LIKES_MODAL, data: payload}));        
+    }
 
     const renderCommentsSection = (post: Post) => {
         const [sanitizedHtml, sanitizedText] = getSanitizedText(post.global.captionText);
@@ -163,7 +178,7 @@ const MainContent: React.FC = () => {
                 </>}
                 { post.global.commentCount > 0 &&
                     <DivWithMarginPadding $marginBottom="4px" $marginTop="4px">
-                        <Link href="#" onClick={() => setViewCommentModalPost(post)} style={{color: "rgb(120, 120, 120)"}}>View all {post.global.commentCount} comments</Link>
+                        <Link href="#" onClick={() => openCommentModal(post)} style={{color: "rgb(120, 120, 120)"}}>View all {post.global.commentCount} comments</Link>
                     </DivWithMarginPadding>
                 }
                 { !post.global?.commentsDisabled && 
@@ -197,8 +212,7 @@ const MainContent: React.FC = () => {
                                     (commentText[`${post.global.id}`] && commentText[`${post.global.id}`].length > 0) &&
                                     <DivWithMarginPadding $paddingLeft="5px" $paddingRight="5px">
                                         <StyledLink onClick={async () => 
-                                            await handleSubmitComment(commentText[`${post.global.id}`], post)
-                                        }>
+                                            await handleSubmitComment(commentText[`${post.global.id}`], post)}>
                                             Post
                                         </StyledLink>
                                     </DivWithMarginPadding>
@@ -218,15 +232,14 @@ const MainContent: React.FC = () => {
 
     return (
         <>
-            {viewLikesModalPost !== null && <LikesModal post={viewLikesModalPost} onClose={() => {setViewLikesModalPost(null)}}/>}
-            {viewCommentModalPost !== null && <CommentModal updatePost={handleUpdateFromCommentModal} post={viewCommentModalPost} onClose={() => {setViewCommentModalPost(null)}}/>}
             <MainContentWrapper>
                 <section style={{display: "flex", flexDirection: "column", minHeight: "100vh", paddingTop: "10px"}}>
                     <main role="main" style={{flexDirection: "column", display: "flex", flexGrow: "1", overflow: "hidden"}}>
                         <FlexRowFullWidth style={{justifyContent: "center"}}>                    
                             <FeedContainer>
-                                {posts.length > 0 && posts.map(post => {
+                                {posts && posts.length > 0 && posts.map(post => {
                                     const isLiked = isPostLiked(authUser.userName, post);
+
                                     return (
                                         <article key={post.global.id}>
                                             <PostContainer>
@@ -242,10 +255,9 @@ const MainContent: React.FC = () => {
                                                             <span>
                                                                 <CursorPointerDiv>
                                                                     <Flex $paddingRight="8px">
-                                                                    <LikeToggler
-                                                                        isLiked={isLiked}
-                                                                        handleClick={async () => {
-                                                                            setPosts(await toggleLike(post.global.id, authUser.userName, authUser.id, posts))}} />
+                                                                        <LikeToggler
+                                                                            isLiked={isLiked}
+                                                                            handleClick={() => toggleLike(post.global.id, authUser.userName, authUser.id)} />
                                                                     </Flex>
                                                                 </CursorPointerDiv>
                                                             </span>                                                    
@@ -253,7 +265,7 @@ const MainContent: React.FC = () => {
                                                                 <CursorPointerDiv>
                                                                     <Flex $paddingRight="8px">
                                                                         <ActionContainer>
-                                                                            <MessageSVG onClick={() => setViewCommentModalPost(post)}/>
+                                                                            <MessageSVG onClick={() => openCommentModal(post)}/>
                                                                         </ActionContainer>
                                                                     </Flex>
                                                                 </CursorPointerDiv>
@@ -270,7 +282,7 @@ const MainContent: React.FC = () => {
                                                         </FlexRow>
                                                         <div>
                                                             <DivWithMarginPadding $marginTop="5px" $marginBottom="5px">
-                                                                <ViewLikesText post={post} handleClick={() => setViewLikesModalPost(post)}></ViewLikesText>
+                                                                <ViewLikesText post={post} handleClick={()=> openLikesModal(post)}></ViewLikesText>
                                                             </DivWithMarginPadding>
                                                         </div>
                                                         <div>                                                        

@@ -2,8 +2,17 @@ import { ActionReducerMapBuilder, createAsyncThunk, createSlice } from '@reduxjs
 import { logout, login } from '../../../api/Auth';
 import { historyUtils } from "../../../utils/utils";
 
-const authSliceCreator = (preloadedState?: any) => {
-    const name = "auth";
+const NAME = "auth";
+
+export const loginUser = createAsyncThunk(`${NAME}/login`, async ({ userName, password }: any, thunkApi) => {
+    try {
+        return await login(userName, password);
+    } catch (err: any) {
+        return thunkApi.rejectWithValue(err.message);
+    }
+});
+
+const authSliceCreator = (preloadedState?: any) => {    
     const initialState = createInitialState();
     const reducers = createReducers();
     const actions = createActions();
@@ -41,27 +50,15 @@ const authSliceCreator = (preloadedState?: any) => {
     }
 
     function createActions() {
-        const loginUser = () => {
-            return createAsyncThunk(`${name}/login`, async ({ userName, password }: any, thunkApi) => {
-                try {
-                    return await login(userName, password);
-                } catch (err: any) {
-                    return thunkApi.rejectWithValue(err.message);
-                }
-            });
-        }
-
-        return {
-            login: loginUser()
-        };
+        return {};
     }
 
     const extraReducers = (builder: ActionReducerMapBuilder<any>) => {
-        function loginUser() {
-            builder.addCase(actions.login.pending, (state) => {
+        function login() {
+            builder.addCase(loginUser.pending, (state) => {
                 state.status = "pending";
                 state.error = null;
-            }).addCase(actions.login.fulfilled, (state, action) => {
+            }).addCase(loginUser.fulfilled, (state, action) => {
                 const user = action.payload;
                 localStorage.setItem("user", JSON.stringify(user));
                 state.user = user;
@@ -69,16 +66,16 @@ const authSliceCreator = (preloadedState?: any) => {
                 state.error = null;
 
                 historyUtils.navigate("/");
-            }).addCase(actions.login.rejected, (state, action) => {
+            }).addCase(loginUser.rejected, (state, action) => {
                 state.status = "failed";
                 state.error = action.error.message;
             })
         }
 
-        loginUser();
+        login();
     }
 
-    const slice = createSlice({ name, initialState, reducers, extraReducers });
+    const slice = createSlice({ name: NAME, initialState, reducers, extraReducers });
 
     const authActions = { ...slice.actions, ...actions };
     const authReducer = slice.reducer;

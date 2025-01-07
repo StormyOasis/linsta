@@ -13,6 +13,9 @@ import MainSVG from "/public/images/main.svg";
 import * as styles from './Main.module.css';
 import { Link } from "react-router-dom";
 import { useMediaQuery } from "react-responsive";
+import { FlexColumn } from "../../../Components/Common/CombinedStyling";
+import { useAppDispatch, useAppSelector, actions } from "../../../Components/Redux/redux";
+import { NEW_POST_MODAL } from "../../../Components/Redux/slices/modals.slice";
 
 const SideBarWrapper = styled.div`
     z-index: 50;
@@ -40,11 +43,9 @@ const SideBarWrapper = styled.div`
     }
 `;
 
-const NavWrapper = styled.div`
+const NavWrapper = styled(FlexColumn)`
     width: 100%;
     flex-grow: 1;
-    display: flex;
-    flex-direction: column;
 
     @media (max-width: ${props => props.theme["breakpoints"].md-1}px) {
         display: inline-flex;
@@ -81,14 +82,19 @@ const InnerNavLinkWrapper = styled.div`
     }
 `;
 
-
-export type SideBarProps = {
-    createPostHandler: any;
-}
-
-const SideBar: React.FC<SideBarProps> = (props: SideBarProps) => {
+const SideBar: React.FC = () => {
     const matchesLargestBP = useMediaQuery({minWidth: 1280});
     const matchesSmallestBP = useMediaQuery({maxWidth: 767});
+
+    const dispatch = useAppDispatch();
+
+    const createPostHandler = (e: React.SyntheticEvent<MouseEvent>) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Open the create dialog by setting the state in redux
+        dispatch(actions.modalActions.openModal({modalName: NEW_POST_MODAL, data: {}}));
+    }
 
     const renderMenuItem = (text: string, to: string, iconElement:any, onClick?: any) => {
         const onClickHandler = onClick ? onClick : () => true;
@@ -127,7 +133,7 @@ const SideBar: React.FC<SideBarProps> = (props: SideBarProps) => {
                 {renderMenuItem("Reels", "/reels", <ReelsSVG/>, null)}
                 {renderMenuItem("Messages", "/messages", <MessagesSVG/>, null)}
                 {renderMenuItem("Notifications", "#", <NotificationsSVG/>, null)}
-                {renderMenuItem("Create", "#", <CreateSVG/>, props.createPostHandler)}
+                {renderMenuItem("Create", "#", <CreateSVG/>, createPostHandler)}
             </NavWrapper>            
         </SideBarWrapper>
     );

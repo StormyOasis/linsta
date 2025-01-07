@@ -180,20 +180,14 @@ export const getDateAsText = (date: Date) => {
     return new Date(date).toLocaleDateString('en-us', { year: "numeric", month: "long", day: "numeric" });
 }
 
-export const enableModal = (enable: boolean) => {
-    const cont = document.getElementById("modalContainer");
-    const sectionCont = document.getElementById("mainSectionContainer");
-
-    if (cont && sectionCont) {
-        if (enable) {
-            cont.style.height = "100%";
-            sectionCont.style.pointerEvents = "none";
-        }
-        else {
-            cont.style.height = "0%";
-            sectionCont.style.pointerEvents = "auto";
+export const getPostFromListById = (postId: string, posts: Post[]):Post => {
+    for(let post of posts) {
+        if(post.global.id === postId) {
+            return post;
         }
     }
+    console.warn("Invalid post id");
+    return {} as any;
 }
 
 export const isPostLiked = (userName: string, post: Post):boolean => {
@@ -210,7 +204,7 @@ export const togglePostLikedState = (userName: string, userId: string, post: Pos
     if(post == null || userName == null || userId == null) {
         return null;
     }
-
+    
     const index = post.global.likes.findIndex((value:any) => value.userName === userName);
 
     if(index === -1) {
@@ -222,42 +216,6 @@ export const togglePostLikedState = (userName: string, userId: string, post: Pos
     }
 
     return post;
-}
-
-export const toggleLike = async (postId: string, userName: string, userId: string, posts: Post[]):Promise<Post[]> => {
-    const result = await postToggleLike({postId, userName, userId});
-    if(result.status === 200) {            
-        // update the post list by updating the post instance in the post state array
-        const index = searchPostsIndexById(postId, posts);
-        if(index === -1) {
-            return [];
-        }
-
-        const newPostsList = [...posts];
-        const newPost:Post|null = togglePostLikedState(userName, userId, newPostsList[index]);
-
-        if(newPost === null) { return [] }
-
-        newPostsList[index] = newPost;
-        return newPostsList;            
-    }
-    return [];
-}
-
-export const searchPostsIndexById = (postId: string, posts: Post[]):number => {
-    if(postId === null || posts === null) {
-        return -1;
-    }
-    
-    let postIndex = -1;
-
-    posts.forEach((post: Post, index: number) => {
-        if(post.global.id === postId) {
-            postIndex = index;
-        }
-    });
-
-    return postIndex;
 }
 
 export const getSanitizedText = (text: string):[string, string] => {
