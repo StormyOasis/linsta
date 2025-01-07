@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { BoldLink, Link } from './CombinedStyling';
+import { BoldLink, Link, Span } from './CombinedStyling';
 import { DEFAULT_PFP } from '../../api/config';
 
 type ProfileLinkProps = {
@@ -30,7 +30,7 @@ const ProfileLink: React.FC<ProfileLinkProps> = (props: ProfileLinkProps) => {
     const pfpUrl = props.pfp ? props.pfp : DEFAULT_PFP;
 
     return (
-        <span style={{display: "inline-flex"}}>
+        <Span $display="inline-flex">
             {props.showPfp &&
                 <ProfilePicWrapper>
                     <Link role="link" href={props.url} aria-label={`${props.text}'s profile picture link`}>
@@ -52,7 +52,7 @@ const ProfileLink: React.FC<ProfileLinkProps> = (props: ProfileLinkProps) => {
                         style={{ marginRight: "5px" }}>{props.text}</BoldLink>
                 </ProfileLinkWrapper>        
             }                   
-        </span>
+        </Span>
     );
 };
 

@@ -3,9 +3,9 @@ import { createPortal } from "react-dom";
 import styled from "styled-components";
 
 export type ModalProps = {
-  children?: any;
-  title?: string;
-  onClose: any;
+    children?: any;
+    title?: string;
+    onClose: any;
 };
 
 const ModalWrapper = styled.div`
@@ -165,51 +165,51 @@ export const ModalSectionWrapper = styled.div`
 `;
 
 export default class Modal extends React.Component<ModalProps> {
-  onClose = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    this.props.onClose && this.props.onClose(event);
-  };
+    onClose = (event: React.ChangeEvent<HTMLSelectElement>) => {
+        this.props.onClose && this.props.onClose(event);
+    };
 
-  override componentDidMount(): void {
-  }
-
-  override render() {
-    const cont = document.getElementById("modalContainer");
-    if(cont == null) {
-      throw new Error("No modal container");
+    override componentDidMount(): void {
     }
 
-    return createPortal(
-      <>
-        <ModalWrapper role="dialog">
-          <ModalInnerWrapper>
-            <ModalInnerWrapper2>
-              <div style={{ display: "flex", flexDirection: "column", height: "100%", maxWidth: "100%" }}>
-                <ModalTitleBarWrapper>
-                  <ModalTitleBarInnerWrapper>
-                    <ModalTitleBarInnerWrapper2>
-                      <ModalTitle>
-                        <div>{this.props.title}</div>
-                      </ModalTitle>
-                    </ModalTitleBarInnerWrapper2>
-                    <ModalCloseWrapper>
-                      <ModalClose>
-                        <ModalCloseButton title="data-modal-close" aria-label="Close" onClick={this.onClose}>
-                          <div style={{ alignItems: "center", display: "flex", justifyContent: "center", cursor: "pointer" }}>
-                            <CloseButton />
-                          </div>
-                        </ModalCloseButton>
-                      </ModalClose>
-                    </ModalCloseWrapper>
-                  </ModalTitleBarInnerWrapper>
-                </ModalTitleBarWrapper>
-                <ModalContentWrapper>
-                  {this.props.children}
-                </ModalContentWrapper>
-              </div>
-            </ModalInnerWrapper2>
-          </ModalInnerWrapper>
-        </ModalWrapper>
-      </>
-    , cont);
-  }
+    override render() {
+        const cont = document.getElementById("modalContainer");
+        if (cont == null) {
+            throw new Error("No modal container");
+        }
+
+        return createPortal(
+            <>
+                <ModalWrapper role="dialog">
+                    <ModalInnerWrapper>
+                        <ModalInnerWrapper2>
+                            <div style={{ display: "flex", flexDirection: "column", height: "100%", maxWidth: "100%" }}>
+                                <ModalTitleBarWrapper>
+                                    <ModalTitleBarInnerWrapper>
+                                        <ModalTitleBarInnerWrapper2>
+                                            <ModalTitle>
+                                                <div>{this.props.title}</div>
+                                            </ModalTitle>
+                                        </ModalTitleBarInnerWrapper2>
+                                        <ModalCloseWrapper>
+                                            <ModalClose>
+                                                <ModalCloseButton title="data-modal-close" aria-label="Close" onClick={this.onClose}>
+                                                    <div style={{ alignItems: "center", display: "flex", justifyContent: "center", cursor: "pointer" }}>
+                                                        <CloseButton />
+                                                    </div>
+                                                </ModalCloseButton>
+                                            </ModalClose>
+                                        </ModalCloseWrapper>
+                                    </ModalTitleBarInnerWrapper>
+                                </ModalTitleBarWrapper>
+                                <ModalContentWrapper>
+                                    {this.props.children}
+                                </ModalContentWrapper>
+                            </div>
+                        </ModalInnerWrapper2>
+                    </ModalInnerWrapper>
+                </ModalWrapper>
+            </>
+            , cont);
+    }
 }

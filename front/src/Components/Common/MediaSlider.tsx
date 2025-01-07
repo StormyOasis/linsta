@@ -130,7 +130,7 @@ const MediaSlider: React.FC<MediaSliderProps> = (props: MediaSliderProps) => {
     }
 
     return (
-        <FlexRow style={{height: "100%", alignItems: "stretch", position: "relative", verticalAlign: "baseline"}}>
+        <FlexRow $height="100%" $alignItems="stretch" $position="relative" $verticalAlign="baseline">
             {renderMedia()}        
         </FlexRow>
     );

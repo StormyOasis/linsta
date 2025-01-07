@@ -155,48 +155,48 @@ const SignupButton = styled(Link)`
 `;
 
 class Header extends React.Component<any, any> {
-    override render() {      
-      return (
-        <HeaderWrapper>
-          <div style={{flexBasis: "60px"}}></div>
-          <div className={styles.fixedHeader}>
-            <div className={styles.innerHeader}>
-              <LogoWrapper>
-                <Link to="/">
-                  <LogoImage />
-                </Link>
-              </LogoWrapper>
-              <SearchWrapper>         
-                <SearchBox aria-label="Search input box" type="text" placeholder="" >
-                </SearchBox>
-                <div className={styles.searchBoxDiv1}>
-                  <div className={styles.searchBoxDiv2}>
-                    <div className={styles.searchBoxDiv3}>
-                      <SearchImage />
+    override render() {
+        return (
+            <HeaderWrapper>
+                <div style={{ flexBasis: "60px" }}></div>
+                <div className={styles.fixedHeader}>
+                    <div className={styles.innerHeader}>
+                        <LogoWrapper>
+                            <Link to="/">
+                                <LogoImage />
+                            </Link>
+                        </LogoWrapper>
+                        <SearchWrapper>
+                            <SearchBox aria-label="Search input box" type="text" placeholder="" >
+                            </SearchBox>
+                            <div className={styles.searchBoxDiv1}>
+                                <div className={styles.searchBoxDiv2}>
+                                    <div className={styles.searchBoxDiv3}>
+                                        <SearchImage />
+                                    </div>
+                                    <SearchSpan />
+                                </div>
+                            </div>
+                        </SearchWrapper>
+                        <ActionWrapper>
+                            <div className={styles.actionWrapperInner}>
+                                <ActionLinkWrapper>
+                                    <LoginButton to="/login">
+                                        Log In
+                                    </LoginButton>
+                                </ActionLinkWrapper>
+                                <ActionLinkWrapper>
+                                    <SignupButton to="/signup">
+                                        Sign Up
+                                    </SignupButton>
+                                </ActionLinkWrapper>
+                            </div>
+                        </ActionWrapper>
                     </div>
-                    <SearchSpan />                      
-                  </div>                  
                 </div>
-              </SearchWrapper>
-              <ActionWrapper>
-                <div className={styles.actionWrapperInner}>
-                  <ActionLinkWrapper>
-                    <LoginButton to="/login">
-                      Log In
-                    </LoginButton>
-                  </ActionLinkWrapper>
-                  <ActionLinkWrapper>
-                    <SignupButton to="/signup">
-                      Sign Up
-                    </SignupButton>
-                  </ActionLinkWrapper>
-                </div>
-              </ActionWrapper>
-            </div>
-          </div>
-        </HeaderWrapper>
-      )
+            </HeaderWrapper>
+        )
     }
-  }
-  
-  export default Header; 
+}
+
+export default Header; 

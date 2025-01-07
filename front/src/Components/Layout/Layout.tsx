@@ -15,7 +15,6 @@ import ModalManager from "../../Components/Layout/Main/Modals/ModalManager";
 
 const Section = styled(FlexColumn)`
     display: flex;
-    flex-grow: 1;
 `;
 
 const Layout: React.FC = () => {

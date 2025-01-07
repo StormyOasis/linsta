@@ -9,7 +9,7 @@ import OneToOneSVG from "/public/images/1to1.svg";
 import FourToFiveSVG from "/public/images/4to5.svg";
 import SixteenToNineSVG from "/public/images/16to9.svg";
 import ImageSVG from "/public/images/image.svg";
-import { Flex } from "../../../../Common/CombinedStyling";
+import { Div, Flex } from "../../../../Common/CombinedStyling";
 import MediaSliderButton from "../../../../Common/MediaSliderButton";
 
 const CropContainer = styled.div`
@@ -186,7 +186,7 @@ const CreatePostModalCrop: React.FC<CreatePostModalCropProps> = (props: CreatePo
 
     return (
         <>
-            {isVideoFile && <div style={{fontWeight: 700, color: "red", textAlign: "center"}}>Note: Editing video files is currently unsupported</div>}
+            {isVideoFile && <Div $fontWeight="700" $color="red" $textAlign="center">Note: Editing video files is currently unsupported</Div>}
             <CreatePostModalCropper 
                 isVideoFile={isVideoFile}
                 hasNext={currentFileIndex < props.files.length-1}

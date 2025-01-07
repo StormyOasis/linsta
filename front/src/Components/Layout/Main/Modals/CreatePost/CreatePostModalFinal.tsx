@@ -12,7 +12,7 @@ import { useSelector } from "react-redux";
 import TextEditor from "../../../../Common/Lexical/TextEditor";
 import Dropdown from "../../../../Common/Dropdown";
 import ToggleSwitch from "../../../../Common/ToggleSwitch";
-import { FlexColumn, FlexRow } from "../../../../Common/CombinedStyling";
+import { Div, FlexColumn, FlexRow, Span } from "../../../../Common/CombinedStyling";
 import LocationPopup from "../../../../Common/LocationPopup";
 import MediaSliderButton from "../../../../Common/MediaSliderButton";
 
@@ -301,7 +301,7 @@ const CreatePostModalFinal: React.FC<CreatePostModalFinalProps> = (props: Create
 
     return (
         <>
-            {props.hasErrorOccured && <div style={{fontWeight: 700, color: "red", textAlign: "center", marginBottom: "5px"}}>An error occured when submitting your post</div>}
+            {props.hasErrorOccured && <Div $fontWeight="700" $color="red" $textAlign="center" $marginBottom="5px">An error occured when submitting your post</Div>}
             <ModalSectionWrapper>
                 <EditContainer>                 
                     <ImageContainer>
@@ -316,9 +316,9 @@ const CreatePostModalFinal: React.FC<CreatePostModalFinalProps> = (props: Create
                         }                    
                     </ImageContainer>
                     <ControlsContainer>
-                        <div style={{fontWeight: 700, paddingBottom: "10px"}}>
+                        <Div $fontWeight="700" $paddingBottom="10px">
                             {authUser.userName}
-                        </div>                           
+                        </Div>                           
                         <ControlContentContainer>
                             <TextEditorContainerWrapper>
                                 <TextEditorContainer>
@@ -326,9 +326,9 @@ const CreatePostModalFinal: React.FC<CreatePostModalFinalProps> = (props: Create
                                         maxTextLength={MAX_TEXT_LENGTH} emoji={emoji} getCurrentLength={getCurrentLength} />                                
                                 </TextEditorContainer>                                                         
                                 <TextEditorBottomWrapper>
-                                    <span style={{flexBasis: "75%"}}>
+                                    <Span $flexBasis="75%">
                                         <EmojiPickerPopup onEmojiClick={handleEmojiSelect} />
-                                    </span>
+                                    </Span>
                                     <CharacterCountContainer>
                                         {charCount > (MAX_TEXT_LENGTH+1) ? 
                                             `${(MAX_TEXT_LENGTH+1)} / ${MAX_TEXT_LENGTH + 1}` : 
@@ -372,7 +372,7 @@ const CreatePostModalFinal: React.FC<CreatePostModalFinalProps> = (props: Create
                                 </Dropdown>
                                 <Dropdown title="Advanced Settings">
                                     <FlexColumn>
-                                        <div style={{paddingTop: "5px"}}>
+                                        <Div $paddingTop="5px">
                                             <FlexRow>
                                                 <AdvancedDropdownLabel>
                                                     Hide like and view counts    
@@ -382,8 +382,8 @@ const CreatePostModalFinal: React.FC<CreatePostModalFinalProps> = (props: Create
                                             <Text>
                                                 Only you will see the total number of likes and views on this post. You can change this later by going to the menu at the top of the post.  
                                             </Text>
-                                        </div>
-                                        <div style={{paddingTop: "5px"}}>
+                                        </Div>
+                                        <Div $paddingTop="5px">
                                             <FlexRow>
                                                 <AdvancedDropdownLabel>
                                                     Turn off commenting
@@ -393,7 +393,7 @@ const CreatePostModalFinal: React.FC<CreatePostModalFinalProps> = (props: Create
                                             <Text>
                                                 You can change this later by going to the menu at the top of the post.
                                             </Text>
-                                        </div>                                
+                                        </Div>                                
                                     </FlexColumn>
                                 </Dropdown>                                           
                             </AdditionalControlsContainer>                            

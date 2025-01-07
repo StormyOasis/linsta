@@ -9,6 +9,7 @@ import StyledInput from "../../../Components/Common/StyledInput";
 import StyledButton from "../../../Components/Common/StyledButton";
 import Modal, { ModalContentWrapper, ModalSectionWrapper } from "../../../Components/Common/Modal";
 import { postForgotPassword } from "../../../api/ServiceController";
+import { Div, Span } from "../../../Components/Common/CombinedStyling";
 
 type ForgotProps = {
 
@@ -55,7 +56,7 @@ const SignupText = styled.div`
 `;
 
 
-const renderModal = (showModal: boolean, setShowModal:any, queryResponse:any) => {
+const renderModal = (_showModal: boolean, setShowModal:any, queryResponse:any) => {
     if(queryResponse == null) {
         throw new Error("Invalid query data");
     }
@@ -67,10 +68,10 @@ const renderModal = (showModal: boolean, setShowModal:any, queryResponse:any) =>
             }}>
                 <ModalContentWrapper data-testid="forgotModal">
                     <ModalSectionWrapper style={{ maxWidth: "350px", padding: "4px" }}>
-                        <span style={{fontSize: "18px", fontWeight: 500, paddingBottom: "20px", textAlign: "center"}}>{queryResponse.title}</span>
-                        <div style={{fontWeight: 400, paddingBottom: "10px", textAlign: "center"}}>
+                        <Span $fontSize="18px" $fontWeight="500" $paddingBottom="20px" $textAlign="center">{queryResponse.title}</Span>
+                        <Div $fontWeight="400" $paddingBottom="10px" $textAlign="center">
                             {queryResponse.text}
-                        </div>
+                        </Div>
                     </ModalSectionWrapper>        
                 </ModalContentWrapper>
             </Modal>

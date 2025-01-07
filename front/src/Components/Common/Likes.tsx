@@ -3,7 +3,7 @@ import styled from "styled-components";
 
 import { Post } from "../../api/types";
 import { HOST } from "../../api/config";
-import { BoldLink, CursorPointerDiv } from "./CombinedStyling";
+import { BoldLink, Div } from "./CombinedStyling";
 
 import HeartSVG from "/public/images/heart.svg";
 import HeartFilledSVG from "/public/images/heart-fill.svg";
@@ -27,7 +27,7 @@ export const ViewLikesText = (props: ViewLikesTextProps) => {
     );
 }
 
-const Container = styled(CursorPointerDiv)<{$isLiked?:boolean, $width: string, $height: string, $offsetIndex: number}>`
+const Container = styled(Div)<{$isLiked?:boolean, $width: string, $height: string, $offsetIndex: number}>`
     width: ${props => props.$width};
     height: ${props => props.$height};
     color: ${props => props.$isLiked ? "red" : "black" };

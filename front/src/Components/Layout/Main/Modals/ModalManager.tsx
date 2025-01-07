@@ -1,6 +1,6 @@
 import React, { ReactNode } from "react";
 import { styled } from "styled-components";
-import { Flex } from "../../../Common/CombinedStyling";
+import { Div, Flex } from "../../../Common/CombinedStyling";
 import { actions, useAppDispatch, useAppSelector } from "../../../../Components/Redux/redux";
 import { COMMENT_MODAL, LIKES_MODAL, ModalState, NEW_POST_MODAL } from "../../../../Components/Redux/slices/modals.slice";
 import CreatePostModal from "./CreatePost/CreatePostModal";
@@ -11,14 +11,14 @@ import { getPostFromListById } from "../../../../utils/utils";
 
 const MODAL_ZINDEX_BASE: number = 9990;
 
-const ModalOverlayBackground = styled(Flex) <{ $isOverlayEnabled: boolean, $zIndex?: number }>`
+const ModalOverlayBackground = styled(Flex) <{ $isOverlayEnabled: boolean, $zIndex?: string }>`
     justify-content: center;  
     align-items: flex-start;
     background-color: rgba(0,0,0,.6);
     min-width: 100%;
     max-width: 100%;
     position: fixed;
-    z-index: ${props => props.$zIndex ? MODAL_ZINDEX_BASE + props.$zIndex : MODAL_ZINDEX_BASE};   
+    z-index: ${props => props.$zIndex};   
     min-height: ${props => props.$isOverlayEnabled ? "100%" : "0"};
     height: ${props => props.$isOverlayEnabled ? "100%" : "0"};
 `;
@@ -88,10 +88,10 @@ const ModalManager: React.FC<ModalManagerProps> = (_props: ModalManagerProps) =>
 
     return (
         <>
-            <ModalOverlayBackground $isOverlayEnabled={isOverlayEnabled} $zIndex={openModals.length - 1} />
-            <div style={{position: "relative" }} id="modalOverlay" >                
+            <ModalOverlayBackground $isOverlayEnabled={isOverlayEnabled} $zIndex={`${MODAL_ZINDEX_BASE + openModals.length - 1}`} />
+            <Div $position="relative" id="modalOverlay" >                
                 { isOverlayEnabled && renderModals() }
-            </div>
+            </Div>
         </>
     );
 };
