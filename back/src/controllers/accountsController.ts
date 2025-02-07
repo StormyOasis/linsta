@@ -10,6 +10,7 @@ import { isEmail, isPhone, isValidPassword, obfuscateEmail, obfuscatePhone } fro
 import { SEND_CONFIRM_TEMPLATE, 
          FORGOT_PASSWORD_TEMPLATE, 
          sendEmailByTemplate, sendSMS } from "../Connectors/AWSConnector";
+import { insertProfile } from "../Connectors/ESConnector";
 
 export const getIsUnqiueUsername = async (ctx: Context) => {
     Metrics.increment("accounts.checkunique");
@@ -134,11 +135,12 @@ export const attemptCreateUser = async (ctx: Context) => {
         return;
     }
 
+    const first: string = names[0];
+    const last: string = names.length > 1 ? names[names.length - 1] : "";    
+    let userId: number = 0;
+
     try {
         const hashedPassword = await bcrypt.hash(data.password, 10);
-
-        const first: string = names[0];
-        const last: string = names.length > 1 ? names[names.length - 1] : "";
         const currentTime = moment();
         const timestamp = currentTime.format("YYYY-MM-DD  HH:mm:ss.000");
         const momentData:MomentInput = {
@@ -154,7 +156,7 @@ export const attemptCreateUser = async (ctx: Context) => {
         const birthDate = data.dryRun ? currentTime : moment(momentData);
         const age = data.dryRun ? 0 : currentTime.diff(birthDate, 'years', true);
 
-        // use transaction to do wither a dry run or an actual insert
+        // use transaction to do either a dry run or an actual insert
         await DBConnector.query("START TRANSACTION", []);
         res = await DBConnector.execute(
             `INSERT INTO Users VALUES(?,?,?,?,?,?,?,?,?,?)`, [
@@ -173,6 +175,8 @@ export const attemptCreateUser = async (ctx: Context) => {
             failureOccured = true;
         } else {
             if (!data.dryRun && data.confirmCode) {
+                userId = res.id;
+
                 res = await DBConnector.query("DELETE FROM ConfirmCodes WHERE USER_DATA = ? AND CODE = ?",
                     [data.emailOrPhone, data.confirmCode]);
 
@@ -196,7 +200,19 @@ export const attemptCreateUser = async (ctx: Context) => {
         ctx.body = `{"status": ${failureOccured ? "Error creating user" : "OK"}}`;
     } else {
         try {
-            await DBConnector.query("COMMIT", [])
+            await DBConnector.query("COMMIT", []);
+
+            // The User info has officially been inserted into the DB
+            // Now add the profile data to ES
+            const profileData = {
+                firstName: first,
+                lastName: last,
+                userName: data.userName,
+                userId: userId
+            };
+
+            await insertProfile(profileData);
+
             ctx.body = `{"status": "OK"}`;
             ctx.status = 200;
         } catch (err) {
@@ -673,11 +689,9 @@ export const postBulkGetInfoAndFollowStatus = async(ctx: Context) => {
                 u.LAST_NAME AS lastName, 
                 u.USERNAME AS userName, 
                 u.ID AS userId, 
-                f.USER_ID as followId, 
-                p.PROFILE_IMAGE_URL as pfp
+                f.USER_ID as followId
             FROM Users u 
             LEFT OUTER JOIN Follows f on f.FOLLOWS_USER_ID = u.id AND f.USER_ID = ?
-            INNER JOIN Profiles p on p.USER_ID = u.ID
             WHERE u.ID IN (?)`, [data.userId, data.userIds]);
 
         const resultMap:BulkFollowResultEntryInt = {};

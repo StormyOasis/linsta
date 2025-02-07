@@ -145,3 +145,43 @@ PUT comments
     }
   }
 }
+
+PUT profiles 
+{
+  "mappings": {
+    "properties": {
+      "profile": {
+        "type": "nested",
+        "properties": {
+          "bio": {
+            "type": "text"
+          },
+          "userId": {
+            "type": "long"
+          },
+          "userName": {
+            "type": "text"
+          },
+          "pfp": {
+            "type": "text"
+          },
+          "firstName": {
+            "type": "text"
+          },
+          "lastName": {
+            "type": "text"
+          },
+          "gender": {
+            "type": "text"
+          },
+          "pronouns" : {
+            "type": "text"
+          },
+          "link": {
+            "type": "text"
+          }
+        }
+      }
+    }
+  }
+}
