@@ -80,34 +80,29 @@ export const parseRedisInfo = (infoString: string): RedisInfo => {
 };
 
 export const getPostById = async (postId: string):Promise<Post|null> => {
-    try {
-        // Attempt to pull from redis first
-        const result = await RedisConnector.get(postId);
-        if(result !== null) {
-            // Found in redis
-            return JSON.parse(result) as Post;
-        }
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const results:any = await search({
-            bool: {
-                must: [{
-                    match: {_id: postId}                    
-                }]
-            }
-        }, null);
-
-        const entries:Post[] = buildSearchResultSet(results.body.hits.hits);
-        if(entries.length === 0) {
-            throw new Error("Post not found");
-        }
-
-        // add to redis
-        await RedisConnector.set(postId, JSON.stringify(entries[0]));
-        
-        return entries[0];
-
-    } catch(err) {
-        throw err;
+    // Attempt to pull from redis first
+    const result = await RedisConnector.get(postId);
+    if(result !== null) {
+        // Found in redis
+        return JSON.parse(result) as Post;
     }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const results:any = await search({
+        bool: {
+            must: [{
+                match: {_id: postId}                    
+            }]
+        }
+    }, null);
+
+    const entries:Post[] = buildSearchResultSet(results.body.hits.hits);
+    if(entries.length === 0) {
+        throw new Error("Post not found");
+    }
+
+    // add to redis
+    await RedisConnector.set(postId, JSON.stringify(entries[0]));
+    
+    return entries[0];
 }
