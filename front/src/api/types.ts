@@ -46,3 +46,15 @@ export type Post = {
     },
     media: Media[];
 };
+
+export type Profile = {
+    bio?: string;
+    pfp?: string;
+    userId: number;
+    userName: string;
+    firstName?: string;
+    lastName?: string;
+    gender?: string;
+    pronouns?: string;
+    link?: string;
+};

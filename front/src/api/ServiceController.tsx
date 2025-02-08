@@ -186,3 +186,21 @@ export const postToggleCommentLike = async (data: any): Promise<ServiceResponse>
         statusText: res.statusText,
     }
 }
+
+export const postGetProfileByUserId = async (data: any): Promise<ServiceResponse> => {
+    const res = await axios.post(`${host}/api/v1/profiles/getByUserId`, data, {headers: authHeader()});
+    return {
+        data: res.data,
+        status: res.status,
+        statusText: res.statusText,
+    }
+}
+
+export const postUpdateProfile = async (data: any): Promise<ServiceResponse> => {
+    const res = await axios.post(`${host}/api/v1/profiles/update`, data, {headers: authHeader()});
+    return {
+        data: res.data,
+        status: res.status,
+        statusText: res.statusText,
+    }
+}

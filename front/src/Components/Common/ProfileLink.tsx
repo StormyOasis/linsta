@@ -17,7 +17,7 @@ const ProfilePicWrapper = styled.span`
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    padding-right: 10px;
+    padding-right: 7px;
 `;
 
 const ProfileLinkWrapper = styled.span`

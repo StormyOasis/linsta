@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { styled } from "styled-components";
 import { Navigate, Route, Routes } from "react-router-dom";
 import LoginLayout from "../../Components/Layout/Login/LoginLayout";
@@ -12,6 +12,8 @@ import { useSelector } from "react-redux";
 import Private from "../Common/Private";
 import { FlexColumn } from "../Common/CombinedStyling";
 import ModalManager from "../../Components/Layout/Main/Modals/ModalManager";
+import { useAppDispatch } from "../Redux/redux";
+import { getProfileByUserId } from "../Redux/slices/profile.slice";
 
 const Section = styled(FlexColumn)`
     display: flex;
@@ -19,6 +21,12 @@ const Section = styled(FlexColumn)`
 
 const Layout: React.FC = () => {
     const authUser = useSelector((value:any) => value?.auth?.user);
+
+    const dispatch = useAppDispatch();
+
+    useEffect(() => {
+        dispatch(getProfileByUserId({userId: authUser.id}));
+    }, []);    
     
     const renderHeader = () => {
         //const path = historyUtils.location.pathname.toLowerCase();
@@ -40,6 +48,7 @@ const Layout: React.FC = () => {
                 {renderHeader()}
                 <Routes>
                     <Route path="/" element={<Private><MainLayout /></Private>} />                        
+                    <Route path="/profile" element={<Private></Private>} />                        
                     <Route path="/login/*" element={<LoginLayout />} />
                     <Route path="/signup/*" element={<SignupLayout />} />
                     <Route path="/forgot/*" element={<ForgotPasswordLayout />} />
