@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import LogoSVG from "/public/images/linsta.svg";
 import HomeSVG from "/public/images/home.svg";
@@ -16,9 +16,9 @@ import { useMediaQuery } from "react-responsive";
 import { FlexColumn } from "../../../Components/Common/CombinedStyling";
 import { useAppDispatch, useAppSelector, actions } from "../../../Components/Redux/redux";
 import { NEW_POST_MODAL } from "../../../Components/Redux/slices/modals.slice";
-import { DEFAULT_PFP } from "../../../api/config";
 import { Profile } from "../../../api/types";
 import { AuthUser } from "../../../api/Auth";
+import { getPfpFromProfile, historyUtils } from "../../../utils/utils";
 
 const SideBarWrapper = styled.div`
     z-index: 50;
@@ -93,7 +93,7 @@ const ProfilePicWrapper = styled.span`
     padding-right: 7px;
 `;
 
-const SideBar: React.FC = () => {
+const SideBar: React.FC = () => {    
     const matchesLargestBP = useMediaQuery({minWidth: 1280});
     const matchesSmallestBP = useMediaQuery({maxWidth: 767});
     
@@ -129,6 +129,12 @@ const SideBar: React.FC = () => {
         );
     }
 
+    const profileUrl = (!historyUtils.isServer && authUser) ? authUser.userName : undefined;
+
+    if(historyUtils.isServer) {
+        return null;
+    }
+
     return (
         <SideBarWrapper>
             {!matchesSmallestBP && 
@@ -146,15 +152,15 @@ const SideBar: React.FC = () => {
                 {renderMenuItem("Messages", "/messages", <MessagesSVG/>, undefined, null)}
                 {renderMenuItem("Notifications", "#", <NotificationsSVG/>, undefined, null)}
                 {renderMenuItem("Create", "#", <CreateSVG/>, undefined, createPostHandler)}
-                {renderMenuItem("Profile", `/profile/${authUser.userName}`, 
+                {renderMenuItem("Profile", `/${profileUrl}`, 
                     <ProfilePicWrapper>
                         {profile && <img
                             style={{width:"32px", height: "32px"}}
-                            src={profile.pfp ? profile.pfp : DEFAULT_PFP}
+                            src={getPfpFromProfile(profile)}
                             alt={`${profile.userName}'s profile picture`}
                             aria-label={`${profile.userName}'s profile picture`} />
                         }
-                    </ProfilePicWrapper>, 0, null)}    
+                    </ProfilePicWrapper>, 0, null)}
             </NavWrapper>            
         </SideBarWrapper>
     );

@@ -2,6 +2,7 @@ import { ActionReducerMapBuilder, createAsyncThunk, createSlice } from '@reduxjs
 import { historyUtils } from "../../../utils/utils";
 import { Profile } from '../../../api/types';
 import { postGetProfileByUserId  } from '../../../api/ServiceController';
+import { DEFAULT_PFP } from '../../../api/config';
 
 const NAME = "profile";
 
@@ -12,7 +13,8 @@ export interface GlobalProfileState {
 const defaultState:GlobalProfileState = {
     profile: {
         userId: 0,
-        userName: ''
+        userName: '',
+        pfp: DEFAULT_PFP
     }
 };
 

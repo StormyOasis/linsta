@@ -196,8 +196,26 @@ export const postGetProfileByUserId = async (data: any): Promise<ServiceResponse
     }
 }
 
+export const postGetProfileByUserName = async (data: any): Promise<ServiceResponse> => {
+    const res = await axios.post(`${host}/api/v1/profiles/getByUserName`, data, {headers: authHeader()});
+    return {
+        data: res.data,
+        status: res.status,
+        statusText: res.statusText,
+    }
+}
+
 export const postUpdateProfile = async (data: any): Promise<ServiceResponse> => {
     const res = await axios.post(`${host}/api/v1/profiles/update`, data, {headers: authHeader()});
+    return {
+        data: res.data,
+        status: res.status,
+        statusText: res.statusText,
+    }
+}
+
+export const postGetProfileStatsById = async (data: any): Promise<ServiceResponse> => {
+    const res = await axios.post(`${host}/api/v1/profiles/getStatsById`, data, {headers: authHeader()});
     return {
         data: res.data,
         status: res.status,

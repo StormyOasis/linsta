@@ -9,7 +9,7 @@ import MessageSVG from "/public/images/message.svg";
 import ShareSVG from "/public/images/send.svg";
 import { AuthUser } from "../../../api/Auth";
 import { isOverflowed, getSanitizedText, isPostLiked } from "../../../utils/utils";
-import { Div, Flex, FlexColumn, FlexColumnFullWidth, FlexRow, FlexRowFullWidth, LightLink, Link } from "../../../Components/Common/CombinedStyling";
+import { ContentWrapper, Div, Flex, FlexColumn, FlexColumnFullWidth, FlexRow, FlexRowFullWidth, LightLink, Link, Main, Section } from "../../../Components/Common/CombinedStyling";
 import EmojiPickerPopup from "../../../Components/Common/EmojiPickerPopup";
 import StyledLink from "../../../Components/Common/StyledLink";
 import { HOST } from "../../../api/config";
@@ -18,23 +18,6 @@ import { LikeToggler, ViewLikesText } from "../../../Components/Common/Likes";
 import { useAppDispatch, useAppSelector, actions } from "../../../Components/Redux/redux";
 import { COMMENT_MODAL, LIKES_MODAL } from "../../../Components/Redux/slices/modals.slice";
 import { getPostList, togglePostLike } from "../../../Components/Redux/slices/post.slice";
-
-const MainContentWrapper = styled.div`
-    overflow-y: auto;
-    margin-left: ${props => props.theme["sizes"].sideBarNavWidthDefault};
-    padding-left: 10px;
-
-    @media (min-width: ${props => props.theme["breakpoints"].md}px) and 
-            (max-width: ${props => props.theme["breakpoints"].lg - 1}px) {
-
-        margin-left: ${props => props.theme["sizes"].sideBarNavWidthNarrow};
-    }
-        
-    @media (max-width: ${props => props.theme["breakpoints"].md - 1}px) {
-        margin-left: 0;
-        padding-left: 0;
-    }
-`;
 
 const FeedContainer = styled(FlexColumn)`
     max-width: 700px;
@@ -80,20 +63,6 @@ const CommentTextArea = styled.textarea`
     outline: none;
     overflow: hidden;
     color: ${props => props.theme["colors"].defaultTextColor};
-`;
-
-const Section = styled.section`
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-    padding-top: 10px;
-`;
-
-const Main = styled.main`
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-    overflow: hidden;
 `;
 
 interface CommentTextType {
@@ -246,7 +215,7 @@ const MainContent: React.FC = () => {
 
     return (
         <>
-            <MainContentWrapper>
+            <ContentWrapper>
                 <Section>
                     <Main role="main">
                         <FlexRowFullWidth $justifyContent="center">
@@ -319,7 +288,7 @@ const MainContent: React.FC = () => {
                         </FlexRowFullWidth>
                     </Main>
                 </Section>
-            </MainContentWrapper>
+            </ContentWrapper>
         </>
     );
 }

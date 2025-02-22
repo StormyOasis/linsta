@@ -14,6 +14,7 @@ import { FlexColumn } from "../Common/CombinedStyling";
 import ModalManager from "../../Components/Layout/Main/Modals/ModalManager";
 import { useAppDispatch } from "../Redux/redux";
 import { getProfileByUserId } from "../Redux/slices/profile.slice";
+import ProfileLayout from "./Profile/ProfileLayout";
 
 const Section = styled(FlexColumn)`
     display: flex;
@@ -25,7 +26,9 @@ const Layout: React.FC = () => {
     const dispatch = useAppDispatch();
 
     useEffect(() => {
-        dispatch(getProfileByUserId({userId: authUser.id}));
+        if ((!historyUtils.isServer && authUser && authUser.id != null)) {
+            dispatch(getProfileByUserId({userId: authUser.id}));
+        }                
     }, []);    
     
     const renderHeader = () => {
@@ -47,13 +50,13 @@ const Layout: React.FC = () => {
                 <ModalManager />
                 {renderHeader()}
                 <Routes>
-                    <Route path="/" element={<Private><MainLayout /></Private>} />                        
-                    <Route path="/profile" element={<Private></Private>} />                        
+                    <Route path="/" element={<Private><MainLayout /></Private>} />                     
+                    <Route path="/:userName" element={<ProfileLayout />} />
                     <Route path="/login/*" element={<LoginLayout />} />
                     <Route path="/signup/*" element={<SignupLayout />} />
                     <Route path="/forgot/*" element={<ForgotPasswordLayout />} />
                     <Route path="/change_password/*" element={<ChangePasswordLayout />} />
-                    <Route path="*" element={<Navigate to="/" />} />
+                    <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
             </Section>
         </>

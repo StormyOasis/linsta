@@ -27,7 +27,7 @@ const ProfileLinkWrapper = styled.span`
 
 const ProfileLink: React.FC<ProfileLinkProps> = (props: ProfileLinkProps) => {
 
-    const pfpUrl = props.pfp ? props.pfp : DEFAULT_PFP;
+    const pfpUrl = props.pfp && props.pfp.length > 0 ? props.pfp : DEFAULT_PFP;
 
     return (
         <Span $display="inline-flex">
