@@ -13,7 +13,7 @@ import { verifyJWT } from "./auth/Auth";
 import { getLocation } from "./controllers/locationsController";
 import { addPost, getAllPosts, getPostById, toggleLikePost } from "./controllers/postsController";
 import { addComment, getCommentsByPostId, toggleCommentLike } from "./controllers/commentsController";
-import { getProfileByUserId, updateProfileById } from "./controllers/profilesController";
+import { getProfileByUserId, getProfileByUserName, getProfileStatsById, updateProfileById } from "./controllers/profilesController";
 
 
 const router = new Router();
@@ -47,5 +47,7 @@ router.post("/api/v1/comment/toggleLike", verifyJWT, toggleCommentLike);
 // Profile handlers
 router.post("/api/v1/profiles/update", verifyJWT, updateProfileById);
 router.post("/api/v1/profiles/getByUserId", verifyJWT, getProfileByUserId);
+router.post("/api/v1/profiles/getByUserName", verifyJWT, getProfileByUserName);
+router.post("/api/v1/profiles/getStatsById", verifyJWT, getProfileStatsById);
 
 export default router;
