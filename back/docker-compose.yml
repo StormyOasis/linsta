@@ -25,6 +25,11 @@ services:
       - /home/ubuntu/jenkins_compose/jenkins_configuration:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock      
 
+  gremlin-server:
+    image: tinkerpop/gremlin-server:latest
+    ports:
+      - "8182:8182"
+
   linsta-db:
     image: mysql
     container_name: linsta_db
