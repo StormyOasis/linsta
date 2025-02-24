@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import LogoSVG from "/public/images/linsta.svg";
 import HomeSVG from "/public/images/home.svg";
@@ -16,6 +16,9 @@ import { useMediaQuery } from "react-responsive";
 import { FlexColumn } from "../../../Components/Common/CombinedStyling";
 import { useAppDispatch, useAppSelector, actions } from "../../../Components/Redux/redux";
 import { NEW_POST_MODAL } from "../../../Components/Redux/slices/modals.slice";
+import { Profile } from "../../../api/types";
+import { AuthUser } from "../../../api/Auth";
+import { getPfpFromProfile, historyUtils } from "../../../utils/utils";
 
 const SideBarWrapper = styled.div`
     z-index: 50;
@@ -82,9 +85,21 @@ const InnerNavLinkWrapper = styled.div`
     }
 `;
 
-const SideBar: React.FC = () => {
+const ProfilePicWrapper = styled.span`
+    display: inline-block;
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    border-radius: 50%;
+    padding-right: 7px;
+`;
+
+const SideBar: React.FC = () => {    
     const matchesLargestBP = useMediaQuery({minWidth: 1280});
     const matchesSmallestBP = useMediaQuery({maxWidth: 767});
+    
+    const authUser: AuthUser = useAppSelector((state: any) => state.auth.user);
+    const profile: Profile = useAppSelector((state: any) => state.profile.profile);
 
     const dispatch = useAppDispatch();
 
@@ -96,25 +111,29 @@ const SideBar: React.FC = () => {
         dispatch(actions.modalActions.openModal({modalName: NEW_POST_MODAL, data: {}}));
     }
 
-    const renderMenuItem = (text: string, to: string, iconElement:any, onClick?: any) => {
+    const renderMenuItem = (text: string, to: string, iconElement:any, paddingLeft: number = 16, onClick?: any) => {
         const onClickHandler = onClick ? onClick : () => true;
 
         return (
             <NavLink to={to} onClick={onClickHandler} aria-label={text}>
                 <InnerNavLinkWrapper>
                     <div className={styles.iconWrapper}>
-                        <div className={styles.iconWrapper}>
-                            {iconElement}
-                        </div>
+                        {iconElement}
                     </div>
                     {matchesLargestBP &&
-                        <div className={styles.textWrapper}>
+                        <div className={styles.textWrapper} style={{paddingLeft: paddingLeft + "px"}}>
                             <span className={styles.text}>{text}</span>                                
                         </div>                            
                     }
                 </InnerNavLinkWrapper>
             </NavLink>
         );
+    }
+
+    const profileUrl = (!historyUtils.isServer && authUser) ? authUser.userName : undefined;
+
+    if(historyUtils.isServer) {
+        return null;
     }
 
     return (
@@ -127,13 +146,22 @@ const SideBar: React.FC = () => {
                 </div>
             }
             <NavWrapper>
-                {renderMenuItem("Home", "/", <HomeSVG/>, null)}
-                {renderMenuItem("Search", "#", <SearchSVG/>, null)}
-                {renderMenuItem("Explore", "/explore", <ExploreSVG/>, null)}
-                {renderMenuItem("Reels", "/reels", <ReelsSVG/>, null)}
-                {renderMenuItem("Messages", "/messages", <MessagesSVG/>, null)}
-                {renderMenuItem("Notifications", "#", <NotificationsSVG/>, null)}
-                {renderMenuItem("Create", "#", <CreateSVG/>, createPostHandler)}
+                {renderMenuItem("Home", "/", <HomeSVG/>, undefined, null)}
+                {renderMenuItem("Search", "#", <SearchSVG/>, undefined, null)}
+                {renderMenuItem("Explore", "/explore", <ExploreSVG/>, undefined, null)}
+                {renderMenuItem("Reels", "/reels", <ReelsSVG/>, undefined, null)}
+                {renderMenuItem("Messages", "/messages", <MessagesSVG/>, undefined, null)}
+                {renderMenuItem("Notifications", "#", <NotificationsSVG/>, undefined, null)}
+                {renderMenuItem("Create", "#", <CreateSVG/>, undefined, createPostHandler)}
+                {renderMenuItem("Profile", `/${profileUrl}`, 
+                    <ProfilePicWrapper>
+                        {profile && <img
+                            style={{width:"32px", height: "32px", borderRadius: "50%"}}
+                            src={getPfpFromProfile(profile)}
+                            alt={`${profile.userName}'s profile picture`}
+                            aria-label={`${profile.userName}'s profile picture`} />
+                        }
+                    </ProfilePicWrapper>, 0, null)}
             </NavWrapper>            
         </SideBarWrapper>
     );

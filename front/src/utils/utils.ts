@@ -1,7 +1,8 @@
 import sanitizeHtml from 'sanitize-html';
 
-import { HistoryType, Post } from "../api/types";
+import { HistoryType, Post, Profile } from "../api/types";
 import { postSetFollowStatus } from '../api/ServiceController';
+import { DEFAULT_PFP } from '../api/config';
 
 export const historyUtils: HistoryType = {
     navigate: null,
@@ -263,4 +264,12 @@ export const followUser = async (userId: string, followUserId: string, shouldFol
     const result = await postSetFollowStatus(data);
     
     return result.status === 200;
+}
+
+export const getPfpFromProfile = (profile: Profile|null):string => {
+    if(profile === null || profile.pfp == null || profile.pfp.length <= 0) {
+        return DEFAULT_PFP;
+    }
+
+    return profile.pfp;
 }

@@ -256,3 +256,33 @@ export const LightLink = styled(Link)`
 export const BoldLink = styled(Link)`
     font-weight: 600;
 `;
+
+export const Section = styled.section`
+    display: flex;
+    flex-direction: column;
+    padding-top: 10px;
+`;
+
+export const Main = styled.main`
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    overflow: hidden;
+`;
+
+export const ContentWrapper = styled.div`
+    overflow-y: auto;
+    margin-left: ${props => props.theme["sizes"].sideBarNavWidthDefault};
+    padding-left: 10px;
+
+    @media (min-width: ${props => props.theme["breakpoints"].md}px) and 
+            (max-width: ${props => props.theme["breakpoints"].lg - 1}px) {
+
+        margin-left: ${props => props.theme["sizes"].sideBarNavWidthNarrow};
+    }
+        
+    @media (max-width: ${props => props.theme["breakpoints"].md - 1}px) {
+        margin-left: 0;
+        padding-left: 0;
+    }
+`;

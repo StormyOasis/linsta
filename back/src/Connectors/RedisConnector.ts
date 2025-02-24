@@ -125,7 +125,7 @@ export class RedisConnector {
             await this.client.set(key, value, options); 
         } catch(err) {
             // Note: It's ok if we fail to add to redis, so don't rethrow exception, just log it
-            logger.warn("Error adding post to redis");
+            logger.warn("Error adding to redis");
             Metrics.increment("redis.errorCount");            
         }
     }

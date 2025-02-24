@@ -5,11 +5,11 @@ import { Provider } from "react-redux";
 
 import App from "../Components/App";
 import { historyUtils } from "../utils/utils";
-import {buildStore} from "../Components/Redux/redux";
+import { buildStore } from "../Components/Redux/redux";
 
 const rootElement = document.querySelector("#root");
-if (!rootElement) 
-  throw new Error("Failed to find root element");
+if (!rootElement)
+    throw new Error("Failed to find root element");
 
 
 historyUtils.isServer = false;
@@ -19,12 +19,12 @@ delete window.__PRELOADED_STATE__;
 
 // We're using SSR
 hydrateRoot(
-  rootElement,
-  <React.StrictMode>
-    <Provider store={store}>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </Provider>
-  </React.StrictMode>
+    rootElement,
+    <React.StrictMode>
+        <Provider store={store}>
+            <BrowserRouter>
+                <App />
+            </BrowserRouter>
+        </Provider>
+    </React.StrictMode>
 );

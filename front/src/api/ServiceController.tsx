@@ -1,6 +1,6 @@
 import axios from "axios";
 import { authHeader, AuthUser } from "./Auth";
-import { base64ToBlob } from "../utils/utils";
+import { base64ToBlob, blobToBase64 } from "../utils/utils";
 
 let host = "http://localhost:3001"; //TODO: From config or env
 
@@ -71,6 +71,24 @@ export const getLocation = async (data: any): Promise<ServiceResponse> => {
         status: res.status,
         statusText: res.statusText,
     }
+}
+
+export const putSubmitPfp = async (data: any, userId: number): Promise<ServiceResponse> => {
+    // Need to use multipart-formdata since we are uploading files
+    const form = new FormData(); 
+    
+    // Pfp user data
+    form.append("userId", `${userId}`);
+
+    // Pfp file data
+    form.append("fileData", data);
+
+    const res = await axios.putForm(`${host}/api/v1/profiles/updatePfp`, form, {headers: authHeader()});
+    return {
+        data: res.data,
+        status: res.status,
+        statusText: res.statusText,
+    }    
 }
 
 export const putSubmitPost = async (data: any, authUser:AuthUser): Promise<ServiceResponse> => {    
@@ -180,6 +198,42 @@ export const postGetCommentsByPostId = async (data: any): Promise<ServiceRespons
 
 export const postToggleCommentLike = async (data: any): Promise<ServiceResponse> => {
     const res = await axios.post(`${host}/api/v1/comment/toggleLike`, data, {headers: authHeader()});
+    return {
+        data: res.data,
+        status: res.status,
+        statusText: res.statusText,
+    }
+}
+
+export const postGetProfileByUserId = async (data: any): Promise<ServiceResponse> => {
+    const res = await axios.post(`${host}/api/v1/profiles/getByUserId`, data, {headers: authHeader()});
+    return {
+        data: res.data,
+        status: res.status,
+        statusText: res.statusText,
+    }
+}
+
+export const postGetProfileByUserName = async (data: any): Promise<ServiceResponse> => {
+    const res = await axios.post(`${host}/api/v1/profiles/getByUserName`, data, {headers: authHeader()});
+    return {
+        data: res.data,
+        status: res.status,
+        statusText: res.statusText,
+    }
+}
+
+export const postUpdateProfile = async (data: any): Promise<ServiceResponse> => {
+    const res = await axios.post(`${host}/api/v1/profiles/update`, data, {headers: authHeader()});
+    return {
+        data: res.data,
+        status: res.status,
+        statusText: res.statusText,
+    }
+}
+
+export const postGetProfileStatsById = async (data: any): Promise<ServiceResponse> => {
+    const res = await axios.post(`${host}/api/v1/profiles/getStatsById`, data, {headers: authHeader()});
     return {
         data: res.data,
         status: res.status,

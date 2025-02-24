@@ -2,12 +2,14 @@ import React, { ReactNode } from "react";
 import { styled } from "styled-components";
 import { Div, Flex } from "../../../Common/CombinedStyling";
 import { actions, useAppDispatch, useAppSelector } from "../../../../Components/Redux/redux";
-import { COMMENT_MODAL, LIKES_MODAL, ModalState, NEW_POST_MODAL } from "../../../../Components/Redux/slices/modals.slice";
+import { COMMENT_MODAL, LIKES_MODAL, ModalState, NEW_POST_MODAL, PROFILE_PIC_MODAL, FOLLOWERS_MODAL } from "../../../../Components/Redux/slices/modals.slice";
 import CreatePostModal from "./CreatePost/CreatePostModal";
 import CommentModal from "./Comments/CommentsModal";
 import LikesModal from "./Main/LikesModal";
-import { Post } from "../../../../api/types";
+import { Post, Profile } from "../../../../api/types";
 import { getPostFromListById } from "../../../../utils/utils";
+import PfpModal from "./Profile/ProfilePicModal";
+import FollowersModal from "./Profile/FollowersModal";
 
 const MODAL_ZINDEX_BASE: number = 9990;
 
@@ -28,6 +30,7 @@ type ModalManagerProps = {
 
 const ModalManager: React.FC<ModalManagerProps> = (_props: ModalManagerProps) => {
     const posts: Post[] = useAppSelector((state) => state.post.posts);
+    const profile: Profile = useAppSelector((state) => state.profile.profile);
     const isOverlayEnabled: boolean = useAppSelector((state) => state.modal.isOverlayEnabled);
     const openModals: ModalState[] = useAppSelector((state) => state.modal.openModalStack);
 
@@ -74,7 +77,25 @@ const ModalManager: React.FC<ModalManagerProps> = (_props: ModalManagerProps) =>
                             post={getPostFromListById(modalState.data.postId, posts)}
                             onClose={() => closeModal(LIKES_MODAL, {})} />);
                     break;
-                }                
+                }       
+                case PROFILE_PIC_MODAL: {
+                    modals.push(
+                        <PfpModal 
+                            key={PROFILE_PIC_MODAL}
+                            zIndex={zIndex}
+                            profile={profile}
+                            onClose={() => closeModal(PROFILE_PIC_MODAL, {})} />);
+                    break;
+                }
+                case FOLLOWERS_MODAL: {
+                    modals.push(
+                        <FollowersModal 
+                            key={FOLLOWERS_MODAL}
+                            zIndex={zIndex}
+                            profile={profile}
+                            onClose={() => closeModal(FOLLOWERS_MODAL, {})} />);
+                    break;
+                }                                             
                 default: {
                     console.warn("Invalid modal");
                     break;
