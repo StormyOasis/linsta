@@ -15,37 +15,37 @@ const HOST = process.env["HOST"] || "http://localhost";
 const App = new Koa();
 
 App.use(json())
-  .use(cors())
-  .use(compress({
-    gzip: {
-      flush: zlib.constants.Z_SYNC_FLUSH
-    },
-    deflate: {
-      flush: zlib.constants.Z_SYNC_FLUSH,
-    },
-    br: {}  
-  }))  
-  .use(async (ctx: Context, next) => {
-    ctx.res.appendHeader(
-      "Access-Control-Allow-Headers",
-      "x-access-token, Origin, Content-Type, Accept"
-    );
-    await next();
-  })
-  .use(async (ctx: Context, next) => {
-    Logger.info(
-      `Request: ${ctx.method} ${ctx.path} query=${ctx.querystring} from ${ctx.ip}`
-    );
-    await next();
-  })
-  .use(koaBody({
-    multipart: true
-  }))
-  .use(router.routes())
-  .use(router.allowedMethods())
-  .listen(PORT, () => {
-    Logger.info(`Server Started and listening at ${HOST}:${PORT}/`);
+    .use(cors())
+    .use(compress({
+        gzip: {
+            flush: zlib.constants.Z_SYNC_FLUSH
+        },
+        deflate: {
+            flush: zlib.constants.Z_SYNC_FLUSH,
+        },
+        br: {}
+    }))
+    .use(async (ctx: Context, next) => {
+        ctx.res.appendHeader(
+            "Access-Control-Allow-Headers",
+            "x-access-token, Origin, Content-Type, Accept"
+        );
+        await next();
+    })
+    .use(async (ctx: Context, next) => {
+        Logger.info(
+            `Request: ${ctx.method} ${ctx.path} query=${ctx.querystring} from ${ctx.ip}`
+        );
+        await next();
+    })
+    .use(koaBody({
+        multipart: true
+    }))
+    .use(router.routes())
+    .use(router.allowedMethods())
+    .listen(PORT, () => {
+        Logger.info(`Server Started and listening at ${HOST}:${PORT}/`);
 
-    DBConnector.connect();
-    RedisConnector.connect();
-  });
+        DBConnector.connect();
+        RedisConnector.connect();
+    });

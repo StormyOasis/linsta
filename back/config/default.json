@@ -7,13 +7,22 @@
             "expiration": "128d"
         }
     },
-    "database" : {
+    "database_mysql" : {
         "host": "localhost",
         "user": "laurenb",
         "password": "password",
         "database": "linsta",
         "connectionLimit": 10
     },
+
+    "database" : {
+        "host": "localhost",
+        "port": 8182,
+        "user": "laurenb",
+        "password": "password",
+        "database": "linsta",
+        "connectionLimit": 10
+    },    
 
     "redis": {
         "host": "localhost",
