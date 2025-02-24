@@ -3,23 +3,22 @@ import styled from "styled-components";
 import * as styles from '../Main/Main.module.css';
 import { useParams } from "react-router-dom";
 import { ContentWrapper, Div, Flex, FlexColumn, FlexRow, FlexRowFullWidth, Main, Section, Span } from "../../../Components/Common/CombinedStyling";
-import { useAppSelector } from "../../../Components/Redux/redux";
+import { useAppDispatch, useAppSelector, actions } from "../../../Components/Redux/redux";
 import { Profile } from "../../../api/types";
 import { postGetProfileByUserName, postGetProfileStatsById, ServiceResponse } from "../../../api/ServiceController";
 import { getPfpFromProfile } from "../../../utils/utils";
 import StyledButton from "../../../Components/Common/StyledButton";
 import StyledLink from "../../../Components/Common/StyledLink";
+import { FOLLOWERS_MODAL, PROFILE_PIC_MODAL } from "../../../Components/Redux/slices/modals.slice";
+import { getProfileByUserId, getProfileByUserName } from "../../../Components/Redux/slices/profile.slice";
 
 const ProfilePicWrapper = styled(Div)`
     display: flex;
     width: 150px;
     height: 150px;
+    object-fit: contain;    
     border-radius: 50%;
     padding-right: 20px;
-`;
-
-const InfoWrapper = styled.div`
-    
 `;
 
 const UserNameSpan = styled.span`
@@ -68,24 +67,29 @@ type ProfileStats = {
 };
 
 const ProfileContent: React.FC = () => {
-    const [profile, setProfile] = useState<Profile>();
+    const profile: Profile = useAppSelector((state) => state.profile.profile);
+
     const [profileStats, setProfileStats] = useState<ProfileStats>();
     const { userName } = useParams();
 
-    useEffect(() => {
-        postGetProfileByUserName({ userName }).then((result: ServiceResponse) => {
-            const data: Profile = result.data as Profile;
-            const userId: number = data.userId;
+    const dispatch = useAppDispatch();
 
-            return postGetProfileStatsById({ userId }).then((result: ServiceResponse) => {
-                setProfile(data);
-                setProfileStats(result.data as ProfileStats)
-            });
+    useEffect(() => {
+        dispatch(getProfileByUserName({userName})).then(async (result) => { 
+            const {data} = result.payload as ServiceResponse;
+
+            const statsResult:ServiceResponse = await postGetProfileStatsById({ userId: data.userId });
+            
+            setProfileStats(statsResult.data as ProfileStats);
         });
     }, []);
 
     const handleFollowerCountClick = () => {
-
+        const payload = {
+            profile
+        };
+                
+        dispatch(actions.modalActions.openModal({ modalName: FOLLOWERS_MODAL, data: payload }));        
     }
 
     const handleFollowingCountClick = () => {
@@ -93,7 +97,12 @@ const ProfileContent: React.FC = () => {
     }
 
     const handlePfPClick = () => {
+        // Open the upload profile pic dialog by setting the state in redux        
+        const payload = {
+            profile
+        };
 
+        dispatch(actions.modalActions.openModal({ modalName: PROFILE_PIC_MODAL, data: payload }));        
     }
 
     return (
@@ -105,14 +114,14 @@ const ProfileContent: React.FC = () => {
                             <FlexRowFullWidth $justifyContent="center">
                                 <ProfilePicWrapper>
                                     {profile && <img
-                                        style={{ cursor: "pointer" }}
+                                        style={{ cursor: "pointer", borderRadius: "50%", maxWidth: "150px", maxHeight: "150px" }}
                                         onClick={handlePfPClick}
                                         src={getPfpFromProfile(profile)}
                                         alt={`${profile.userName}'s profile picture`}
                                         aria-label={`${profile.userName}'s profile picture`} />
                                     }
                                 </ProfilePicWrapper>
-                                <InfoWrapper>
+                                <Div>
                                     <FlexColumn>
                                         <Div $display="inline-flex">
                                             <UserNameSpan>{profile?.userName}</UserNameSpan>
@@ -137,7 +146,7 @@ const ProfileContent: React.FC = () => {
                                     <FlexColumn>
                                         <FullNameSpan>{`${profile?.firstName} ${profile?.lastName}`}</FullNameSpan>
                                     </FlexColumn>
-                                </InfoWrapper>
+                                </Div>
                             </FlexRowFullWidth>
                         </Main>
                     </Div>

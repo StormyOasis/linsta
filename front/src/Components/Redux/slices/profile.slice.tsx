@@ -1,7 +1,7 @@
-import { ActionReducerMapBuilder, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { ActionReducerMapBuilder, createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { historyUtils } from "../../../utils/utils";
 import { Profile } from '../../../api/types';
-import { postGetProfileByUserId  } from '../../../api/ServiceController';
+import { postGetProfileByUserId, postGetProfileByUserName, ServiceResponse  } from '../../../api/ServiceController';
 import { DEFAULT_PFP } from '../../../api/config';
 
 const NAME = "profile";
@@ -26,6 +26,14 @@ export const getProfileByUserId = createAsyncThunk(`${NAME}/getByUserId`, async 
     }
 });
 
+export const getProfileByUserName = createAsyncThunk(`${NAME}/getByUserName`, async (params: any, thunkApi) => {    
+    try {
+        return await postGetProfileByUserName(params);
+    } catch (err: any) {
+        return thunkApi.rejectWithValue(err.message);
+    }
+});
+
 const profileSliceCreator = (preloadedState?: any) => {    
     const initialState = createInitialState();
     const reducers = createReducers();
@@ -43,7 +51,11 @@ const profileSliceCreator = (preloadedState?: any) => {
     }
 
     function createReducers() {
-        return {};
+        const updateProfilePic = (state: GlobalProfileState, action: PayloadAction<string>) => {         
+            state.profile.pfp = action.payload as string;
+        }
+                
+        return {updateProfilePic};
     }
 
     function createActions() {
@@ -65,8 +77,13 @@ const profileSliceCreator = (preloadedState?: any) => {
                 state.status = "failed";
                 state.error = action.error.message;
                 state.profile = null;
-            });            
-        }
+            });
+        };
+
+        builder.addCase(getProfileByUserName.fulfilled, (state, action) => {
+            const profile: Profile = action.payload.data as Profile;
+            state.profile = profile;
+        })
         
         getProfileByUserIdReducer();
     }

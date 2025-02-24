@@ -22,7 +22,7 @@
         "port": 6379,
         "connectTimeout": 10000,
         "maxRetries": 20,
-        "defaultTTL": 30000,
+        "defaultTTL": 300000,
         "metricsIntervalMs": 5000
     },
 

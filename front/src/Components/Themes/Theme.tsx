@@ -26,6 +26,7 @@ const defaultTheme = {
         mediumTextColor: "rgb(120, 120, 120)",  
         mediaSliderButtonColor: "rgba(0,0,0, .6)",
         mediaSliderButtonBkgndColor: "rgba(225,225,225, .4)",
+        warningTextColor: "rgb(235, 70, 90)"
     },    
 
     input: {

@@ -89,6 +89,7 @@ const ProfilePicWrapper = styled.span`
     display: inline-block;
     width: 32px;
     height: 32px;
+    object-fit: contain;
     border-radius: 50%;
     padding-right: 7px;
 `;
@@ -155,7 +156,7 @@ const SideBar: React.FC = () => {
                 {renderMenuItem("Profile", `/${profileUrl}`, 
                     <ProfilePicWrapper>
                         {profile && <img
-                            style={{width:"32px", height: "32px"}}
+                            style={{width:"32px", height: "32px", borderRadius: "50%"}}
                             src={getPfpFromProfile(profile)}
                             alt={`${profile.userName}'s profile picture`}
                             aria-label={`${profile.userName}'s profile picture`} />

@@ -3,7 +3,7 @@ import { SESClient } from "@aws-sdk/client-ses";
 import { SNSClient, PublishCommand } from "@aws-sdk/client-sns";
 import { LocationClient, SearchPlaceIndexForTextCommand } from "@aws-sdk/client-location";
 import { withAPIKey } from "@aws/amazon-location-utilities-auth-helper";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 
 import formidable from 'formidable';
 import config from 'config';
@@ -111,4 +111,22 @@ export const uploadFile = async (file: formidable.File, entryId: string, userId:
         logger.error("Error uploading to s3", err);
         throw err;
     }
+}
+
+export const removeFile = async (fileName: string) => {
+    if(fileName == null || fileName.length === 0) {
+        return;
+    }
+    // Get the relative file path minus host of the pfp.
+    // Also need to strip off leading slash
+    const s3FileName = new URL(fileName).pathname.substring(1);
+
+    const REGION: string = config.get("aws.region");
+    const s3Client = new S3Client({ region: REGION });
+    const bucket = config.get("aws.s3.userMediaBucket") as string;
+
+    await s3Client.send(new DeleteObjectCommand({
+        Bucket: bucket,
+        Key: s3FileName
+    }));
 }

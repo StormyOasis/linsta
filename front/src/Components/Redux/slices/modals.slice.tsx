@@ -4,6 +4,8 @@ import { historyUtils } from "../../../utils/utils";
 export const NEW_POST_MODAL = "newPostModal";
 export const COMMENT_MODAL = "commentModal";
 export const LIKES_MODAL = "likeModal";
+export const PROFILE_PIC_MODAL = "pfpModal";
+export const FOLLOWERS_MODAL = "followersModal";
 
 const NAME = "modals";
 

@@ -1,10 +1,13 @@
 import { Context } from "koa";
+import formidable from 'formidable';
 import Metrics from "../metrics/Metrics";
-import { sanitize } from "../utils/utils";
+import { getFileExtByMimeType, sanitize, updateProfileInRedis } from "../utils/utils";
 import logger from "../logger/logger";
-import { count, countProfile, searchProfile, updateProfile } from "../Connectors/ESConnector";
+import { count, updateProfile } from "../Connectors/ESConnector";
+import { getProfileByUserNameEx, getProfileByUserIdEx } from "../utils/utils";
 import { Profile } from "../utils/types";
 import DBConnector from "../Connectors/DBConnector";
+import { removeFile, uploadFile } from "../Connectors/AWSConnector";
 
 type UpdateProfileRequest = {
     bio?: string | null;
@@ -17,8 +20,8 @@ type UpdateProfileRequest = {
     userId: string;
 };
 
-export const updateProfileById = async (ctx: Context) => {
-    Metrics.increment("profiles.updateProfileById");
+export const updateProfileByUserId = async (ctx: Context) => {
+    Metrics.increment("profiles.updateProfileByUserId");
 
     const data = <UpdateProfileRequest>ctx.request.body;
 
@@ -39,22 +42,14 @@ export const updateProfileById = async (ctx: Context) => {
         const lastName = sanitize(data.lastName ? data.lastName : "");
 
         // Need to get the ES id of the profile
-        const results:any = await searchProfile({
-            bool: {
-                must: [{
-                    match: {userId: data.userId}                    
-                }]
-            }
-        }, null);
-        
-        if(results.body.hits.hits.length === 0) {
-            throw new Error("Can't find profile");
+        const profile: Profile|null = await getProfileByUserIdEx(data.userId);
+
+        if(profile === null) {
+            throw new Error("Invalid profile for user id");
         }
 
-        const profileId = results.body.hits.hits[0]._id;
-
         // Send updated profile data to ES
-        await updateProfile(profileId, undefined, {
+        await updateProfile(profile.id, undefined, {
             doc: {
                 bio,
                 pfp,
@@ -65,6 +60,18 @@ export const updateProfileById = async (ctx: Context) => {
                 lastName
             }
         });
+
+        // Update local profile object with the new values before storing in redis
+        profile.bio = bio;
+        profile.pfp = pfp;
+        profile.gender = gender;
+        profile.pronouns = pronouns;
+        profile.link = link;
+        profile.firstName = firstName;
+        profile.lastName = lastName;
+
+        // Profile has just been updated, need to upsert into redis
+        await updateProfileInRedis(profile);
 
         ctx.status = 200;
     } catch(err) {
@@ -91,22 +98,10 @@ export const getProfileByUserId = async (ctx: Context) => {
     }
 
     try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const results: any = await searchProfile({
-            bool: {
-                must: {
-                  match :{
-                    userId: data.userId
-                  }
-                }
-              }
-        }, null);
-
-        if(results.body.hits.hits.length !== 1) {
-            throw new Error("Invalid profile id");
+        const profile: Profile|null = await getProfileByUserIdEx(data.userId);
+        if(profile === null) {
+            throw new Error("Invalid profile");
         }
-
-        const profile: Profile = results.body.hits.hits[0]._source;
 
         ctx.body = profile;
         ctx.status = 200;
@@ -122,7 +117,7 @@ type GetProfileByUserNameRequest = {
 };
 
 export const getProfileByUserName = async (ctx: Context) => {
-    Metrics.increment("profiles.getProfileByUserName");
+    Metrics.increment("profiles.getProfileByUserName");    
 
     const data = <GetProfileByUserNameRequest>ctx.request.body;
 
@@ -133,22 +128,10 @@ export const getProfileByUserName = async (ctx: Context) => {
     }
 
     try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const results: any = await searchProfile({
-            bool: {
-                must: {
-                  match :{
-                    userName: data.userName
-                  }
-                }
-              }
-        }, null);
-
-        if(results.body.hits.hits.length !== 1) {
-            throw new Error("Invalid profile name");
+        const profile: Profile|null = await getProfileByUserNameEx(data.userName);
+        if(profile === null) {
+            throw new Error("Invalid profile");
         }
-
-        const profile: Profile = results.body.hits.hits[0]._source;
 
         ctx.body = profile;
         ctx.status = 200;
@@ -232,4 +215,62 @@ export const getProfileStatsById = async(ctx: Context) => {
         ctx.status = 400;
         return;        
     }            
+}
+
+type PutPPfpByIdRequest = {
+    userId: string;
+};
+
+export const putProfilePfp = async(ctx: Context) => {
+    Metrics.increment("profiles.putProfilePfp");
+
+    const data = <PutPPfpByIdRequest>ctx.request.body;
+    const files:formidable.Files = ctx.request.files as formidable.Files;
+
+    if (data.userId == null) {
+        ctx.status = 400;
+        ctx.body = { status: "Invalid params passed" };
+        return;
+    }    
+
+    try {
+        const profile:Profile|null = await getProfileByUserIdEx(data.userId);
+
+        if(profile === null) {
+            throw new Error("Invalid profile");
+        }
+
+        let url = "";
+        // Upload the new file if we aren't clearing out the pfp property
+        if(files != null && files.fileData != null) {
+            const file:formidable.File = (files.fileData as formidable.File);            
+            const result = await uploadFile(file, `pfp-${crypto.randomUUID()}`, data.userId, getFileExtByMimeType(file.mimetype));
+            url = result.url;
+        } else {
+            // Remove the existing pfp from S3
+            if(profile.pfp != null && profile.pfp.length > 0) {
+                await removeFile(profile.pfp);
+            }
+        }
+
+        // Now update the profile data with the new pfp 
+        await updateProfile(profile.id, undefined, {
+            doc: {
+                pfp: url,
+            }
+        });
+
+        profile.pfp = url;
+
+        // Profile has just been updated, need to upsert into redis
+        await updateProfileInRedis(profile);        
+
+        ctx.body = url;
+        ctx.status = 200;
+    } catch(err) {
+        console.log(err);
+        logger.error(err);
+        ctx.status = 400;
+        return;        
+    }    
 }

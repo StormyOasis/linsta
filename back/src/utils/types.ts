@@ -47,6 +47,7 @@ export type Comment = {
 };
 
 export type Profile = {
+    id: string;
     bio?: string;
     pfp?: string;
     userId: number;

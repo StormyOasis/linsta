@@ -130,7 +130,7 @@ const MainContent: React.FC = () => {
             return;
         }
 
-        // Open the comment dialog by setting the state in redux        
+        // Open the likes dialog by setting the state in redux        
         const payload = {
             postId: post.global.id
         };
