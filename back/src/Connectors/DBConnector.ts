@@ -7,6 +7,7 @@ import Metrics from '../metrics/Metrics';
 export type DbResult = {
     affectedRows: number;
     data: unknown[];
+    id: number;    
 };
 
 export class DBConnector {
@@ -54,7 +55,7 @@ export class DBConnector {
     }
 
     public query = async (query: string, params : any) => {
-        //logger.debug(`Query: ${query} Params: ${params}`);
+        logger.debug(`Query: ${query} Params: ${params}`);
         try {
             if(!this.dbPromisePool) {
                 throw new Error("Invalid connection");
@@ -102,12 +103,14 @@ export class DBConnector {
 
         const dbResult:DbResult = {
             affectedRows: 0,
-            data: []
+            data: [],
+            id: 0
         }
 
         if((result as []).length == undefined) {
             // A non select statement(ie. INSERT, ROLLBACK, etc)
             dbResult.data = [];
+            dbResult.id = (result as ResultSetHeader).insertId;
             dbResult.affectedRows = (result as ResultSetHeader).affectedRows;
         }
         else if((result as []).length != 0) {

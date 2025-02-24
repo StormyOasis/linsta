@@ -178,6 +178,7 @@ const PrevButton = styled.div`
 
 export type MultiStepModalStepOptions = {
     showFooter?: boolean;
+    hideHeader?: boolean;
     hideMargins?: boolean;
     footerNextPageText?: string;
     alignItems?: string;
@@ -226,7 +227,8 @@ export default class MultiStepModal extends React.Component<MultiStepModalProps,
                     <ModalInnerWrapper>
                         <ModalInnerWrapper2>
                             <FlexColumn $height="100%">
-                                <ModalTitleBarWrapper>
+                                {!step.options.hideHeader && 
+                                    <ModalTitleBarWrapper>
                                     <ModalTitleBarInnerWrapper>
                                         <ModalTitleBarInnerWrapper2>
                                             <ModalTitle>
@@ -243,7 +245,8 @@ export default class MultiStepModal extends React.Component<MultiStepModalProps,
                                             </ModalClose>
                                         </ModalCloseWrapper>
                                     </ModalTitleBarInnerWrapper>
-                                </ModalTitleBarWrapper>
+                                    </ModalTitleBarWrapper>
+                                }
                                 <ModalContentWrapper $hideMargins={step.options.hideMargins} $alignItems={alignItems}>
                                     {this.props.showLoadingAnimation &&
                                         <div>

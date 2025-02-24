@@ -36,6 +36,16 @@ export const search = async (query: object, resultSize: number|null) => {
     return result;
 }
 
+export const count = async (query: object) => {
+    const result = await client.count({
+        index: config.get("es.mainIndex"),
+        query,
+    }, { meta: true});
+
+    return result;
+}
+
+
 export const searchComment = async (query: object, resultSize: number|null) => {
     const size: number = resultSize ? resultSize : config.get("es.defaultResultSize");
 
@@ -52,6 +62,27 @@ export const searchComment = async (query: object, resultSize: number|null) => {
               }
             }
           ]
+    }, { meta: true});
+
+    return result;
+}
+
+export const searchProfile = async (query: object, resultSize: number|null) => {
+    const size: number = resultSize ? resultSize : config.get("es.defaultResultSize");
+
+    const result = await client.search({
+        index: config.get("es.profileIndex"),
+        query,
+        size,
+    }, { meta: true});
+
+    return result;
+}
+
+export const countProfile = async (query: object) => {
+    const result = await client.count({
+        index: config.get("es.profileIndex"),
+        query,
     }, { meta: true});
 
     return result;
@@ -75,20 +106,41 @@ export const insertComment = async (dataSet: object) => {
     return result;
 }
 
-export const update = async (id: string, script: object) => {
+export const insertProfile = async (dataSet: object) => {
+    const result = await client.index({
+        index: config.get("es.profileIndex"),
+        document: dataSet
+    });
+
+    return result;
+}
+
+export const update = async (id: string, script?: object, body?: object) => {
     const result = await client.update({
         index: config.get("es.mainIndex"),
         id,
-        script
+        script,
+        body
     });
     return result;
 }
 
-export const updateComment = async (id: string, script: object) => {
+export const updateComment = async (id: string, script?: object, body?: object) => {
     const result = await client.update({
         index: config.get("es.commentIndex"),
         id,
-        script
+        script,
+        body
+    });
+    return result;
+}
+
+export const updateProfile = async (id: string, script?: object, body?: object) => {
+    const result = await client.update({
+        index: config.get("es.profileIndex"),
+        id,
+        script,
+        body
     });
     return result;
 }

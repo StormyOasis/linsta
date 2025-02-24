@@ -1,6 +1,6 @@
 import sanitizeHtml from 'sanitize-html';
-import { Post } from './types';
-import { buildSearchResultSet, search } from '../Connectors/ESConnector';
+import { Post, Profile } from './types';
+import { buildSearchResultSet, search, searchProfile } from '../Connectors/ESConnector';
 import RedisConnector from '../Connectors/RedisConnector';
 
 export const isEmail = (str: string) : boolean => {
@@ -53,6 +53,9 @@ export const getFileExtByMimeType = (mimeType: string|null):string => {
         case "image/jpeg": {
             return ".jpg";
         }
+        case "image/png": {
+            return ".png";
+        }        
         case "video/mp4": {
             return ".mp4";
         }
@@ -80,34 +83,112 @@ export const parseRedisInfo = (infoString: string): RedisInfo => {
 };
 
 export const getPostById = async (postId: string):Promise<Post|null> => {
-    try {
-        // Attempt to pull from redis first
-        const result = await RedisConnector.get(postId);
-        if(result !== null) {
-            // Found in redis
-            return JSON.parse(result) as Post;
-        }
+    // Attempt to pull from redis first
+    const result = await RedisConnector.get(postId);
+    if(result !== null) {
+        // Found in redis
+        return JSON.parse(result) as Post;
+    }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const results:any = await search({
+        bool: {
+            must: [{
+                match: {_id: postId}                    
+            }]
+        }
+    }, null);
+
+    const entries:Post[] = buildSearchResultSet(results.body.hits.hits);
+    if(entries.length === 0) {
+        throw new Error("Post not found");
+    }
+
+    // add to redis
+    await RedisConnector.set(postId, JSON.stringify(entries[0]));
+    
+    return entries[0];
+}
+
+export const getProfileByUserIdEx = async (userId: string):Promise<Profile|null> => {
+    return getProfile(userId, null);
+}
+
+export const getProfileByUserNameEx = async (userName: string):Promise<Profile|null> => {
+    return getProfile(null, userName);
+}
+
+const getProfile = async (userId: string|null, userName: string|null):Promise<Profile|null> => {
+    if(userId === null && userName === null) {
+        return null;
+    }
+
+    // Build the redis key based on if searching by user name or by user id
+    const key = `profile:${userId != null ? 'id' : 'name'}:${userId != null ? userId : userName}`;
+
+    // Attempt to pull from redis first
+    const res = await RedisConnector.get(key);
+    if(res !== null) {
+        // Found in redis
+        return JSON.parse(res) as Profile;
+    }
+
+    // Not found in redis. Need to query ES
+    let results;
+
+    if(userName !== null) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const results:any = await search({
+        results = await searchProfile({
             bool: {
-                must: [{
-                    match: {_id: postId}                    
-                }]
-            }
+                must: {
+                  match :{
+                    userName: userName
+                  }
+                }
+              }
         }, null);
 
-        const entries:Post[] = buildSearchResultSet(results.body.hits.hits);
-        if(entries.length === 0) {
-            throw new Error("Post not found");
+        if(results.body.hits.hits.length !== 1) {
+            throw new Error("Invalid user name");
+        }         
+    } else {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        results = await searchProfile({
+            bool: {
+                must: {
+                  match :{
+                    userId: userId
+                  }
+                }
+              }
+        }, null);
+
+        if(results.body.hits.hits.length !== 1) {
+            throw new Error("Invalid user id");
         }
-
-        // add to redis
-        await RedisConnector.set(postId, JSON.stringify(entries[0]));
-        
-        return entries[0];
-
-    } catch(err) {
-        throw err;
     }
+
+    const profile:Profile = results.body.hits.hits[0]._source as Profile;
+    profile.id =  results.body.hits.hits[0]._id as string;
+    
+    // Inverse key used to update the other copy of profile stored in redis
+    const inverseKey = `profile:${userName != null ? 'id' : 'name'}:${userName != null ? profile.userId : profile.userName}`;
+    
+    // Add to redis. Store the profile under both the userId and userName(hence inverseKey var)    
+    await RedisConnector.set(key, JSON.stringify(profile));
+    await RedisConnector.set(inverseKey, JSON.stringify(profile));
+ 
+    return profile;
+}
+
+export const updateProfileInRedis = async (profile: Profile) => {
+    // Build the redis key based on if searching by user name or by user id
+    const key = `profile:id:${profile.userId}`;
+
+    // Inverse key used to update the other copy of profile stored in redis
+    const inverseKey = `profile:name:${profile.userName}`;
+    
+    // Add to redis. Store the profile under both the userId and userName(hence inverseKey var)    
+    await RedisConnector.set(key, JSON.stringify(profile));
+    await RedisConnector.set(inverseKey, JSON.stringify(profile));    
 }

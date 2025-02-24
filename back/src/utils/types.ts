@@ -45,3 +45,16 @@ export type Comment = {
     }[];
     likes: Like[];
 };
+
+export type Profile = {
+    id: string;
+    bio?: string;
+    pfp?: string;
+    userId: number;
+    userName: string;
+    firstName?: string;
+    lastName?: string;
+    gender?: string;
+    pronouns?: string;
+    link?: string;
+};

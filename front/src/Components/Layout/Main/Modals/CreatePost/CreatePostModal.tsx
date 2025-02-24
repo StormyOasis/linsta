@@ -71,7 +71,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
             const isVideo:boolean = isVideoFileFromType(file.type);
             let imageUrl = null;
 
-            // Don't crop video files, just skipp
+            // Don't crop video files, just skip
             if(isVideo) {
                 imageUrl = file.blob;
             } else {

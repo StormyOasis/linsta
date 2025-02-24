@@ -354,7 +354,7 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                                             </PostOptionsWrapper>
                                         </FlexRow>
                                         {props.post.global.locationText.length > 0 &&
-                                            <Div $marginLeft="42px" $marginTop="-9px" $fontSize="13px">
+                                            <Div $marginLeft="39px" $marginTop="-9px" $fontSize="13px">
                                                 <Link href={`${HOST}/explore?text=${encodeURIComponent(props.post.global.locationText)}`}>
                                                     {props.post.global.locationText}
                                                 </Link>

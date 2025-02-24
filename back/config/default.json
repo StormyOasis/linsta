@@ -22,7 +22,7 @@
         "port": 6379,
         "connectTimeout": 10000,
         "maxRetries": 20,
-        "defaultTTL": 300,
+        "defaultTTL": 300000,
         "metricsIntervalMs": 5000
     },
 
@@ -57,6 +57,7 @@
         "apiKey": "cXRyM1ZwSUJrZFl6Z3FPYVB1bHM6MFpEb0FGLUFRSTJjYTdfUVd3QWJRZw==",
         "mainIndex": "main",
         "commentIndex": "comments",
+        "profileIndex": "profiles",
         "defaultResultSize": 10000
     }
 }
