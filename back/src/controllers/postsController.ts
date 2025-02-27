@@ -7,6 +7,7 @@ import { uploadFile } from "../Connectors/AWSConnector";
 import { buildDataSetForES, buildSearchResultSet, insert, search, update } from '../Connectors/ESConnector';
 import { User, Global, Entry, Post } from "../utils/types";
 import RedisConnector from "../Connectors/RedisConnector";
+import DBConnector from "../Connectors/DBConnector";
 
 export const addPost = async (ctx: Context) => {
     Metrics.increment("posts.addPost");
@@ -43,15 +44,47 @@ export const addPost = async (ctx: Context) => {
         // Now add the data to ES
         const dataSet = buildDataSetForES(user, global, entries);
 
-        const result = await insert(dataSet);        
-        if(result.result !== 'created') {
+        const esResult = await insert(dataSet);        
+        if(esResult.result !== 'created') {
             throw new Error("Error adding post");
         }
 
+        // Now add an associated vertex and edges to the graph for this post
+        DBConnector.beginTransaction();
+        
+        // Now add a post vertex to the graph
+        let graphResult = await DBConnector.getGraph(true)?.addV("Post")
+            .property("postId", esResult._id)
+            .next();  
+
+        if(graphResult == null || graphResult.value == null) {
+            throw new Error("Error creating profile");
+        }
+
+        // Now add the edges between the profile and user verticies            
+        graphResult = await DBConnector.getGraph(true)?.V(graphResult.value.id)
+            .as('post')
+            .V(user.userId)
+            .as('user')
+            .addE("post_to_user")
+            .from_("post")
+            .to("user")
+            .addE("user_to_post").
+            from_("user")
+            .to("post")            
+            .next();  
+
+        if(graphResult == null || graphResult.value == null) {
+            throw new Error("Error creating profile links");
+        }       
+        
+        await DBConnector.commitTransaction();
+
         // Now add the post data to redis
-        await RedisConnector.set(result._id, JSON.stringify(dataSet));
+        await RedisConnector.set(esResult._id, JSON.stringify(dataSet));
 
     } catch(err) {
+        await DBConnector.rollbackTransaction();
         logger.error(err);
         ctx.status = 400;
         return;

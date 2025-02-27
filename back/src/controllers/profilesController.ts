@@ -193,7 +193,7 @@ export const getProfileStatsById = async(ctx: Context) => {
         stats.postCount = results.body.count;
 
         // Second: Get the number of followers for this user
-        const followerCount = await DBConnector.query(`
+   /*     const followerCount = await DBConnector.query(`
             SELECT COUNT(*) as count
             FROM Users u 
             INNER JOIN Follows f on f.FOLLOWS_USER_ID = u.id AND f.USER_ID = ?`, [data.userId]);        
@@ -207,7 +207,7 @@ export const getProfileStatsById = async(ctx: Context) => {
             INNER JOIN Follows f on f.FOLLOWS_USER_ID = u.id AND f.FOLLOWS_USER_ID = ?`, [data.userId]);        
         
         stats.followingCount = (followingCount.data as [{count: number}]).at(0)?.count as number;        
-
+*/
         ctx.body = stats;
         ctx.status = 200;
     } catch(err) {

@@ -33,13 +33,19 @@ export const getIsUnqiueUsername = async (ctx: Context) => {
     // Check against the db for username existence
 
     try {
-        const query = "SELECT userName from Users where USERNAME = ?";
-        const result = await DBConnector.query(query, [userName]);
+        const uniquePropertyMatcher = await DBConnector.getGraph()?.V()
+            .hasLabel("User")
+            .has("userName", userName)
+            .valueMap(true)
+            .next();
+                
+        const isUnique = uniquePropertyMatcher?.value === null;
 
-        ctx.body = result.data.length == 0;
+        ctx.body = isUnique;
         ctx.status = 200;
 
     } catch (err) {
+        console.log(err);
         ctx.status = 400;
         return;
     }
@@ -68,7 +74,7 @@ export const attemptCreateUser = async (ctx: Context) => {
         !data.userName ||
         !data.password) {
         ctx.status = 400;
-        ctx.body = `{status: "Invalid input"}`;
+        ctx.body = {status: "Invalid input"};
         return;
     }
 
@@ -77,7 +83,7 @@ export const attemptCreateUser = async (ctx: Context) => {
             data.month == null || data.year == null)) {
 
         ctx.status = 400;
-        ctx.body = `{status: "Invalid input"}`;
+        ctx.body = {status: "Invalid input"};
         return;
     }
 
@@ -87,7 +93,7 @@ export const attemptCreateUser = async (ctx: Context) => {
 
     //Make sure there isn't any invalid email/phone
     if (!isPhoneNum && !isEmailAddr) {
-        ctx.body = `{status: "Invalid email and phone"}`;
+        ctx.body = {status: "Invalid email and phone"};
         ctx.status = 400;
         return;
     }
@@ -96,53 +102,56 @@ export const attemptCreateUser = async (ctx: Context) => {
     const names: string[] = data.fullName.trim().split(' ');
     if (names.length == 0) {
         ctx.status = 400;
-        ctx.body = `{status: "Invalid full name"}`;
+        ctx.body = {status: "Invalid full name"};
         return;
     }
 
     if (!data.dryRun) {
-        // If this is not a dry run an instead an actual attempt then 
+        // If this is not a dry run and instead an actual attempt then 
         // we need to compare the confirmation codes
         if (data.confirmCode?.trim().length !== 8 || data.emailOrPhone.trim().length === 0) {
             ctx.status = 400;
-            ctx.body = `{status: "Invalid Confirmation Code"}`;
+            ctx.body = {status: "Invalid Confirmation Code"};
             return;
         }
 
         try {
             // Check if confirmation code + email/phone entry exists
-            res = await DBConnector.query("SELECT * FROM ConfirmCodes where user_data = ? and code = ?",
-                [data.emailOrPhone.trim(), data.confirmCode.trim()]);
+            res = await DBConnector.getGraph()?.V()
+                .hasLabel("ConfirmCode")
+                .has("userData", data.emailOrPhone.trim())
+                .has("token", data.confirmCode.trim())
+                .next();
 
-            if (res.data.length == 0) {
+            if (res == null || res.value == null) {
                 // no matching code found so respond as invalid
                 ctx.status = 400;
-                ctx.body = `{status: "Invalid Confirmation Code"}`;
+                ctx.body = {status: "Invalid Confirmation Code"};
                 return;
             }
-        } catch (err) {
+        } catch (err) {       
+            console.log(err);
             ctx.status = 500;
             return;
         }
     }
 
-    let failureOccured: boolean = false;
-
     if (!isValidPassword(data.password)) {
         // Password does not pass rules check
         ctx.status = 400;
-        ctx.body = `{status: "Invalid Password"}`;
+        ctx.body = {status: "Invalid Password"};
         return;
     }
-
+    
     const first: string = names[0];
     const last: string = names.length > 1 ? names[names.length - 1] : "";    
-    let userId: number = 0;
+    let userId: string|undefined = undefined;
+    let failureOccured: boolean = false;
 
     try {
         const hashedPassword = await bcrypt.hash(data.password, 10);
         const currentTime = moment();
-        const timestamp = currentTime.format("YYYY-MM-DD  HH:mm:ss.000");
+        const timestamp = currentTime.format("YYYY-MM-DD HH:mm:ss.000");
         const momentData:MomentInput = {
             year: data.year,
             month: data.month,
@@ -154,71 +163,125 @@ export const attemptCreateUser = async (ctx: Context) => {
         } as MomentInput;
         
         const birthDate = data.dryRun ? currentTime : moment(momentData);
-        const age = data.dryRun ? 0 : currentTime.diff(birthDate, 'years', true);
+        const email = isEmailAddr ? data.emailOrPhone : "";
+        const phone = isPhoneNum ? data.emailOrPhone : "";
+        
+        DBConnector.beginTransaction();
+        
+        // Email, phone, and userName properties must all be unique. 
+        // Check for any existing users that have the given values
+        // Note: Potential race condition here, but I'm not sure how to resolve it in gremlin so
+        // if we end up with duplicate values this is probably the cause    
+        const __ = DBConnector.__();
+        const uniquePropertyMatcher = await DBConnector.getGraph(true)?.V()
+            .hasLabel("User")    
+            .and(                
+                __.has("userName", data.userName),
+                __.or(
+                    __.and(
+                        __.has("email", email), 
+                        __.has("email",  DBConnector.P().neq(""))), 
+                    __.and(
+                        __.has("phone", phone), 
+                        __.has("phone",  DBConnector.P().neq(""))))
+    
+            )    
+            .valueMap(true)
+            .next(); 
 
-        // use transaction to do either a dry run or an actual insert
-        await DBConnector.query("START TRANSACTION", []);
-        res = await DBConnector.execute(
-            `INSERT INTO Users VALUES(?,?,?,?,?,?,?,?,?,?)`, [
-            first, last, "0", `${age}`,
-            isEmailAddr ? data.emailOrPhone : '',
-            isPhoneNum ? data.emailOrPhone : '',
-            data.userName,
-            birthDate.format("YYYY-MM-DD  HH:mm:ss.000"),
-            timestamp,
-            hashedPassword
-        ]);
-
-        if (res.affectedRows == 0) {
+        const isUnique = uniquePropertyMatcher?.value === null;
+        if(!isUnique) {
+            // An existing entry has been found, we need to error out and eventually rollback
             ctx.status = 400;
-            ctx.body = `{status: "Error adding user"}`;
-            failureOccured = true;
+            failureOccured = true;            
         } else {
-            if (!data.dryRun && data.confirmCode) {
-                userId = res.id;
+            // Attempt to insert a user vertex
+            const result = await DBConnector.getGraph(true)?.addV("User")
+                .property("firstName", first)
+                .property("lastName", last)
+                .property("email", email)
+                .property("phone", phone)
+                .property("userName", data.userName)
+                .property("birthDate", birthDate.format("YYYY-MM-DD HH:mm:ss.000"))
+                .property("joinDate", timestamp)
+                .property("password", hashedPassword)
+                .next();                
 
-                res = await DBConnector.query("DELETE FROM ConfirmCodes WHERE USER_DATA = ? AND CODE = ?",
-                    [data.emailOrPhone, data.confirmCode]);
+            if(result == null || result.value == null) {
+                failureOccured = true;
+                ctx.status = 400;
+            } else {
+                userId = result.value.id;
 
-                if (res.affectedRows == 0) {
-                    ctx.status = 400;
-                    ctx.body = `{status: "Error with confirmation code"}`;
-                    failureOccured = true;
+                if (!data.dryRun && data.confirmCode) {
+                    // The confirmation code was checked above and succeeded
+                    // We now want to delete it from the DB
+                    res = await DBConnector.getGraph(true)?.V()
+                        .hasLabel("ConfirmCode")
+                        .has("userData", data.emailOrPhone.trim())
+                        .drop().toList();
                 }
             }
         }
-
     } catch (err) {
         logger.error(err);
-        ctx.status = 500;
+        ctx.status = 400;
         failureOccured = true;
     }
 
     if (data.dryRun || failureOccured) {
-        res = await DBConnector.query("ROLLBACK", []);
+        await DBConnector.rollbackTransaction();
 
-        ctx.body = `{"status": ${failureOccured ? "Error creating user" : "OK"}}`;
+        ctx.body = {status: `${failureOccured ? "Error creating user" : "OK"}`};
     } else {
         try {
-            await DBConnector.query("COMMIT", []);
-
             // The User info has officially been inserted into the DB
             // Now add the profile data to ES
             const profileData = {
                 firstName: first,
                 lastName: last,
                 userName: data.userName,
-                userId: userId
+                userId
             };
 
-            await insertProfile(profileData);
+            // Insert into ES
+            const esResult = await insertProfile(profileData);
 
-            ctx.body = `{"status": "OK"}`;
+            // Now add a profile vertex to the graph
+            let graphResult = await DBConnector.getGraph(true)?.addV("Profile")
+                .property("profileId", esResult._id)
+                .next();  
+
+            if(graphResult == null || graphResult.value == null) {
+                throw new Error("Error creating profile");
+            }
+
+            // Now add the edges between the profile and user verticies            
+            graphResult = await DBConnector.getGraph(true)?.V(graphResult.value.id)
+                .as('profile')
+                .V(userId)
+                .as('user')
+                .addE("profile_to_user")
+                .from_("profile")
+                .to("user")
+                .addE("user_to_profile").
+                from_("user")
+                .to("profile")            
+                .next();  
+
+            if(graphResult == null || graphResult.value == null) {
+                throw new Error("Error creating profile links");
+            }            
+
+            await DBConnector.commitTransaction();
+
+            ctx.body = {status: "OK"};
             ctx.status = 200;
-        } catch (err) {
+        } catch (err) {            
             logger.error(`Error Commiting transaction: ${err}`);
+            await DBConnector.rollbackTransaction();
             ctx.status = 400;
-            ctx.body = `{"status": "Error creating user"}`;
+            ctx.body = {status: "Error creating user"};
         }
     }
 }
@@ -235,6 +298,7 @@ export const sendConfirmCode = async (ctx: Context) => {
 
     if (!userData || userData.length < 3) {
         ctx.status = 400;
+        ctx.body = { status: "Invalid confirmation input" };
         return;
     }
 
@@ -245,26 +309,27 @@ export const sendConfirmCode = async (ctx: Context) => {
     //Make sure there isn't any invalid email/phone
     if (!isPhoneNum && !isEmailAddr) {
         ctx.response.res.statusCode = 400;
+        ctx.body = { status: "Can't parse confirmation data" };
         return;
     }
 
-    let res = null;
     const currentTime = moment();
-
+    const sentTime: string = currentTime.format("YYYY-MM-DD HH:mm:ss.000");
     // generate a token to be used in the and store in the db
     const token: string = crypto.randomUUID().split("-")[0];
 
     try {
-        res = await DBConnector.query(`
-            INSERT INTO ConfirmCodes VALUES(?, ?, ?) 
-            ON DUPLICATE KEY UPDATE CODE = ?`,
-            [token, userData, currentTime.format("YYYY-MM-DD  HH:mm:ss.000"), token]);
+        const res = await DBConnector.getGraph()?.mergeV(new Map([["userData", userData]]))
+            .option(DBConnector.Merge().onCreate, new Map([[DBConnector.T().label, "ConfirmCode"], ["token", token], ["userData", userData], ["sentTime", sentTime]]))
+            .option(DBConnector.Merge().onMatch, new Map([["token", token], ["sentTime", sentTime]]))
+            .next();
 
-        if (res.affectedRows == 0) {
+        if(res == null || res?.value == null) {
             ctx.status = 400;
             ctx.body = { status: "Invalid confirmation data" };
-            return;
+            return;            
         }
+
     } catch (err) {
         ctx.status = 500;
         return;
@@ -307,26 +372,46 @@ export const loginUser = async (ctx: Context) => {
 
     const data = <LoginRequest>ctx.request.body;
 
-    if (data.userName == null || data.password == null) {
+    if (data == null || data.userName == null || data.password == null) {
         ctx.status = 400;
         ctx.body = { status: "Invalid username or password" };
         return;
     }
-
-    // Check against the db for username existence
-
+    
     try {
-        const query = "SELECT userName, password, id from Users where USERNAME = ?";
-        const result = await DBConnector.execute(query, [data.userName]);
+        // Check against the db for username existence
+        const result = await DBConnector.getGraph()?.V()
+            .hasLabel("User")
+            .has("userName", data.userName)
+            .project('id', 'userName', 'password')
+            .by(DBConnector.T().id)
+            .by('userName')
+            .by('password')
+            .next();
 
-        type db_result = {
-            password: string;
-            id: string,
-            userName: string;
+        // Extract the returned value if present
+        const value:Map<string, string|number> = result?.value;        
+        if (value == null || value.size === 0) {
+            ctx.status = 400;
+            ctx.body = { status: "Invalid username or password" };
+            return;
         }
 
-        if (result.data.length > 0) {
-            const dbData: db_result = result.data[0] as db_result;
+        if(value != null) {
+            type db_result = {
+                password: string;
+                id: number,
+                userName: string;
+            }
+    
+            // Extract the password from the result and compare it with expected
+
+            const dbData: db_result = {
+                password: value.get('password') as string,                
+                userName: value.get('userName') as string,
+                id: value.get('id') as number
+            }            
+
             const passwordMatch: boolean = await bcrypt.compare(data.password, dbData.password);
 
             if (passwordMatch) {
@@ -346,13 +431,10 @@ export const loginUser = async (ctx: Context) => {
             else {
                 ctx.status = 400;
                 ctx.body = { status: "Invalid username or password" };
-            }
-        }
-        else {
-            ctx.status = 400;
-            ctx.body = { status: "Invalid username or password" };
+            }                        
         }
     } catch (err) {
+        console.log(err);
         logger.error(err);
         ctx.status = 500;
     }
@@ -374,45 +456,46 @@ export const forgotPassword = async (ctx: Context) => {
     }
 
     try {
-        const query = "SELECT EMAIL, PHONE, USERNAME, ID from Users where EMAIL = ? OR PHONE = ? OR USERNAME = ?";
-        const result = await DBConnector.execute(query, [data.user, data.user, data.user]);
+        type db_result = {
+            email: string;
+            phone: string;
+            userName: string;
+            id: number;
+        }
 
-        if (result.data.length === 0) {
+        const __ = DBConnector.__();
+        const result = await DBConnector.getGraph()?.V()
+            .hasLabel("User")           
+            .or(__.has("email", data.user), __.has("userName", data.user), __.has("phone", data.user))
+            .project("email","userName","phone", "id")
+            .by("email")
+            .by("userName")
+            .by("phone")
+            .by(DBConnector.T().id)
+            .next();
+
+        const value:Map<string, string|number> = result?.value;        
+        if (value == null || value.size === 0) {
             ctx.status = 400;
             ctx.body = { status: "Invalid user info" };
             return;
         }
 
-        if (result.data.length > 0) {
-            type db_result = {
-                EMAIL: string;
-                PHONE: string;
-                USERNAME: string;
-                ID: string;
-            }
-
-            const dbData: db_result = result.data[0] as db_result;
-
-            if (dbData) {
-                const email = (dbData.EMAIL as string);
-                const phone = (dbData.PHONE as string);
-                const userName = (dbData.USERNAME as string);
-                const userId = (dbData.ID as string);
-
-                const res = await sendForgotMessage(ctx, email, phone, userName, userId);
-                if (!res) {
-                    ctx.status = 400;
-                    //ctx.body = {status: "Failed to send message"};                
-                    return;
-                }
-                ctx.status = 200;
-            } else {
-                ctx.status = 400;
-                //ctx.body = {status: "Invalid user info"};                
-                return;
-            }
+        const dbData: db_result = {
+            email: value.get('email') as string,
+            phone: value.get('phone') as string,
+            userName: value.get('userName') as string,
+            id: value.get('id') as number
         }
 
+        const res = await sendForgotMessage(ctx, dbData.email, dbData.phone, dbData.userName, dbData.id);
+        if (!res) {
+            ctx.status = 400;
+            ctx.body = {status: "Failed to send message"};                
+            return;
+        }
+        ctx.status = 200;        
+        
     } catch (err) {
         logger.error(err);
         ctx.status = 500;
@@ -420,8 +503,8 @@ export const forgotPassword = async (ctx: Context) => {
     }
 }
 
-const sendForgotMessage = async (ctx: Context, email: string, phone: string, userName: string, userId: string) => {
-    logger.debug(`Sending lost password message for userName: ${userName}`);
+const sendForgotMessage = async (ctx: Context, email: string, phone: string, userName: string, userId: number) => {
+    logger.debug(`Sending lost password message for username: ${userName}`);
 
     if ((email == null && phone == null) || userName == null) {
         return false;
@@ -431,17 +514,41 @@ const sendForgotMessage = async (ctx: Context, email: string, phone: string, use
     const token: string = crypto.randomUUID().replace(/-/g, "");
 
     try {
-        //Upsert
-        const res = await DBConnector.execute(`
-            INSERT INTO ForgotToken VALUES(?, ?) 
-            ON DUPLICATE KEY UPDATE token = ?`,
-            [token, userId, token]);
+        // Do an upsert so if user clicks resend it updates the existing token
+        let res = await DBConnector.getGraph()?.mergeV(new Map([["userId", `${userId}`]]))
+            .option(DBConnector.Merge().onCreate, new Map([[DBConnector.T().label, "ForgotToken"], ["token", token], ["userId", `${userId}`]]))
+            .option(DBConnector.Merge().onMatch, new Map([["token", token]]))
+            .next();
 
-        if (res.affectedRows == 0) {
+        if(res == null || res?.value == null) {
             ctx.status = 400;
-            ctx.body = { status: "Failed preparing to send message" };
-            return false;
+            ctx.body = { status: "Invalid token data" };
+            return;            
         }
+
+        // Add edges between the User and ForgotToken verticies
+        res = await DBConnector.getGraph()?.V()
+            .hasLabel("User")
+            .has(DBConnector.T().id, userId)
+            .as("user_id")
+            .V()
+            .hasLabel("ForgotToken")
+            .has("userId", userId)
+            .as("forgot_user_id")
+            .addE("User_to_token")
+            .from_("user_id")
+            .to("forgot_user_id")
+            .addE("Token_to_user")
+            .to("user_id")
+            .from_("forgot_user_id")            
+            .next();
+
+        if(res == null || res?.value == null) {
+            ctx.status = 400;
+            ctx.body = { status: "Failure creating token" };
+            return;            
+        }   
+
 
         if (email.length > 0) {
             // Send forgot message as an email to user
@@ -493,11 +600,13 @@ const sendForgotMessage = async (ctx: Context, email: string, phone: string, use
             } else {
                 ctx.status = 400;
                 ctx.body = { status: "Failed to send message" };
+                return false;
             }
         }
 
         return true;
     } catch (err) {
+        console.log(err);
         return false;
     }
 }
@@ -514,6 +623,12 @@ export const changePassword = async (ctx: Context) => {
 
     const data = <ChangePasswodType>ctx.request.body;
 
+    if (data == null) {
+        ctx.status = 400;
+        ctx.body = { status: "Invalid params" };
+        return;
+    }    
+
     if (data.password1 !== data.password2) {
         ctx.status = 400;
         ctx.body = { status: "Passwords don't match" };
@@ -523,7 +638,7 @@ export const changePassword = async (ctx: Context) => {
     if (!isValidPassword(data.password1)) {
         // Password does not pass rules check
         ctx.status = 400;
-        ctx.body = `{status: "Invalid Password"}`;
+        ctx.body = {status: "Invalid Password"};
         return;
     }
 
@@ -542,66 +657,95 @@ export const changePassword = async (ctx: Context) => {
                 ctx.body = { status: "Invalid username, password, or token" };
                 return;
             }
-            const hashedOldPassword = await bcrypt.hash(data.oldPassword, 10);
 
-            // Use the username and password to change password        
-            const result = await DBConnector.execute(
-                "UPDATE User SET PASSWORD = ? where USERNAME = ? AND PASSWORD = ?",
-                [hashedPassword, data.userName, hashedOldPassword]);
+            let result = await DBConnector.getGraph()?.V()
+                .hasLabel("User")
+                .has("userName", data.userName)
+                .project('id', 'userName', 'password')
+                .by(DBConnector.T().id)
+                .by('userName')
+                .by('password')
+                .next();
 
-            if (result.affectedRows == 0) {
+            // Extract the returned value if present
+            const value:Map<string, string|number> = result?.value;        
+            if (value == null || value.size === 0) {
                 ctx.status = 400;
                 ctx.body = { status: "Invalid username or password" };
                 return;
             }
 
+            type db_result = {
+                password: string;
+                id: number,
+                userName: string;
+            }
+    
+            // Extract the password from the result and compare it with expected
+            const dbData: db_result = {
+                password: value.get('password') as string,                
+                userName: value.get('userName') as string,
+                id: value.get('id') as number
+            }            
+
+            const passwordMatch: boolean = await bcrypt.compare(data.oldPassword, dbData.password);
+
+            if (!passwordMatch) {
+                ctx.status = 400;
+                ctx.body = { status: "Invalid username or password" };
+                return;
+            }                
+            
+            // Use the username and password to change password   
+            result = await DBConnector.getGraph()?.V()
+                .hasLabel("User")
+                .has('userName', data.userName)
+                .property('password', hashedPassword)
+                .next();
+
+            if(result?.value == null) {
+                ctx.status = 400;
+                ctx.body = { status: "Invalid username, password, or token" };
+                return;                
+            }
         } else {
             // use the token to change password and then delete the token from the db
-            await DBConnector.query("START TRANSACTION", []);
+            await DBConnector.beginTransaction();
 
             const token: string = data.token ? data.token : "";
 
-            let result = await DBConnector.execute(`
-                SELECT USERNAME, ID from Users 
-                INNER JOIN ForgotToken
-                ON Users.ID = ForgotToken.USER_ID
-                WHERE ForgotToken.TOKEN = ?`, [token]);
+            // Get the token from the db if it exists
+            let result = await DBConnector.getGraph(true)?.V()
+                .hasLabel("ForgotToken")
+                .has('token', token)
+                .out("Token_to_user")
+                .next();
 
-            if (result.data.length == 0) {
-                ctx.status = 400;
-                ctx.body = { status: "Invalid user or token" };
-                throw new Error();
+            let value = result?.value;
+            if(value == null || value.id == null) {
+                throw new Error("Invalid token");          
+            }            
+
+            // Update the password in the User vertex            
+            result = await DBConnector.getGraph(true)?.V(value.id)
+                .property('password', hashedPassword)
+                .next();            
+                
+            value = result?.value;
+            if(value == null || value.id == null) {
+                throw new Error("Couldn't change password");              
             }
 
-            type db_result = {
-                USERNAME: string;
-                ID: string;
-            }
+            // Now delete the forgot token vertex
+            result = await DBConnector.getGraph(true)?.V(value.id).out("User_to_token").drop().next();       
 
-            const dbData: db_result = result.data[0] as db_result;
-
-            result = await DBConnector.execute(
-                "UPDATE Users SET PASSWORD = ? where USERNAME = ?",
-                [hashedPassword, dbData.USERNAME]);
-
-            if (result.affectedRows == 0) {
-                ctx.status = 400;
-                ctx.body = { status: "Invalid username" };
-                throw new Error();
-            }
-
-            result = await DBConnector.execute("DELETE FROM ForgotToken where USER_ID = ?", [dbData.ID]);
-            if (result.affectedRows == 0) {
-                ctx.status = 400;
-                ctx.body = { status: "Invalid token" };
-                throw new Error();
-            }
-
-            await DBConnector.execute("COMMIT", []);
+            // Done!
+            await DBConnector.commitTransaction();
         }
     } catch (err) {
+        console.log(err);
         logger.error(err);
-        await DBConnector.execute("ROLLBACK", []);
+        await DBConnector.rollbackTransaction();
 
         ctx.status = 400;
         ctx.body = { status: "Error with token" };
@@ -614,7 +758,7 @@ export const changePassword = async (ctx: Context) => {
 
 type FollowingType = {
     userId: string;
-    followerId: string;
+    followId: string;
     follow: boolean;
 }
 
@@ -624,31 +768,40 @@ export const toggleFollowing = async (ctx: Context) => {
     const data = <FollowingType>ctx.request.body;
 
     try {
-        await DBConnector.query("START TRANSACTION", []);
+        DBConnector.beginTransaction();
 
         if(data.follow) {
             //Adding a new follower
-            //Need the on duplicate clause to prevent exception when trying to re-add existing
-            //followers
-            const result = await DBConnector.execute(
-                `INSERT INTO Follows(USER_ID, FOLLOWS_USER_ID) VALUES(?,?)
-                 ON DUPLICATE KEY UPDATE id=id`, [data.userId, data.followerId]);
+            const result = await DBConnector.getGraph(true)?.V()
+                .hasLabel("User")
+                .has(DBConnector.T().id, data.userId)
+                .as("user_id")
+                .V()
+                .hasLabel("User")
+                .has(DBConnector.T().id, data.followId)
+                .as("follow_id")
+                .addE("User_follows")
+                .from_("user_id")
+                .to("follow_id")
+                .next();
 
-            if (result.affectedRows == 0) {
-                throw new Error("Error adding follower");
-            }
+            if(result == null || result?.value == null) {
+                throw new Error("Failure to follow user");
+            }   
         } else {
             // unfollow the given follower
-            await DBConnector.execute(
-                `DELETE FROM Follows WHERE USER_ID = ? AND FOLLOWS_USER_ID = ?`,
-                [data.userId, data.followerId]);
+            await DBConnector.getGraph(true)?.V(data.userId)
+                .outE("User_likes")
+                .where(DBConnector.__().inV().hasId(data.followId))
+                .drop()
+                .next();
         }
 
-        await DBConnector.execute("COMMIT", []);
+        await DBConnector.commitTransaction();
 
     } catch(err) {
         logger.error(err);
-        await DBConnector.execute("ROLLBACK", []);
+        await DBConnector.rollbackTransaction();
 
         ctx.status = 400;
         ctx.body = { status: "Error changing follower status" };
@@ -678,7 +831,7 @@ type BulkFollowDataType = {
 };
 
 export const postBulkGetInfoAndFollowStatus = async(ctx: Context) => {
-    Metrics.increment("accounts.postBulkGetInfoAndFollowStatus");
+   /* Metrics.increment("accounts.postBulkGetInfoAndFollowStatus");
 
     const data = <BulkFollowDataType>ctx.request.body;
     
@@ -709,5 +862,5 @@ export const postBulkGetInfoAndFollowStatus = async(ctx: Context) => {
         return
     }
 
-    ctx.status = 200;    
+    ctx.status = 200;  */ 
 }

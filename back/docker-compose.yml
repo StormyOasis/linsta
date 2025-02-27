@@ -25,23 +25,13 @@ services:
       - /home/ubuntu/jenkins_compose/jenkins_configuration:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock      
 
-  gremlin-server:
-    image: tinkerpop/gremlin-server:latest
+  linsta-db:
+    image: docker.io/janusgraph/janusgraph:latest
+    container_name: linsta_db
     ports:
       - "8182:8182"
-
-  linsta-db:
-    image: mysql
-    container_name: linsta_db
-    environment:
-      - MYSQL_DATABASE=linsta
-      - MYSQL_ROOT_PASSWORD=password
-      - MYSQL_PASSWORD=password
-      - MYSQL_USER=laurenb
-    ports:
-      - 3306:3306
-    expose:
-      - 3306:3306
+    volumes:
+      - "janusgraph-default-data:/var/lib/janusgraph"
 
   linsta-redis:
     image: redis/redis-stack-server
@@ -296,4 +286,6 @@ volumes:
   esdata03:
     driver: local
   kibanadata:
+    driver: local
+  janusgraph-default-data:
     driver: local

@@ -7,13 +7,6 @@
             "expiration": "128d"
         }
     },
-    "database_mysql" : {
-        "host": "localhost",
-        "user": "laurenb",
-        "password": "password",
-        "database": "linsta",
-        "connectionLimit": 10
-    },
 
     "database" : {
         "host": "localhost",
