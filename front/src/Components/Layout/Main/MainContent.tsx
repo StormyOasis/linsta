@@ -96,10 +96,10 @@ const MainContent: React.FC = () => {
     const handleSubmitComment = async (text: string, post: Post) => {
         const data = {
             text,
-            postId: post.global.id,
+            postId: `${post.postId}`,
             parentCommentId: null,
             userName: authUser.userName,
-            userId: authUser.id,
+            userId: `${authUser.id}`
         };
 
         const result = await postAddComment(data);
@@ -107,7 +107,7 @@ const MainContent: React.FC = () => {
         if (result.status === 200) {
             // Success adding comment, clear out comment text box
             const newCommentText = { ...commentText };
-            newCommentText[`${post.global.id}`] = '';
+            newCommentText[`${post.postId}`] = '';
             setCommentText(newCommentText);
         }
     }
@@ -119,7 +119,7 @@ const MainContent: React.FC = () => {
 
         // Open the comment dialog by setting the state in redux        
         const payload = {
-            postId: post.global.id
+            postId: post.postId
         };
 
         dispatch(actions.modalActions.openModal({ modalName: COMMENT_MODAL, data: payload }));
@@ -132,7 +132,7 @@ const MainContent: React.FC = () => {
 
         // Open the likes dialog by setting the state in redux        
         const payload = {
-            postId: post.global.id
+            postId: post.postId
         };
 
         dispatch(actions.modalActions.openModal({ modalName: LIKES_MODAL, data: payload }));
@@ -140,16 +140,16 @@ const MainContent: React.FC = () => {
 
     const renderCommentsSection = (post: Post) => {
         const [sanitizedHtml, sanitizedText] = getSanitizedText(post.global.captionText);
-        const overflowed: boolean = isOverflowed(`postid_${post.global.id}`);
+        const overflowed: boolean = isOverflowed(`postid_${post.postId}`);
 
-        const isExpanded = viewShowMoreStates[post.global.id as keyof typeof viewShowMoreStates]
+        const isExpanded = viewShowMoreStates[post.postId as keyof typeof viewShowMoreStates]
 
         return (
             <>
                 {sanitizedText?.length > 0 &&
                     <>
                         <CaptionContainer className={!isExpanded ? styles.lineClamp2 : {}}>
-                            <div id={`postid_${post.global.id}`}>
+                            <div id={`postid_${post.postId}`}>
                                 <span>
                                     <ProfileLink showUserName={true} showPfp={false} url={`${HOST}/${post.user.userName}`} text={post.user.userName}></ProfileLink>
                                     <span dangerouslySetInnerHTML={{ __html: sanitizedHtml }}></span>
@@ -157,7 +157,7 @@ const MainContent: React.FC = () => {
                             </div>
                         </CaptionContainer>
                         {(overflowed && !isExpanded) && <LightLink href="#"
-                            onClick={() => toggleCaptionViewMoreState(post.global.id)}>More</LightLink>}
+                            onClick={() => toggleCaptionViewMoreState(post.postId)}>More</LightLink>}
                     </>}
                 {post.global.commentCount > 0 &&
                     <Div $marginBottom="4px" $marginTop="4px">
@@ -167,12 +167,12 @@ const MainContent: React.FC = () => {
                 {!post.global?.commentsDisabled &&
                     <div>
                         <FlexRow>
-                            <CommentTextArea value={commentText[`${post.global.id}`]}
+                            <CommentTextArea value={commentText[`${post.postId}`]}
                                 placeholder="Add a new comment..."
                                 aria-label="Add a new comment..."
                                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
                                     const newCommentText = { ...commentText };
-                                    newCommentText[`${post.global.id}`] = e.currentTarget.value;
+                                    newCommentText[`${post.postId}`] = e.currentTarget.value;
                                     setCommentText(newCommentText);
                                 }
                                 }
@@ -186,23 +186,23 @@ const MainContent: React.FC = () => {
                                         // Prevent adding a new line
                                         e.preventDefault();
 
-                                        await handleSubmitComment(commentText[`${post.global.id}`], post);
+                                        await handleSubmitComment(commentText[`${post.postId}`], post);
                                     }
                                 }}
                             />
                             <Flex $marginTop="auto" $marginBottom="auto">
                                 {
-                                    (commentText[`${post.global.id}`] && commentText[`${post.global.id}`].length > 0) &&
+                                    (commentText[`${post.postId}`] && commentText[`${post.postId}`].length > 0) &&
                                     <Div $paddingLeft="5px" $paddingRight="5px">
                                         <StyledLink onClick={async () =>
-                                            await handleSubmitComment(commentText[`${post.global.id}`], post)}>
+                                            await handleSubmitComment(commentText[`${post.postId}`], post)}>
                                             Post
                                         </StyledLink>
                                     </Div>
                                 }
                                 <EmojiPickerPopup noPadding={true} onEmojiClick={(emoji: any) => {
                                     const newCommentText = { ...commentText };
-                                    newCommentText[`${post.global.id}`] += emoji.emoji;
+                                    newCommentText[`${post.postId}`] += emoji.emoji;
                                     setCommentText(newCommentText);
                                 }}></EmojiPickerPopup>
                             </Flex>
@@ -224,7 +224,7 @@ const MainContent: React.FC = () => {
                                     const isLiked = isPostLiked(authUser.userName, post);
 
                                     return (
-                                        <article key={post.global.id}>
+                                        <article key={post.postId}>
                                             <PostContainer>
                                                 <Div $paddingBottom="5px">
                                                     <ProfileLink showUserName={true} showPfp={true} text={post.user.userName} url={`${HOST}/${post.user.userName}`}></ProfileLink>
@@ -247,7 +247,7 @@ const MainContent: React.FC = () => {
                                                                     <Flex $paddingRight="8px">
                                                                         <LikeToggler
                                                                             isLiked={isLiked}
-                                                                            handleClick={() => toggleLike(post.global.id, authUser.userName, authUser.id)} />
+                                                                            handleClick={() => toggleLike(post.postId, authUser.userName, authUser.id)} />
                                                                     </Flex>
                                                                 </Div>
                                                             </span>

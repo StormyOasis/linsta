@@ -84,7 +84,7 @@ const postSliceCreator = (preloadedState?: any) => {
 
                 // Find the post in the list and update it with the new like state                
                 state.posts = state.posts.map((post:Post) => {
-                    if(post.global.id === postId) {
+                    if(post.postId === postId) {
                         // Found the post in the list
                         // Now update the state                        
                         return togglePostLikedState(userName, userId, post);

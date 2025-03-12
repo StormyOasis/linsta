@@ -88,7 +88,7 @@ const renderChangeForm = () => {
     const [password2, setPassword2] = useState("");
     const [isFinished, setIsFinished] = useState(false);
 
-    const [searchParams, setSearchParams] = useSearchParams();
+    const [searchParams, _setSearchParams] = useSearchParams();
 
     const token = searchParams.get('token');
     return (

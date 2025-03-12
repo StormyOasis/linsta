@@ -19,6 +19,10 @@ export type Media = {
 export type Like = {
     userName: string;
     userId: string;
+    profileId?: string;
+    firstName?: string;
+    lastName?: string;
+    pfp?: string|null;
 };
 
 export type Comment = {
@@ -28,11 +32,11 @@ export type Comment = {
     user: User;
     postId: string;
     parentCommentId: string | null;
-    children: string[];
     likes: Like[];
 };
 
 export type Post = {
+    postId: string;
     user: User;
     global: {
         id: string;

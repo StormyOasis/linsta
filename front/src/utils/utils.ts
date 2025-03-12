@@ -183,7 +183,7 @@ export const getDateAsText = (date: Date) => {
 
 export const getPostFromListById = (postId: string, posts: Post[]):Post => {
     for(let post of posts) {
-        if(post.global.id === postId) {
+        if(post.postId === postId) {
             return post;
         }
     }
@@ -198,7 +198,7 @@ export const isPostLiked = (userName: string, post: Post):boolean => {
 
     const result = post.global.likes.filter((like:any) => like.userName === userName);
 
-    return result.length > 0;
+    return result.length > 0;    
 }
 
 export const togglePostLikedState = (userName: string, userId: string, post: Post):(Post|null) => {
@@ -258,7 +258,7 @@ export const followUser = async (userId: string, followUserId: string, shouldFol
     const data = {
         follow: shouldFollow,
         userId: userId,
-        followerId: followUserId
+        followId: followUserId
     };
 
     const result = await postSetFollowStatus(data);

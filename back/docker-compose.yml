@@ -32,6 +32,10 @@ services:
       - "8182:8182"
     volumes:
       - "janusgraph-default-data:/var/lib/janusgraph"
+    environment:
+         # Configuration options for JanusGraph desribed at:
+         # https://docs.janusgraph.org/configs/configuration-reference
+         - graph.replace-instance-if-exists=true # addresses error described at       
 
   linsta-redis:
     image: redis/redis-stack-server

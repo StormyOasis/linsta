@@ -1,7 +1,8 @@
 import sanitizeHtml from 'sanitize-html';
-import { Post, Profile } from './types';
+import { Like, Post, Profile } from './types';
 import { buildSearchResultSet, search, searchProfile } from '../Connectors/ESConnector';
 import RedisConnector from '../Connectors/RedisConnector';
+import DBConnector, { EDGE_POST_LIKED_BY_USER, EDGE_POST_TO_USER, EDGE_USER_LIKED_POST } from '../Connectors/DBConnector';
 
 export const isEmail = (str: string) : boolean => {
     const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
@@ -82,40 +83,147 @@ export const parseRedisInfo = (infoString: string): RedisInfo => {
     return info;
 };
 
-export const getPostById = async (postId: string):Promise<Post|null> => {
-    // Attempt to pull from redis first
-    const result = await RedisConnector.get(postId);
-    if(result !== null) {
-        // Found in redis
-        return JSON.parse(result) as Post;
+export const getPostIdFromEsId = async (esId: string):Promise<string|null> => {    
+    // Get a list of all users that like the given post id
+    const result = await DBConnector.getGraph()?.V()
+        .hasLabel("Post")          
+        .has("esId", esId)
+        .project("id")
+        .by(DBConnector.__().id())
+        .next();    
+
+    if(result == null) {
+        throw new Error("Error getting post likes");
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const results:any = await search({
-        bool: {
-            must: [{
-                match: {_id: postId}                    
-            }]
+    if(result.value === null) {
+        return null;
+    }
+
+    return result.value.get("id");
+}
+
+export const getLikesByPost = async (postId: string):Promise<Like[]> => {
+    if(postId == null || postId.length === 0) {
+        return [];
+    }
+
+    const output:Like[] = [];
+
+    // Get a list of all users that like the given post id
+    const result = await DBConnector.getGraph()?.V(postId)
+        .inE(EDGE_USER_LIKED_POST)
+        .outV()
+        .project("userId", "userName", "profileId")
+        .by(DBConnector.__().id())
+        .by("userName")
+        .by("profileId")            
+        .toList();    
+
+    if(result == null) {
+        throw new Error("Error getting post likes");
+    }
+
+    for (const vertex of result) {
+        // Store the returned vertex info to return to user
+        // There HAS to be a less hacky feeling way to do this but I'm not sure
+        const props = [];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const propertyIter = (vertex as Map<any, any>).entries();
+        let property = await propertyIter.next();
+        
+        while(!property.done) {                
+            props.push(property.value[1]);
+            property = await propertyIter.next();
         }
-    }, null);
 
-    const entries:Post[] = buildSearchResultSet(results.body.hits.hits);
-    if(entries.length === 0) {
-        throw new Error("Post not found");
+        output.push({
+            userId: props[0],
+            userName: props[1],
+            profileId: props[2]
+        })
     }
 
-    // add to redis
-    await RedisConnector.set(postId, JSON.stringify(entries[0]));
+    return output;
+}
+
+export const getPostByPostId = async (postId: string):Promise<|{esId: string; post:Post}|null> => {
+    let esId: string = "";
+
+    // Try to pull the postId to ES id mapping from Redis
+    const postIdToESIdMapping:string|null = await RedisConnector.get(postId);
+    if(!postIdToESIdMapping) {
+        // If mapping not found in Redis then pull from the graph and set in redis
+        const result = await DBConnector.getGraph()?.V(postId).project("esId").by("esId").toList();
+
+        if(result == null) {
+            throw new Error("Error getting post");
+        }    
+
+        // Store the returned vertex info to return to user
+        // There HAS to be a less hacky feeling way to do this but I'm not sure            
+        for (const vertex of result) {            
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const propertyIter = (vertex as Map<any, any>).entries();
+            let property = await propertyIter.next();
+            
+            while(!property.done) {
+                esId = (property.value[1]);
+                property = await propertyIter.next();
+            }            
+        }
+    } else {
+        esId = postIdToESIdMapping;
+    }
+
+    if(esId == null || esId.length === 0) {
+        throw new Error("Invalid post id");
+    }
+
+    // Add to / update to Redis
+    await RedisConnector.set(postId, esId); 
     
-    return entries[0];
+    // esId should now contain the ES id for the given postId
+    // Now attempt to pull the full Post object from Redis
+
+    const data = await RedisConnector.get(esId);
+    let entries:Post[] = [];
+    if(data) {
+        entries[0] = JSON.parse(data);
+    } else {
+        // Pull Post data from ES
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const results:any = await search({
+            bool: {
+                must: [{
+                    match: {_id: esId}                    
+                }]
+            }
+        }, 1);
+        
+        entries = buildSearchResultSet(results.body.hits.hits);
+        if(entries.length === 0) {
+            throw new Error("Invalid post");
+        }
+    }
+
+    // Get post likes
+    entries[0].global.likes = await getLikesByPost(postId);
+    entries[0].postId = postId;
+
+    // Add to Redis
+    await RedisConnector.set(esId, JSON.stringify(entries[0]));    
+
+    return {esId, post: entries[0]};
 }
 
 export const getProfileByUserIdEx = async (userId: string):Promise<Profile|null> => {
-    return getProfile(userId, null);
+    return await getProfile(userId, null);
 }
 
 export const getProfileByUserNameEx = async (userName: string):Promise<Profile|null> => {
-    return getProfile(null, userName);
+    return await getProfile(null, userName);
 }
 
 const getProfile = async (userId: string|null, userName: string|null):Promise<Profile|null> => {

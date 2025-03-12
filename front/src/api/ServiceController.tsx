@@ -160,15 +160,6 @@ export const postToggleLike = async (data: any): Promise<ServiceResponse> => {
     }
 }
 
-export const postBulkGetInfoAndFollowStatus = async (data: any): Promise<ServiceResponse> => {
-    const res = await axios.post(`${host}/api/v1/accounts/bulkGetInfoAndFollowStatus`, data, {headers: authHeader()});
-    return {
-        data: res.data,
-        status: res.status,
-        statusText: res.statusText,
-    }
-}
-
 export const postSetFollowStatus = async (data: any): Promise<ServiceResponse> => {
     const res = await axios.post(`${host}/api/v1/accounts/follow`, data, {headers: authHeader()});
     return {
@@ -234,6 +225,15 @@ export const postUpdateProfile = async (data: any): Promise<ServiceResponse> => 
 
 export const postGetProfileStatsById = async (data: any): Promise<ServiceResponse> => {
     const res = await axios.post(`${host}/api/v1/profiles/getStatsById`, data, {headers: authHeader()});
+    return {
+        data: res.data,
+        status: res.status,
+        statusText: res.statusText,
+    }
+}
+
+export const postBulkGetProfileAndFollowStatus = async (data: any): Promise<ServiceResponse> => {
+    const res = await axios.post(`${host}/api/v1/profiles/bulkGetProfiles`, data, {headers: authHeader()});
     return {
         data: res.data,
         status: res.status,

@@ -17,7 +17,7 @@ import ShareSVG from "/public/images/send.svg";
 import { AuthUser } from "../../../../../api/Auth";
 import EmojiPickerPopup from "../../../../Common/EmojiPickerPopup";
 import StyledLink from "../../../../Common/StyledLink";
-import { CommentUiData, mapCommentsToCommentData, toggleCommentLike, toggleCommentReplyUiData, isCommentLiked } from "./CommentsModalUtils";
+import { CommentUiData, mapCommentsToCommentData, toggleCommentLike, toggleCommentReplyUiData, isCommentLiked, searchCommentsById } from "./CommentsModalUtils";
 import { LikeToggler, ViewLikesText } from "../../../../../Components/Common/Likes";
 import { LIKES_MODAL } from "../../../../../Components/Redux/slices/modals.slice";
 import { togglePostLike } from "../../../../../Components/Redux/slices/post.slice";
@@ -140,7 +140,7 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
     const dispatch = useAppDispatch();
 
     useEffect(() => {
-        postGetCommentsByPostId({ postId: props.post.global.id }).then((results) => {
+        postGetCommentsByPostId({ postId: props.post.postId }).then((results) => {            
             setComments(mapCommentsToCommentData(results.data, comments));
         }).catch(e => console.error(e))
     }, []);
@@ -193,21 +193,21 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                         </div>
                         <div>
                             {
-                                (commentUiData && commentUiData.children && commentUiData.children.length > 0) &&
+                                (commentUiData && commentUiData.children && commentUiData.childCount > 0) &&
                                 <>
                                     <ViewHideRepliesButton onClick={(e => {
                                         e.stopPropagation();
                                         setComments(toggleCommentReplyUiData(commentUiData, comments));
                                     })}>
                                         <ViewHideRepliesLine />
-                                        {!commentUiData.repliesVisibleFlag && <span>{`View replies (${commentUiData.children.length})`}</span>}
+                                        {!commentUiData.repliesVisibleFlag && <span>{`View replies (${commentUiData.childCount})`}</span>}
                                         {commentUiData.repliesVisibleFlag && <span>Hide replies</span>}
                                     </ViewHideRepliesButton>
 
                                     {commentUiData.repliesVisibleFlag &&
                                         <div>
-                                            {
-                                                commentUiData.children.map((c: CommentUiData) => {
+                                            {                                                
+                                                Object.values(commentUiData.children).map((c:any) => {
                                                     return renderSingleComment(
                                                         c.comment.commentId,
                                                         c.comment.text,
@@ -249,7 +249,7 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
 
         // Render the caption first
         nodes.push(renderSingleComment(
-            props.post.global.id,
+            props.post.postId,
             props.post.global.captionText,
             props.post.user,
             props.post.global.dateTime,
@@ -282,25 +282,52 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
     const handleSubmitComment = async (text: string, post: Post) => {
         const data = {
             text,
-            postId: post.global.id,
-            parentCommentId: parentCommentId,
-            userName: authUser.userName,
-            userId: authUser.id,
+            postId: `${post.postId}`,
+            parentCommentId: parentCommentId == null ? null : `${parentCommentId}`,
+            userName: `${authUser.userName}`,
+            userId: `${authUser.id}`,
         };
 
         const result = await postAddComment(data);
 
-        if (result.status === 200) {
+        if (result.status === 200) {            
+            // Update comment list with new comment
+            // To reduce server load, rather than pulling the comment list again
+            // just merge the comment into the local list
+            
+            const newComment: CommentUiData = {
+                comment: {
+                    commentId: result.data.id,
+                    dateTime: new Date(),
+                    text,
+                    user: {
+                        userName: data.userName,
+                        userId: data.userId
+                    },
+                    postId: post.postId,
+                    parentCommentId: parentCommentId,
+                    likes: []
+                },
+                repliesVisibleFlag: false,
+                children: {},
+                childCount: 0
+            };            
+
+            const newComments = Object.assign({}, comments);            
+            const parent = searchCommentsById(parentCommentId as string, newComments);
+            if(parent != null) {
+                // New comment is a child node
+                parent.childCount++;
+                parent.children[result.data.id] = newComment;
+            } else {
+                // New comment is a root node
+                newComments[result.data.id] = newComment;
+            }
+            
+            setComments(newComments);
             // Success adding comment, clear out comment text box
             setCommentText("");
-            setParentCommentId(null);
-
-            // Update comment list with new comment
-            // TODO: Fix this..shouldn't need to wrap this in a delay but ES doesn't always get updated in time when inserting
-            setTimeout(async () => {
-                const results = await postGetCommentsByPostId({ postId: post.global.id });
-                setComments(mapCommentsToCommentData(results.data, comments));
-            }, 1000);
+            setParentCommentId(null);         
         }
     }
 
@@ -311,7 +338,7 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
 
         // Open the likes dialog by setting the state in redux        
         const payload = {
-            postId: post.global.id
+            postId: post.postId
         };
 
         dispatch(actions.modalActions.openModal({ modalName: LIKES_MODAL, data: payload }));
@@ -371,7 +398,7 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                                             <LikeToggler
                                                 isLiked={isLiked}
                                                 handleClick={async () => {
-                                                    await toggleLike(props.post.global.id, authUser.userName, authUser.id)
+                                                    await toggleLike(props.post.postId, authUser.userName, authUser.id)
                                                 }}>
                                             </LikeToggler>
                                         </Flex>

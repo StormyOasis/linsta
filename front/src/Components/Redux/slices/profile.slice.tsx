@@ -1,7 +1,7 @@
 import { ActionReducerMapBuilder, createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { historyUtils } from "../../../utils/utils";
 import { Profile } from '../../../api/types';
-import { postGetProfileByUserId, postGetProfileByUserName, ServiceResponse  } from '../../../api/ServiceController';
+import { postGetProfileByUserId, postGetProfileByUserName  } from '../../../api/ServiceController';
 import { DEFAULT_PFP } from '../../../api/config';
 
 const NAME = "profile";

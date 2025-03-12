@@ -3,11 +3,20 @@ import config from 'config';
 import logger from '../logger/logger';
 import Metrics from '../metrics/Metrics';
 
-export type DbResult = {
-    affectedRows: number;
-    data: unknown[];
-    id: number;    
-};
+export const EDGE_POST_TO_USER:string = "post_to_user";
+export const EDGE_USER_TO_POST:string = "user_to_post";
+export const EDGE_USER_FOLLOWS:string = "user_follows";
+export const EDGE_USER_FOLLOWED_BY:string = "user_followed_by";
+export const EDGE_USER_LIKED_POST:string = "user_liked_post";
+export const EDGE_POST_LIKED_BY_USER:string = "post_liked_by_user";
+export const EDGE_USER_LIKED_COMMENT:string = "user_liked_comment";
+export const EDGE_COMMENT_LIKED_BY_USER:string = "comment_liked_by_user";
+export const EDGE_POST_TO_COMMENT:string = "post_to_comment";
+export const EDGE_COMMENT_TO_POST:string = "comment_to_post";
+export const EDGE_PARENT_TO_CHILD_COMMENT:string = "parent_to_child_comment";
+export const EDGE_CHILD_TO_PARENT_COMMENT:string = "child_to_parent_comment";    
+export const EDGE_COMMENT_TO_USER:string = "comment_to_user";    
+export const EDGE_USER_TO_COMMENT:string = "user_to_comment";    
 
 export class DBConnector {
     private static instance:DBConnector | null = null;
@@ -68,6 +77,13 @@ export class DBConnector {
         this.g = gremlin.process.AnonymousTraversalSource.traversal().withRemote(this.connection);
 
         logger.info("Connection created");     
+    }
+
+    public close = async () => {
+        if(this.connection?.isOpen) {
+            await this.connection?.close();
+            this.connection = null;
+        }
     }
 
     public T = () => {        

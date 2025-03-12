@@ -36,23 +36,7 @@ PUT main
               },
               "captionText": {
                 "type": "text"
-              },
-              "likes": {
-                "type": "nested",
-                "properties": {
-                  "user": {
-                    "type": "nested",
-                    "properties": {
-                      "userName": {
-                        "type": "text"
-                      },
-                      "userId": {
-                        "type": "long"
-                      }                      
-                    }
-                  }
-                }
-              }
+              }       
             }
           },
           "media": {
@@ -72,71 +56,6 @@ PUT main
               },
               "mimeType": {
                 "type": "text"
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-PUT comments 
-{
-  "mappings": {
-    "properties": {
-      "comment": {
-        "type": "nested",
-        "properties": {
-          "dateTime": {
-            "type": "date"
-          },
-          "text": {
-            "type": "text"
-          },
-          "postId": {
-            "type": "text"
-          },
-          "parentCommentId": {
-            "type": "text"
-          },              
-          "children": {
-            "type": "nested",
-            "properties": {
-                "comments": {
-                  "type": "nested",
-                  "properties": {
-                    "commentId": {
-                      "type": "text"
-                    }
-                  }                 
-                }
-              }
-          },       
-          "user": {
-            "type": "nested",
-            "properties": {
-              "userName": {
-                "type": "text"
-              },
-              "userId": {
-                "type": "long"
-              }                      
-            }
-          },
-          "likes": {
-            "type": "nested",
-            "properties": {
-              "user": {
-                "type": "nested",
-                "properties": {
-                  "userName": {
-                    "type": "text"
-                  },
-                  "userId": {
-                    "type": "long"
-                  }                      
-                }
               }
             }
           }

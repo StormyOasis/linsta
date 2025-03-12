@@ -5,7 +5,7 @@ import jwt, { SignOptions } from 'jsonwebtoken';
 import moment, { MomentInput } from "moment";
 import logger from "../logger/logger";
 import Metrics from "../metrics/Metrics";
-import DBConnector from "../Connectors/DBConnector";
+import DBConnector, { EDGE_USER_FOLLOWED_BY, EDGE_USER_FOLLOWS } from "../Connectors/DBConnector";
 import { isEmail, isPhone, isValidPassword, obfuscateEmail, obfuscatePhone } from "../utils/utils";
 import { SEND_CONFIRM_TEMPLATE, 
          FORGOT_PASSWORD_TEMPLATE, 
@@ -197,14 +197,13 @@ export const attemptCreateUser = async (ctx: Context) => {
         } else {
             // Attempt to insert a user vertex
             const result = await DBConnector.getGraph(true)?.addV("User")
-                .property("firstName", first)
-                .property("lastName", last)
                 .property("email", email)
                 .property("phone", phone)
                 .property("userName", data.userName)
                 .property("birthDate", birthDate.format("YYYY-MM-DD HH:mm:ss.000"))
                 .property("joinDate", timestamp)
                 .property("password", hashedPassword)
+                .property("pfp", null)
                 .next();                
 
             if(result == null || result.value == null) {
@@ -247,31 +246,14 @@ export const attemptCreateUser = async (ctx: Context) => {
             // Insert into ES
             const esResult = await insertProfile(profileData);
 
-            // Now add a profile vertex to the graph
-            let graphResult = await DBConnector.getGraph(true)?.addV("Profile")
+            // Now add update the profile id in the user vertex
+            const graphResult = await DBConnector.getGraph(true)?.V(userId)
                 .property("profileId", esResult._id)
                 .next();  
 
             if(graphResult == null || graphResult.value == null) {
                 throw new Error("Error creating profile");
             }
-
-            // Now add the edges between the profile and user verticies            
-            graphResult = await DBConnector.getGraph(true)?.V(graphResult.value.id)
-                .as('profile')
-                .V(userId)
-                .as('user')
-                .addE("profile_to_user")
-                .from_("profile")
-                .to("user")
-                .addE("user_to_profile").
-                from_("user")
-                .to("profile")            
-                .next();  
-
-            if(graphResult == null || graphResult.value == null) {
-                throw new Error("Error creating profile links");
-            }            
 
             await DBConnector.commitTransaction();
 
@@ -535,10 +517,10 @@ const sendForgotMessage = async (ctx: Context, email: string, phone: string, use
             .hasLabel("ForgotToken")
             .has("userId", userId)
             .as("forgot_user_id")
-            .addE("User_to_token")
+            .addE("user_to_token")
             .from_("user_id")
             .to("forgot_user_id")
-            .addE("Token_to_user")
+            .addE("token_to_user")
             .to("user_id")
             .from_("forgot_user_id")            
             .next();
@@ -718,7 +700,7 @@ export const changePassword = async (ctx: Context) => {
             let result = await DBConnector.getGraph(true)?.V()
                 .hasLabel("ForgotToken")
                 .has('token', token)
-                .out("Token_to_user")
+                .out("token_to_user")
                 .next();
 
             let value = result?.value;
@@ -737,7 +719,7 @@ export const changePassword = async (ctx: Context) => {
             }
 
             // Now delete the forgot token vertex
-            result = await DBConnector.getGraph(true)?.V(value.id).out("User_to_token").drop().next();       
+            result = await DBConnector.getGraph(true)?.V(value.id).out("user_to_token").drop().next();       
 
             // Done!
             await DBConnector.commitTransaction();
@@ -780,9 +762,12 @@ export const toggleFollowing = async (ctx: Context) => {
                 .hasLabel("User")
                 .has(DBConnector.T().id, data.followId)
                 .as("follow_id")
-                .addE("User_follows")
+                .addE(EDGE_USER_FOLLOWS)
                 .from_("user_id")
                 .to("follow_id")
+                .addE(EDGE_USER_FOLLOWED_BY)
+                .from_("follow_id")
+                .to("user_id")
                 .next();
 
             if(result == null || result?.value == null) {
@@ -791,15 +776,23 @@ export const toggleFollowing = async (ctx: Context) => {
         } else {
             // unfollow the given follower
             await DBConnector.getGraph(true)?.V(data.userId)
-                .outE("User_likes")
+                .outE(EDGE_USER_FOLLOWS)
                 .where(DBConnector.__().inV().hasId(data.followId))
                 .drop()
                 .next();
+
+            // unfollow the given follower
+            await DBConnector.getGraph(true)?.V(data.userId)
+                .inE(EDGE_USER_FOLLOWED_BY)
+                .where(DBConnector.__().outV().hasId(data.followId))
+                .drop()
+                .next();                
         }
 
         await DBConnector.commitTransaction();
 
     } catch(err) {
+        console.log(err);
         logger.error(err);
         await DBConnector.rollbackTransaction();
 
@@ -810,57 +803,4 @@ export const toggleFollowing = async (ctx: Context) => {
 
     ctx.status = 200;
     ctx.body = { status: "OK" };   
-}
-
-type BulkFollowResultEntry = {
-    firstName: string;
-    lastName: string;
-    userName: string;
-    userId: string;
-    followId?: string|null;
-    pfp?: string|null;
-}
-
-interface BulkFollowResultEntryInt {
-    [key: string]: BulkFollowResultEntry;
-}
-
-type BulkFollowDataType = {
-    userId: string;
-    userIds: string[];
-};
-
-export const postBulkGetInfoAndFollowStatus = async(ctx: Context) => {
-   /* Metrics.increment("accounts.postBulkGetInfoAndFollowStatus");
-
-    const data = <BulkFollowDataType>ctx.request.body;
-    
-    try {
-        const results = await DBConnector.query(`
-            SELECT 
-                u.FIRST_NAME AS firstName, 
-                u.LAST_NAME AS lastName, 
-                u.USERNAME AS userName, 
-                u.ID AS userId, 
-                f.USER_ID as followId
-            FROM Users u 
-            LEFT OUTER JOIN Follows f on f.FOLLOWS_USER_ID = u.id AND f.USER_ID = ?
-            WHERE u.ID IN (?)`, [data.userId, data.userIds]);
-
-        const resultMap:BulkFollowResultEntryInt = {};
-        results.data.map(entry => {            
-            const e = entry as BulkFollowResultEntry;
-            resultMap[e.userId] = e;
-        });            
-
-        ctx.body = resultMap;
-
-    } catch(err) {
-        logger.error(err);
-        ctx.status = 400;
-        ctx.body = { status: "Error getting follower statuses" };
-        return
-    }
-
-    ctx.status = 200;  */ 
 }
