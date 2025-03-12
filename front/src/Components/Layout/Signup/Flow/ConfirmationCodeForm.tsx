@@ -5,7 +5,8 @@ import { getAccountsSendVerifyNotification, postAccountsAttempt } from "../../..
 import StyledInput from "../../../../Components/Common/StyledInput";
 import StyledButton from "../../../../Components/Common/StyledButton";
 import { useDispatch } from "react-redux";
-import { AppDispatch, actions } from "../../../../Components/Redux/redux";
+import { AppDispatch } from "../../../../Components/Redux/redux";
+import { loginUser } from "../../../../Components/Redux/slices/auth.slice";
 
 const ConfirmationWrapper = styled.div`
     align-content: stretch;
@@ -137,7 +138,7 @@ const ConfirmationCodeForm: React.FC<ConfirmationCodeFormProps> = (props: Confir
             const userName = props.userName;
             const password = props.password;
 
-            dispatch(actions.authActions.login({userName, password}))
+            dispatch(loginUser({userName, password}))
         }
     }
 

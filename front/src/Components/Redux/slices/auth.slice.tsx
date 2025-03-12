@@ -54,25 +54,21 @@ const authSliceCreator = (preloadedState?: any) => {
     }
 
     const extraReducers = (builder: ActionReducerMapBuilder<any>) => {
-        function login() {
-            builder.addCase(loginUser.pending, (state) => {
-                state.status = "pending";
-                state.error = null;
-            }).addCase(loginUser.fulfilled, (state, action) => {
-                const user = action.payload;
-                localStorage.setItem("user", JSON.stringify(user));
-                state.user = user;
-                state.status = "succeeded";
-                state.error = null;
+        builder.addCase(loginUser.pending, (state) => {
+            state.status = "pending";
+            state.error = null;
+        }).addCase(loginUser.fulfilled, (state, action) => {
+            const user = action.payload;
+            localStorage.setItem("user", JSON.stringify(user));
+            state.user = user;
+            state.status = "succeeded";
+            state.error = null;
 
-                historyUtils.navigate("/");
-            }).addCase(loginUser.rejected, (state, action) => {
-                state.status = "failed";
-                state.error = action.error.message;
-            })
-        }
-
-        login();
+            historyUtils.navigate("/");
+        }).addCase(loginUser.rejected, (state, action) => {
+            state.status = "failed";
+            state.error = action.error.message;
+        });
     }
 
     const slice = createSlice({ name: NAME, initialState, reducers, extraReducers });

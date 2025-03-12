@@ -4,7 +4,8 @@ import { postToggleCommentLike } from "../../../../../api/ServiceController";
 export type CommentUiData = {
     repliesVisibleFlag: boolean;
     comment: Comment;
-    children: CommentUiData[];
+    children: any;
+    childCount: number;
 };
 
 export const isCommentLiked = (userName: string, comment: Comment): boolean => {
@@ -12,9 +13,9 @@ export const isCommentLiked = (userName: string, comment: Comment): boolean => {
         return false;
     }
 
-    const result = comment.likes.filter((like: any) => like.userName === userName);
+    const result = comment.likes?.filter((like: any) => like.userName === userName);
 
-    return result.length > 0;
+    return result && result.length > 0;
 }
 
 export const searchCommentsById = (commentId: string, comments: any): CommentUiData | null => {
@@ -59,35 +60,48 @@ export const searchCommentsById = (commentId: string, comments: any): CommentUiD
     return foundComment;
 }
 
-export const mapCommentsToCommentData = (comments: Comment[], existingComments: CommentUiData[]): any => {
+export const mapCommentsToCommentData = (comments: Comment[], existingComments: any): any => {
     if (comments == null || comments.length === 0) {
         return {};
     }
 
-    const tmpMap: any = {};
+    const commentMap: Map<string, CommentUiData> = new Map<string, CommentUiData>();
     const rootNodes: CommentUiData[] = [];
 
-    // Store all comments in a key-value pairing by commentId for easy retrieval
+    // Store all the comments in a key-value pair by comment id for quick retrieval
     comments.forEach((comment: Comment) => {
-        const existingComment: CommentUiData | null = existingComments[comment.commentId as keyof typeof existingComments] as CommentUiData;
-        const repliesVisibleFlag = existingComment != null ? existingComment.repliesVisibleFlag : false;
-        tmpMap[comment.commentId as keyof typeof tmpMap] = { 
-            comment, 
-            parentCommentId: comment.parentCommentId, 
-            children: [], 
-            repliesVisibleFlag };
+        const commentUiData: CommentUiData = {
+            repliesVisibleFlag: false,
+            comment: comment,
+            children: {},
+            childCount: 0
+        };
 
-        if (comment.parentCommentId === null) {
-            rootNodes.push(tmpMap[comment.commentId as keyof typeof tmpMap]);
-        }
+        commentUiData.repliesVisibleFlag = 
+            existingComments[comment.commentId] == null ? false : existingComments[comment.commentId].repliesVisibleFlag;
+
+        commentMap.set(comment.commentId, commentUiData);
     });
 
     // Convert the comments into a proper hierarchy
-    comments.forEach((comment: Comment) => {
-        comment.children.forEach((child: string) => {
-            tmpMap[comment.commentId as keyof typeof tmpMap].children.push(tmpMap[child]);
+    commentMap.forEach((entry) => {
+        if (entry.comment.parentCommentId !== null && commentMap.has(entry.comment.parentCommentId)) {
+
+            // `entry` points to a comment that is a child of another. Add the association to the parent's child array
+            
+            // Get parent node
+            const parent: CommentUiData|undefined = commentMap.get(entry.comment.parentCommentId);
+            if(parent == null) {
+                console.warn("Invalid parent comment");
+            } else {
+                // Add the current node as a child to the given parent
+                parent.children[entry.comment.commentId] = entry;
+                parent.childCount++;
+            }            
+        } else {
+            // `entry` does not have a parent so therefore it is a root node
+            rootNodes.push(entry);
         }
-        )
     });
 
     // Convert back to key-value pairs
@@ -149,7 +163,7 @@ export const toggleCommentLikedState = (userName: string, userId: string, commen
         return null;
     }
 
-    const index = comment.likes.findIndex((value: any) => value.userName === userName);
+    const index = comment.likes?.findIndex((value: any) => value.userName === userName);
 
     if (index === -1) {
         // Username is not in the comments's like list, so add it

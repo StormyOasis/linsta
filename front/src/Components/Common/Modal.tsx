@@ -173,7 +173,7 @@ export default class Modal extends React.Component<ModalProps> {
     }
 
     override render() {
-        const cont = document.getElementById("modalContainer");
+        const cont = document.getElementById("modalOverlay");
         if (cont == null) {
             throw new Error("No modal container");
         }

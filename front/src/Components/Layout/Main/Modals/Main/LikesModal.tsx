@@ -3,10 +3,12 @@ import styled from "styled-components";
 
 import MultiStepModal from "../../../../Common/MultiStepModal";
 import { Post } from "../../../../../api/types";
-import { postBulkGetInfoAndFollowStatus } from "../../../../../../src/api/ServiceController";
+import { postBulkGetProfileAndFollowStatus } from "../../../../../../src/api/ServiceController";
 import StyledButton from "../../../../../Components/Common/StyledButton";
 import { followUser } from "../../../../../utils/utils";
 import { Div, FlexColumn, FlexRow, Link, Span } from "../../../../../Components/Common/CombinedStyling";
+import { AuthUser } from "../../../../../api/Auth";
+import { useAppSelector } from "../../../../../Components/Redux/redux";
 
 type LikesModalProps = {
     onClose: any;
@@ -25,6 +27,7 @@ type BulkFollowResultEntry = {
     userId: string;
     followId?: string | null;
     pfp?: string | null;
+    isFollowing: boolean;
 }
 
 interface BulkFollowResultEntryInt {
@@ -57,12 +60,13 @@ const ProfilePicImg = styled.img`
 
 const LikesModalContent: React.FC<LikesModalContentProps> = (props: LikesModalContentProps) => {
     const [likeFollowData, setLikeFollowData] = useState<BulkFollowResultEntryInt | null>(null);
-
+    const authUser: AuthUser = useAppSelector((state: any) => state.auth.user);
+    
     useEffect(() => {
         const userIds: string[] = props.post.global.likes.map(entry => entry.userId);
         const userId: string = props.post.user.userId;
 
-        postBulkGetInfoAndFollowStatus({ userId, userIds }).then((result: any) => {
+        postBulkGetProfileAndFollowStatus({ userId, userIds }).then((result: any) => {
             setLikeFollowData(result.data);
         })
     }, []);
@@ -72,18 +76,18 @@ const LikesModalContent: React.FC<LikesModalContentProps> = (props: LikesModalCo
             return <></>;
         }
 
-        const results = props.post.global.likes.map(entry => {
-            if (entry.userId == props.post.user.userId) {
+        const results = props.post.global.likes.map(entry => {                 
+            if (entry.userId == props.post.user.userId || entry.userId == authUser.id) {
                 return <div key="0"></div>; //prevent 'element in list should have unique key' error
             }
 
             const lfd = likeFollowData[entry.userId];
             if (lfd == null) {
                 return <div key="0"></div>; //prevent 'element in list should have unique key' error
-            }
+            } 
 
             const pfp = lfd.pfp ? lfd.pfp : "/public/images/profile-user-default-pfp.svg";
-            const isFollowing = lfd.followId != null;
+            const isFollowing = lfd.isFollowing;
 
             return (
                 <LikeEntryContainer key={entry.userId}>
@@ -116,7 +120,7 @@ const LikesModalContent: React.FC<LikesModalContentProps> = (props: LikesModalCo
                                 style={{ marginBottom: "12px" }}
                                 useSecondaryColors={isFollowing}
                                 text={isFollowing ? "Following" : "Follow"}
-                                onClick={() => toggleFollowState(props.post.user.userId, entry.userId, !isFollowing)}>
+                                onClick={async () => await toggleFollowState(props.post.user.userId, entry.userId, !isFollowing)}>
                             </StyledButton>
                         </div>
                     </FlexRow>
@@ -130,10 +134,11 @@ const LikesModalContent: React.FC<LikesModalContentProps> = (props: LikesModalCo
     const toggleFollowState = async (userId: string, followUserId: string, shouldFollow: boolean) => {
         const result = await followUser(userId, followUserId, shouldFollow);
 
-        // If succesfull the state needs to be updated to reflect the new follow status
+        // If successful the state needs to be updated to reflect the new follow status
         if (result) {
             const newLikeFollowData = { ...likeFollowData };
             newLikeFollowData[followUserId].followId = shouldFollow ? followUserId : null;
+            newLikeFollowData[followUserId].isFollowing = shouldFollow;
             setLikeFollowData(newLikeFollowData);
         }
     }

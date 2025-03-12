@@ -1,11 +1,16 @@
 export type User = {
     userName: string;
     userId: string;
+    pfp: string;
 };
 
 export type Like = {
     userName: string;
     userId: string;
+    profileId?: string;
+    firstName?: string;
+    lastName?: string;
+    pfp?: string|null;
 };
 
 export type Global = {
@@ -13,7 +18,6 @@ export type Global = {
     dateTime: string;
     captionText: string;
     commentsDisabled: boolean;
-    commentCount: number;
     likesDisabled: boolean;
     locationText: string;
     likes: Like[];
@@ -28,6 +32,7 @@ export type Entry = {
 };
 
 export type Post = {
+    postId: string;
     user:User;
     global:Global;
     media:Entry[];
@@ -40,13 +45,10 @@ export type Comment = {
     user: User;
     postId: string;
     parentCommentId: string | null;
-    children: {        
-        commentId: string;
-    }[];
     likes: Like[];
 };
 
-export type Profile = {
+export interface Profile {
     id: string;
     bio?: string;
     pfp?: string;
@@ -57,4 +59,4 @@ export type Profile = {
     gender?: string;
     pronouns?: string;
     link?: string;
-};
+}

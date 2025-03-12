@@ -3,10 +3,10 @@ import formidable from 'formidable';
 import Metrics from "../metrics/Metrics";
 import { getFileExtByMimeType, sanitize, updateProfileInRedis } from "../utils/utils";
 import logger from "../logger/logger";
-import { count, updateProfile } from "../Connectors/ESConnector";
+import { searchProfile, updateProfile } from "../Connectors/ESConnector";
 import { getProfileByUserNameEx, getProfileByUserIdEx } from "../utils/utils";
 import { Profile } from "../utils/types";
-import DBConnector from "../Connectors/DBConnector";
+import DBConnector, { EDGE_USER_FOLLOWED_BY, EDGE_USER_FOLLOWS } from "../Connectors/DBConnector";
 import { removeFile, uploadFile } from "../Connectors/AWSConnector";
 
 type UpdateProfileRequest = {
@@ -171,42 +171,35 @@ export const getProfileStatsById = async(ctx: Context) => {
         };
 
         // First: Get the number of posts by the user
+        const postResult = await DBConnector.getGraph()?.V(data.userId).count().next();
+        if(postResult == null || postResult?.value == null) {
+            throw new Error("Failure getting post count");
+        }     
+        stats.postCount = postResult.value;
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any    
-        const results: any = await count({
-            nested: {
-                path: "post.user",
-                query: {
-                    bool: {
-                        must: [
-                            {
-                                match: {
-                                    "post.user.userId": data.userId
-                                }
-                            }
-                        ]
-                    }
-                }
-            }
-        });
+        // Second: Get the number of users this profile follows
+        const followerResult = await DBConnector.getGraph()?.V(data.userId)
+            .outE(EDGE_USER_FOLLOWS)
+            .count()
+            .next();
 
-        stats.postCount = results.body.count;
+        if(followerResult == null || followerResult?.value == null) {
+            throw new Error("Failure getting follower count");
+        }           
 
-        // Second: Get the number of followers for this user
-        const followerCount = await DBConnector.query(`
-            SELECT COUNT(*) as count
-            FROM Users u 
-            INNER JOIN Follows f on f.FOLLOWS_USER_ID = u.id AND f.USER_ID = ?`, [data.userId]);        
-        
-        stats.followerCount = (followerCount.data as [{count: number}]).at(0)?.count as number;
+        stats.followerCount = followerResult.value;
 
         // Third: Get the number of users following this user
-        const followingCount = await DBConnector.query(`
-            SELECT COUNT(*) as count
-            FROM Users u 
-            INNER JOIN Follows f on f.FOLLOWS_USER_ID = u.id AND f.FOLLOWS_USER_ID = ?`, [data.userId]);        
+        const followingResult = await DBConnector.getGraph()?.V(data.userId)
+            .inE(EDGE_USER_FOLLOWS)
+            .count()
+            .next();
+
+        if(followingResult == null || followingResult?.value == null) {
+            throw new Error("Failure getting following count");
+        }                   
         
-        stats.followingCount = (followingCount.data as [{count: number}]).at(0)?.count as number;        
+        stats.followingCount = followingResult.value;
 
         ctx.body = stats;
         ctx.status = 200;
@@ -273,4 +266,83 @@ export const putProfilePfp = async(ctx: Context) => {
         ctx.status = 400;
         return;        
     }    
+}
+
+type BulkGetProfilesRequest = {
+    userId: string;
+    userIds: string[];
+};
+
+export const bulkGetProfilesAndFollowing = async(ctx: Context) => {
+    Metrics.increment("profiles.bulkGetProfilesAndFollowing");
+
+    const data = <BulkGetProfilesRequest>ctx.request.body;
+
+    if (data.userId == null || data.userIds == null || data.userIds.length === 0) {
+        ctx.status = 400;
+        ctx.body = { status: "Invalid params passed" };
+        return;
+    }    
+
+    try {
+        // Find the profile data of the given user ids
+
+        // Get the profile data from ES
+        const results = await searchProfile({            
+            terms: {
+                userId: data.userIds
+            }
+        }, null);
+
+        interface ProfileWithFollowStatus extends Profile {
+            isFollowing: boolean;      
+        }
+
+        interface ProfileWithFollowStatusInt {
+            [key: string]: ProfileWithFollowStatus;
+        }        
+
+        const resultMap:ProfileWithFollowStatusInt = {};       
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any        
+        results.body.hits.hits.map((entry:any):ProfileWithFollowStatus => {
+            const profile:ProfileWithFollowStatus = entry._source as ProfileWithFollowStatus;
+            
+            profile.isFollowing = false; //defaulting to false                    
+            resultMap[profile.userId] = profile;
+
+            return profile;
+        });
+
+        // Pull the "follow" data for the specified user and see if found in above profile list.
+        // Get the users following this user
+        const followingResult = await DBConnector.getGraph()?.V(data.userId)
+            .in_(EDGE_USER_FOLLOWED_BY)
+            .project("Follower")
+            .by()
+            .toList();
+
+        if(followingResult != null) {
+            for(const result of followingResult) {            
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const map:Map<any, any> = (result as Map<any, any>);                
+                if(map.has("Follower")) {
+                    const vertex = map.get("Follower");
+                    // User at vertex is a follower to this user
+                    // so mark it in the list 
+                    if(resultMap[vertex.id] != null) {
+                        resultMap[vertex.id].isFollowing = true;
+                    }
+                }
+            }
+        }
+        
+        ctx.body = resultMap;
+        ctx.status = 200;
+    } catch(err) {
+        console.log(err);
+        logger.error(err);
+        ctx.status = 400;
+        return;          
+    }
 }

@@ -2,11 +2,12 @@ import { Context } from "koa";
 import formidable from 'formidable';
 import Metrics from "../metrics/Metrics";
 import logger from "../logger/logger";
-import { getFileExtByMimeType, sanitize } from "../utils/utils";
+import { getFileExtByMimeType, getLikesByPost, getPostByPostId, getPostIdFromEsId, sanitize } from "../utils/utils";
 import { uploadFile } from "../Connectors/AWSConnector";
-import { buildDataSetForES, buildSearchResultSet, insert, search, update } from '../Connectors/ESConnector';
-import { User, Global, Entry, Post } from "../utils/types";
+import { buildDataSetForES, buildSearchResultSet, insert, search } from '../Connectors/ESConnector';
+import { User, Global, Entry } from "../utils/types";
 import RedisConnector from "../Connectors/RedisConnector";
+import DBConnector, { EDGE_POST_LIKED_BY_USER, EDGE_POST_TO_USER, EDGE_USER_LIKED_POST, EDGE_USER_TO_POST } from "../Connectors/DBConnector";
 
 export const addPost = async (ctx: Context) => {
     Metrics.increment("posts.addPost");
@@ -26,7 +27,6 @@ export const addPost = async (ctx: Context) => {
     // strip out any potentially problematic html tags
     global.captionText = sanitize(global.captionText);
     global.locationText = sanitize(global.locationText);
-    global.likes = [];
 
     try {
         // Upload each file to s3
@@ -43,15 +43,47 @@ export const addPost = async (ctx: Context) => {
         // Now add the data to ES
         const dataSet = buildDataSetForES(user, global, entries);
 
-        const result = await insert(dataSet);        
-        if(result.result !== 'created') {
+        const esResult = await insert(dataSet);        
+        if(esResult.result !== 'created') {
             throw new Error("Error adding post");
         }
 
+        // Now add an associated vertex and edges to the graph for this post
+        DBConnector.beginTransaction();
+        
+        // Now add a post vertex to the graph
+        let graphResult = await DBConnector.getGraph(true)?.addV("Post")
+            .property("esId", esResult._id)
+            .next();  
+
+        if(graphResult == null || graphResult.value == null) {
+            throw new Error("Error creating post");
+        }
+
+        // Now add the edges between the post and user verticies            
+        graphResult = await DBConnector.getGraph(true)?.V(graphResult.value.id)
+            .as('post')
+            .V(user.userId)
+            .as('user')
+            .addE(EDGE_POST_TO_USER)
+            .from_("post")
+            .to("user")
+            .addE(EDGE_USER_TO_POST)
+            .from_("user")
+            .to("post")            
+            .next();  
+
+        if(graphResult == null || graphResult.value == null) {
+            throw new Error("Error creating profile links");
+        }       
+        
+        await DBConnector.commitTransaction();
+
         // Now add the post data to redis
-        await RedisConnector.set(result._id, JSON.stringify(dataSet));
+        await RedisConnector.set(esResult._id, JSON.stringify(dataSet));
 
     } catch(err) {
+        await DBConnector.rollbackTransaction();
         logger.error(err);
         ctx.status = 400;
         return;
@@ -71,14 +103,21 @@ export const getAllPosts = async (ctx: Context) => {
 
         const entries = buildSearchResultSet(results.body.hits.hits);
 
-        // Update redis with results
-        entries.forEach((entry) => {
-            RedisConnector.set(entry.global.id, JSON.stringify(entry));
-        });
+        // Add the like data and update redis with results
+        for(const entry of entries) {
+            const postId = await getPostIdFromEsId(entry.global.id);               
+            if(postId != null) {                
+                entry.postId = postId;
+                entry.global.likes = await getLikesByPost(postId);
+            }            
+
+            await RedisConnector.set(entry.global.id, JSON.stringify(entry));
+        }
 
         ctx.status = 200;
         ctx.body = entries;
     } catch(err) {
+        console.log(err);
         logger.error(err);
         ctx.status = 400;
         ctx.body = err;
@@ -100,34 +139,11 @@ export const getPostById = async(ctx: Context) => {
         return;
     }
 
-    try {
-        // Attempt to get it from redis first
-        const data = await RedisConnector.get(postId);
-        let entries:Post[] = [];
-        if(data) {
-            entries[0] = JSON.parse(data);
-        } else {
-            // Pull from ES
-
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const results:any = await search({
-                bool: {
-                    must: [{
-                        match: {_id: postId}                    
-                    }]
-                }
-            }, 1);
-
-            entries = buildSearchResultSet(results.body.hits.hits);
-            if(entries.length > 0) {
-                // Add to Redis
-                await RedisConnector.set(postId, JSON.stringify(entries[0]));
-            }
-        }
-
+    try { 
         ctx.status = 200;
-        ctx.body = entries;
+        ctx.body = await getPostByPostId(postId);
     } catch(err) {
+        console.log(err);
         logger.error(err);
         ctx.status = 400;
     }    
@@ -135,7 +151,6 @@ export const getPostById = async(ctx: Context) => {
 
 type LikeRequest = {
     postId: string;
-    userName: string;
     userId: string;
 }
 
@@ -144,59 +159,118 @@ export const toggleLikePost = async (ctx: Context) => {
 
     const data = <LikeRequest>ctx.request.body;
 
-    if (data.userName == null || data.postId == null || data.userId == null) {
+    if (data.postId == null || data.userId == null) {
         ctx.status = 400;
         ctx.body = { status: "Invalid params passed" };
         return;
     }
 
-    let isLiked:boolean = false;
+    let isLiked:boolean|undefined = false;
 
     try {
-        // Check if user currently likes this post or not
-        const results = await search(
-            {
-                bool: {
-                  must: [
-                    {
-                      match: { _id: data.postId }
-                    },
-                    {
-                      nested: {
-                        path: "post.global",
-                        query: {
-                          nested: {
-                            path: "post.global.likes",
-                            query: {
-                              bool: {
-                                must: [
-                                  {match: { "post.global.likes.userName": data.userName}}
-                                ]
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  ]
-                }
-            }, 1);   
-            
-        isLiked = (results.body.hits.hits.length === 1);
+        const __ = DBConnector.__();
 
-        // Toggle the like in ES
-        await update(data.postId, {
-            source: "if(ctx._source.post.global.likes.contains(params.newLikes)) {ctx._source.post.global.likes.remove(ctx._source.post.global.likes.indexOf(params.newLikes));} else {ctx._source.post.global.likes.add(params.newLikes)}",
-            lang: "painless",
-            params: {
-                newLikes: {userName: data.userName, userId: data.userId}
-            }
-        });
+        DBConnector.beginTransaction();
+
+        // Check the graph to see if the user likes the post
+        isLiked = await DBConnector.getGraph(true)?.V(data.userId)
+            .out(EDGE_USER_LIKED_POST)
+            .hasId(data.postId)
+            .hasNext();
+
+        if(isLiked) {
+            // User currently likes this post which means we need to unlike
+            // Drop both the edges            
+            await DBConnector.getGraph(true)?.V(data.postId)
+                .outE(EDGE_POST_LIKED_BY_USER)
+                .filter(__.inV().hasId(data.userId))
+                .drop()
+                .next();
+
+            await DBConnector.getGraph(true)?.V(data.userId)
+                .outE(EDGE_USER_LIKED_POST)
+                .filter(__.inV().hasId(data.postId))
+                .drop()
+                .next();           
+        } else {
+            // Need to like the post by adding the edges
+            const result = await DBConnector.getGraph(true)?.V(data.postId)
+                .as("post")
+                .V(data.userId)
+                .as("user")
+                .addE(EDGE_POST_LIKED_BY_USER)
+                .from_("post")
+                .to("user")
+                .addE(EDGE_USER_LIKED_POST)
+                .from_("user")
+                .to("post")
+                .next();
+
+            if(result == null || result.value == null) {
+                throw new Error("Error toggling like state");
+            }                   
+        }
+
+        await DBConnector.commitTransaction();        
 
         ctx.body = {liked: !isLiked};
         ctx.status = 200;
-    } catch(err) {
+    } catch(err) {        
+        logger.error(err);
+        await DBConnector.rollbackTransaction();
+        ctx.status = 400;
+    }
+}
+
+export const postIsPostLikedByUserId = async (ctx: Context) => {
+    Metrics.increment("posts.isPostLiked");
+
+    const data = <LikeRequest>ctx.request.body;
+
+    if (data.postId == null || data.userId == null) {
+        ctx.status = 400;
+        ctx.body = { status: "Invalid params passed" };
+        return;
+    }
+
+    let isLiked:boolean|undefined = false;
+
+    try {                
+        // Check the graph to see if the user likes the post
+        isLiked = await DBConnector.getGraph()?.V(data.userId)
+            .out(EDGE_USER_LIKED_POST)
+            .hasId(data.postId)
+            .hasNext();    
+
+        ctx.body = {liked: isLiked};
+        ctx.status = 200;
+    } catch(err) {        
+        logger.error(err);
+        ctx.status = 400;
+    }
+}
+
+type GetAllLikesByPostRequest = {
+    postId: string
+}
+
+export const getAllLikesByPost = async (ctx: Context) => {
+    Metrics.increment("posts.getAllLikesByPost");
+
+    const req = <GetAllLikesByPostRequest>ctx.request.query;
+    const postId = req.postId?.trim();
+    
+    if (!postId || postId.length === 0) {
         ctx.status = 400;
         return;
+    }
+
+    try {     
+        ctx.body = await getLikesByPost(postId);
+        ctx.status = 200;
+    } catch(err) {        
+        console.log(err);
+        logger.error(err);
+        ctx.status = 400;
     }
 }
