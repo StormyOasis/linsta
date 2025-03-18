@@ -46,6 +46,6 @@ export type StoreGetState = ConfiguredStore["getState"];
 export type RootState = ReturnType<StoreGetState>;
 export type AppDispatch = ConfiguredStore["dispatch"];
 
-// Use throughout instead `useDispatch` and `useSelector`
+// Use throughout instead of `useDispatch` and `useSelector`
 export const useAppDispatch = useDispatch.withTypes<AppDispatch>();
 export const useAppSelector = useSelector.withTypes<RootState>();

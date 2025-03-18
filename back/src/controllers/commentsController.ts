@@ -1,6 +1,6 @@
 import { Context } from "koa";
 import Metrics from "../metrics/Metrics";
-import { getPostByPostId, sanitize } from "../utils/utils";
+import { getPostByPostId, getVertexPropertySafe, sanitize } from "../utils/utils";
 import { Comment, Like, Post, User } from "../utils/types";
 import logger from "../logger/logger";
 import { update } from "../Connectors/ESConnector";
@@ -33,7 +33,6 @@ export const addComment = async (ctx: Context) => {
         }
 
         const post: Post = postById.post;
-        const esId: string = postById.esId;
 
         // Make sure that commenting is enabled for this post
         if(post.global.commentsDisabled) {
@@ -196,8 +195,8 @@ export const getCommentsByPostId = async (ctx: Context) => {
                 };
                 
                 newComment.commentId = vertex['id'];
-                newComment.dateTime = vertexProperties['dateTime'][0]['value'];
-                newComment.text = vertexProperties['text'][0]['value'];
+                newComment.dateTime = getVertexPropertySafe(vertexProperties, 'dateTime');
+                newComment.text = getVertexPropertySafe(vertexProperties, 'text');
 
                 commentMap.set(newComment.commentId, newComment);
             } else if(map.has("user")) {
@@ -210,8 +209,8 @@ export const getCommentsByPostId = async (ctx: Context) => {
                 };
                 
                 newUser.userId = vertex['id'];
-                newUser.userName = vertexProperties['userName'][0]['value'];
-                newUser.pfp = vertexProperties['pfp'] != null ? vertexProperties['pfp'][0]['value'] : "";
+                newUser.userName = getVertexPropertySafe(vertexProperties, 'userName');
+                newUser.pfp = getVertexPropertySafe(vertexProperties, 'pfp');
 
                 userMap.set(newUser.userId, newUser);
             } else if(map.has(EDGE_COMMENT_TO_USER)) {           
@@ -274,11 +273,11 @@ export const getCommentsByPostId = async (ctx: Context) => {
                         
                         const like: Like = {
                             userId: vertex.id,
-                            userName: vertexProperties['userName'][0]['value'],                            
-                            pfp: vertexProperties['pfp'] != null ? vertexProperties['pfp'][0]['value'] : "",
-                            firstName: vertexProperties['firstName'] != null ? vertexProperties['firstName'][0]['value'] : "",
-                            lastName: vertexProperties['lastName'] != null ? vertexProperties['lastName'][0]['value'] : "",
-                            profileId: vertexProperties['profileId'][0]['value'],
+                            userName: getVertexPropertySafe(vertexProperties, 'userName'),
+                            pfp: getVertexPropertySafe(vertexProperties, 'pfp'),
+                            firstName: getVertexPropertySafe(vertexProperties, 'firstName'),
+                            lastName: getVertexPropertySafe(vertexProperties, 'lastName'),
+                            profileId: getVertexPropertySafe(vertexProperties, 'profileId'),
                         };
 
                         likes.push(like);

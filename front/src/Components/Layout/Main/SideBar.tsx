@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import styled from "styled-components";
 import LogoSVG from "/public/images/linsta.svg";
 import HomeSVG from "/public/images/home.svg";
@@ -131,7 +131,6 @@ const SideBar: React.FC = () => {
     }
 
     const profileUrl = (!historyUtils.isServer && authUser) ? authUser.userName : undefined;
-
     if(historyUtils.isServer) {
         return null;
     }

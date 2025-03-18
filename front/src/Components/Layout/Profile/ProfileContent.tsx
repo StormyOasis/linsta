@@ -1,16 +1,14 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import * as styles from '../Main/Main.module.css';
 import { useParams } from "react-router-dom";
-import { ContentWrapper, Div, Flex, FlexColumn, FlexRow, FlexRowFullWidth, Main, Section, Span } from "../../../Components/Common/CombinedStyling";
-import { useAppDispatch, useAppSelector, actions } from "../../../Components/Redux/redux";
+import { ContentWrapper, Div, Flex, FlexColumn, FlexRowFullWidth, Main, Section } from "../../../Components/Common/CombinedStyling";
+import { useAppDispatch, actions } from "../../../Components/Redux/redux";
 import { Profile } from "../../../api/types";
 import { postGetProfileByUserName, postGetProfileStatsById, ServiceResponse } from "../../../api/ServiceController";
 import { getPfpFromProfile } from "../../../utils/utils";
 import StyledButton from "../../../Components/Common/StyledButton";
-import StyledLink from "../../../Components/Common/StyledLink";
-import { FOLLOWERS_MODAL, PROFILE_PIC_MODAL } from "../../../Components/Redux/slices/modals.slice";
-import { getProfileByUserId, getProfileByUserName } from "../../../Components/Redux/slices/profile.slice";
+import { FOLLOW_MODAL, PROFILE_PIC_MODAL } from "../../../Components/Redux/slices/modals.slice";
+import { FOLLOWERS_MODAL_TYPE, FOLLOWING_MODAL_TYPE } from "../Main/Modals/Profile/FollowersModal";
 
 const ProfilePicWrapper = styled(Div)`
     display: flex;
@@ -60,6 +58,19 @@ const ProfileStatLink = styled.a`
     text-decoration: none;
 `;
 
+const GridContainer = styled.div`
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* Creates 3 equal-width columns */
+    gap: 10px; /* Adds space between items */
+  `;
+  
+const GridItem = styled.div`
+    background-color: #f0f0f0;
+    padding: 20px;
+    border: 1px solid #ddd;
+    text-align: center;
+`;
+
 type ProfileStats = {
     postCount: number;
     followerCount: number;
@@ -67,33 +78,39 @@ type ProfileStats = {
 };
 
 const ProfileContent: React.FC = () => {
-    const profile: Profile = useAppSelector((state) => state.profile.profile);
-
+    const [profile, setProfile] = useState<Profile>();
     const [profileStats, setProfileStats] = useState<ProfileStats>();
     const { userName } = useParams();
 
     const dispatch = useAppDispatch();
 
     useEffect(() => {
-        dispatch(getProfileByUserName({userName})).then(async (result) => { 
-            const {data} = result.payload as ServiceResponse;
+        postGetProfileByUserName({userName}).then(async (result) => { 
+            setProfile(result.data);
 
-            const statsResult:ServiceResponse = await postGetProfileStatsById({ userId: data.userId });
-            
-            setProfileStats(statsResult.data as ProfileStats);
+            if(result.data != null) {
+                const statsResult:ServiceResponse = await postGetProfileStatsById({ userId: result.data.userId });        
+                setProfileStats(statsResult.data as ProfileStats);
+            }
         });
     }, []);
 
     const handleFollowerCountClick = () => {
         const payload = {
+            followModalType: FOLLOWERS_MODAL_TYPE,
             profile
         };
                 
-        dispatch(actions.modalActions.openModal({ modalName: FOLLOWERS_MODAL, data: payload }));        
+        dispatch(actions.modalActions.openModal({ modalName: FOLLOW_MODAL, data: payload }));        
     }
 
     const handleFollowingCountClick = () => {
-
+        const payload = {
+            followModalType: FOLLOWING_MODAL_TYPE,
+            profile
+        };
+                
+        dispatch(actions.modalActions.openModal({ modalName: FOLLOW_MODAL, data: payload }));   
     }
 
     const handlePfPClick = () => {
@@ -153,7 +170,29 @@ const ProfileContent: React.FC = () => {
                 </Section>
                 <Section>
                     <Flex>
-
+                        <GridContainer>
+                            <GridItem>
+                                asdasdasdas
+                            </GridItem>
+                            <GridItem>
+                                asdasdasdas
+                            </GridItem>
+                            <GridItem>
+                                asdasdasdas
+                            </GridItem>
+                            <GridItem>
+                                asdasdasdas
+                            </GridItem>
+                            <GridItem>
+                                asdasdasdas
+                            </GridItem>
+                            <GridItem>
+                                asdasdasdas
+                            </GridItem>
+                            <GridItem>
+                                asdasdasdas
+                            </GridItem>                                                                                                                                                                        
+                        </GridContainer>
                     </Flex>
                 </Section>
             </ContentWrapper>

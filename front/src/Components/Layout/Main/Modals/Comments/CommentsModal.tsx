@@ -165,6 +165,7 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                     <ProfileLink
                         showUserName={false}
                         showPfp={true}
+                        pfp={user.pfp}
                         url={`${HOST}/${user.userName}`}
                         text={user.userName}>
                     </ProfileLink>
@@ -302,7 +303,8 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                     text,
                     user: {
                         userName: data.userName,
-                        userId: data.userId
+                        userId: data.userId,
+                        pfp: ""
                     },
                     postId: post.postId,
                     parentCommentId: parentCommentId,
@@ -372,6 +374,7 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                                             <ProfileLink
                                                 showPfp={true}
                                                 showUserName={true}
+                                                pfp={props.post.user.pfp}
                                                 url={`${HOST}/${props.post.user.userName}`}
                                                 text={props.post.user.userName}
                                             >

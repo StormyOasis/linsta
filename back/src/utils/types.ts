@@ -1,7 +1,7 @@
 export type User = {
     userName: string;
     userId: string;
-    pfp: string;
+    pfp?: string;
 };
 
 export type Like = {
@@ -28,6 +28,8 @@ export type Entry = {
     alt: string;
     entityTag: string;
     url: string;
+    userId: string;
+    postId: string;
     mimeType: string|null;
 };
 
@@ -49,10 +51,10 @@ export type Comment = {
 };
 
 export interface Profile {
-    id: string;
+    profileId: string;
     bio?: string;
     pfp?: string;
-    userId: number;
+    userId: string;
     userName: string;
     firstName?: string;
     lastName?: string;
@@ -60,3 +62,12 @@ export interface Profile {
     pronouns?: string;
     link?: string;
 }
+
+export interface ProfileWithFollowStatus extends Profile {
+    isFollowed: boolean;
+    followers?: ProfileWithFollowStatus[];   
+}
+
+export interface ProfileWithFollowStatusInt {
+    [key: string]: ProfileWithFollowStatus;
+}        

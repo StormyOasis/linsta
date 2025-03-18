@@ -1,8 +1,9 @@
 import sanitizeHtml from 'sanitize-html';
 
 import { HistoryType, Post, Profile } from "../api/types";
-import { postSetFollowStatus } from '../api/ServiceController';
+import { postGetProfileByUserId, postSetFollowStatus } from '../api/ServiceController';
 import { DEFAULT_PFP } from '../api/config';
+import { getProfileByUserId } from 'src/Components/Redux/slices/profile.slice';
 
 export const historyUtils: HistoryType = {
     navigate: null,
@@ -272,4 +273,17 @@ export const getPfpFromProfile = (profile: Profile|null):string => {
     }
 
     return profile.pfp;
+}
+
+export const getPfpFromPost = (post: Post):string => {
+    if(post.user.pfp == null || post.user.pfp.length === 0) {
+       /* const result = postGetProfileByUserId({userId: post.user.userId});
+        if(result == null || result.status !== 200) {
+            return DEFAULT_PFP;
+        }        
+        return result.data.pfp;*/
+        return DEFAULT_PFP;
+    }    
+
+    return post.user.pfp;
 }

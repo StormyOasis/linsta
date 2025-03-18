@@ -2,9 +2,9 @@ import { Context } from "koa";
 import formidable from 'formidable';
 import Metrics from "../metrics/Metrics";
 import logger from "../logger/logger";
-import { getFileExtByMimeType, getLikesByPost, getPostByPostId, getPostIdFromEsId, sanitize } from "../utils/utils";
+import { getFileExtByMimeType, getLikesByPost, getPfpByUserId, getPostByPostId, getPostIdFromEsId, sanitize } from "../utils/utils";
 import { uploadFile } from "../Connectors/AWSConnector";
-import { buildDataSetForES, buildSearchResultSet, insert, search } from '../Connectors/ESConnector';
+import { buildDataSetForES, buildSearchResultSet, insert, search, update } from '../Connectors/ESConnector';
 import { User, Global, Entry } from "../utils/types";
 import RedisConnector from "../Connectors/RedisConnector";
 import DBConnector, { EDGE_POST_LIKED_BY_USER, EDGE_POST_TO_USER, EDGE_USER_LIKED_POST, EDGE_USER_TO_POST } from "../Connectors/DBConnector";
@@ -25,6 +25,7 @@ export const addPost = async (ctx: Context) => {
     const entries:Entry[] = JSON.parse(data.entries);
 
     // strip out any potentially problematic html tags
+    user.userId = sanitize(user.userId);
     global.captionText = sanitize(global.captionText);
     global.locationText = sanitize(global.locationText);
 
@@ -38,6 +39,7 @@ export const addPost = async (ctx: Context) => {
             entry.url = result.url;
             entry.mimeType = file.mimetype;
             entry.alt = sanitize(entry.alt);
+            entry.userId = user.userId;
         }
 
         // Now add the data to ES
@@ -60,6 +62,8 @@ export const addPost = async (ctx: Context) => {
             throw new Error("Error creating post");
         }
 
+        const postId: string = graphResult.value.id;
+
         // Now add the edges between the post and user verticies            
         graphResult = await DBConnector.getGraph(true)?.V(graphResult.value.id)
             .as('post')
@@ -79,7 +83,30 @@ export const addPost = async (ctx: Context) => {
         
         await DBConnector.commitTransaction();
 
-        // Now add the post data to redis
+        // Update the media entries with the postId for easier
+        // and faster lookup. First update in ES
+        await update(esResult._id, {
+            source:
+                `for (int i = 0; i < ctx._source.post.media.size(); i++) {
+                    ctx._source.post.media[i].postId = params.postId;
+                }
+            `,
+            "params": {
+                "postId": `${postId}`
+            },
+            "lang": "painless"
+        });
+
+        // Now update the data set that is put into redis adding the postId
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (dataSet as any).post.media = entries.map((entry:Entry) => {
+            const newData = {...entry};
+            newData.postId = postId;
+            return newData;
+        });
+
+        // Finally add the post data to redis
         await RedisConnector.set(esResult._id, JSON.stringify(dataSet));
 
     } catch(err) {
@@ -101,7 +128,7 @@ export const getAllPosts = async (ctx: Context) => {
             match_all: {}            
         }, null);
 
-        const entries = buildSearchResultSet(results.body.hits.hits);
+        const entries = await buildSearchResultSet(results.body.hits.hits);
 
         // Add the like data and update redis with results
         for(const entry of entries) {
@@ -109,6 +136,7 @@ export const getAllPosts = async (ctx: Context) => {
             if(postId != null) {                
                 entry.postId = postId;
                 entry.global.likes = await getLikesByPost(postId);
+                entry.user.pfp = await getPfpByUserId(entry.user.userId);
             }            
 
             await RedisConnector.set(entry.global.id, JSON.stringify(entry));
