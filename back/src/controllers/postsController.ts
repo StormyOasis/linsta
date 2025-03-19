@@ -4,8 +4,8 @@ import Metrics from "../metrics/Metrics";
 import logger from "../logger/logger";
 import { getFileExtByMimeType, getLikesByPost, getPfpByUserId, getPostByPostId, getPostIdFromEsId, sanitize } from "../utils/utils";
 import { uploadFile } from "../Connectors/AWSConnector";
-import { buildDataSetForES, buildSearchResultSet, insert, search, update } from '../Connectors/ESConnector';
-import { User, Global, Entry } from "../utils/types";
+import { buildDataSetForES, buildSearchResultSet, insert, search, searchWithPagination, update } from '../Connectors/ESConnector';
+import { User, Global, Entry, Post } from "../utils/types";
 import RedisConnector from "../Connectors/RedisConnector";
 import DBConnector, { EDGE_POST_LIKED_BY_USER, EDGE_POST_TO_USER, EDGE_USER_LIKED_POST, EDGE_USER_TO_POST } from "../Connectors/DBConnector";
 
@@ -300,5 +300,102 @@ export const getAllLikesByPost = async (ctx: Context) => {
         console.log(err);
         logger.error(err);
         ctx.status = 400;
+    }
+}
+
+type GetPostsByUserIdRequest = {
+    userId: string;
+    dateTime?: string;
+    postId?: string;
+};
+
+type GetPostsByUserIdResponse = {
+    posts: Post[];
+    dateTime: string;
+    postId: string;
+    done: boolean;
+}
+
+export const getPostsByUserId = async (ctx: Context) => {
+    Metrics.increment("posts.getPostsByUserId");
+
+    const data = <GetPostsByUserIdRequest>ctx.request.body;
+
+    if (data.userId == null) {
+        ctx.status = 400;
+        ctx.body = { status: "Invalid params passed" };
+        return;
+    }
+
+    try {
+        // Return a paginated list of the user's posts
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const query: any = {
+            query: {
+                nested: {
+                    path: "post.media",
+                    query: {
+                        bool: {
+                            must: [
+                                {
+                                    match: {
+                                        "post.media.userId": data.userId
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            sort: [
+                {
+                    "post.global.dateTime": {
+                        "order": "asc",
+                        "nested": {
+                            "path": "post.global"
+                        }
+                    }
+                },
+                {
+                    "post.media.postId": {
+                        "order": "asc",
+                        "nested": {
+                            "path": "post.media"
+                        }
+                    }
+                }
+            ]
+        };
+
+        if (data.dateTime != null && data.postId != null) {
+            query.search_after = [data.dateTime, data.postId];
+        }
+
+        const results = await searchWithPagination(query);
+
+        const response: GetPostsByUserIdResponse = {
+            posts: [],
+            dateTime: "",
+            postId: "",
+            done: true
+        };
+
+        if (results.body.hits.hits.length > 0) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const hits: any = results.body.hits.hits;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            response.posts = hits.map((entry: any) => entry._source.post);
+            response.dateTime = hits[hits.length - 1].sort[0];
+            response.postId = hits[hits.length - 1].sort[1];
+            response.done = false;
+        }
+
+        ctx.body = response;
+        ctx.status = 200;
+    } catch (err) {
+        console.log(err);
+        logger.error(err);
+        ctx.status = 400;
+        return;
     }
 }

@@ -10,10 +10,10 @@ import {
 } from './controllers/accountsController';
 import { verifyJWT } from "./auth/Auth";
 import { getLocation } from "./controllers/locationsController";
-import { addPost, getAllLikesByPost, getAllPosts, getPostById, postIsPostLikedByUserId, toggleLikePost } from "./controllers/postsController";
+import { addPost, getAllLikesByPost, getAllPosts, getPostById, postIsPostLikedByUserId, toggleLikePost, getPostsByUserId } from "./controllers/postsController";
 import { addComment, getCommentsByPostId, toggleCommentLike } from "./controllers/commentsController";
 import {
-    bulkGetProfilesAndFollowing, getFollowersByUserId, getFollowingByUserId, getMediaByUserId, getPostProfileByUserId, getPostProfileByUserName,
+    bulkGetProfilesAndFollowing, getFollowersByUserId, getFollowingByUserId, getPostProfileByUserId, getPostProfileByUserName,
     getProfileStatsById, putProfilePfp, updateProfileByUserId
 } from "./controllers/profilesController";
 
@@ -39,6 +39,7 @@ router.get("/api/v1/posts/getPostById", verifyJWT, getPostById);
 router.post("/api/v1/posts/likePost", verifyJWT, toggleLikePost);
 router.post("/api/v1/posts/isPostLikedByUser", verifyJWT, postIsPostLikedByUserId);
 router.get("/api/v1/posts/getAllLikesByPost", verifyJWT, getAllLikesByPost);
+router.post("/api/v1/posts/getByUserId", verifyJWT, getPostsByUserId);
 
 // comment handlers
 router.post("/api/v1/comment/add", verifyJWT, addComment);
@@ -54,6 +55,5 @@ router.post("/api/v1/profiles/getByUserName", verifyJWT, getPostProfileByUserNam
 router.post("/api/v1/profiles/getStatsById", verifyJWT, getProfileStatsById);
 router.post("/api/v1/profiles/bulkGetProfiles", verifyJWT, bulkGetProfilesAndFollowing);
 router.put("/api/v1/profiles/updatePfp", verifyJWT, putProfilePfp);
-router.post("/api/v1/profiles/getMediaByUserId", verifyJWT, getMediaByUserId);
 
 export default router;

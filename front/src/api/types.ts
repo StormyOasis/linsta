@@ -73,3 +73,13 @@ export interface ProfileWithFollowStatus extends Profile {
 export interface ProfileWithFollowStatusInt {
     [key: string]: ProfileWithFollowStatus;
 } 
+
+export interface PaginationResponse {    
+    dateTime: string;
+    postId: string;
+    done: boolean;
+}
+
+export interface PostPaginationResponse extends PaginationResponse {
+    posts: Post[];
+}

@@ -258,3 +258,12 @@ export const postBulkGetProfileAndFollowStatus = async (data: any): Promise<Serv
         statusText: res.statusText,
     }
 }
+
+export const postGetPostsByUserId = async (data: any): Promise<ServiceResponse> => {
+    const res = await axios.post(`${host}/api/v1/posts/getByUserId`, data, {headers: authHeader()});
+    return {
+        data: res.data,
+        status: res.status,
+        statusText: res.statusText,
+    }
+}
