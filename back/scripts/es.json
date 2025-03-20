@@ -9,7 +9,7 @@ PUT main
             "type": "nested",
             "properties": {
               "userId": {
-                "type": "long"
+                "type": "text"
               },
               "userName": {
                 "type": "text"
@@ -45,8 +45,14 @@ PUT main
               "id": {
                 "type": "text"
               },
+              "userId": {
+                "type": "keyword"
+              },    
+              "postId": {
+                "type": "keyword"
+              },                          
               "entityTag": {
-                "type": "text"
+                "type": "keyword"
               },
               "path": {
                 "type": "text"

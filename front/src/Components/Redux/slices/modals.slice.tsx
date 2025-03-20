@@ -5,7 +5,7 @@ export const NEW_POST_MODAL = "newPostModal";
 export const COMMENT_MODAL = "commentModal";
 export const LIKES_MODAL = "likeModal";
 export const PROFILE_PIC_MODAL = "pfpModal";
-export const FOLLOWERS_MODAL = "followersModal";
+export const FOLLOW_MODAL = "followModal";
 
 const NAME = "modals";
 
@@ -86,7 +86,6 @@ const modalSliceCreator = (preloadedState?: any) => {
     }
 
     const slice = createSlice({ name: NAME, initialState, reducers, extraReducers });
-
     const modalActions = { ...slice.actions, ...actions };
     const modalReducer = slice.reducer;
 

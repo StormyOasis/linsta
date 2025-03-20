@@ -1,5 +1,4 @@
 import React, { useEffect } from "react";
-import { styled } from "styled-components";
 import { Navigate, Route, Routes } from "react-router-dom";
 import LoginLayout from "../../Components/Layout/Login/LoginLayout";
 import MainLayout from "../../Components/Layout/Main/MainLayout";
@@ -12,25 +11,11 @@ import { useSelector } from "react-redux";
 import Private from "../Common/Private";
 import { FlexColumn } from "../Common/CombinedStyling";
 import ModalManager from "../../Components/Layout/Main/Modals/ModalManager";
-import { useAppDispatch } from "../Redux/redux";
-import { getProfileByUserId } from "../Redux/slices/profile.slice";
 import ProfileLayout from "./Profile/ProfileLayout";
-
-const Section = styled(FlexColumn)`
-    display: flex;
-`;
 
 const Layout: React.FC = () => {
     const authUser = useSelector((value:any) => value?.auth?.user);
-
-    const dispatch = useAppDispatch();
-
-    useEffect(() => {
-        if ((!historyUtils.isServer && authUser && authUser.id != null)) {
-            dispatch(getProfileByUserId({userId: authUser.id}));
-        }                
-    }, []);    
-    
+        
     const renderHeader = () => {
         //const path = historyUtils.location.pathname.toLowerCase();
         // Don't want to display the header on the login or signup routes
@@ -46,7 +31,7 @@ const Layout: React.FC = () => {
 
     return (
         <>            
-            <Section id="mainSectionContainer">
+            <FlexColumn id="mainSectionContainer">
                 <ModalManager />
                 {renderHeader()}
                 <Routes>
@@ -58,7 +43,7 @@ const Layout: React.FC = () => {
                     <Route path="/change_password/*" element={<ChangePasswordLayout />} />
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
-            </Section>
+            </FlexColumn>
         </>
     );
 }

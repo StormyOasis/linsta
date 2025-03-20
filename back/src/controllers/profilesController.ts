@@ -1,12 +1,12 @@
 import { Context } from "koa";
 import formidable from 'formidable';
 import Metrics from "../metrics/Metrics";
-import { getFileExtByMimeType, sanitize, updateProfileInRedis } from "../utils/utils";
+import { getFileExtByMimeType, getVertexPropertySafe, sanitize, updateProfileInRedis } from "../utils/utils";
 import logger from "../logger/logger";
-import { searchProfile, updateProfile } from "../Connectors/ESConnector";
-import { getProfileByUserNameEx, getProfileByUserIdEx } from "../utils/utils";
-import { Profile } from "../utils/types";
-import DBConnector, { EDGE_USER_FOLLOWED_BY, EDGE_USER_FOLLOWS } from "../Connectors/DBConnector";
+import { search, searchWithPagination, updateProfile } from "../Connectors/ESConnector";
+import { getProfileByUserName, getProfileByUserId } from "../utils/utils";
+import { Entry, Post, Profile, ProfileWithFollowStatus, ProfileWithFollowStatusInt } from "../utils/types";
+import DBConnector, { EDGE_USER_FOLLOWS } from "../Connectors/DBConnector";
 import { removeFile, uploadFile } from "../Connectors/AWSConnector";
 
 type UpdateProfileRequest = {
@@ -42,14 +42,14 @@ export const updateProfileByUserId = async (ctx: Context) => {
         const lastName = sanitize(data.lastName ? data.lastName : "");
 
         // Need to get the ES id of the profile
-        const profile: Profile|null = await getProfileByUserIdEx(data.userId);
+        const profile: Profile|null = await getProfileByUserId(data.userId);
 
         if(profile === null) {
             throw new Error("Invalid profile for user id");
         }
 
         // Send updated profile data to ES
-        await updateProfile(profile.id, undefined, {
+        await updateProfile(profile.profileId, undefined, {
             doc: {
                 bio,
                 pfp,
@@ -60,6 +60,24 @@ export const updateProfileByUserId = async (ctx: Context) => {
                 lastName
             }
         });
+
+        // Update the profile in the DB
+        DBConnector.beginTransaction();
+        const results = await DBConnector.getGraph(true)?.V(data.userId)
+            .property("bio", bio)
+            .property("pronouns", pronouns)
+            .property("link", link)
+            .property("gender", gender)
+            .property("firstName", firstName)
+            .property("lastName", lastName)
+            .property("pfp", pfp)
+            .next();
+
+        if(results == null || results.value == null) {
+            throw new Error("Error updating DB");
+        }
+        
+        await DBConnector.commitTransaction();
 
         // Update local profile object with the new values before storing in redis
         profile.bio = bio;
@@ -75,6 +93,7 @@ export const updateProfileByUserId = async (ctx: Context) => {
 
         ctx.status = 200;
     } catch(err) {
+        DBConnector.rollbackTransaction();
         logger.error(err);
         ctx.status = 400;
         ctx.body = "Error updating profile";
@@ -86,8 +105,8 @@ type GetProfileByUserIdRequest = {
     userId: string;
 };
 
-export const getProfileByUserId = async (ctx: Context) => {
-    Metrics.increment("profiles.getProfileByUserId");
+export const getPostProfileByUserId = async (ctx: Context) => {
+    Metrics.increment("profiles.getPostProfileByUserId");
 
     const data = <GetProfileByUserIdRequest>ctx.request.body;
 
@@ -98,7 +117,7 @@ export const getProfileByUserId = async (ctx: Context) => {
     }
 
     try {
-        const profile: Profile|null = await getProfileByUserIdEx(data.userId);
+        const profile: Profile|null = await getProfileByUserId(data.userId);
         if(profile === null) {
             throw new Error("Invalid profile");
         }
@@ -106,6 +125,7 @@ export const getProfileByUserId = async (ctx: Context) => {
         ctx.body = profile;
         ctx.status = 200;
     } catch(err) {
+        console.log(err);
         logger.error(err);
         ctx.status = 400;
         return;        
@@ -116,8 +136,8 @@ type GetProfileByUserNameRequest = {
     userName: string;
 };
 
-export const getProfileByUserName = async (ctx: Context) => {
-    Metrics.increment("profiles.getProfileByUserName");    
+export const getPostProfileByUserName = async (ctx: Context) => {
+    Metrics.increment("profiles.getPostProfileByUserName");    
 
     const data = <GetProfileByUserNameRequest>ctx.request.body;
 
@@ -128,7 +148,7 @@ export const getProfileByUserName = async (ctx: Context) => {
     }
 
     try {
-        const profile: Profile|null = await getProfileByUserNameEx(data.userName);
+        const profile: Profile|null = await getProfileByUserName(data.userName);
         if(profile === null) {
             throw new Error("Invalid profile");
         }
@@ -136,6 +156,7 @@ export const getProfileByUserName = async (ctx: Context) => {
         ctx.body = profile;
         ctx.status = 200;
     } catch(err) {
+        console.log(err);
         logger.error(err);
         ctx.status = 400;
         return;        
@@ -177,7 +198,7 @@ export const getProfileStatsById = async(ctx: Context) => {
         }     
         stats.postCount = postResult.value;
 
-        // Second: Get the number of users this profile follows
+        // Second: Get the number of users this profile is following
         const followerResult = await DBConnector.getGraph()?.V(data.userId)
             .outE(EDGE_USER_FOLLOWS)
             .count()
@@ -187,7 +208,7 @@ export const getProfileStatsById = async(ctx: Context) => {
             throw new Error("Failure getting follower count");
         }           
 
-        stats.followerCount = followerResult.value;
+        stats.followingCount = followerResult.value;
 
         // Third: Get the number of users following this user
         const followingResult = await DBConnector.getGraph()?.V(data.userId)
@@ -199,7 +220,7 @@ export const getProfileStatsById = async(ctx: Context) => {
             throw new Error("Failure getting following count");
         }                   
         
-        stats.followingCount = followingResult.value;
+        stats.followerCount = followingResult.value;
 
         ctx.body = stats;
         ctx.status = 200;
@@ -227,7 +248,7 @@ export const putProfilePfp = async(ctx: Context) => {
     }    
 
     try {
-        const profile:Profile|null = await getProfileByUserIdEx(data.userId);
+        const profile:Profile|null = await getProfileByUserId(data.userId);
 
         if(profile === null) {
             throw new Error("Invalid profile");
@@ -246,14 +267,20 @@ export const putProfilePfp = async(ctx: Context) => {
             }
         }
 
-        // Now update the profile data with the new pfp 
-        await updateProfile(profile.id, undefined, {
+        profile.pfp = url;
+
+        // Now update the profile data in ES with the new pfp 
+        await updateProfile(profile.profileId, undefined, {
             doc: {
                 pfp: url,
             }
-        });
+        });                
 
-        profile.pfp = url;
+        // Update the entry in the DB
+        const result = await DBConnector.getGraph()?.V(profile.userId).property("pfp", url).next();
+        if(result == null || result.value == null) {
+            throw new Error("Error updating DB");
+        }
 
         // Profile has just been updated, need to upsert into redis
         await updateProfileInRedis(profile);        
@@ -267,6 +294,193 @@ export const putProfilePfp = async(ctx: Context) => {
         return;        
     }    
 }
+
+type GetFollowingByUserIdRequest = {
+    userId: string;
+};
+
+export const getFollowingByUserId = async(ctx: Context) => {
+    Metrics.increment("profiles.getFollowingByUserId");
+
+    const data = <GetFollowingByUserIdRequest>ctx.request.body;
+
+    if (data.userId == null) {
+        ctx.status = 400;
+        ctx.body = { status: "Invalid user id" };
+        return;
+    }
+
+    try {
+
+        // Find the following profiles from the specified user id
+
+        // Now get the follow data
+        const __ = DBConnector.__();
+        const results = await DBConnector.getGraph()?.V(data.userId)
+            .hasLabel('User')
+            .group()
+            .by("userName")
+            .by(
+                __.out(EDGE_USER_FOLLOWS)
+                .project('followers')
+                .by()      
+                .by(
+                    __.unfold()
+                    .hasLabel('User')
+                    .values("userName")
+                    .fold()
+                )
+                .unfold()
+                .select(DBConnector.Column().values)
+                .fold()                
+            )
+            .toList();     
+            
+        if(results == null) {
+            ctx.status = 200;
+            return;
+        }
+
+        const following:ProfileWithFollowStatus[] = [];
+        for(const result of results) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const map:Map<any, any> = (result as Map<any, any>);
+            for(const entry of map) {                                
+                for(const user of entry[1]) {                    
+                    const vertexProperties = user.properties;
+                    
+                    const profile:ProfileWithFollowStatus = {                        
+                        profileId: getVertexPropertySafe(vertexProperties, 'profileId'),
+                        bio: getVertexPropertySafe(vertexProperties, 'bio'),
+                        pfp: getVertexPropertySafe(vertexProperties, 'pfp'),
+                        userId: user.id,
+                        userName: getVertexPropertySafe(vertexProperties, 'userName'),
+                        firstName: getVertexPropertySafe(vertexProperties, 'firstName'),
+                        lastName: getVertexPropertySafe(vertexProperties, 'lastName'),
+                        gender: getVertexPropertySafe(vertexProperties, 'gender'),
+                        pronouns: getVertexPropertySafe(vertexProperties, 'pronouns'),
+                        link: getVertexPropertySafe(vertexProperties, 'link'),
+                        isFollowed: true
+                    };
+
+                    following.push(profile);                    
+                }
+            }
+        }
+       
+        ctx.body = following;
+        ctx.status = 200;
+    } catch(err) {
+        console.log(err);
+        logger.error(err);
+        ctx.status = 400;       
+    }
+}
+
+type GetFollowersByUserIdRequest = {
+    userId: string;
+};
+
+export const getFollowersByUserId = async(ctx: Context) => {
+    Metrics.increment("profiles.getFollowersByUserId");
+
+    const data = <GetFollowersByUserIdRequest>ctx.request.body;
+
+    if (data.userId == null) {
+        ctx.status = 400;
+        ctx.body = { status: "Invalid user id" };
+        return;
+    }
+
+    try {
+        // Find the follower profiles from the specified user id
+        const __ = DBConnector.__();
+        let results = await DBConnector.getGraph()?.V(data.userId)
+            .inE(EDGE_USER_FOLLOWS)  // Get all incoming 'user_follows' edges pointing to User1
+            .outV()  // Get the vertices (users) who follow User1
+            .where(__.not(__.hasId(data.userId)))  // Exclude User1 from the results            
+            .toList();
+           
+        if(results == null) {
+            ctx.status = 200;
+            return;
+        }
+
+        const profileMap:Map<string, ProfileWithFollowStatus> = new Map<string, ProfileWithFollowStatus>();
+        const followerIds:string[] = [];
+        for(const result of results) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const vertex:any = result;
+            const vertexProperties = vertex.properties;
+
+            const profile:ProfileWithFollowStatus = {                        
+                profileId: getVertexPropertySafe(vertexProperties, 'profileId'),
+                bio: getVertexPropertySafe(vertexProperties, 'bio'),
+                pfp: getVertexPropertySafe(vertexProperties, 'pfp'),
+                userId: vertex.id,
+                userName: getVertexPropertySafe(vertexProperties, 'userName'),
+                firstName: getVertexPropertySafe(vertexProperties, 'firstName'),
+                lastName: getVertexPropertySafe(vertexProperties, 'lastName'),
+                gender: getVertexPropertySafe(vertexProperties, 'gender'),
+                pronouns: getVertexPropertySafe(vertexProperties, 'pronouns'),
+                link: getVertexPropertySafe(vertexProperties, 'link'),
+                isFollowed: false
+            };
+            
+            followerIds.push(vertex.id);
+            profileMap.set(vertex.id, profile);
+        }
+
+        // We have all the users following userId. Now we need to see which of those users
+        // userId is following back.
+        // Ideally we could handle this and the previous query together in a single query
+        // but couldn't get it to work and ChatGPT let me down too
+
+        results = await DBConnector.getGraph()?.V(data.userId)                              
+            .out(EDGE_USER_FOLLOWS)           
+            .filter(__.id().is(DBConnector.P().within(followerIds)))
+            .dedup()
+            .toList()               
+            
+        if(results == null) {
+            ctx.status = 200;
+            return;
+        }            
+
+        // results now contains the mutuals 
+        for(const result of results) { 
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const vertex:any = result;
+            const profile: ProfileWithFollowStatus|undefined = profileMap.get(vertex.id);
+
+            if(profile == null) {
+                continue;
+            }
+
+            profile.isFollowed = true;
+            profileMap.set(profile.userId, profile);
+        }
+
+        const returnData:ProfileWithFollowStatus[] = [];
+        const iter = profileMap.entries();
+        let element = await iter.next();
+        while(!element.done) {
+            const value = element.value;
+            const profile:ProfileWithFollowStatus = Object.assign({}, value[1]);
+            
+            returnData.push(profile);
+
+            element = await iter.next();
+        }        
+
+        ctx.body = returnData;
+        ctx.status = 200;
+    } catch(err) {
+        console.log(err);
+        logger.error(err);
+        ctx.status = 400;       
+    }
+}    
 
 type BulkGetProfilesRequest = {
     userId: string;
@@ -286,58 +500,123 @@ export const bulkGetProfilesAndFollowing = async(ctx: Context) => {
 
     try {
         // Find the profile data of the given user ids
-
-        // Get the profile data from ES
-        const results = await searchProfile({            
-            terms: {
-                userId: data.userIds
-            }
-        }, null);
-
-        interface ProfileWithFollowStatus extends Profile {
-            isFollowing: boolean;      
+        const results = await DBConnector.getGraph()?.V(data.userIds).project("User").toList();
+        if(results == null) {
+            throw new Error("Error getting profiles");
         }
 
-        interface ProfileWithFollowStatusInt {
-            [key: string]: ProfileWithFollowStatus;
-        }        
+        const profileMap:Map<string, ProfileWithFollowStatus> = new Map<string, ProfileWithFollowStatus>();
+        
+        for(const result of results) {    
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const map:Map<any, any> = (result as Map<any, any>);
+            if(map.has("User")) {                
+                const vertex = map.get("User");
+                const vertexProperties = vertex['properties'];
 
-        const resultMap:ProfileWithFollowStatusInt = {};       
+                const profile: ProfileWithFollowStatus = {
+                    profileId: getVertexPropertySafe(vertexProperties, 'profileId'),
+                    bio: getVertexPropertySafe(vertexProperties, 'bio'),
+                    pfp: getVertexPropertySafe(vertexProperties, 'pfp'),
+                    userId: vertex.id,
+                    userName: getVertexPropertySafe(vertexProperties, 'userName'),
+                    firstName: getVertexPropertySafe(vertexProperties, 'firstName'),
+                    lastName: getVertexPropertySafe(vertexProperties, 'lastName'),
+                    gender: getVertexPropertySafe(vertexProperties, 'gender'),
+                    pronouns: getVertexPropertySafe(vertexProperties, 'pronouns'),
+                    link: getVertexPropertySafe(vertexProperties, 'link'),
+                    isFollowed: false
+                };
+                                
+                profileMap.set(getVertexPropertySafe(vertexProperties, 'userName'), profile);
+            }
+        }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any        
-        results.body.hits.hits.map((entry:any):ProfileWithFollowStatus => {
-            const profile:ProfileWithFollowStatus = entry._source as ProfileWithFollowStatus;
+        // Now get the follow data
+        const __ = DBConnector.__();
+        const results2 = await DBConnector.getGraph()?.V(data.userIds)
+            .hasLabel('User')
+            .group()
+            .by("userName")
+            .by(
+                __.in_(EDGE_USER_FOLLOWS)
+                .project('followers')
+                .by()      
+                .by(
+                    __.unfold()
+                    .hasLabel('User')
+                    .values("userName")
+                    .fold()
+                )
+                .unfold()
+                .select(DBConnector.Column().values)
+                .fold()                
+            )
+            .toList();     
             
-            profile.isFollowing = false; //defaulting to false                    
-            resultMap[profile.userId] = profile;
+        if(results2 == null) {
+            ctx.status = 200;
+            return;
+        }
 
-            return profile;
-        });
+        const followerMap:Map<string, ProfileWithFollowStatus[]> = new Map<string, ProfileWithFollowStatus[]>();
+        for(const result of results2) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const map:Map<any, any> = (result as Map<any, any>);
+            for(const entry of map) {
+                const key = entry[0];
+                
+                const followers:ProfileWithFollowStatus[] = [];
 
-        // Pull the "follow" data for the specified user and see if found in above profile list.
-        // Get the users following this user
-        const followingResult = await DBConnector.getGraph()?.V(data.userId)
-            .in_(EDGE_USER_FOLLOWED_BY)
-            .project("Follower")
-            .by()
-            .toList();
+                for(const user of entry[1]) {                    
+                    const vertexProperties = user.properties;
+                    
+                    const profile:ProfileWithFollowStatus = {                        
+                        profileId: getVertexPropertySafe(vertexProperties, 'profileId'),
+                        bio: getVertexPropertySafe(vertexProperties, 'bio'),
+                        pfp: getVertexPropertySafe(vertexProperties, 'pfp'),
+                        userId: user.id,
+                        userName: getVertexPropertySafe(vertexProperties, 'userName'),
+                        firstName: getVertexPropertySafe(vertexProperties, 'firstName'),
+                        lastName: getVertexPropertySafe(vertexProperties, 'lastName'),
+                        gender: getVertexPropertySafe(vertexProperties, 'gender'),
+                        pronouns: getVertexPropertySafe(vertexProperties, 'pronouns'),
+                        link: getVertexPropertySafe(vertexProperties, 'link'),
+                        isFollowed: false
+                    };
 
-        if(followingResult != null) {
-            for(const result of followingResult) {            
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const map:Map<any, any> = (result as Map<any, any>);                
-                if(map.has("Follower")) {
-                    const vertex = map.get("Follower");
-                    // User at vertex is a follower to this user
-                    // so mark it in the list 
-                    if(resultMap[vertex.id] != null) {
-                        resultMap[vertex.id].isFollowing = true;
+                    followers.push(profile);
+                }
+
+                followerMap.set(key, followers);
+            }
+        }
+
+        for(const [key, value] of profileMap) {            
+            value.followers = followerMap.get(key);
+        }
+
+        const returnData:ProfileWithFollowStatusInt = {};        
+        const iter = profileMap.entries();
+        let element = await iter.next();
+        while(!element.done) {
+            const value = element.value;
+            const profile:ProfileWithFollowStatus = Object.assign({}, value[1]);
+            
+            if(profile.followers != null) {                
+                for(const follower of profile.followers) {
+                    if(follower.userId === data.userId) {                        
+                        profile.isFollowed = true;
+                        break;
                     }
                 }
             }
+            returnData[profile.userId] = profile;
+
+            element = await iter.next();
         }
-        
-        ctx.body = resultMap;
+
+        ctx.body = returnData;
         ctx.status = 200;
     } catch(err) {
         console.log(err);

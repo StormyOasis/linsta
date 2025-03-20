@@ -12,9 +12,10 @@ export interface GlobalProfileState {
 
 const defaultState:GlobalProfileState = {
     profile: {
-        userId: 0,
+        userId: "0",
         userName: '',
-        pfp: DEFAULT_PFP
+        pfp: DEFAULT_PFP,
+        profileId: ''
     }
 };
 
@@ -80,11 +81,6 @@ const profileSliceCreator = (preloadedState?: any) => {
             });
         };
 
-        builder.addCase(getProfileByUserName.fulfilled, (state, action) => {
-            const profile: Profile = action.payload.data as Profile;
-            state.profile = profile;
-        })
-        
         getProfileByUserIdReducer();
     }
 

@@ -1,18 +1,21 @@
 import Router from "koa-router";
-import { 
-    getIsUnqiueUsername, 
-    attemptCreateUser, 
-    sendConfirmCode, 
-    loginUser, 
-    forgotPassword, 
+import {
+    getIsUnqiueUsername,
+    attemptCreateUser,
+    sendConfirmCode,
+    loginUser,
+    forgotPassword,
     changePassword,
     toggleFollowing
 } from './controllers/accountsController';
 import { verifyJWT } from "./auth/Auth";
 import { getLocation } from "./controllers/locationsController";
-import { addPost, getAllLikesByPost, getAllPosts, getPostById, postIsPostLikedByUserId, toggleLikePost } from "./controllers/postsController";
+import { addPost, getAllLikesByPost, getAllPosts, getPostById, postIsPostLikedByUserId, toggleLikePost, getPostsByUserId } from "./controllers/postsController";
 import { addComment, getCommentsByPostId, toggleCommentLike } from "./controllers/commentsController";
-import { bulkGetProfilesAndFollowing, getProfileByUserId, getProfileByUserName, getProfileStatsById, putProfilePfp, updateProfileByUserId } from "./controllers/profilesController";
+import {
+    bulkGetProfilesAndFollowing, getFollowersByUserId, getFollowingByUserId, getPostProfileByUserId, getPostProfileByUserName,
+    getProfileStatsById, putProfilePfp, updateProfileByUserId
+} from "./controllers/profilesController";
 
 
 const router = new Router();
@@ -36,6 +39,7 @@ router.get("/api/v1/posts/getPostById", verifyJWT, getPostById);
 router.post("/api/v1/posts/likePost", verifyJWT, toggleLikePost);
 router.post("/api/v1/posts/isPostLikedByUser", verifyJWT, postIsPostLikedByUserId);
 router.get("/api/v1/posts/getAllLikesByPost", verifyJWT, getAllLikesByPost);
+router.post("/api/v1/posts/getByUserId", verifyJWT, getPostsByUserId);
 
 // comment handlers
 router.post("/api/v1/comment/add", verifyJWT, addComment);
@@ -44,8 +48,10 @@ router.post("/api/v1/comment/toggleLike", verifyJWT, toggleCommentLike);
 
 // Profile handlers
 router.post("/api/v1/profiles/update", verifyJWT, updateProfileByUserId);
-router.post("/api/v1/profiles/getByUserId", verifyJWT, getProfileByUserId);
-router.post("/api/v1/profiles/getByUserName", verifyJWT, getProfileByUserName);
+router.post("/api/v1/profiles/getByUserId", verifyJWT, getPostProfileByUserId);
+router.post("/api/v1/profiles/getFollowersByUserId", verifyJWT, getFollowersByUserId);
+router.post("/api/v1/profiles/getFollowingByUserId", verifyJWT, getFollowingByUserId);
+router.post("/api/v1/profiles/getByUserName", verifyJWT, getPostProfileByUserName);
 router.post("/api/v1/profiles/getStatsById", verifyJWT, getProfileStatsById);
 router.post("/api/v1/profiles/bulkGetProfiles", verifyJWT, bulkGetProfilesAndFollowing);
 router.put("/api/v1/profiles/updatePfp", verifyJWT, putProfilePfp);

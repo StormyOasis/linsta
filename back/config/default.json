@@ -58,8 +58,8 @@
         "node": "https://localhost:9200",
         "apiKey": "cXRyM1ZwSUJrZFl6Z3FPYVB1bHM6MFpEb0FGLUFRSTJjYTdfUVd3QWJRZw==",
         "mainIndex": "main",
-        "commentIndex": "comments",
         "profileIndex": "profiles",
-        "defaultResultSize": 10000
+        "defaultResultSize": 10000,
+        "defaultMediaPaginationSize": 15
     }
 }

@@ -36,6 +36,18 @@ export const search = async (query: object, resultSize: number|null) => {
     return result;
 }
 
+export const searchWithPagination = async (query: object, resultSize?: number|null) => {
+    const size: number = resultSize ? resultSize : config.get("es.defaultMediaPaginationSize");
+
+    const result = await client.search({
+        index: config.get("es.mainIndex"),
+        body: query,
+        size,
+    }, { meta: true});
+
+    return result;
+}
+
 export const count = async (query: object) => {
     const result = await client.count({
         index: config.get("es.mainIndex"),
@@ -44,7 +56,6 @@ export const count = async (query: object) => {
 
     return result;
 }
-
 
 export const searchProfile = async (query: object, resultSize: number|null) => {
     const size: number = resultSize ? resultSize : config.get("es.defaultResultSize");
@@ -111,6 +122,7 @@ export const buildDataSetForES = (user:User, global:Global, entries:Entry[]):obj
             user: {
                 userId: user.userId,
                 userName: user.userName,
+                pfp: user.pfp
             },
             global: {
                 dateTime: new Date(),
@@ -124,7 +136,9 @@ export const buildDataSetForES = (user:User, global:Global, entries:Entry[]):obj
                 entityTag: entry.entityTag,
                 id: entry.id,
                 mimeType: entry.mimeType,
-                path: entry.url
+                path: entry.url,
+                postId: entry.postId,
+                userId: entry.userId
             }})
         }
     };
@@ -141,7 +155,7 @@ export const buildSearchResultSet = (hits: any[]):Post[] => {
             user: {
                 userId: source.user.userId,
                 userName: source.user.userName,
-                pfp: "",
+                pfp: ""
             },
             global: {
                 id: entry._id,
@@ -158,7 +172,9 @@ export const buildSearchResultSet = (hits: any[]):Post[] => {
                     altText: media.altText,
                     id: media.id,
                     mimeType: media.mimeType,
-                    path: media.path
+                    path: media.path,
+                    postId: media.postId,
+                    userId: media.userId
                 }
             })
         }

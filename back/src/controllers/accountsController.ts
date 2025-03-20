@@ -5,7 +5,7 @@ import jwt, { SignOptions } from 'jsonwebtoken';
 import moment, { MomentInput } from "moment";
 import logger from "../logger/logger";
 import Metrics from "../metrics/Metrics";
-import DBConnector, { EDGE_USER_FOLLOWED_BY, EDGE_USER_FOLLOWS } from "../Connectors/DBConnector";
+import DBConnector, { EDGE_USER_FOLLOWS } from "../Connectors/DBConnector";
 import { isEmail, isPhone, isValidPassword, obfuscateEmail, obfuscatePhone } from "../utils/utils";
 import { SEND_CONFIRM_TEMPLATE, 
          FORGOT_PASSWORD_TEMPLATE, 
@@ -301,6 +301,7 @@ export const sendConfirmCode = async (ctx: Context) => {
     const token: string = crypto.randomUUID().split("-")[0];
 
     try {
+        // Upsert into DB
         const res = await DBConnector.getGraph()?.mergeV(new Map([["userData", userData]]))
             .option(DBConnector.Merge().onCreate, new Map([[DBConnector.T().label, "ConfirmCode"], ["token", token], ["userData", userData], ["sentTime", sentTime]]))
             .option(DBConnector.Merge().onMatch, new Map([["token", token], ["sentTime", sentTime]]))
@@ -754,21 +755,14 @@ export const toggleFollowing = async (ctx: Context) => {
 
         if(data.follow) {
             //Adding a new follower
-            const result = await DBConnector.getGraph(true)?.V()
-                .hasLabel("User")
-                .has(DBConnector.T().id, data.userId)
+            const result = await DBConnector.getGraph(true)?.V(data.userId)
                 .as("user_id")
-                .V()
-                .hasLabel("User")
-                .has(DBConnector.T().id, data.followId)
+                .V(data.followId)
                 .as("follow_id")
                 .addE(EDGE_USER_FOLLOWS)
-                .from_("user_id")
-                .to("follow_id")
-                .addE(EDGE_USER_FOLLOWED_BY)
-                .from_("follow_id")
-                .to("user_id")
-                .next();
+                .from_('user_id')
+                .to('follow_id')
+                .next();                
 
             if(result == null || result?.value == null) {
                 throw new Error("Failure to follow user");
@@ -779,14 +773,7 @@ export const toggleFollowing = async (ctx: Context) => {
                 .outE(EDGE_USER_FOLLOWS)
                 .where(DBConnector.__().inV().hasId(data.followId))
                 .drop()
-                .next();
-
-            // unfollow the given follower
-            await DBConnector.getGraph(true)?.V(data.userId)
-                .inE(EDGE_USER_FOLLOWED_BY)
-                .where(DBConnector.__().outV().hasId(data.followId))
-                .drop()
-                .next();                
+                .next();          
         }
 
         await DBConnector.commitTransaction();

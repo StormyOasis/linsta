@@ -2,13 +2,14 @@ import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 
 import MultiStepModal from "../../../../Common/MultiStepModal";
-import { Post } from "../../../../../api/types";
+import { Post, ProfileWithFollowStatusInt } from "../../../../../api/types";
 import { postBulkGetProfileAndFollowStatus } from "../../../../../../src/api/ServiceController";
 import StyledButton from "../../../../../Components/Common/StyledButton";
 import { followUser } from "../../../../../utils/utils";
 import { Div, FlexColumn, FlexRow, Link, Span } from "../../../../../Components/Common/CombinedStyling";
 import { AuthUser } from "../../../../../api/Auth";
 import { useAppSelector } from "../../../../../Components/Redux/redux";
+import { DEFAULT_PFP } from "../../../../../api/config";
 
 type LikesModalProps = {
     onClose: any;
@@ -18,20 +19,6 @@ type LikesModalProps = {
 
 type LikesModalContentProps = {
     post: Post;
-}
-
-type BulkFollowResultEntry = {
-    firstName: string;
-    lastName: string;
-    userName: string;
-    userId: string;
-    followId?: string | null;
-    pfp?: string | null;
-    isFollowing: boolean;
-}
-
-interface BulkFollowResultEntryInt {
-    [key: string]: BulkFollowResultEntry;
 }
 
 const LikesModalInfoText = styled.span`
@@ -59,12 +46,12 @@ const ProfilePicImg = styled.img`
 `;
 
 const LikesModalContent: React.FC<LikesModalContentProps> = (props: LikesModalContentProps) => {
-    const [likeFollowData, setLikeFollowData] = useState<BulkFollowResultEntryInt | null>(null);
+    const [likeFollowData, setLikeFollowData] = useState<ProfileWithFollowStatusInt | null>(null);
     const authUser: AuthUser = useAppSelector((state: any) => state.auth.user);
     
     useEffect(() => {
         const userIds: string[] = props.post.global.likes.map(entry => entry.userId);
-        const userId: string = props.post.user.userId;
+        const userId: string = authUser.id;
 
         postBulkGetProfileAndFollowStatus({ userId, userIds }).then((result: any) => {
             setLikeFollowData(result.data);
@@ -86,8 +73,8 @@ const LikesModalContent: React.FC<LikesModalContentProps> = (props: LikesModalCo
                 return <div key="0"></div>; //prevent 'element in list should have unique key' error
             } 
 
-            const pfp = lfd.pfp ? lfd.pfp : "/public/images/profile-user-default-pfp.svg";
-            const isFollowing = lfd.isFollowing;
+            const pfp = lfd.pfp ? lfd.pfp : DEFAULT_PFP;
+            const isFollowing = lfd.isFollowed;
 
             return (
                 <LikeEntryContainer key={entry.userId}>
@@ -137,8 +124,7 @@ const LikesModalContent: React.FC<LikesModalContentProps> = (props: LikesModalCo
         // If successful the state needs to be updated to reflect the new follow status
         if (result) {
             const newLikeFollowData = { ...likeFollowData };
-            newLikeFollowData[followUserId].followId = shouldFollow ? followUserId : null;
-            newLikeFollowData[followUserId].isFollowing = shouldFollow;
+            newLikeFollowData[followUserId].isFollowed = shouldFollow;
             setLikeFollowData(newLikeFollowData);
         }
     }

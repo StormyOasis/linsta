@@ -1,6 +1,6 @@
 .mainWrapper {
-    overflow: hidden;
-    overflow-y: auto;
+    /*overflow: hidden;*/
+    overflow: auto;
     height: 100vh;
 }
 

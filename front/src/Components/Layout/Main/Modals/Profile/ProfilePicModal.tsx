@@ -4,9 +4,8 @@ import { useDropzone } from "react-dropzone";
 import MultiStepModal from "../../../../Common/MultiStepModal";
 import { Profile } from "../../../../../api/types";
 import { putSubmitPfp } from "../../../../../../src/api/ServiceController";
-import StyledButton from "../../../../../Components/Common/StyledButton";
-import { blobToBase64, followUser, getPfpFromProfile } from "../../../../../utils/utils";
-import { Div, Flex, FlexColumn, FlexColumnFullWidth, FlexRow, Link, Span } from "../../../../../Components/Common/CombinedStyling";
+import { getPfpFromProfile } from "../../../../../utils/utils";
+import { Div, FlexColumnFullWidth } from "../../../../../Components/Common/CombinedStyling";
 import StyledLink from "../../../../../Components/Common/StyledLink";
 import { actions, useAppDispatch } from "../../../../../Components/Redux/redux";
 

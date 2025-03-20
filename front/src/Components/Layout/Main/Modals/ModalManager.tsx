@@ -2,7 +2,7 @@ import React, { ReactNode } from "react";
 import { styled } from "styled-components";
 import { Div, Flex } from "../../../Common/CombinedStyling";
 import { actions, useAppDispatch, useAppSelector } from "../../../../Components/Redux/redux";
-import { COMMENT_MODAL, LIKES_MODAL, ModalState, NEW_POST_MODAL, PROFILE_PIC_MODAL, FOLLOWERS_MODAL } from "../../../../Components/Redux/slices/modals.slice";
+import { COMMENT_MODAL, LIKES_MODAL, ModalState, NEW_POST_MODAL, PROFILE_PIC_MODAL, FOLLOW_MODAL } from "../../../../Components/Redux/slices/modals.slice";
 import CreatePostModal from "./CreatePost/CreatePostModal";
 import CommentModal from "./Comments/CommentsModal";
 import LikesModal from "./Main/LikesModal";
@@ -87,13 +87,14 @@ const ModalManager: React.FC<ModalManagerProps> = (_props: ModalManagerProps) =>
                             onClose={() => closeModal(PROFILE_PIC_MODAL, {})} />);
                     break;
                 }
-                case FOLLOWERS_MODAL: {
+                case FOLLOW_MODAL: {
                     modals.push(
                         <FollowersModal 
-                            key={FOLLOWERS_MODAL}
+                            key={FOLLOW_MODAL}
                             zIndex={zIndex}
                             profile={profile}
-                            onClose={() => closeModal(FOLLOWERS_MODAL, {})} />);
+                            followModalType={modalState.data.followModalType}
+                            onClose={() => closeModal(FOLLOW_MODAL, {})} />);
                     break;
                 }                                             
                 default: {

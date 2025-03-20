@@ -8,7 +8,7 @@ import MediaSlider from "../../../Components/Common/MediaSlider";
 import MessageSVG from "/public/images/message.svg";
 import ShareSVG from "/public/images/send.svg";
 import { AuthUser } from "../../../api/Auth";
-import { isOverflowed, getSanitizedText, isPostLiked } from "../../../utils/utils";
+import { isOverflowed, getSanitizedText, isPostLiked, getPfpFromPost } from "../../../utils/utils";
 import { ContentWrapper, Div, Flex, FlexColumn, FlexColumnFullWidth, FlexRow, FlexRowFullWidth, LightLink, Link, Main, Section } from "../../../Components/Common/CombinedStyling";
 import EmojiPickerPopup from "../../../Components/Common/EmojiPickerPopup";
 import StyledLink from "../../../Components/Common/StyledLink";
@@ -29,8 +29,8 @@ const FeedContainer = styled(FlexColumn)`
 
 const PostContainer = styled(FlexColumnFullWidth)`
     min-width: min(${props => props.theme["sizes"].feedPostMinWidth}, 100%);
-    padding-bottom: 16px;
-    margin-bottom: 20px;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
     border-bottom: 1px solid ${props => props.theme["colors"].borderDefaultColor};
 `;
 
@@ -220,14 +220,14 @@ const MainContent: React.FC = () => {
                     <Main role="main">
                         <FlexRowFullWidth $justifyContent="center">
                             <FeedContainer>
-                                {posts && posts.length > 0 && posts.map(post => {
+                                {posts && posts.length > 0 && posts.map((post) => {
                                     const isLiked = isPostLiked(authUser.userName, post);
-
+                                    const pfp = getPfpFromPost(post);
                                     return (
                                         <article key={post.postId}>
                                             <PostContainer>
                                                 <Div $paddingBottom="5px">
-                                                    <ProfileLink showUserName={true} showPfp={true} text={post.user.userName} url={`${HOST}/${post.user.userName}`}></ProfileLink>
+                                                    <ProfileLink pfp={pfp} showUserName={true} showPfp={true} text={post.user.userName} url={`${HOST}/${post.user.userName}`}></ProfileLink>
                                                     {post.global.locationText.length > 0 &&
                                                         <Div $marginLeft="39px" $marginTop="-9px" $fontSize="13px">
                                                             <Link href={`${HOST}/explore?text=${encodeURIComponent(post.global.locationText)}`}>

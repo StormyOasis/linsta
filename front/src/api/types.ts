@@ -7,6 +7,7 @@ export type HistoryType = {
 export type User = {
     userName: string;
     userId: string;
+    pfp: string;
 };
 
 export type Media = {
@@ -52,9 +53,10 @@ export type Post = {
 };
 
 export type Profile = {
+    profileId: string;
     bio?: string;
     pfp?: string;
-    userId: number;
+    userId: string;
     userName: string;
     firstName?: string;
     lastName?: string;
@@ -62,3 +64,22 @@ export type Profile = {
     pronouns?: string;
     link?: string;
 };
+
+export interface ProfileWithFollowStatus extends Profile {
+    isFollowed: boolean;
+    followers?: ProfileWithFollowStatus[];   
+}
+
+export interface ProfileWithFollowStatusInt {
+    [key: string]: ProfileWithFollowStatus;
+} 
+
+export interface PaginationResponse {    
+    dateTime: string;
+    postId: string;
+    done: boolean;
+}
+
+export interface PostPaginationResponse extends PaginationResponse {
+    posts: Post[];
+}

@@ -2,7 +2,8 @@ import sanitizeHtml from 'sanitize-html';
 import { Like, Post, Profile } from './types';
 import { buildSearchResultSet, search, searchProfile } from '../Connectors/ESConnector';
 import RedisConnector from '../Connectors/RedisConnector';
-import DBConnector, { EDGE_POST_LIKED_BY_USER, EDGE_POST_TO_USER, EDGE_USER_LIKED_POST } from '../Connectors/DBConnector';
+import DBConnector, { EDGE_USER_LIKED_POST } from '../Connectors/DBConnector';
+import logger from '../logger/logger';
 
 export const isEmail = (str: string) : boolean => {
     const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
@@ -67,8 +68,9 @@ export const getFileExtByMimeType = (mimeType: string|null):string => {
 }
 
 export interface RedisInfo {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any;
-};
+}
 
 export const parseRedisInfo = (infoString: string): RedisInfo => {
     const info: RedisInfo = {};
@@ -211,6 +213,7 @@ export const getPostByPostId = async (postId: string):Promise<|{esId: string; po
     // Get post likes
     entries[0].global.likes = await getLikesByPost(postId);
     entries[0].postId = postId;
+    entries[0].user.pfp = await getPfpByUserId(entries[0].user.userId);
 
     // Add to Redis
     await RedisConnector.set(esId, JSON.stringify(entries[0]));    
@@ -218,75 +221,106 @@ export const getPostByPostId = async (postId: string):Promise<|{esId: string; po
     return {esId, post: entries[0]};
 }
 
-export const getProfileByUserIdEx = async (userId: string):Promise<Profile|null> => {
-    return await getProfile(userId, null);
+export const getProfileByUserId = async (userId: string):Promise<Profile|null> => {
+    return await getProfileEx(userId, null);
 }
 
-export const getProfileByUserNameEx = async (userName: string):Promise<Profile|null> => {
-    return await getProfile(null, userName);
+export const getProfileByUserName = async (userName: string):Promise<Profile|null> => {
+    return await getProfileEx(null, userName);
 }
 
-const getProfile = async (userId: string|null, userName: string|null):Promise<Profile|null> => {
-    if(userId === null && userName === null) {
+const getProfileEx = async (userId: string|null, userName: string|null):Promise<Profile|null> => {
+    if(userId == null && userName == null) {
         return null;
     }
 
     // Build the redis key based on if searching by user name or by user id
     const key = `profile:${userId != null ? 'id' : 'name'}:${userId != null ? userId : userName}`;
 
-    // Attempt to pull from redis first
-    const res = await RedisConnector.get(key);
-    if(res !== null) {
-        // Found in redis
-        return JSON.parse(res) as Profile;
-    }
-
-    // Not found in redis. Need to query ES
-    let results;
-
-    if(userName !== null) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        results = await searchProfile({
-            bool: {
-                must: {
-                  match :{
-                    userName: userName
-                  }
-                }
-              }
-        }, null);
-
-        if(results.body.hits.hits.length !== 1) {
-            throw new Error("Invalid user name");
-        }         
-    } else {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        results = await searchProfile({
-            bool: {
-                must: {
-                  match :{
-                    userId: userId
-                  }
-                }
-              }
-        }, null);
-
-        if(results.body.hits.hits.length !== 1) {
-            throw new Error("Invalid user id");
+    try {
+    
+        // Attempt to pull from redis first
+        const res = await RedisConnector.get(key);
+        if(res !== null) {
+            // Found in redis
+            return JSON.parse(res) as Profile;
         }
+
+        // Not found in redis. Need to query DB and ES 
+        let results;
+
+        // DB first
+        if(userName !== null) {
+            results = await DBConnector.getGraph()?.V().has("userName", userName).next(); 
+        } else {
+            results = await DBConnector.getGraph()?.V(userId).next();
+        }
+
+        if(results == null || results.value == null) {
+            throw new Error("Invalid user name or id");
+        }
+        
+        const vertexProperties = results.value.properties;
+        const userIdFromResult:string = results.value.id;
+        const profileId:string = getVertexPropertySafe(vertexProperties, 'profileId');
+        
+        // Now get profile from ES
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        results = await searchProfile({            
+            "term": {
+                "_id": profileId
+            }            
+        }, null);
+
+        const hits = results?.body?.hits?.hits;
+        if(results.statusCode !== 200 || hits == null) {
+            throw new Error("Error querying ES");
+        }
+        
+        // Should only be at most 1 results since we are querying by id
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const source:any = hits[0]._source;
+        
+        const profile:Profile = {
+            userId: userIdFromResult,
+            profileId: profileId,            
+            userName: getVertexPropertySafe(vertexProperties, 'userName'),
+            pronouns: getVertexPropertySafe(vertexProperties, 'pronouns'),
+            pfp: getVertexPropertySafe(vertexProperties, 'pfp'),
+            bio: getVertexPropertySafe(vertexProperties, 'bio'),
+            gender: getVertexPropertySafe(vertexProperties, 'gender'),
+            firstName: getVertexPropertySafe(vertexProperties, 'firstName', source.firstName),
+            lastName: getVertexPropertySafe(vertexProperties, 'lastName', source.lastName),
+            link: getVertexPropertySafe(vertexProperties, 'link')
+        };
+
+        // Inverse key used to update the other copy of profile stored in redis
+        const inverseKey = `profile:${userName != null ? 'id' : 'name'}:${userName != null ? profile.userId : profile.userName}`;
+        
+        // Add to redis. Store the profile under both the userId and userName(hence inverseKey var)    
+        const profileString = JSON.stringify(profile);
+        await RedisConnector.set(key, profileString);
+        await RedisConnector.set(inverseKey, profileString);
+
+        return profile;
+    } catch(err) {
+        console.log(err);
+        logger.error(err);    
+    }
+    
+    return null;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const getVertexPropertySafe = (vertexProperties: any, propertyName: string, defaultValue: string = ""): string => {
+    if (vertexProperties[propertyName] == null) {
+        return defaultValue;
+    }
+    if (vertexProperties[propertyName][0] == null) {
+        return defaultValue;
     }
 
-    const profile:Profile = results.body.hits.hits[0]._source as Profile;
-    profile.id =  results.body.hits.hits[0]._id as string;
-    
-    // Inverse key used to update the other copy of profile stored in redis
-    const inverseKey = `profile:${userName != null ? 'id' : 'name'}:${userName != null ? profile.userId : profile.userName}`;
-    
-    // Add to redis. Store the profile under both the userId and userName(hence inverseKey var)    
-    await RedisConnector.set(key, JSON.stringify(profile));
-    await RedisConnector.set(inverseKey, JSON.stringify(profile));
- 
-    return profile;
+    return vertexProperties[propertyName][0]['value'];
 }
 
 export const updateProfileInRedis = async (profile: Profile) => {
@@ -297,6 +331,17 @@ export const updateProfileInRedis = async (profile: Profile) => {
     const inverseKey = `profile:name:${profile.userName}`;
     
     // Add to redis. Store the profile under both the userId and userName(hence inverseKey var)    
-    await RedisConnector.set(key, JSON.stringify(profile));
-    await RedisConnector.set(inverseKey, JSON.stringify(profile));    
+    const profileString = JSON.stringify(profile);
+    await RedisConnector.set(key, profileString);
+    await RedisConnector.set(inverseKey, profileString);    
+}
+
+export const getPfpByUserId = async (userId: string):Promise<string> => {
+    const results = await DBConnector.getGraph()?.V(userId).next();
+
+    if(results == null || results.value == null || results.value.properties.pfp == null) {
+        return "";
+    }
+
+    return results.value.properties.pfp[0]['value'];
 }

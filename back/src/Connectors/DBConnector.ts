@@ -6,7 +6,6 @@ import Metrics from '../metrics/Metrics';
 export const EDGE_POST_TO_USER:string = "post_to_user";
 export const EDGE_USER_TO_POST:string = "user_to_post";
 export const EDGE_USER_FOLLOWS:string = "user_follows";
-export const EDGE_USER_FOLLOWED_BY:string = "user_followed_by";
 export const EDGE_USER_LIKED_POST:string = "user_liked_post";
 export const EDGE_POST_LIKED_BY_USER:string = "post_liked_by_user";
 export const EDGE_USER_LIKED_COMMENT:string = "user_liked_comment";
@@ -26,7 +25,7 @@ export class DBConnector {
     private tx: gremlin.process.Transaction<gremlin.process.GraphTraversalSource<gremlin.process.GraphTraversal>> | null = null;
     private transactionG:gremlin.process.GraphTraversalSource<gremlin.process.GraphTraversal> | null = null;
 
-    private constructor() {
+    private constructor() {        
     }
     
     public static getInstance() : DBConnector {
@@ -92,6 +91,10 @@ export class DBConnector {
 
     public P = () => {        
         return gremlin.process.P;
+    }   
+    
+    public Column = () => {        
+        return gremlin.process.column;
     }    
 
     public Merge = (): gremlin.process.Merge => {
