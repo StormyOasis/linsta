@@ -40,8 +40,14 @@ export class DBConnector {
         return this.connection;
     }
     
-    public getGraph = (isTransaction:boolean = false)
-        :gremlin.process.GraphTraversalSource<gremlin.process.GraphTraversal> | null => {
+    public getGraph = async (isTransaction:boolean = false)
+        :Promise<gremlin.process.GraphTraversalSource<gremlin.process.GraphTraversal>> => {
+
+        await this.reconnectIfNeeded();
+
+        if(!this.g) {
+            throw new Error("Invalid connection");
+        }
 
         if(!isTransaction) {
             return this.g;
@@ -105,7 +111,9 @@ export class DBConnector {
         return gremlin.process.statics;
     }
 
-    public beginTransaction = ():gremlin.process.GraphTraversalSource<gremlin.process.GraphTraversal> => {
+    public beginTransaction = async ():Promise<gremlin.process.GraphTraversalSource<gremlin.process.GraphTraversal>> => {
+        await this.reconnectIfNeeded();
+
         if(this.transactionG !== null) {
             throw new Error("Transaction already in progress");
         }
@@ -143,6 +151,13 @@ export class DBConnector {
         await this.tx.rollback();
         this.transactionG = null;
         this.tx = null;
+    }
+
+    public reconnectIfNeeded = async () => {        
+        if(!this.connection?.isOpen) {            
+            logger.info("Reconnecting to DB");
+            await this.connect();
+        }
     }
 }
 

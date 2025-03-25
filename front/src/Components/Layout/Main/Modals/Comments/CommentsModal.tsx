@@ -137,9 +137,10 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
     const commentTextAreaRef = useRef(null);
 
     const authUser: AuthUser = useSelector((state: any) => state.auth.user);
+    
     const dispatch = useAppDispatch();
-
-    useEffect(() => {
+    
+    useEffect(() => {      
         postGetCommentsByPostId({ postId: props.post.postId }).then((results) => {            
             setComments(mapCommentsToCommentData(results.data, comments));
         }).catch(e => console.error(e))
@@ -154,8 +155,9 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                 <ProfileLink
                     showUserName={true}
                     showPfp={false}
+                    showFullName={false}
                     url={`${HOST}/${user.userName}`}
-                    text={user.userName} />
+                    userName={user.userName} />
             </Theme>
         ) + sanitizedHtml;
 
@@ -165,9 +167,10 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                     <ProfileLink
                         showUserName={false}
                         showPfp={true}
+                        showFullName={false}
                         pfp={user.pfp}
                         url={`${HOST}/${user.userName}`}
-                        text={user.userName}>
+                        userName={user.userName}>
                     </ProfileLink>
                     <FlexColumnFullWidth>
                         <Span $marginLeft="2px" $alignContent="center" dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />
@@ -340,14 +343,14 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
 
         // Open the likes dialog by setting the state in redux        
         const payload = {
-            postId: post.postId
+            post: post
         };
 
         dispatch(actions.modalActions.openModal({ modalName: LIKES_MODAL, data: payload }));
     }
 
-    const toggleLike = async (postId: string, userName: string, userId: string) => {
-        dispatch(await togglePostLike({ postId, userName, userId }));
+    const toggleLike = (postId: string, userName: string, userId: string) => {        
+        dispatch(togglePostLike({ postId, userName, userId }));
     }
 
     if (props.post == null) {
@@ -374,9 +377,10 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                                             <ProfileLink
                                                 showPfp={true}
                                                 showUserName={true}
+                                                showFullName={false}
                                                 pfp={props.post.user.pfp}
                                                 url={`${HOST}/${props.post.user.userName}`}
-                                                text={props.post.user.userName}
+                                                userName={props.post.user.userName}
                                             >
                                             </ProfileLink>
                                             <PostOptionsWrapper>
@@ -400,9 +404,7 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                                         <Flex $paddingRight="8px" $position="relative" $top="2px">
                                             <LikeToggler
                                                 isLiked={isLiked}
-                                                handleClick={async () => {
-                                                    await toggleLike(props.post.postId, authUser.userName, authUser.id)
-                                                }}>
+                                                handleClick={() => toggleLike(props.post.postId, authUser.userName, authUser.id)}>
                                             </LikeToggler>
                                         </Flex>
                                     </Div>
@@ -486,7 +488,7 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
     );
 }
 
-const CommentModal: React.FC<CommentModalProps> = (props: CommentModalProps) => {
+const CommentModal: React.FC<CommentModalProps> = (props: CommentModalProps) => {    
     const steps = [
         {
             title: "Comments",

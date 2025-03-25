@@ -45,6 +45,7 @@ const OptionDiv = styled(Div)`
 `;
 
 const HeaderDiv = styled(Div)`    
+    display: grid;
     width: 100%;
     align-content: center;    
     margin-top: 16px;
@@ -130,7 +131,7 @@ const PfpModalContent: React.FC<PfpModalContentProps> = (props: PfpModalContentP
                     <HeaderDiv>
                         <ProfilePicWrapper>
                             {props.profile && <img
-                                style={{borderRadius: "50%", maxWidth: "64px", maxHeight: "64px"}}
+                                style={{borderRadius: "50%", maxWidth: "64px", maxHeight: "64px", objectFit: "contain"}}
                                 src={isUpdated ? `${newPfpUrl?.fileName}` : getPfpFromProfile(props.profile)}
                                 alt={`${props.profile.userName}'s profile picture`}
                                 aria-label={`${props.profile.userName}'s profile picture`} />

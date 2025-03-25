@@ -36,7 +36,7 @@ export type Comment = {
     likes: Like[];
 };
 
-export type Post = {
+export interface Post {
     postId: string;
     user: User;
     global: {
@@ -50,12 +50,12 @@ export type Post = {
         likes: Like[];
     },
     media: Media[];
-};
+}
 
 export type Profile = {
     profileId: string;
     bio?: string;
-    pfp?: string;
+    pfp: string|null;
     userId: string;
     userName: string;
     firstName?: string;
@@ -74,6 +74,10 @@ export interface ProfileWithFollowStatusInt {
     [key: string]: ProfileWithFollowStatus;
 } 
 
+export interface PostWithCommentCount extends Post {
+    commentCount: number;
+}
+
 export interface PaginationResponse {    
     dateTime: string;
     postId: string;
@@ -81,5 +85,6 @@ export interface PaginationResponse {
 }
 
 export interface PostPaginationResponse extends PaginationResponse {
-    posts: Post[];
+    posts: PostWithCommentCount[];
 }
+

@@ -1,4 +1,4 @@
-import { ActionReducerMapBuilder, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { ActionReducerMapBuilder, createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { historyUtils, togglePostLikedState } from "../../../utils/utils";
 import { Post } from '../../../api/types';
 import { getPosts, postToggleLike } from '../../../api/ServiceController';
@@ -50,7 +50,11 @@ const postSliceCreator = (preloadedState?: any) => {
     }
 
     function createReducers() {
-        return {};
+        const setPosts = (state: GlobalPostState, action: PayloadAction<Post[]>) => {         
+            state.posts = action.payload;
+        }
+                
+        return {setPosts};
     }
 
     function createActions() {
@@ -79,11 +83,10 @@ const postSliceCreator = (preloadedState?: any) => {
             builder.addCase(togglePostLike.pending, (state) => {
                 state.status = "pending";
                 state.error = null;        
-            }).addCase(togglePostLike.fulfilled, (state, action) => {
-                const {userId, userName, postId} = action.meta.arg;
-
+            }).addCase(togglePostLike.fulfilled, (state, action) => {                
+                const {userId, userName, postId} = action.meta.arg;                
                 // Find the post in the list and update it with the new like state                
-                state.posts = state.posts.map((post:Post) => {
+                state.posts = state.posts.map((post:Post) => {                    
                     if(post.postId === postId) {
                         // Found the post in the list
                         // Now update the state                        

@@ -7,16 +7,20 @@ export type AuthUser = {
 }
 
 export const authHeader = () => {
+    const headers:any = {};
+
+    // Authentication and Authorization via JWT
     const user = JSON.parse(localStorage.getItem('user') as string) as AuthUser;
     if (user == null) {
-        return {};
+        return headers;
     }
 
     if (user && user.token) {
-        return { 'x-access-token': user.token };
+        headers['x-access-token'] = user.token;
+        headers['Authorization'] = `Bearer ${user.token}`;
     }
 
-    return {};
+    return headers;
 }
 
 export const login = async (userName: string, password: string) => {    

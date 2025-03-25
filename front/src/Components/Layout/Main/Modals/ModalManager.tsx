@@ -6,8 +6,7 @@ import { COMMENT_MODAL, LIKES_MODAL, ModalState, NEW_POST_MODAL, PROFILE_PIC_MOD
 import CreatePostModal from "./CreatePost/CreatePostModal";
 import CommentModal from "./Comments/CommentsModal";
 import LikesModal from "./Main/LikesModal";
-import { Post, Profile } from "../../../../api/types";
-import { getPostFromListById } from "../../../../utils/utils";
+import { Profile } from "../../../../api/types";
 import PfpModal from "./Profile/ProfilePicModal";
 import FollowersModal from "./Profile/FollowersModal";
 
@@ -29,7 +28,6 @@ type ModalManagerProps = {
 };
 
 const ModalManager: React.FC<ModalManagerProps> = (_props: ModalManagerProps) => {
-    const posts: Post[] = useAppSelector((state) => state.post.posts);
     const profile: Profile = useAppSelector((state) => state.profile.profile);
     const isOverlayEnabled: boolean = useAppSelector((state) => state.modal.isOverlayEnabled);
     const openModals: ModalState[] = useAppSelector((state) => state.modal.openModalStack);
@@ -65,7 +63,7 @@ const ModalManager: React.FC<ModalManagerProps> = (_props: ModalManagerProps) =>
                         <CommentModal 
                             key={COMMENT_MODAL}
                             zIndex={zIndex}
-                            post={getPostFromListById(modalState.data.postId, posts)}
+                            post={modalState.data.post}
                             onClose={() => closeModal(COMMENT_MODAL, {})} />);                        
                     break;
                 }
@@ -74,7 +72,7 @@ const ModalManager: React.FC<ModalManagerProps> = (_props: ModalManagerProps) =>
                         <LikesModal 
                             key={LIKES_MODAL}
                             zIndex={zIndex}
-                            post={getPostFromListById(modalState.data.postId, posts)}
+                            post={modalState.data.post}
                             onClose={() => closeModal(LIKES_MODAL, {})} />);
                     break;
                 }       
@@ -92,7 +90,7 @@ const ModalManager: React.FC<ModalManagerProps> = (_props: ModalManagerProps) =>
                         <FollowersModal 
                             key={FOLLOW_MODAL}
                             zIndex={zIndex}
-                            profile={profile}
+                            profile={modalState.data.profile}
                             followModalType={modalState.data.followModalType}
                             onClose={() => closeModal(FOLLOW_MODAL, {})} />);
                     break;

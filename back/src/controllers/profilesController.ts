@@ -3,10 +3,10 @@ import formidable from 'formidable';
 import Metrics from "../metrics/Metrics";
 import { getFileExtByMimeType, getVertexPropertySafe, sanitize, updateProfileInRedis } from "../utils/utils";
 import logger from "../logger/logger";
-import { search, searchWithPagination, updateProfile } from "../Connectors/ESConnector";
+import { updateProfile } from "../Connectors/ESConnector";
 import { getProfileByUserName, getProfileByUserId } from "../utils/utils";
-import { Entry, Post, Profile, ProfileWithFollowStatus, ProfileWithFollowStatusInt } from "../utils/types";
-import DBConnector, { EDGE_USER_FOLLOWS } from "../Connectors/DBConnector";
+import { Profile, ProfileWithFollowStatus, ProfileWithFollowStatusInt } from "../utils/types";
+import DBConnector, { EDGE_USER_FOLLOWS, EDGE_USER_TO_POST } from "../Connectors/DBConnector";
 import { removeFile, uploadFile } from "../Connectors/AWSConnector";
 
 type UpdateProfileRequest = {
@@ -30,6 +30,15 @@ export const updateProfileByUserId = async (ctx: Context) => {
         ctx.body = { status: "Invalid userId passed" };
         return;
     }
+
+    const userIdFromJWT = ctx.state.user.id;
+  
+    // Check if the logged-in user is trying to access their own data
+    if (userIdFromJWT != data.userId) {
+      ctx.status = 403; // Forbidden
+      ctx.body = { message: 'You do not have permission to access this data' };
+      return;
+    }    
 
     try {
         // Sanitize the user input
@@ -63,7 +72,7 @@ export const updateProfileByUserId = async (ctx: Context) => {
 
         // Update the profile in the DB
         DBConnector.beginTransaction();
-        const results = await DBConnector.getGraph(true)?.V(data.userId)
+        const results = await (await DBConnector.getGraph(true)).V(data.userId)
             .property("bio", bio)
             .property("pronouns", pronouns)
             .property("link", link)
@@ -192,14 +201,14 @@ export const getProfileStatsById = async(ctx: Context) => {
         };
 
         // First: Get the number of posts by the user
-        const postResult = await DBConnector.getGraph()?.V(data.userId).count().next();
+        const postResult = await (await DBConnector.getGraph()).V(data.userId).outE(EDGE_USER_TO_POST).count().next();
         if(postResult == null || postResult?.value == null) {
             throw new Error("Failure getting post count");
-        }     
+        }
         stats.postCount = postResult.value;
 
         // Second: Get the number of users this profile is following
-        const followerResult = await DBConnector.getGraph()?.V(data.userId)
+        const followerResult = await (await DBConnector.getGraph()).V(data.userId)
             .outE(EDGE_USER_FOLLOWS)
             .count()
             .next();
@@ -211,7 +220,7 @@ export const getProfileStatsById = async(ctx: Context) => {
         stats.followingCount = followerResult.value;
 
         // Third: Get the number of users following this user
-        const followingResult = await DBConnector.getGraph()?.V(data.userId)
+        const followingResult = await (await DBConnector.getGraph()).V(data.userId)
             .inE(EDGE_USER_FOLLOWS)
             .count()
             .next();
@@ -245,7 +254,16 @@ export const putProfilePfp = async(ctx: Context) => {
         ctx.status = 400;
         ctx.body = { status: "Invalid params passed" };
         return;
-    }    
+    }
+        
+    const userIdFromJWT = ctx.state.user.id;
+  
+    // Check if the logged-in user is trying to access their own data
+    if (userIdFromJWT != data.userId) {
+        ctx.status = 403; // Forbidden
+        ctx.body = { message: 'You do not have permission to access this data' };
+        return;
+    }        
 
     try {
         const profile:Profile|null = await getProfileByUserId(data.userId);
@@ -277,7 +295,7 @@ export const putProfilePfp = async(ctx: Context) => {
         });                
 
         // Update the entry in the DB
-        const result = await DBConnector.getGraph()?.V(profile.userId).property("pfp", url).next();
+        const result = await (await DBConnector.getGraph()).V(profile.userId).property("pfp", url).next();
         if(result == null || result.value == null) {
             throw new Error("Error updating DB");
         }
@@ -316,7 +334,7 @@ export const getFollowingByUserId = async(ctx: Context) => {
 
         // Now get the follow data
         const __ = DBConnector.__();
-        const results = await DBConnector.getGraph()?.V(data.userId)
+        const results = await (await DBConnector.getGraph()).V(data.userId)
             .hasLabel('User')
             .group()
             .by("userName")
@@ -395,7 +413,7 @@ export const getFollowersByUserId = async(ctx: Context) => {
     try {
         // Find the follower profiles from the specified user id
         const __ = DBConnector.__();
-        let results = await DBConnector.getGraph()?.V(data.userId)
+        let results = await (await DBConnector.getGraph()).V(data.userId)
             .inE(EDGE_USER_FOLLOWS)  // Get all incoming 'user_follows' edges pointing to User1
             .outV()  // Get the vertices (users) who follow User1
             .where(__.not(__.hasId(data.userId)))  // Exclude User1 from the results            
@@ -436,7 +454,7 @@ export const getFollowersByUserId = async(ctx: Context) => {
         // Ideally we could handle this and the previous query together in a single query
         // but couldn't get it to work and ChatGPT let me down too
 
-        results = await DBConnector.getGraph()?.V(data.userId)                              
+        results = await (await DBConnector.getGraph()).V(data.userId)                              
             .out(EDGE_USER_FOLLOWS)           
             .filter(__.id().is(DBConnector.P().within(followerIds)))
             .dedup()
@@ -482,6 +500,45 @@ export const getFollowersByUserId = async(ctx: Context) => {
     }
 }    
 
+type SingleFollowRequest = {
+    userId: string;
+    checkUserId: string;
+};
+
+export const getSingleFollowStatus = async(ctx: Context) => {
+    Metrics.increment("profiles.getSingleFollowStatus");
+
+    const data = <SingleFollowRequest>ctx.request.body;
+
+    if (data.userId == null || data.checkUserId == null) {
+        ctx.status = 400;
+        ctx.body = { status: "Invalid params passed" };
+        return;
+    }   
+
+    try {
+        // Find the profile data of the given user ids
+        const results = await (await DBConnector.getGraph())?.V(data.userId)
+            .outE(EDGE_USER_FOLLOWS)
+            .inV()
+            .hasId(data.checkUserId)
+            .count()
+            .next();
+
+        if(results == null || results.value === null) {
+            throw new Error("Error follow status");
+        }
+
+        ctx.body = results.value === 1;
+        ctx.status = 200;
+    } catch(err) {
+        console.log(err);
+        logger.error(err);
+        ctx.status = 400;
+        return;          
+    }
+}
+
 type BulkGetProfilesRequest = {
     userId: string;
     userIds: string[];
@@ -500,7 +557,7 @@ export const bulkGetProfilesAndFollowing = async(ctx: Context) => {
 
     try {
         // Find the profile data of the given user ids
-        const results = await DBConnector.getGraph()?.V(data.userIds).project("User").toList();
+        const results = await (await DBConnector.getGraph()).V(data.userIds).project("User").toList();
         if(results == null) {
             throw new Error("Error getting profiles");
         }
@@ -534,7 +591,7 @@ export const bulkGetProfilesAndFollowing = async(ctx: Context) => {
 
         // Now get the follow data
         const __ = DBConnector.__();
-        const results2 = await DBConnector.getGraph()?.V(data.userIds)
+        const results2 = await (await DBConnector.getGraph()).V(data.userIds)
             .hasLabel('User')
             .group()
             .by("userName")

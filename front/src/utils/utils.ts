@@ -37,6 +37,19 @@ export const validateFullName = (value: string): boolean => {
     );
 };
 
+export const validateUrl = (text: string|undefined): boolean => {
+    if(text == null || text.length === 0) {
+        return true; //No url entered should be considered valid
+    }
+
+    try {
+        new URL(text);
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+
 export const isVideoFileFromPath = (path: string): boolean => {
     if (path == null || path.trim().length < 4) {
         throw new Error("Invalid path");
@@ -188,12 +201,11 @@ export const getPostFromListById = (postId: string, posts: Post[]):Post => {
             return post;
         }
     }
-    console.warn("Invalid post id");
     return {} as any;
 }
 
 export const isPostLiked = (userName: string, post: Post):boolean => {
-    if(post == null || userName == null) {
+    if(post == null || userName == null || post.global?.likes == null) {
         return false;
     }
 
@@ -202,13 +214,16 @@ export const isPostLiked = (userName: string, post: Post):boolean => {
     return result.length > 0;    
 }
 
-export const togglePostLikedState = (userName: string, userId: string, post: Post):(Post|null) => {
+export const togglePostLikedState = (userName: string, userId: string, post: Post):(Post|null) => {    
     if(post == null || userName == null || userId == null) {
         return null;
     }
     
-    const index = post.global.likes.findIndex((value:any) => value.userName === userName);
+    if(post.global.likes == null) {
+        post.global.likes = [];
+    }
 
+    const index = post.global.likes.findIndex((value:any) => value.userName === userName);
     if(index === -1) {
         // Username is not in the post's like list, so add it
         post.global.likes.push({userName, userId});
@@ -286,4 +301,13 @@ export const getPfpFromPost = (post: Post):string => {
     }    
 
     return post.user.pfp;
+}
+
+export const splitFullName = (fullName:string) => {
+    const names = fullName.trim().split(' ');
+    const firstName = names[0];
+    const lastName = names[names.length - 1];
+    const middleNames = names.slice(1, names.length - 1).join(' ');
+
+    return { firstName, middleNames, lastName };
 }

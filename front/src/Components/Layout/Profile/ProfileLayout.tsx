@@ -4,13 +4,19 @@ import Theme from "../../../Components/Themes/Theme";
 import SideBar from "../Main/SideBar";
 import ProfileContent from "./ProfileContent";
 import * as styles from '../Main/Main.module.css';
+import EditProfileContent from "./EditProfileContent";
 
-const ProfileLayout: React.FC = () => {
+type ProfileLayoutProps = {
+    edit: boolean;
+}
+
+const ProfileLayout: React.FC<ProfileLayoutProps> = (props: ProfileLayoutProps) => {
     return (
         <Theme>
             <div className={styles.mainWrapper}>
                 <SideBar />
-                <ProfileContent />
+                {props.edit && <EditProfileContent /> }
+                {!props.edit && <ProfileContent /> }                
             </div>
         </Theme>
     );

@@ -267,3 +267,21 @@ export const postGetPostsByUserId = async (data: any): Promise<ServiceResponse> 
         statusText: res.statusText,
     }
 }
+
+export const postUpdateProfileByUserId = async (data: any): Promise<ServiceResponse> => {
+    const res = await axios.post(`${host}/api/v1/profiles/update`, data, {headers: authHeader()});
+    return {
+        data: res.data,
+        status: res.status,
+        statusText: res.statusText,
+    }
+}
+
+export const postGetSingleFollowStatus = async (data: any): Promise<ServiceResponse> => {
+    const res = await axios.post(`${host}/api/v1/profiles/getSingleFollowStatus`, data, {headers: authHeader()});
+    return {
+        data: res.data,
+        status: res.status,
+        statusText: res.statusText,
+    }
+}
