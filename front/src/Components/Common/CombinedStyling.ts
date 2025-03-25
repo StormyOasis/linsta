@@ -270,7 +270,7 @@ export const Main = styled.main`
     overflow: hidden;
 `;
 
-export const ContentWrapper = styled.div`
+export const ContentWrapper = styled(Div)`
     overflow-y: auto;
     margin-left: ${props => props.theme["sizes"].sideBarNavWidthDefault};
     padding-left: 10px;

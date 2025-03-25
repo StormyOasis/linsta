@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
@@ -21,54 +21,59 @@ import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
 import { $generateHtmlFromNodes } from '@lexical/html';
 import { EditorState, LexicalEditor } from "lexical";
 import Placeholder from "./Plugins/Placeholder";
+import InitialHtmlPlugin from "./Plugins/InitialHtmlPlugin";
 
 type TextEditorProps = {
-  emoji: any;
-  maxTextLength: number,
-  getCurrentLength: (count: number, delCount: number) => void,
-  onChange: (text: string) => void,
+    emoji: any;
+    maxTextLength: number,
+    getCurrentLength: (count: number, delCount: number) => void,
+    onChange: (text: string) => void,
+    placeholder?: string | undefined,
+    defaultValue?: string | undefined
 }
 
 const TextEditor = (props: TextEditorProps) => {
-  const initialConfig = {
-    namespace: 'TextEditorWithEmoji',
-    nodes: [EmojiNode, AutoLinkNode, OverflowNode, HashtagNode],
-    theme: LexicalEditorTheme,
-    onError: (error: Error) => {
-      console.error(error);
-      throw error;
-    },
-  };
+    const initialConfig = {
+        editorState: null,
+        namespace: 'TextEditorWithEmoji',
+        nodes: [EmojiNode, AutoLinkNode, OverflowNode, HashtagNode],
+        theme: LexicalEditorTheme,
+        onError: (error: Error) => {
+            console.error(error);
+            throw error;
+        },
+    };
 
-  const handleChange = (editorState: EditorState, editor: LexicalEditor) => {
-    editorState.read(() => {
-      const html = $generateHtmlFromNodes(editor);
-      props.onChange(html);
-    });
-  }
+    const handleChange = (editorState: EditorState, editor: LexicalEditor) => {
+        editorState.read(() => {
+            const html = $generateHtmlFromNodes(editor);
+            props.onChange(html);
+        });
+    }
 
-  return (
-    <div id="editor-selector-parent">
-      <LexicalComposer initialConfig={initialConfig}>
-        <RichTextPlugin
-          contentEditable={<ContentEditable />}
-          placeholder={<Placeholder/>}
-          ErrorBoundary={LexicalErrorBoundary}
-        />
-        <HistoryPlugin />
-        <AutoFocusPlugin />
-        <InsertEmojiPlugin emoji={props.emoji} />
-        <EmojiPlugin />
-        <AutoLinkPlugin matchers={MATCHERS} />
-        <HashtagPlugin />
-        <CharacterLimitPlugin charset="UTF-8" maxLength={props.maxTextLength} renderer={(_remainingCharacters) => {
-          return <></>;
-        }} />
-        <MaxLengthPlugin maxLength={props.maxTextLength} getCurrentLength={props.getCurrentLength} />
-        <OnChangePlugin onChange={handleChange} />
-      </LexicalComposer>
-    </div>
-  );
+    return (
+        <div id="editor-selector-parent">
+            <LexicalComposer initialConfig={initialConfig}>
+                <RichTextPlugin
+                    contentEditable={<ContentEditable />}
+                    placeholder={<Placeholder placeholder={props.placeholder} />}
+                    ErrorBoundary={LexicalErrorBoundary}
+                />
+                <HistoryPlugin />
+                <AutoFocusPlugin />
+                <InsertEmojiPlugin emoji={props.emoji} />
+                <EmojiPlugin />
+                <AutoLinkPlugin matchers={MATCHERS} />
+                <HashtagPlugin />
+                <CharacterLimitPlugin charset="UTF-8" maxLength={props.maxTextLength} renderer={(_remainingCharacters) => {
+                    return <></>;
+                }} />
+                <MaxLengthPlugin maxLength={props.maxTextLength} getCurrentLength={props.getCurrentLength} />
+                <OnChangePlugin onChange={handleChange} />
+                <InitialHtmlPlugin initialValue={props.defaultValue} />
+            </LexicalComposer>
+        </div>
+    );
 }
 
 export default TextEditor;

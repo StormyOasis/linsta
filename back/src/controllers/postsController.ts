@@ -5,9 +5,9 @@ import logger from "../logger/logger";
 import { getFileExtByMimeType, getLikesByPost, getPfpByUserId, getPostByPostId, getPostIdFromEsId, sanitize } from "../utils/utils";
 import { uploadFile } from "../Connectors/AWSConnector";
 import { buildDataSetForES, buildSearchResultSet, insert, search, searchWithPagination, update } from '../Connectors/ESConnector';
-import { User, Global, Entry, Post } from "../utils/types";
+import { User, Global, Entry, Post, Like } from "../utils/types";
 import RedisConnector from "../Connectors/RedisConnector";
-import DBConnector, { EDGE_POST_LIKED_BY_USER, EDGE_POST_TO_USER, EDGE_USER_LIKED_POST, EDGE_USER_TO_POST } from "../Connectors/DBConnector";
+import DBConnector, { EDGE_POST_LIKED_BY_USER, EDGE_POST_TO_COMMENT, EDGE_POST_TO_USER, EDGE_USER_LIKED_POST, EDGE_USER_TO_POST } from "../Connectors/DBConnector";
 
 export const addPost = async (ctx: Context) => {
     Metrics.increment("posts.addPost");
@@ -54,7 +54,7 @@ export const addPost = async (ctx: Context) => {
         DBConnector.beginTransaction();
         
         // Now add a post vertex to the graph
-        let graphResult = await DBConnector.getGraph(true)?.addV("Post")
+        let graphResult = await (await DBConnector.getGraph(true)).addV("Post")
             .property("esId", esResult._id)
             .next();  
 
@@ -65,7 +65,7 @@ export const addPost = async (ctx: Context) => {
         const postId: string = graphResult.value.id;
 
         // Now add the edges between the post and user verticies            
-        graphResult = await DBConnector.getGraph(true)?.V(graphResult.value.id)
+        graphResult = await (await DBConnector.getGraph(true)).V(graphResult.value.id)
             .as('post')
             .V(user.userId)
             .as('user')
@@ -201,7 +201,7 @@ export const toggleLikePost = async (ctx: Context) => {
         DBConnector.beginTransaction();
 
         // Check the graph to see if the user likes the post
-        isLiked = await DBConnector.getGraph(true)?.V(data.userId)
+        isLiked = await (await DBConnector.getGraph(true)).V(data.userId)
             .out(EDGE_USER_LIKED_POST)
             .hasId(data.postId)
             .hasNext();
@@ -209,20 +209,20 @@ export const toggleLikePost = async (ctx: Context) => {
         if(isLiked) {
             // User currently likes this post which means we need to unlike
             // Drop both the edges            
-            await DBConnector.getGraph(true)?.V(data.postId)
+            await (await DBConnector.getGraph(true)).V(data.postId)
                 .outE(EDGE_POST_LIKED_BY_USER)
                 .filter(__.inV().hasId(data.userId))
                 .drop()
                 .next();
 
-            await DBConnector.getGraph(true)?.V(data.userId)
+            await (await DBConnector.getGraph(true)).V(data.userId)
                 .outE(EDGE_USER_LIKED_POST)
                 .filter(__.inV().hasId(data.postId))
                 .drop()
                 .next();           
         } else {
             // Need to like the post by adding the edges
-            const result = await DBConnector.getGraph(true)?.V(data.postId)
+            const result = await (await DBConnector.getGraph(true)).V(data.postId)
                 .as("post")
                 .V(data.userId)
                 .as("user")
@@ -244,6 +244,7 @@ export const toggleLikePost = async (ctx: Context) => {
         ctx.body = {liked: !isLiked};
         ctx.status = 200;
     } catch(err) {        
+        console.log(err);
         logger.error(err);
         await DBConnector.rollbackTransaction();
         ctx.status = 400;
@@ -265,7 +266,7 @@ export const postIsPostLikedByUserId = async (ctx: Context) => {
 
     try {                
         // Check the graph to see if the user likes the post
-        isLiked = await DBConnector.getGraph()?.V(data.userId)
+        isLiked = await (await DBConnector.getGraph()).V(data.userId)
             .out(EDGE_USER_LIKED_POST)
             .hasId(data.postId)
             .hasNext();    
@@ -309,8 +310,12 @@ type GetPostsByUserIdRequest = {
     postId?: string;
 };
 
+interface PostWithCommentCount extends Post {
+    commentCount: number;
+}
+
 type GetPostsByUserIdResponse = {
-    posts: Post[];
+    posts: PostWithCommentCount[];
     dateTime: string;
     postId: string;
     done: boolean;
@@ -380,15 +385,105 @@ export const getPostsByUserId = async (ctx: Context) => {
             done: true
         };
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const posts:any = {};
+        const postIds:string[] = [];
         if (results.body.hits.hits.length > 0) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const hits: any = results.body.hits.hits;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            response.posts = hits.map((entry: any) => entry._source.post);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any            
+            hits.map((entry: any) => {
+                // Use this postId to avoid having to do a esId to postId DB query
+                const postId = entry._source.post.media[0].postId;
+                posts[postId] = entry._source.post;
+                posts[postId].postId = postId;
+                
+                postIds.push(postId);
+            });
+
             response.dateTime = hits[hits.length - 1].sort[0];
             response.postId = hits[hits.length - 1].sort[1];
             response.done = false;
         }
+
+        if(response.done) {
+            // No more results to return, so return here
+            ctx.status = 200;
+            ctx.body = response;
+            return;
+        }
+
+        // Now update the posts' return values by adding all the likes and just the comment counts
+        
+        // Get all posts' likes
+        const __ = DBConnector.__();
+        let dbResults = await (await DBConnector.getGraph()).V(postIds)
+            .filter(__.inE(EDGE_USER_LIKED_POST).count().is(DBConnector.P().gt(0)))
+            .project("postId", "users")
+            .by(__.id())
+            .by(__.inE(EDGE_USER_LIKED_POST)
+                .outV()
+                .project('profileId', 'userName', 'pfp', 'firstName', 'lastName', 'id')
+                .by("profileId")
+                .by("userName")
+                .by("pfp")
+                .by("firstName")
+                .by("lastName")
+                .by(__.id())
+                .fold()
+            ).toList();
+
+        // Get the post likes 
+        if(dbResults != null && dbResults.length > 0) {
+            // At least one of the given post ids has a like
+            for(const result of dbResults) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const postMap:Map<any, any> = (result as Map<any, any>);
+                const postId = postMap.get("postId");
+                const users = postMap.get("users");
+                
+                const post:PostWithCommentCount = (posts[postId] as PostWithCommentCount); 
+                if(post.global.likes == null) {
+                    post.global.likes = [];
+                }
+
+                for(const user of users) {
+                    const newLike:Like = {
+                        userName: user.get("userName"),
+                        userId: user.get("id"),
+                        profileId: user.get("profileId"),
+                        firstName: user.get("firstName"),
+                        lastName: user.get("lastName"),
+                        pfp: user.get("pfp")
+                    };
+                    post.global.likes.push(newLike);
+                }            
+            }            
+        }
+
+        // Get the per post comment counts
+        dbResults = await (await DBConnector.getGraph()).V(postIds)
+            .project("postId", "commentCount")
+            .by(__.id())                         
+            .by(__.outE(EDGE_POST_TO_COMMENT).count())
+            .toList();
+
+        if(dbResults != null && dbResults.length > 0) {
+            // At least one of the given post ids has a like
+            for(const result of dbResults) {  
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const postMap:Map<any, any> = (result as Map<any, any>);
+                const postId = postMap.get("postId");
+                const commentCount = postMap.get("commentCount");
+                
+                const post:PostWithCommentCount = (posts[postId] as PostWithCommentCount); 
+                post.commentCount = commentCount;
+            }          
+        }
+
+        // Add the posts to the response
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        response.posts = Object.values(posts).map((entry:any) => entry);
 
         ctx.body = response;
         ctx.status = 200;

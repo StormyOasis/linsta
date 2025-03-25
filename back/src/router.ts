@@ -14,7 +14,7 @@ import { addPost, getAllLikesByPost, getAllPosts, getPostById, postIsPostLikedBy
 import { addComment, getCommentsByPostId, toggleCommentLike } from "./controllers/commentsController";
 import {
     bulkGetProfilesAndFollowing, getFollowersByUserId, getFollowingByUserId, getPostProfileByUserId, getPostProfileByUserName,
-    getProfileStatsById, putProfilePfp, updateProfileByUserId
+    getProfileStatsById, getSingleFollowStatus, putProfilePfp, updateProfileByUserId
 } from "./controllers/profilesController";
 
 
@@ -27,7 +27,7 @@ router.post("/api/v1/accounts/attempt", attemptCreateUser);
 router.post("/api/v1/accounts/login", loginUser);
 router.post("/api/v1/accounts/forgot", forgotPassword);
 router.post("/api/v1/accounts/change_password", changePassword);
-router.post("/api/v1/accounts/follow", verifyJWT, toggleFollowing);
+router.post("/api/v1/accounts/follow", verifyJWT, toggleFollowing); // Should this be moved to profile handlers?
 
 // location handlers
 router.get("/api/v1/locations/get", verifyJWT, getLocation);
@@ -54,6 +54,7 @@ router.post("/api/v1/profiles/getFollowingByUserId", verifyJWT, getFollowingByUs
 router.post("/api/v1/profiles/getByUserName", verifyJWT, getPostProfileByUserName);
 router.post("/api/v1/profiles/getStatsById", verifyJWT, getProfileStatsById);
 router.post("/api/v1/profiles/bulkGetProfiles", verifyJWT, bulkGetProfilesAndFollowing);
+router.post("/api/v1/profiles/getSingleFollowStatus", verifyJWT, getSingleFollowStatus);
 router.put("/api/v1/profiles/updatePfp", verifyJWT, putProfilePfp);
 
 export default router;

@@ -7,7 +7,14 @@ export type JWTData = {
 }
 
 export const verifyJWT = async (ctx: Context, next: () => unknown) => {
-    const token = ctx.request.headers["x-access-token"];
+    //const token = ctx.request.headers["x-access-token"];
+
+    const authHeader:string|undefined = ctx.request.headers['authorization'];
+    let token:string|undefined = undefined;
+    if(authHeader) {
+        const bearer = authHeader.split(' ');
+        token = bearer[1];
+    }
 
     if (!token) {
         ctx.res.statusCode = 403;
@@ -30,10 +37,12 @@ export const verifyJWT = async (ctx: Context, next: () => unknown) => {
         })
 
     if (result == null) {
-        // an error occred
+        ctx.res.statusCode = 403;
+        ctx.body = { status: "Error verifying id" };
         return;
     }
 
+    
     ctx.res.statusCode = 200;
     ctx.body = { status: "OK" };
 

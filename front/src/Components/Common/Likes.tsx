@@ -14,7 +14,7 @@ type ViewLikesTextProps = {
 }
 
 export const ViewLikesText = (props: ViewLikesTextProps) => {
-    if (props.post.global.likesDisabled || props.post.global.likes.length === 0) {
+    if (props.post?.global?.likes == null  || props.post.global.likesDisabled || props.post.global.likes.length === 0) {
         return null;
     }
 

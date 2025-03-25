@@ -119,7 +119,7 @@ const MainContent: React.FC = () => {
 
         // Open the comment dialog by setting the state in redux        
         const payload = {
-            postId: post.postId
+            post
         };
 
         dispatch(actions.modalActions.openModal({ modalName: COMMENT_MODAL, data: payload }));
@@ -132,7 +132,7 @@ const MainContent: React.FC = () => {
 
         // Open the likes dialog by setting the state in redux        
         const payload = {
-            postId: post.postId
+            post
         };
 
         dispatch(actions.modalActions.openModal({ modalName: LIKES_MODAL, data: payload }));
@@ -151,7 +151,7 @@ const MainContent: React.FC = () => {
                         <CaptionContainer className={!isExpanded ? styles.lineClamp2 : {}}>
                             <div id={`postid_${post.postId}`}>
                                 <span>
-                                    <ProfileLink showUserName={true} showPfp={false} url={`${HOST}/${post.user.userName}`} text={post.user.userName}></ProfileLink>
+                                    <ProfileLink showFullName={false} showUserName={true} showPfp={false} url={`${HOST}/${post.user.userName}`} userName={post.user.userName}></ProfileLink>
                                     <span dangerouslySetInnerHTML={{ __html: sanitizedHtml }}></span>
                                 </span>
                             </div>
@@ -227,7 +227,7 @@ const MainContent: React.FC = () => {
                                         <article key={post.postId}>
                                             <PostContainer>
                                                 <Div $paddingBottom="5px">
-                                                    <ProfileLink pfp={pfp} showUserName={true} showPfp={true} text={post.user.userName} url={`${HOST}/${post.user.userName}`}></ProfileLink>
+                                                    <ProfileLink pfp={pfp} showUserName={true} showPfp={true} showFullName={false} userName={post.user.userName} url={`${HOST}/${post.user.userName}`}></ProfileLink>
                                                     {post.global.locationText.length > 0 &&
                                                         <Div $marginLeft="39px" $marginTop="-9px" $fontSize="13px">
                                                             <Link href={`${HOST}/explore?text=${encodeURIComponent(post.global.locationText)}`}>

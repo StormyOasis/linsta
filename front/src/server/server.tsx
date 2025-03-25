@@ -14,6 +14,7 @@ import { StaticRouter } from "react-router-dom/server";
 import App from "../Components/App";
 import { buildStore } from "../Components/Redux/redux";
 import { Provider } from "react-redux";
+import { CustomTextOption } from "src/Components/Common/PopupDropdownSelector";
 
 const PORT = process.env["PORT"] || 8080;
 
@@ -77,6 +78,17 @@ router.get(/.*/, async (ctx) => {
     return null;
 });
 
+// Middleware to strip off trailing slashes via a redirect
+app.use(async (ctx, next) => {
+    const { path } = ctx;
+
+    if (path !== '/' && path.endsWith('/')) {
+        ctx.status = 301;
+        ctx.redirect(path.slice(0, -1));  // Redirect to the path without the trailing slash
+    } else {
+        await next();
+    }
+});
 app.use(compress({
     filter: (contentType) => {
         return /text|javascript|json/.test(contentType);

@@ -33,7 +33,7 @@ export type Entry = {
     mimeType: string|null;
 };
 
-export type Post = {
+export interface Post {
     postId: string;
     user:User;
     global:Global;
