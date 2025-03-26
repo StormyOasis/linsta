@@ -133,8 +133,8 @@ export const putSubmitPost = async (data: any, authUser:AuthUser): Promise<Servi
     }
 }
 
-export const getPosts = async (): Promise<ServiceResponse> => {
-    const res = await axios.get(`${host}/api/v1/posts/getAll`, {headers: authHeader()});
+export const getPosts = async (data: any): Promise<ServiceResponse> => {
+    const res = await axios.post(`${host}/api/v1/posts/getAll`, data, {headers: authHeader()});
     return {
         data: res.data,
         status: res.status,

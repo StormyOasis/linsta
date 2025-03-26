@@ -82,7 +82,6 @@ const GridContainer = styled(Div)`
     flex-wrap: wrap;
     gap: 5px;
     height: 100%;
-    min-height: 100vh;
 `;
 
 const GridImageContainer = styled(Div)<{$width: string}>`

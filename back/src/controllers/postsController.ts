@@ -119,31 +119,147 @@ export const addPost = async (ctx: Context) => {
     ctx.status = 200;
 }
 
+type GetPostsRequest = {
+    dateTime?: string;
+    postId?: string;
+};
+
+type GetPostsResponse = {
+    posts: Post[];
+    dateTime: string;
+    postId: string;
+    done: boolean;
+};
+
 export const getAllPosts = async (ctx: Context) => {
     Metrics.increment("posts.getAll");
 
+    const data = <GetPostsRequest>ctx.request.body;
+
     try {
+        const response: GetPostsResponse = {
+            posts: [],
+            dateTime: "",
+            postId: "",
+            done: true
+        };
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const results:any = await search({
-            match_all: {}            
-        }, null);
-
-        const entries = await buildSearchResultSet(results.body.hits.hits);
-
-        // Add the like data and update redis with results
-        for(const entry of entries) {
-            const postId = await getPostIdFromEsId(entry.global.id);               
-            if(postId != null) {                
-                entry.postId = postId;
-                entry.global.likes = await getLikesByPost(postId);
-                entry.user.pfp = await getPfpByUserId(entry.user.userId);
-            }            
-
-            await RedisConnector.set(entry.global.id, JSON.stringify(entry));
+        const query:any = {
+            query: {
+                match_all: {}
+            },
+            sort: [
+                {
+                    "post.global.dateTime": {
+                        "order": "asc",
+                        "nested": {
+                            "path": "post.global"
+                        }
+                    }
+                },
+                {
+                    "post.media.postId": {
+                        "order": "asc",
+                        "nested": {
+                            "path": "post.media"
+                        }
+                    }
+                }
+            ]                        
         }
-
+        
+        if (data.dateTime != null && data.postId != null) {
+            query.search_after = [data.dateTime, data.postId];
+        }
+        
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const results:any = await searchWithPagination(query);
+    
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const posts:any = {};
+        const postIds:string[] = [];
+        if (results.body.hits.hits.length > 0) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const hits: any = results.body.hits.hits;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any            
+            hits.map(async (entry: any) => {                
+                // Use this postId to avoid having to do a esId to postId DB query
+                const postId = entry._source.post.media[0].postId;
+                posts[postId] = entry._source.post;
+                posts[postId].postId = postId;
+                //posts[postId].post.user.pfp = await getPfpByUserId(entry._source.post.user.userId);
+                
+                postIds.push(postId);
+            });
+    
+            response.dateTime = hits[hits.length - 1].sort[0];
+            response.postId = hits[hits.length - 1].sort[1];
+            response.done = false;
+        }
+    
+        if(response.done) {
+            // No more results to return, so return here
+            ctx.status = 200;
+            ctx.body = response;
+            return;
+        }
+    
+        // Now update the posts' return values by adding all the likes and just the comment counts
+        
+        // Get all posts' likes
+        const __ = DBConnector.__();
+        const dbResults = await (await DBConnector.getGraph()).V(postIds)
+            .filter(__.inE(EDGE_USER_LIKED_POST).count().is(DBConnector.P().gt(0)))
+            .project("postId", "users")
+            .by(__.id())
+            .by(__.inE(EDGE_USER_LIKED_POST)
+                .outV()
+                .project('profileId', 'userName', 'pfp', 'firstName', 'lastName', 'id')
+                .by("profileId")
+                .by("userName")
+                .by("pfp")
+                .by("firstName")
+                .by("lastName")
+                .by(__.id())
+                .fold()
+            ).toList();
+    
+        // Get the post likes 
+        if(dbResults != null && dbResults.length > 0) {
+            // At least one of the given post ids has a like
+            for(const result of dbResults) {                
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const postMap:Map<any, any> = (result as Map<any, any>);
+                const postId = postMap.get("postId");
+                const users = postMap.get("users");
+                
+                const post:Post = (posts[postId] as Post); 
+                if(post.global.likes == null) {
+                    post.global.likes = [];
+                }
+    
+                for(const user of users) {
+                    const newLike:Like = {
+                        userName: user.get("userName"),
+                        userId: user.get("id"),
+                        profileId: user.get("profileId"),
+                        firstName: user.get("firstName"),
+                        lastName: user.get("lastName"),
+                        pfp: user.get("pfp")
+                    };
+                    post.global.likes.push(newLike);
+                }            
+            }            
+        }
+    
+        // Add the posts to the response
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        response.posts = Object.values(posts).map((entry:any) => entry);
+    
+        ctx.body = response;
         ctx.status = 200;
-        ctx.body = entries;
+    
     } catch(err) {
         console.log(err);
         logger.error(err);
