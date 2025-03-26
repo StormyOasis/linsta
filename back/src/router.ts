@@ -34,7 +34,7 @@ router.get("/api/v1/locations/get", verifyJWT, getLocation);
 
 // posts handlers
 router.put("/api/v1/posts/addPost", verifyJWT, addPost);
-router.get("/api/v1/posts/getAll", verifyJWT, getAllPosts);
+router.post("/api/v1/posts/getAll", verifyJWT, getAllPosts);
 router.get("/api/v1/posts/getPostById", verifyJWT, getPostById);
 router.post("/api/v1/posts/likePost", verifyJWT, toggleLikePost);
 router.post("/api/v1/posts/isPostLikedByUser", verifyJWT, postIsPostLikedByUserId);

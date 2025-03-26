@@ -9,8 +9,8 @@ import { BoldLink, Div, Flex, FlexColumn, FlexColumnFullWidth, FlexRow, FlexRowF
 import MediaSlider from "../../../../Common/MediaSlider";
 import { HOST } from "../../../../../api/config";
 import ProfileLink from "../../../../Common/ProfileLink";
-import { postAddComment, postGetCommentsByPostId } from "../../../../../api/ServiceController";
-import { dateDiff, getDateAsText, getSanitizedText, isPostLiked } from "../../../../../utils/utils";
+import { postAddComment, postGetCommentsByPostId, postToggleLike } from "../../../../../api/ServiceController";
+import { dateDiff, getDateAsText, getSanitizedText, isPostLiked, togglePostLikedState } from "../../../../../utils/utils";
 import Theme from "../../../../Themes/Theme";
 import MessageSVG from "/public/images/message.svg";
 import ShareSVG from "/public/images/send.svg";
@@ -349,8 +349,13 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
         dispatch(actions.modalActions.openModal({ modalName: LIKES_MODAL, data: payload }));
     }
 
-    const toggleLike = (postId: string, userName: string, userId: string) => {        
-        dispatch(togglePostLike({ postId, userName, userId }));
+    const toggleLike = async (postId: string, userName: string, userId: string) => {        
+        //dispatch(togglePostLike({ postId, userName, userId }));
+        const result = await postToggleLike({postId, userName, userId});
+        if(result.status === 200) {
+            // TODO: Update post on main page / prop.post
+        }        
+
     }
 
     if (props.post == null) {
