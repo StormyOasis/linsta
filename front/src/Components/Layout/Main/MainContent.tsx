@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import * as styles from './Main.module.css';
-import { postAddComment } from "../../../api/ServiceController";
-import { Post } from "../../../api/types";
+import { getPosts, postAddComment, postToggleLike } from "../../../api/ServiceController";
+import { Post, PostPaginationResponse } from "../../../api/types";
 import MediaSlider from "../../../Components/Common/MediaSlider";
 
 import MessageSVG from "/public/images/message.svg";
 import ShareSVG from "/public/images/send.svg";
 import { AuthUser } from "../../../api/Auth";
-import { isOverflowed, getSanitizedText, isPostLiked, getPfpFromPost } from "../../../utils/utils";
+import { isOverflowed, getSanitizedText, isPostLiked, getPfpFromPost, togglePostLikedState } from "../../../utils/utils";
 import { ContentWrapper, Div, Flex, FlexColumn, FlexColumnFullWidth, FlexRow, FlexRowFullWidth, LightLink, Link, Main, Section } from "../../../Components/Common/CombinedStyling";
 import EmojiPickerPopup from "../../../Components/Common/EmojiPickerPopup";
 import StyledLink from "../../../Components/Common/StyledLink";
@@ -72,15 +72,64 @@ interface CommentTextType {
 const MainContent: React.FC = () => {
     const [viewShowMoreStates, setViewMoreStates] = useState<{}>({});
     const [commentText, setCommentText] = useState<CommentTextType>({});
+    const [paginationResult, setPaginationResult] = useState<PostPaginationResponse>();
+    const [posts, setPosts] = useState<Post[]>([]);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const childRef = useRef(null);
 
     const authUser: AuthUser = useAppSelector((state: any) => state.auth.user);
-    const posts: Post[] = useAppSelector((state: any) => state.post.posts);
+    //const posts: Post[] = useAppSelector((state: any) => state.post.posts);
 
     const dispatch = useAppDispatch();
 
     useEffect(() => {
-        dispatch(getPostList())
+       // dispatch(getPostList())
+       
+       // initial data request for the infinte scroll
+       getPosts({}).then(results => {            
+                if (results.data != null) {
+                    const response: PostPaginationResponse = results.data;
+                    setPaginationResult(response);
+                    setPosts(response.posts);
+                }
+        })
     }, []);
+
+    useEffect(() => {
+        if (childRef.current) {
+            (childRef.current as any).addEventListener('scroll', handleScroll);
+        }
+        return () => {
+            if(childRef && childRef.current) {
+                (childRef.current as any).removeEventListener('scroll', handleScroll);
+            }
+        };        
+    }, [paginationResult, isLoading]);
+    
+    const loadPosts = async () => {
+        if (isLoading || (paginationResult && paginationResult.done)) {
+            return;
+        }
+
+        setIsLoading(true);
+
+        const result = await getPosts({ dateTime: paginationResult?.dateTime, postId: paginationResult?.postId });
+        if (result.data != null) {
+            const response: PostPaginationResponse = result.data;
+            setPaginationResult(response);
+            setPosts((posts: Post[]) => [...posts, ...response.posts]);
+            setIsLoading(false);
+        }
+    };
+
+    const handleScroll = () => {
+        const element = (childRef?.current as any);
+        const currentScroll = window.innerHeight + element.scrollTop;
+
+        if (currentScroll + 256 >= element.scrollHeight) {
+            loadPosts();
+        }
+    };    
 
     const toggleCaptionViewMoreState = (postId: string) => {
         const newState: any = Object.assign({}, viewShowMoreStates);
@@ -89,8 +138,18 @@ const MainContent: React.FC = () => {
         setViewMoreStates(newState);
     }
 
-    const toggleLike = (postId: string, userName: string, userId: string) => {
-        dispatch(togglePostLike({ postId, userName, userId }));
+    const toggleLike = async (postId: string, userName: string, userId: string) => {
+        //dispatch(togglePostLike({ postId, userName, userId }));
+        const result = await postToggleLike({postId, userName, userId});
+        if(result.status === 200) {
+            const newPosts:Post[] = [...posts];
+            for(const post of newPosts) {
+                if(post.postId === postId) {
+                    togglePostLikedState(userName, userId, post);
+                }
+            }
+            setPosts(newPosts);
+        }
     }
 
     const handleSubmitComment = async (text: string, post: Post) => {
@@ -215,16 +274,16 @@ const MainContent: React.FC = () => {
 
     return (
         <>
-            <ContentWrapper>
+            <ContentWrapper ref={childRef} style={{ overflow: "auto", maxHeight: "100vh" }}>
                 <Section>
                     <Main role="main">
                         <FlexRowFullWidth $justifyContent="center">
                             <FeedContainer>
-                                {posts && posts.length > 0 && posts.map((post) => {
+                                {posts && posts.length > 0 && posts.map((post, index) => {
                                     const isLiked = isPostLiked(authUser.userName, post);
                                     const pfp = getPfpFromPost(post);
                                     return (
-                                        <article key={post.postId}>
+                                        <article key={`${post.media[0].id}-${index}`}>
                                             <PostContainer>
                                                 <Div $paddingBottom="5px">
                                                     <ProfileLink pfp={pfp} showUserName={true} showPfp={true} showFullName={false} userName={post.user.userName} url={`${HOST}/${post.user.userName}`}></ProfileLink>
