@@ -1,26 +1,36 @@
 // jest.config.js
 module.exports = {
+    preset: 'ts-jest',
     rootDir: './',    
     setupFiles: ['./jest.polyfill.js'],
     testEnvironment: "jsdom",
     testEnvironmentOptions: {
         customExportConditions: [''],
     },
+    coverageDirectory: 'coverage',
     coverageReporters: ['html'],
     collectCoverageFrom: [
         '**/*.{js,jsx,ts,tsx}',
         '!**/*stories.tsx',
         '!**/dist/**',
-        '!/back/*',
+        '!/front/*',
         '!**/coverage/**',
         '!/node_modules/',
         '!**webpack**',        
-        '!**jest**'        
-      ],
+        '!**jest**'
+    ],
     collectCoverage: true,
     coverageThreshold: {
         global: {
             lines: 90
         }
-    }
+    },
+    moduleNameMapper: {
+        '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$':
+          '<rootDir>/src/__mocks__/fileMock.js',
+        '\\.(css|less)$': 'identity-obj-proxy',
+    },
+    transform: {
+        '^.+\\.ts$': 'ts-jest'
+    },
 }
