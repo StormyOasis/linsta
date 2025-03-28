@@ -7,7 +7,8 @@ import { DEFAULT_PFP } from '../../../api/config';
 const NAME = "profile";
 
 export interface GlobalProfileState {
-    profile: Profile;    
+    profile: Profile;
+    nonce: string|null;    
 };
 
 const defaultState:GlobalProfileState = {
@@ -16,7 +17,8 @@ const defaultState:GlobalProfileState = {
         userName: '',
         pfp: DEFAULT_PFP,
         profileId: ''
-    }
+    },
+    nonce: null
 };
 
 export const getProfileByUserId = createAsyncThunk(`${NAME}/getByUserId`, async (params: any, thunkApi) => {    
@@ -55,8 +57,12 @@ const profileSliceCreator = (preloadedState?: any) => {
         const updateProfilePic = (state: GlobalProfileState, action: PayloadAction<string>) => {         
             state.profile.pfp = action.payload as string;
         }
+
+        const forceUpdate = (state: GlobalProfileState, _action: PayloadAction<string>) => {         
+            state.nonce = crypto.randomUUID();
+        }        
                 
-        return {updateProfilePic};
+        return {updateProfilePic, forceUpdate};
     }
 
     function createActions() {
@@ -69,7 +75,7 @@ const profileSliceCreator = (preloadedState?: any) => {
                 state.status = "pending";
                 state.error = null;
                 state.profile = null;                
-            }).addCase(getProfileByUserId.fulfilled, (state, action) => {
+            }).addCase(getProfileByUserId.fulfilled, (state, action) => {                
                 const profile = action.payload.data;
                 state.status = "succeeded";
                 state.error = null;

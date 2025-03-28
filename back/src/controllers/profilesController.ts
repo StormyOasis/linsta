@@ -71,8 +71,8 @@ export const updateProfileByUserId = async (ctx: Context) => {
         });
 
         // Update the profile in the DB
-        DBConnector.beginTransaction();
-        const results = await (await DBConnector.getGraph(true)).V(data.userId)
+        await DBConnector.beginTransaction();
+        const results = await DBConnector.getGraph(true).V(data.userId)
             .property("bio", bio)
             .property("pronouns", pronouns)
             .property("link", link)
@@ -201,14 +201,14 @@ export const getProfileStatsById = async(ctx: Context) => {
         };
 
         // First: Get the number of posts by the user
-        const postResult = await (await DBConnector.getGraph()).V(data.userId).outE(EDGE_USER_TO_POST).count().next();
+        const postResult = await DBConnector.getGraph().V(data.userId).outE(EDGE_USER_TO_POST).count().next();
         if(postResult == null || postResult?.value == null) {
             throw new Error("Failure getting post count");
         }
         stats.postCount = postResult.value;
 
         // Second: Get the number of users this profile is following
-        const followerResult = await (await DBConnector.getGraph()).V(data.userId)
+        const followerResult = await DBConnector.getGraph().V(data.userId)
             .outE(EDGE_USER_FOLLOWS)
             .count()
             .next();
@@ -220,7 +220,7 @@ export const getProfileStatsById = async(ctx: Context) => {
         stats.followingCount = followerResult.value;
 
         // Third: Get the number of users following this user
-        const followingResult = await (await DBConnector.getGraph()).V(data.userId)
+        const followingResult = await DBConnector.getGraph().V(data.userId)
             .inE(EDGE_USER_FOLLOWS)
             .count()
             .next();
@@ -295,7 +295,7 @@ export const putProfilePfp = async(ctx: Context) => {
         });                
 
         // Update the entry in the DB
-        const result = await (await DBConnector.getGraph()).V(profile.userId).property("pfp", url).next();
+        const result = await DBConnector.getGraph().V(profile.userId).property("pfp", url).next();
         if(result == null || result.value == null) {
             throw new Error("Error updating DB");
         }
@@ -334,7 +334,7 @@ export const getFollowingByUserId = async(ctx: Context) => {
 
         // Now get the follow data
         const __ = DBConnector.__();
-        const results = await (await DBConnector.getGraph()).V(data.userId)
+        const results = await DBConnector.getGraph().V(data.userId)
             .hasLabel('User')
             .group()
             .by("userName")
@@ -413,7 +413,7 @@ export const getFollowersByUserId = async(ctx: Context) => {
     try {
         // Find the follower profiles from the specified user id
         const __ = DBConnector.__();
-        let results = await (await DBConnector.getGraph()).V(data.userId)
+        let results = await DBConnector.getGraph().V(data.userId)
             .inE(EDGE_USER_FOLLOWS)  // Get all incoming 'user_follows' edges pointing to User1
             .outV()  // Get the vertices (users) who follow User1
             .where(__.not(__.hasId(data.userId)))  // Exclude User1 from the results            
@@ -454,7 +454,7 @@ export const getFollowersByUserId = async(ctx: Context) => {
         // Ideally we could handle this and the previous query together in a single query
         // but couldn't get it to work and ChatGPT let me down too
 
-        results = await (await DBConnector.getGraph()).V(data.userId)                              
+        results = await DBConnector.getGraph().V(data.userId)                              
             .out(EDGE_USER_FOLLOWS)           
             .filter(__.id().is(DBConnector.P().within(followerIds)))
             .dedup()
@@ -518,7 +518,7 @@ export const getSingleFollowStatus = async(ctx: Context) => {
 
     try {
         // Find the profile data of the given user ids
-        const results = await (await DBConnector.getGraph())?.V(data.userId)
+        const results = await DBConnector.getGraph()?.V(data.userId)
             .outE(EDGE_USER_FOLLOWS)
             .inV()
             .hasId(data.checkUserId)
@@ -557,7 +557,7 @@ export const bulkGetProfilesAndFollowing = async(ctx: Context) => {
 
     try {
         // Find the profile data of the given user ids
-        const results = await (await DBConnector.getGraph()).V(data.userIds).project("User").toList();
+        const results = await DBConnector.getGraph().V(data.userIds).project("User").toList();
         if(results == null) {
             throw new Error("Error getting profiles");
         }
@@ -591,7 +591,7 @@ export const bulkGetProfilesAndFollowing = async(ctx: Context) => {
 
         // Now get the follow data
         const __ = DBConnector.__();
-        const results2 = await (await DBConnector.getGraph()).V(data.userIds)
+        const results2 = await DBConnector.getGraph().V(data.userIds)
             .hasLabel('User')
             .group()
             .by("userName")

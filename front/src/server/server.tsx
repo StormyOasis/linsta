@@ -14,7 +14,6 @@ import { StaticRouter } from "react-router-dom/server";
 import App from "../Components/App";
 import { buildStore } from "../Components/Redux/redux";
 import { Provider } from "react-redux";
-import { CustomTextOption } from "src/Components/Common/PopupDropdownSelector";
 
 const PORT = process.env["PORT"] || 8080;
 

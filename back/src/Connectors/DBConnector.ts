@@ -40,10 +40,10 @@ export class DBConnector {
         return this.connection;
     }
     
-    public getGraph = async (isTransaction:boolean = false)
-        :Promise<gremlin.process.GraphTraversalSource<gremlin.process.GraphTraversal>> => {
+    public getGraph = (isTransaction:boolean = false)
+        :gremlin.process.GraphTraversalSource<gremlin.process.GraphTraversal> => {
 
-        await this.reconnectIfNeeded();
+        //await this.reconnectIfNeeded();
 
         if(!this.g) {
             throw new Error("Invalid connection");

@@ -4,7 +4,7 @@ import { renderToString } from "react-dom/server";
 import styled from "styled-components";
 
 import MultiStepModal from "../../../../Common/MultiStepModal";
-import { Post, User } from "../../../../../api/types";
+import { Post, PostWithCommentCount, Profile, User } from "../../../../../api/types";
 import { BoldLink, Div, Flex, FlexColumn, FlexColumnFullWidth, FlexRow, FlexRowFullWidth, Link, Span } from "../../../../Common/CombinedStyling";
 import MediaSlider from "../../../../Common/MediaSlider";
 import { HOST } from "../../../../../api/config";
@@ -19,9 +19,8 @@ import EmojiPickerPopup from "../../../../Common/EmojiPickerPopup";
 import StyledLink from "../../../../Common/StyledLink";
 import { CommentUiData, mapCommentsToCommentData, toggleCommentLike, toggleCommentReplyUiData, isCommentLiked, searchCommentsById } from "./CommentsModalUtils";
 import { LikeToggler, ViewLikesText } from "../../../../../Components/Common/Likes";
-import { LIKES_MODAL } from "../../../../../Components/Redux/slices/modals.slice";
-import { togglePostLike } from "../../../../../Components/Redux/slices/post.slice";
-import { actions, useAppDispatch } from "../../../../../Components/Redux/redux";
+import { MODAL_TYPES } from "../../../../../Components/Redux/slices/modals.slice";
+import { actions, useAppDispatch, useAppSelector } from "../../../../../Components/Redux/redux";
 
 const MediaSliderWrapper = styled.div<{ $width: number }>`
     align-content: center;
@@ -121,12 +120,12 @@ const CommentReplyButton = styled.button`
 
 type CommentModalProps = {
     onClose: any;
-    post: Post;
+    post: PostWithCommentCount;
     zIndex: number;
 }
 
 type CommentModalContentProps = {
-    post: Post;
+    post: PostWithCommentCount;
 }
 
 const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentModalContentProps) => {
@@ -136,15 +135,18 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
 
     const commentTextAreaRef = useRef(null);
 
-    const authUser: AuthUser = useSelector((state: any) => state.auth.user);
-    
+    const authUser: AuthUser = useAppSelector((state: any) => state.auth.user);
+    const profile: Profile = useAppSelector((state:any) => state.profile.profile);
+
     const dispatch = useAppDispatch();
     
-    useEffect(() => {      
-        postGetCommentsByPostId({ postId: props.post.postId }).then((results) => {            
-            setComments(mapCommentsToCommentData(results.data, comments));
-        }).catch(e => console.error(e))
-    }, []);
+    useEffect(() => {     
+        if(props.post != null) {
+            postGetCommentsByPostId({ postId: props.post.postId }).then((results) => {            
+                setComments(mapCommentsToCommentData(results.data, comments));
+            }).catch(e => console.error(e))
+        }
+    }, [props.post]);
 
     const renderSingleComment = (key: string, text: string, user: User, dateTime: Date, repliesEnabled: boolean,
         isLiked: boolean, showLikeToggle: boolean, commentUiData: CommentUiData | null, level: number) => {
@@ -283,7 +285,7 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
         return nodes;
     }
 
-    const handleSubmitComment = async (text: string, post: Post) => {
+    const handleSubmitComment = async (text: string, post: PostWithCommentCount) => {
         const data = {
             text,
             postId: `${post.postId}`,
@@ -294,10 +296,15 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
 
         const result = await postAddComment(data);
 
-        if (result.status === 200) {            
+        if (result.status === 200) {
             // Update comment list with new comment
             // To reduce server load, rather than pulling the comment list again
             // just merge the comment into the local list
+
+            // first update the commentCount
+            let post:PostWithCommentCount|null = structuredClone(props.post);
+            post.commentCount++;
+            dispatch(actions.modalActions.updateModalData({ modalName: MODAL_TYPES.COMMENT_MODAL, data: {post} }));            
             
             const newComment: CommentUiData = {
                 comment: {
@@ -307,7 +314,7 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                     user: {
                         userName: data.userName,
                         userId: data.userId,
-                        pfp: ""
+                        pfp: profile.pfp || ""
                     },
                     postId: post.postId,
                     parentCommentId: parentCommentId,
@@ -318,7 +325,7 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                 childCount: 0
             };            
 
-            const newComments = Object.assign({}, comments);            
+            const newComments = structuredClone(comments);            
             const parent = searchCommentsById(parentCommentId as string, newComments);
             if(parent != null) {
                 // New comment is a child node
@@ -332,11 +339,11 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
             setComments(newComments);
             // Success adding comment, clear out comment text box
             setCommentText("");
-            setParentCommentId(null);         
+            setParentCommentId(null);    
         }
     }
 
-    const openLikesModal = (post: Post) => {
+    const openLikesModal = (post: PostWithCommentCount) => {
         if (post === null) {
             return;
         }
@@ -346,16 +353,17 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
             post: post
         };
 
-        dispatch(actions.modalActions.openModal({ modalName: LIKES_MODAL, data: payload }));
+        dispatch(actions.modalActions.openModal({ modalName: MODAL_TYPES.LIKES_MODAL, data: payload }));
     }
 
-    const toggleLike = async (postId: string, userName: string, userId: string) => {        
-        //dispatch(togglePostLike({ postId, userName, userId }));
-        const result = await postToggleLike({postId, userName, userId});
-        if(result.status === 200) {
-            // TODO: Update post on main page / prop.post
-        }        
-
+    const toggleLike = async (userName: string, userId: string) => {
+        // Greedily update only the local UI regardless of server response
+        let post:PostWithCommentCount|null = structuredClone(props.post);
+        post = togglePostLikedState(userName, userId, post) as PostWithCommentCount;       
+        dispatch(actions.modalActions.updateModalData({ modalName: MODAL_TYPES.COMMENT_MODAL, data: {post} }));
+        
+        // Send the actual command to the server
+        await postToggleLike({postId: props.post.postId, userName, userId});       
     }
 
     if (props.post == null) {
@@ -409,7 +417,7 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                                         <Flex $paddingRight="8px" $position="relative" $top="2px">
                                             <LikeToggler
                                                 isLiked={isLiked}
-                                                handleClick={() => toggleLike(props.post.postId, authUser.userName, authUser.id)}>
+                                                handleClick={() => toggleLike(authUser.userName, authUser.id)}>
                                             </LikeToggler>
                                         </Flex>
                                     </Div>

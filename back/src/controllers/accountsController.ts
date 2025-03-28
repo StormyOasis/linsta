@@ -33,7 +33,7 @@ export const getIsUnqiueUsername = async (ctx: Context) => {
     // Check against the db for username existence
 
     try {
-        const uniquePropertyMatcher = await (await DBConnector.getGraph()).V()
+        const uniquePropertyMatcher = await DBConnector.getGraph().V()
             .hasLabel("User")
             .has("userName", userName)
             .valueMap(true)
@@ -117,7 +117,7 @@ export const attemptCreateUser = async (ctx: Context) => {
 
         try {
             // Check if confirmation code + email/phone entry exists
-            res = await (await DBConnector.getGraph()).V()
+            res = await DBConnector.getGraph().V()
                 .hasLabel("ConfirmCode")
                 .has("userData", data.emailOrPhone.trim())
                 .has("token", data.confirmCode.trim())
@@ -166,14 +166,14 @@ export const attemptCreateUser = async (ctx: Context) => {
         const email = isEmailAddr ? data.emailOrPhone : "";
         const phone = isPhoneNum ? data.emailOrPhone : "";
         
-        DBConnector.beginTransaction();
+        await DBConnector.beginTransaction();
         
         // Email, phone, and userName properties must all be unique. 
         // Check for any existing users that have the given values
         // Note: Potential race condition here, but I'm not sure how to resolve it in gremlin so
         // if we end up with duplicate values this is probably the cause    
         const __ = DBConnector.__();
-        const uniquePropertyMatcher = await (await DBConnector.getGraph(true)).V()
+        const uniquePropertyMatcher = await DBConnector.getGraph(true).V()
             .hasLabel("User")    
             .and(                
                 __.has("userName", data.userName),
@@ -196,7 +196,7 @@ export const attemptCreateUser = async (ctx: Context) => {
             failureOccured = true;            
         } else {
             // Attempt to insert a user vertex
-            const result = await (await DBConnector.getGraph(true)).addV("User")
+            const result = await DBConnector.getGraph(true).addV("User")
                 .property("email", email)
                 .property("phone", phone)
                 .property("userName", data.userName)
@@ -215,7 +215,7 @@ export const attemptCreateUser = async (ctx: Context) => {
                 if (!data.dryRun && data.confirmCode) {
                     // The confirmation code was checked above and succeeded
                     // We now want to delete it from the DB
-                    res = await (await DBConnector.getGraph(true)).V()
+                    res = await DBConnector.getGraph(true).V()
                         .hasLabel("ConfirmCode")
                         .has("userData", data.emailOrPhone.trim())
                         .drop().toList();
@@ -247,7 +247,7 @@ export const attemptCreateUser = async (ctx: Context) => {
             const esResult = await insertProfile(profileData);
 
             // Now add update the profile id in the user vertex
-            const graphResult = await (await DBConnector.getGraph(true)).V(userId)
+            const graphResult = await DBConnector.getGraph(true).V(userId)
                 .property("profileId", esResult._id)
                 .next();  
 
@@ -302,7 +302,7 @@ export const sendConfirmCode = async (ctx: Context) => {
 
     try {
         // Upsert into DB
-        const res = await (await DBConnector.getGraph()).mergeV(new Map([["userData", userData]]))
+        const res = await DBConnector.getGraph().mergeV(new Map([["userData", userData]]))
             .option(DBConnector.Merge().onCreate, new Map([[DBConnector.T().label, "ConfirmCode"], ["token", token], ["userData", userData], ["sentTime", sentTime]]))
             .option(DBConnector.Merge().onMatch, new Map([["token", token], ["sentTime", sentTime]]))
             .next();
@@ -363,7 +363,7 @@ export const loginUser = async (ctx: Context) => {
     
     try {
         // Check against the db for username existence
-        const result = await (await DBConnector.getGraph()).V()
+        const result = await DBConnector.getGraph().V()
             .hasLabel("User")
             .has("userName", data.userName)
             .project('id', 'userName', 'password')
@@ -447,7 +447,7 @@ export const forgotPassword = async (ctx: Context) => {
         }
 
         const __ = DBConnector.__();
-        const result = await (await DBConnector.getGraph()).V()
+        const result = await DBConnector.getGraph().V()
             .hasLabel("User")           
             .or(__.has("email", data.user), __.has("userName", data.user), __.has("phone", data.user))
             .project("email","userName","phone", "id")
@@ -498,7 +498,7 @@ const sendForgotMessage = async (ctx: Context, email: string, phone: string, use
 
     try {
         // Do an upsert so if user clicks resend it updates the existing token
-        let res = await (await DBConnector.getGraph()).mergeV(new Map([["userId", `${userId}`]]))
+        let res = await DBConnector.getGraph().mergeV(new Map([["userId", `${userId}`]]))
             .option(DBConnector.Merge().onCreate, new Map([[DBConnector.T().label, "ForgotToken"], ["token", token], ["userId", `${userId}`]]))
             .option(DBConnector.Merge().onMatch, new Map([["token", token]]))
             .next();
@@ -510,7 +510,7 @@ const sendForgotMessage = async (ctx: Context, email: string, phone: string, use
         }
 
         // Add edges between the User and ForgotToken verticies
-        res = await (await DBConnector.getGraph()).V()
+        res = await DBConnector.getGraph().V()
             .hasLabel("User")
             .has(DBConnector.T().id, userId)
             .as("user_id")
@@ -641,7 +641,7 @@ export const changePassword = async (ctx: Context) => {
                 return;
             }
 
-            let result = await (await DBConnector.getGraph()).V()
+            let result = await DBConnector.getGraph().V()
                 .hasLabel("User")
                 .has("userName", data.userName)
                 .project('id', 'userName', 'password')
@@ -680,7 +680,7 @@ export const changePassword = async (ctx: Context) => {
             }                
             
             // Use the username and password to change password   
-            result = await (await DBConnector.getGraph()).V()
+            result = await DBConnector.getGraph().V()
                 .hasLabel("User")
                 .has('userName', data.userName)
                 .property('password', hashedPassword)
@@ -698,7 +698,7 @@ export const changePassword = async (ctx: Context) => {
             const token: string = data.token ? data.token : "";
 
             // Get the token from the db if it exists
-            let result = await (await DBConnector.getGraph(true)).V()
+            let result = await DBConnector.getGraph(true).V()
                 .hasLabel("ForgotToken")
                 .has('token', token)
                 .out("token_to_user")
@@ -710,7 +710,7 @@ export const changePassword = async (ctx: Context) => {
             }            
 
             // Update the password in the User vertex            
-            result = await (await DBConnector.getGraph(true)).V(value.id)
+            result = await DBConnector.getGraph(true).V(value.id)
                 .property('password', hashedPassword)
                 .next();            
                 
@@ -720,7 +720,7 @@ export const changePassword = async (ctx: Context) => {
             }
 
             // Now delete the forgot token vertex
-            result = await (await DBConnector.getGraph(true)).V(value.id).out("user_to_token").drop().next();       
+            result = await DBConnector.getGraph(true).V(value.id).out("user_to_token").drop().next();       
 
             // Done!
             await DBConnector.commitTransaction();
@@ -751,11 +751,11 @@ export const toggleFollowing = async (ctx: Context) => {
     const data = <FollowingType>ctx.request.body;
 
     try {
-        DBConnector.beginTransaction();
+        await DBConnector.beginTransaction();
 
         if(data.follow) {
             //Adding a new follower
-            const result = await (await DBConnector.getGraph(true)).V(data.userId)
+            const result = await DBConnector.getGraph(true).V(data.userId)
                 .as("user_id")
                 .V(data.followId)
                 .as("follow_id")
@@ -769,7 +769,7 @@ export const toggleFollowing = async (ctx: Context) => {
             }   
         } else {
             // unfollow the given follower
-            await (await DBConnector.getGraph(true)).V(data.userId)
+            await DBConnector.getGraph(true).V(data.userId)
                 .outE(EDGE_USER_FOLLOWS)
                 .where(DBConnector.__().inV().hasId(data.followId))
                 .drop()

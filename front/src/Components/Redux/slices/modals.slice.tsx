@@ -1,13 +1,15 @@
 import { ActionReducerMapBuilder, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { historyUtils } from "../../../utils/utils";
 
-export const NEW_POST_MODAL = "newPostModal";
-export const COMMENT_MODAL = "commentModal";
-export const LIKES_MODAL = "likeModal";
-export const PROFILE_PIC_MODAL = "pfpModal";
-export const FOLLOW_MODAL = "followModal";
-
 const NAME = "modals";
+
+export const MODAL_TYPES = {
+    NEW_POST_MODAL: "newPostModal",
+    COMMENT_MODAL: "commentModal",
+    LIKES_MODAL: "likeModal",
+    PROFILE_PIC_MODAL: "pfpModal",
+    FOLLOW_MODAL: "followModal"
+};
 
 export interface ModalState {
     modalName: string;
@@ -72,9 +74,18 @@ const modalSliceCreator = (preloadedState?: any) => {
             }
         };
 
+        const updateModalData = (state: GlobalModalState, action: PayloadAction<ModalState>) => {
+            const { modalName, data } = action.payload;
+            const modalIndex = state.openModalStack.findIndex((modal) => modal.modalName === modalName);
+            if (modalIndex >= 0) {
+                state.openModalStack[modalIndex].data = data; // Update the data for the specific modal
+            }
+        };        
+
         return {
             openModal,
-            closeModal
+            closeModal,
+            updateModalData
         };
     }
 

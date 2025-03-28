@@ -16,8 +16,7 @@ import { HOST } from "../../../api/config";
 import ProfileLink from "../../../Components/Common/ProfileLink";
 import { LikeToggler, ViewLikesText } from "../../../Components/Common/Likes";
 import { useAppDispatch, useAppSelector, actions } from "../../../Components/Redux/redux";
-import { COMMENT_MODAL, LIKES_MODAL } from "../../../Components/Redux/slices/modals.slice";
-import { getPostList, togglePostLike } from "../../../Components/Redux/slices/post.slice";
+import { MODAL_TYPES, ModalState } from "../../../Components/Redux/slices/modals.slice";
 
 const FeedContainer = styled(FlexColumn)`
     max-width: 700px;
@@ -78,22 +77,37 @@ const MainContent: React.FC = () => {
     const childRef = useRef(null);
 
     const authUser: AuthUser = useAppSelector((state: any) => state.auth.user);
-    //const posts: Post[] = useAppSelector((state: any) => state.post.posts);
+    const commentModalState = useAppSelector((state: any) => state.modal.openModalStack?.find((modal:ModalState) => modal.modalName === MODAL_TYPES.COMMENT_MODAL));
 
     const dispatch = useAppDispatch();
-
-    useEffect(() => {
-       // dispatch(getPostList())
-       
+    
+    useEffect(() => {       
        // initial data request for the infinte scroll
        getPosts({}).then(results => {            
-                if (results.data != null) {
-                    const response: PostPaginationResponse = results.data;
-                    setPaginationResult(response);
-                    setPosts(response.posts);
-                }
+            if (results.data != null) {
+                const response: PostPaginationResponse = results.data;
+                setPaginationResult(response);
+                setPosts(response.posts);
+            }
         })
     }, []);
+
+    useEffect(() => {
+        if(posts == null || commentModalState == null) {
+            return;
+        }
+
+        const newPostState:Post[] = structuredClone(posts);
+        for(const post of newPostState) {
+            if(post.postId == commentModalState?.data?.post?.postId) {
+                post.global.likes = commentModalState?.data?.post.global.likes;
+                break;
+            }
+        }
+
+        setPosts(newPostState);
+
+    }, [commentModalState])
 
     useEffect(() => {
         if (childRef.current) {
@@ -142,7 +156,7 @@ const MainContent: React.FC = () => {
         //dispatch(togglePostLike({ postId, userName, userId }));
         const result = await postToggleLike({postId, userName, userId});
         if(result.status === 200) {
-            const newPosts:Post[] = [...posts];
+            const newPosts:Post[] = structuredClone(posts);
             for(const post of newPosts) {
                 if(post.postId === postId) {
                     togglePostLikedState(userName, userId, post);
@@ -181,7 +195,7 @@ const MainContent: React.FC = () => {
             post
         };
 
-        dispatch(actions.modalActions.openModal({ modalName: COMMENT_MODAL, data: payload }));
+        dispatch(actions.modalActions.openModal({ modalName: MODAL_TYPES.COMMENT_MODAL, data: payload }));
     }
 
     const openLikesModal = (post: Post) => {
@@ -194,7 +208,7 @@ const MainContent: React.FC = () => {
             post
         };
 
-        dispatch(actions.modalActions.openModal({ modalName: LIKES_MODAL, data: payload }));
+        dispatch(actions.modalActions.openModal({ modalName: MODAL_TYPES.LIKES_MODAL, data: payload }));
     }
 
     const renderCommentsSection = (post: Post) => {

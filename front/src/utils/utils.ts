@@ -223,7 +223,7 @@ export const togglePostLikedState = (userName: string, userId: string, post: Pos
         post.global.likes = [];
     }
 
-    const index = post.global.likes.findIndex((value:any) => value.userName === userName);
+    const index = post.global.likes.findIndex((value:any) => value.userName === userName);    
     if(index === -1) {
         // Username is not in the post's like list, so add it
         post.global.likes.push({userName, userId});

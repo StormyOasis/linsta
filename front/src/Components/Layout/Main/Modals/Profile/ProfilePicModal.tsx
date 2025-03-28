@@ -141,17 +141,17 @@ const PfpModalContent: React.FC<PfpModalContentProps> = (props: PfpModalContentP
                     </HeaderDiv>
                 </div>
                 <OptionDiv>
-                    <CustomStyledLink to="#" $optionNum={0} onClick={handleUploadOkClick}>
+                    <CustomStyledLink $optionNum={0} onClick={handleUploadOkClick}>
                         {!isUpdated ? `Upload Photo` : `Ok`}
                     </CustomStyledLink>
                 </OptionDiv>
                 <OptionDiv>
-                    <CustomStyledLink to="#" $optionNum={1} onClick={handleRemovePfp}>
+                    <CustomStyledLink $optionNum={1} onClick={handleRemovePfp}>
                         Remove Current Photo
                     </CustomStyledLink>
                 </OptionDiv>
                 <OptionDiv>
-                    <CustomStyledLink to="#" $optionNum={2} onClick={props.onClose}>
+                    <CustomStyledLink $optionNum={2} onClick={props.onClose}>
                         Cancel
                     </CustomStyledLink>
                 </OptionDiv>

@@ -87,7 +87,7 @@ export const parseRedisInfo = (infoString: string): RedisInfo => {
 
 export const getPostIdFromEsId = async (esId: string):Promise<string|null> => {    
     // Get a list of all users that like the given post id
-    const result = await (await DBConnector.getGraph()).V()
+    const result = await DBConnector.getGraph().V()
         .hasLabel("Post")          
         .has("esId", esId)
         .project("id")
@@ -113,7 +113,7 @@ export const getLikesByPost = async (postId: string):Promise<Like[]> => {
     const output:Like[] = [];
 
     // Get a list of all users that like the given post id
-    const result = await (await DBConnector.getGraph()).V(postId)
+    const result = await DBConnector.getGraph().V(postId)
         .inE(EDGE_USER_LIKED_POST)
         .outV()
         .project("userId", "userName", "profileId")
@@ -156,7 +156,7 @@ export const getPostByPostId = async (postId: string):Promise<|{esId: string; po
     const postIdToESIdMapping:string|null = await RedisConnector.get(postId);
     if(!postIdToESIdMapping) {
         // If mapping not found in Redis then pull from the graph and set in redis
-        const result = await (await DBConnector.getGraph()).V(postId).project("esId").by("esId").toList();
+        const result = await DBConnector.getGraph().V(postId).project("esId").by("esId").toList();
 
         if(result == null) {
             throw new Error("Error getting post");
@@ -251,9 +251,9 @@ const getProfileEx = async (userId: string|null, userName: string|null):Promise<
 
         // DB first
         if(userName !== null) {
-            results = await (await DBConnector.getGraph()).V().has("userName", userName).next(); 
+            results = await DBConnector.getGraph().V().has("userName", userName).next(); 
         } else {
-            results = await (await DBConnector.getGraph()).V(userId).next();
+            results = await DBConnector.getGraph().V(userId).next();
         }
 
         if(results == null || results.value == null) {
@@ -337,7 +337,7 @@ export const updateProfileInRedis = async (profile: Profile) => {
 }
 
 export const getPfpByUserId = async (userId: string):Promise<string> => {
-    const results = await (await DBConnector.getGraph()).V(userId).next();
+    const results = await DBConnector.getGraph().V(userId).next();
 
     if(results == null || results.value == null || results.value.properties.pfp == null) {
         return "";

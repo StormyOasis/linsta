@@ -7,7 +7,7 @@ import { Post, PostPaginationResponse, PostWithCommentCount, Profile } from "../
 import { postGetPostsByUserId, postGetProfileByUserName, postGetProfileStatsById, postGetSingleFollowStatus, ServiceResponse } from "../../../api/ServiceController";
 import { followUser, getPfpFromProfile } from "../../../utils/utils";
 import StyledButton from "../../../Components/Common/StyledButton";
-import { COMMENT_MODAL, FOLLOW_MODAL, PROFILE_PIC_MODAL } from "../../../Components/Redux/slices/modals.slice";
+import { MODAL_TYPES, ModalState } from "../../../Components/Redux/slices/modals.slice";
 import { FOLLOWERS_MODAL_TYPE, FOLLOWING_MODAL_TYPE } from "../Main/Modals/Profile/FollowersModal";
 import HeartFilledSVG from "/public/images/heart-fill.svg";
 import MessageSVG from "/public/images/message.svg";
@@ -73,6 +73,7 @@ const StatListItem = styled.li`
 const ProfileStatLink = styled.a`
     color: ${props => props.theme['colors'].defaultTextColor};
     text-decoration: none;
+    cursor: pointer;
 `;
 
 const GridContainer = styled(Div)`
@@ -157,8 +158,9 @@ type ProfileStats = {
 
 const ProfileContent: React.FC = () => {
     const authUser: AuthUser = useAppSelector((state: any) => state.auth.user);
-    const childRef = useRef(null);
-    const navigate = useNavigate();
+    const authUserProfileState:Profile = useAppSelector((state: any) => state.profile.profile);
+    const profileNonce:Profile = useAppSelector((state: any) => state.profile.nonce);
+    const commentModalState = useAppSelector((state: any) => state.modal.openModalStack?.find((modal:ModalState) => modal.modalName === MODAL_TYPES.COMMENT_MODAL));    
     const [profile, setProfile] = useState<Profile>();
     const [profileStats, setProfileStats] = useState<ProfileStats>();
     const [paginationResult, setPaginationResult] = useState<PostPaginationResponse>();
@@ -166,7 +168,10 @@ const ProfileContent: React.FC = () => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [hoverPost, setHoverPost] = useState<PostWithCommentCount|null>(null);
     const [isLoggedInFollowing, setIsLoggedInFollowing] = useState<boolean>(false);
+
     const { userName } = useParams();
+    const childRef = useRef(null);
+    const navigate = useNavigate();        
     const dispatch = useAppDispatch();
 
     useEffect(() => {
@@ -214,6 +219,42 @@ const ProfileContent: React.FC = () => {
         };        
     }, [paginationResult, isLoading]);
 
+    useEffect(() => {
+        if(posts == null || commentModalState == null) {
+            return;
+        }
+
+        // Update the likes and comment count
+        const newPostState:PostWithCommentCount[] = structuredClone(posts);
+        for(const post of newPostState) {
+            if(post.postId == commentModalState?.data?.post?.postId) {
+                post.global.likes = commentModalState?.data?.post.global.likes;
+                post.commentCount = commentModalState?.data?.post.commentCount;
+                break;
+            }
+        }
+        
+        setPosts(newPostState);
+
+    }, [commentModalState]);
+
+    // This is needed in case the logged in user's profile changes (For example the Pfp changed)
+    useEffect(() => {       
+        if(authUserProfileState == null || profile?.profileId != authUserProfileState.profileId) {
+            return;
+        }
+        setProfile(authUserProfileState);
+
+    }, [authUserProfileState]);
+
+    useEffect(() => {
+        if(profile?.userId != null) {
+            postGetProfileStatsById({ userId: profile?.userId }).then((statsResult: ServiceResponse) => {
+                setProfileStats(statsResult.data as ProfileStats);        
+            })
+        }
+    }, [profileNonce]);
+
 
     const loadPosts = async () => {
         if (isLoading || (paginationResult && paginationResult.done)) {
@@ -247,7 +288,7 @@ const ProfileContent: React.FC = () => {
             profile
         };
 
-        dispatch(actions.modalActions.openModal({ modalName: FOLLOW_MODAL, data: payload }));
+        dispatch(actions.modalActions.openModal({ modalName: MODAL_TYPES.FOLLOW_MODAL, data: payload }));
     }
 
     const handleFollowingCountClick = () => {
@@ -256,7 +297,7 @@ const ProfileContent: React.FC = () => {
             profile
         };
 
-        dispatch(actions.modalActions.openModal({ modalName: FOLLOW_MODAL, data: payload }));
+        dispatch(actions.modalActions.openModal({ modalName: MODAL_TYPES.FOLLOW_MODAL, data: payload }));
     }
 
     const handlePfPClick = () => {
@@ -269,7 +310,7 @@ const ProfileContent: React.FC = () => {
             profile
         };
 
-        dispatch(actions.modalActions.openModal({ modalName: PROFILE_PIC_MODAL, data: payload }));
+        dispatch(actions.modalActions.openModal({ modalName: MODAL_TYPES.PROFILE_PIC_MODAL, data: payload }));
     }
 
     const handleMouseEnter = (post: PostWithCommentCount) => {
@@ -291,8 +332,7 @@ const ProfileContent: React.FC = () => {
 
         const posts:Post[] = [];
         posts.push(post);
-        dispatch(actions.postActions.setPosts(posts));
-        dispatch(actions.modalActions.openModal({ modalName: COMMENT_MODAL, data: payload }));
+        dispatch(actions.modalActions.openModal({ modalName: MODAL_TYPES.COMMENT_MODAL, data: payload }));
     }
 
     const toggleFollowState = async (userId: string, followUserId: string|undefined, shouldFollow: boolean) => {
@@ -307,8 +347,7 @@ const ProfileContent: React.FC = () => {
             setIsLoggedInFollowing(shouldFollow);
         }
     }
-
-    
+   
     return (
         <>
             <ContentWrapper ref={childRef} style={{ overflow: "auto", maxHeight: "100vh" }}>
@@ -349,12 +388,12 @@ const ProfileContent: React.FC = () => {
                                         <StatList>
                                             <StatListItem>{profileStats?.postCount} <StatSpan>posts</StatSpan></StatListItem>
                                             <StatListItem>
-                                                <ProfileStatLink href="#" onClick={handleFollowerCountClick}>
+                                                <ProfileStatLink onClick={handleFollowerCountClick}>
                                                     {profileStats?.followerCount} <StatSpan>followers</StatSpan>
                                                 </ProfileStatLink>
                                             </StatListItem>
                                             <StatListItem>
-                                                <ProfileStatLink href="#" onClick={handleFollowingCountClick}>
+                                                <ProfileStatLink  onClick={handleFollowingCountClick}>
                                                     {profileStats?.followingCount} <StatSpan>following</StatSpan>
                                                 </ProfileStatLink>
                                             </StatListItem>

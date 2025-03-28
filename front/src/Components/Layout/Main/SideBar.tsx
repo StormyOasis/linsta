@@ -15,7 +15,7 @@ import { Link } from "react-router-dom";
 import { useMediaQuery } from "react-responsive";
 import { FlexColumn } from "../../../Components/Common/CombinedStyling";
 import { useAppDispatch, useAppSelector, actions } from "../../../Components/Redux/redux";
-import { NEW_POST_MODAL } from "../../../Components/Redux/slices/modals.slice";
+import { MODAL_TYPES } from "../../../Components/Redux/slices/modals.slice";
 import { Profile } from "../../../api/types";
 import { AuthUser } from "../../../api/Auth";
 import { getPfpFromProfile, historyUtils } from "../../../utils/utils";
@@ -108,7 +108,7 @@ const SideBar: React.FC = () => {
         e.stopPropagation();
 
         // Open the create dialog by setting the state in redux
-        dispatch(actions.modalActions.openModal({modalName: NEW_POST_MODAL, data: {}}));
+        dispatch(actions.modalActions.openModal({modalName: MODAL_TYPES.NEW_POST_MODAL, data: {}}));
     }
 
     const renderMenuItem = (text: string, to: string, iconElement:any, paddingLeft: number = 16, onClick?: any) => {

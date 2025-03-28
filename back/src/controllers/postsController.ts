@@ -51,10 +51,10 @@ export const addPost = async (ctx: Context) => {
         }
 
         // Now add an associated vertex and edges to the graph for this post
-        DBConnector.beginTransaction();
+        await DBConnector.beginTransaction();
         
         // Now add a post vertex to the graph
-        let graphResult = await (await DBConnector.getGraph(true)).addV("Post")
+        let graphResult = await DBConnector.getGraph(true).addV("Post")
             .property("esId", esResult._id)
             .next();  
 
@@ -65,7 +65,7 @@ export const addPost = async (ctx: Context) => {
         const postId: string = graphResult.value.id;
 
         // Now add the edges between the post and user verticies            
-        graphResult = await (await DBConnector.getGraph(true)).V(graphResult.value.id)
+        graphResult = await DBConnector.getGraph(true).V(graphResult.value.id)
             .as('post')
             .V(user.userId)
             .as('user')
@@ -187,8 +187,8 @@ export const getAllPosts = async (ctx: Context) => {
                 // Use this postId to avoid having to do a esId to postId DB query
                 const postId = entry._source.post.media[0].postId;
                 posts[postId] = entry._source.post;
-                posts[postId].postId = postId;
-                //posts[postId].post.user.pfp = await getPfpByUserId(entry._source.post.user.userId);
+                posts[postId].postId = postId;                
+                posts[postId].user.pfp = await getPfpByUserId(posts[postId].user.userId);
                 
                 postIds.push(postId);
             });
@@ -209,7 +209,7 @@ export const getAllPosts = async (ctx: Context) => {
         
         // Get all posts' likes
         const __ = DBConnector.__();
-        const dbResults = await (await DBConnector.getGraph()).V(postIds)
+        const dbResults = await DBConnector.getGraph().V(postIds)
             .filter(__.inE(EDGE_USER_LIKED_POST).count().is(DBConnector.P().gt(0)))
             .project("postId", "users")
             .by(__.id())
@@ -234,7 +234,13 @@ export const getAllPosts = async (ctx: Context) => {
                 const postId = postMap.get("postId");
                 const users = postMap.get("users");
                 
-                const post:Post = (posts[postId] as Post); 
+                // Make sure that the postId found in DB matches one
+                // from the above ES query. They could be out of sync due to pagination
+                if(posts[postId] == null) {
+                    continue;
+                }
+
+                const post:Post = (posts[postId] as Post);                
                 if(post.global.likes == null) {
                     post.global.likes = [];
                 }
@@ -314,10 +320,10 @@ export const toggleLikePost = async (ctx: Context) => {
     try {
         const __ = DBConnector.__();
 
-        DBConnector.beginTransaction();
+        await DBConnector.beginTransaction();
 
         // Check the graph to see if the user likes the post
-        isLiked = await (await DBConnector.getGraph(true)).V(data.userId)
+        isLiked = await DBConnector.getGraph(true).V(data.userId)
             .out(EDGE_USER_LIKED_POST)
             .hasId(data.postId)
             .hasNext();
@@ -325,20 +331,20 @@ export const toggleLikePost = async (ctx: Context) => {
         if(isLiked) {
             // User currently likes this post which means we need to unlike
             // Drop both the edges            
-            await (await DBConnector.getGraph(true)).V(data.postId)
+            await DBConnector.getGraph(true).V(data.postId)
                 .outE(EDGE_POST_LIKED_BY_USER)
                 .filter(__.inV().hasId(data.userId))
                 .drop()
                 .next();
 
-            await (await DBConnector.getGraph(true)).V(data.userId)
+            await DBConnector.getGraph(true).V(data.userId)
                 .outE(EDGE_USER_LIKED_POST)
                 .filter(__.inV().hasId(data.postId))
                 .drop()
                 .next();           
         } else {
             // Need to like the post by adding the edges
-            const result = await (await DBConnector.getGraph(true)).V(data.postId)
+            const result = await DBConnector.getGraph(true).V(data.postId)
                 .as("post")
                 .V(data.userId)
                 .as("user")
@@ -382,7 +388,7 @@ export const postIsPostLikedByUserId = async (ctx: Context) => {
 
     try {                
         // Check the graph to see if the user likes the post
-        isLiked = await (await DBConnector.getGraph()).V(data.userId)
+        isLiked = await DBConnector.getGraph().V(data.userId)
             .out(EDGE_USER_LIKED_POST)
             .hasId(data.postId)
             .hasNext();    
@@ -533,7 +539,7 @@ export const getPostsByUserId = async (ctx: Context) => {
         
         // Get all posts' likes
         const __ = DBConnector.__();
-        let dbResults = await (await DBConnector.getGraph()).V(postIds)
+        let dbResults = await DBConnector.getGraph().V(postIds)
             .filter(__.inE(EDGE_USER_LIKED_POST).count().is(DBConnector.P().gt(0)))
             .project("postId", "users")
             .by(__.id())
@@ -558,6 +564,12 @@ export const getPostsByUserId = async (ctx: Context) => {
                 const postId = postMap.get("postId");
                 const users = postMap.get("users");
                 
+                // Make sure that the postId found in DB matches one
+                // from the above ES query. They could be out of sync due to pagination
+                if(posts[postId] == null) {
+                    continue;
+                }
+
                 const post:PostWithCommentCount = (posts[postId] as PostWithCommentCount); 
                 if(post.global.likes == null) {
                     post.global.likes = [];
@@ -578,7 +590,7 @@ export const getPostsByUserId = async (ctx: Context) => {
         }
 
         // Get the per post comment counts
-        dbResults = await (await DBConnector.getGraph()).V(postIds)
+        dbResults = await DBConnector.getGraph().V(postIds)
             .project("postId", "commentCount")
             .by(__.id())                         
             .by(__.outE(EDGE_POST_TO_COMMENT).count())
