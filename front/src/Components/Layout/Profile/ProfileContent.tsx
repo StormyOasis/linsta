@@ -226,7 +226,7 @@ const ProfileContent: React.FC = () => {
 
     }, [userName, authUserProfileState, profileNonce]);
 
-    const handleScroll = useCallback(() => {
+    const throttledHandleScroll = useThrottle(useCallback(() => {
         if (typeof window !== 'undefined' && childRef.current) {
             const element = childRef.current as HTMLElement;
             const currentScroll = window.innerHeight + element.scrollTop;
@@ -236,9 +236,7 @@ const ProfileContent: React.FC = () => {
                 loadPosts();
             }
         }
-    }, [paginationResult, isLoading]);
-
-    const throttledHandleScroll = useThrottle(handleScroll, 200);
+    }, [paginationResult, isLoading]), 200);
 
     useEffect(() => {
         if (childRef.current) {

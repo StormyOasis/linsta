@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import styled from "styled-components";
 import * as styles from './Main.module.css';
 import { getPosts, postAddComment, postToggleLike } from "../../../api/ServiceController";
@@ -17,6 +17,7 @@ import ProfileLink from "../../../Components/Common/ProfileLink";
 import { LikeToggler, ViewLikesText } from "../../../Components/Common/Likes";
 import { useAppDispatch, useAppSelector, actions } from "../../../Components/Redux/redux";
 import { MODAL_TYPES, ModalState } from "../../../Components/Redux/slices/modals.slice";
+import useThrottle from "../../../utils/throttle";
 
 const FeedContainer = styled(FlexColumn)`
     max-width: 700px;
@@ -74,7 +75,8 @@ const MainContent: React.FC = () => {
     const [paginationResult, setPaginationResult] = useState<PostPaginationResponse>();
     const [posts, setPosts] = useState<Post[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const childRef = useRef(null);
+    const childRef = useRef<HTMLDivElement | null>(null);
+    const hasScrolled = useRef(false);  // Track if the user has scrolled
 
     const authUser: AuthUser = useAppSelector((state: any) => state.auth.user);
     const commentModalState = useAppSelector((state: any) => state.modal.openModalStack?.find((modal:ModalState) => modal.modalName === MODAL_TYPES.COMMENT_MODAL));
@@ -109,18 +111,36 @@ const MainContent: React.FC = () => {
 
     }, [commentModalState])
 
+    const throttledHandleScroll = useThrottle(useCallback(() => {
+        if (typeof window !== 'undefined' && childRef.current) {
+            const element = childRef.current as HTMLElement;
+            const currentScroll = window.innerHeight + element.scrollTop;
+
+            if (currentScroll + 256 >= element.scrollHeight && !isLoading && !hasScrolled.current) {
+                hasScrolled.current = true;  // Mark as scrolled at least once
+                loadPosts();
+            }
+        }
+    }, [paginationResult, isLoading]), 200);
+
     useEffect(() => {
         if (childRef.current) {
-            (childRef.current as any).addEventListener('scroll', handleScroll);
+            (childRef.current as any).addEventListener('scroll', throttledHandleScroll);
         }
         return () => {
-            if(childRef && childRef.current) {
-                (childRef.current as any).removeEventListener('scroll', handleScroll);
+            if (childRef && childRef.current) {
+                (childRef.current as any).removeEventListener('scroll', throttledHandleScroll);
             }
-        };        
-    }, [paginationResult, isLoading]);
+        };
+    }, []);
+
+    useEffect(() => {
+        if (!isLoading) {
+            hasScrolled.current = false;
+        }
+    }, [isLoading]);    
     
-    const loadPosts = async () => {
+    const loadPosts = useMemo(() => async () => {
         if (isLoading || (paginationResult && paginationResult.done)) {
             return;
         }
@@ -134,16 +154,7 @@ const MainContent: React.FC = () => {
             setPosts((posts: Post[]) => [...posts, ...response.posts]);
             setIsLoading(false);
         }
-    };
-
-    const handleScroll = () => {
-        const element = (childRef?.current as any);
-        const currentScroll = window.innerHeight + element.scrollTop;
-
-        if (currentScroll + 256 >= element.scrollHeight) {
-            loadPosts();
-        }
-    };    
+    }, [isLoading, paginationResult]);
 
     const toggleCaptionViewMoreState = (postId: string) => {
         const newState: any = Object.assign({}, viewShowMoreStates);
@@ -288,7 +299,7 @@ const MainContent: React.FC = () => {
 
     return (
         <>
-            <ContentWrapper ref={childRef} style={{ overflow: "auto", maxHeight: "100vh" }}>
+            <ContentWrapper ref={childRef} onScroll={throttledHandleScroll} $overflow="auto" $maxHeight="100vh">
                 <Section>
                     <Main role="main">
                         <FlexRowFullWidth $justifyContent="center">
