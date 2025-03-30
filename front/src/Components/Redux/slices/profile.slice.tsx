@@ -1,17 +1,17 @@
 import { ActionReducerMapBuilder, createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { historyUtils } from "../../../utils/utils";
 import { Profile } from '../../../api/types';
-import { postGetProfileByUserId, postGetProfileByUserName  } from '../../../api/ServiceController';
+import { postGetProfileByUserId, postGetProfileByUserName } from '../../../api/ServiceController';
 import { DEFAULT_PFP } from '../../../api/config';
 
 const NAME = "profile";
 
 export interface GlobalProfileState {
     profile: Profile;
-    nonce: string|null;    
+    nonce: string | null;
 };
 
-const defaultState:GlobalProfileState = {
+const defaultState: GlobalProfileState = {
     profile: {
         userId: "0",
         userName: '',
@@ -21,61 +21,56 @@ const defaultState:GlobalProfileState = {
     nonce: null
 };
 
-export const getProfileByUserId = createAsyncThunk(`${NAME}/getByUserId`, async (params: any, thunkApi) => {    
+export const getProfileByUserId = createAsyncThunk(`${NAME}/getByUserId`, async (params: any, thunkApi) => {
     try {
         return await postGetProfileByUserId(params);
     } catch (err: any) {
-        return thunkApi.rejectWithValue(err.message);
+        return thunkApi.rejectWithValue((err as Error).message);
     }
 });
 
-export const getProfileByUserName = createAsyncThunk(`${NAME}/getByUserName`, async (params: any, thunkApi) => {    
+export const getProfileByUserName = createAsyncThunk(`${NAME}/getByUserName`, async (params: any, thunkApi) => {
     try {
         return await postGetProfileByUserName(params);
     } catch (err: any) {
-        return thunkApi.rejectWithValue(err.message);
+        return thunkApi.rejectWithValue((err as Error).message);
     }
 });
 
-const profileSliceCreator = (preloadedState?: any) => {    
+const profileSliceCreator = (preloadedState?: Partial<GlobalProfileState>) => {
     const initialState = createInitialState();
     const reducers = createReducers();
-    const actions = createActions();
 
     function createInitialState() {
         if (historyUtils.isServer) {
-            return {...defaultState, ...preloadedState};
+            return { ...defaultState, ...preloadedState };
         }
 
         return {
-            ...defaultState,            
+            ...defaultState,
             ...preloadedState
         };
     }
 
     function createReducers() {
-        const updateProfilePic = (state: GlobalProfileState, action: PayloadAction<string>) => {         
+        const updateProfilePic = (state: GlobalProfileState, action: PayloadAction<string>) => {
             state.profile.pfp = action.payload as string;
         }
 
-        const forceUpdate = (state: GlobalProfileState, _action: PayloadAction<string>) => {         
+        const forceUpdate = (state: GlobalProfileState, _action: PayloadAction<string>) => {
             state.nonce = crypto.randomUUID();
-        }        
-                
-        return {updateProfilePic, forceUpdate};
+        }
+
+        return { updateProfilePic, forceUpdate };
     }
 
-    function createActions() {
-        return {};
-    }
-
-    const extraReducers = (builder: ActionReducerMapBuilder<any>) => {        
+    const extraReducers = (builder: ActionReducerMapBuilder<any>) => {
         function getProfileByUserIdReducer() {
             builder.addCase(getProfileByUserId.pending, (state) => {
                 state.status = "pending";
                 state.error = null;
-                state.profile = null;                
-            }).addCase(getProfileByUserId.fulfilled, (state, action) => {                
+                state.profile = null;
+            }).addCase(getProfileByUserId.fulfilled, (state, action) => {
                 const profile = action.payload.data;
                 state.status = "succeeded";
                 state.error = null;
@@ -92,7 +87,7 @@ const profileSliceCreator = (preloadedState?: any) => {
 
     const slice = createSlice({ name: NAME, initialState, reducers, extraReducers });
 
-    const profileActions = { ...slice.actions, ...actions };
+    const profileActions = { ...slice.actions };
     const profileReducer = slice.reducer;
 
     return { profileActions, profileReducer };

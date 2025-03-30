@@ -3,7 +3,6 @@ import Metrics from "../metrics/Metrics";
 import { getPostByPostId, getVertexPropertySafe, sanitize } from "../utils/utils";
 import { Comment, Like, Post, User } from "../utils/types";
 import logger from "../logger/logger";
-import { update } from "../Connectors/ESConnector";
 import DBConnector, { EDGE_CHILD_TO_PARENT_COMMENT, EDGE_COMMENT_LIKED_BY_USER, EDGE_COMMENT_TO_POST, EDGE_COMMENT_TO_USER, EDGE_PARENT_TO_CHILD_COMMENT, EDGE_POST_TO_COMMENT, EDGE_USER_LIKED_COMMENT, EDGE_USER_TO_COMMENT } from "../Connectors/DBConnector";
 
 type AddCommentRequest = {

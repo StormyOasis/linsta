@@ -1,4 +1,4 @@
-import { ActionReducerMapBuilder, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { historyUtils } from "../../../utils/utils";
 
 const NAME = "modals";
@@ -26,10 +26,9 @@ const defaultState:GlobalModalState = {
     isOverlayEnabled: false,    
 };
 
-const modalSliceCreator = (preloadedState?: any) => {    
+const modalSliceCreator = (preloadedState?: Partial<GlobalModalState>) => {    
     const initialState = createInitialState();
     const reducers = createReducers();
-    const actions = createActions();
 
     function createInitialState() {
         if (historyUtils.isServer) {
@@ -76,9 +75,9 @@ const modalSliceCreator = (preloadedState?: any) => {
 
         const updateModalData = (state: GlobalModalState, action: PayloadAction<ModalState>) => {
             const { modalName, data } = action.payload;
-            const modalIndex = state.openModalStack.findIndex((modal) => modal.modalName === modalName);
-            if (modalIndex >= 0) {
-                state.openModalStack[modalIndex].data = data; // Update the data for the specific modal
+            const modal = state.openModalStack.find((modal) => modal.modalName === modalName);
+            if (modal) {
+                modal.data = data; // Update the data for the specific modal
             }
         };        
 
@@ -89,15 +88,8 @@ const modalSliceCreator = (preloadedState?: any) => {
         };
     }
 
-    function createActions() {
-        return {};
-    }
-
-    const extraReducers = (_builder: ActionReducerMapBuilder<any>) => {
-    }
-
-    const slice = createSlice({ name: NAME, initialState, reducers, extraReducers });
-    const modalActions = { ...slice.actions, ...actions };
+    const slice = createSlice({ name: NAME, initialState, reducers });
+    const modalActions = { ...slice.actions };
     const modalReducer = slice.reducer;
 
     return { modalActions, modalReducer };

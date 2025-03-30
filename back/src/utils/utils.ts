@@ -211,6 +211,7 @@ export const getPostByPostId = async (postId: string):Promise<|{esId: string; po
     }
 
     // Get post likes
+    console.log(entries[0]);
     entries[0].global.likes = await getLikesByPost(postId);
     entries[0].postId = postId;
     entries[0].user.pfp = await getPfpByUserId(entries[0].user.userId);

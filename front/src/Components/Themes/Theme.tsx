@@ -6,6 +6,7 @@ const defaultTheme = {
         defaultLinkColor: "black",
         defaultTextColor: "black",
         backgroundColor: "white",
+        backgroundColorSecondary: "black",
         backgroundDisabled: "rgba(0, 0, 0, .6)",
         borderDefaultColor: "rgb(220, 220, 220)",
         borderDarkColor: "rgb(180,180, 180)",

@@ -12,25 +12,27 @@ export type StyledLinkProps = {
 };
 
 const StyledLinkWrapperFromLink = styled(Link)`
-  color: ${props => props.theme['colors'].buttonDefaultColor};
-  text-decoration: none;
-  display: contents;
-  font-weight: 600;
+    color: ${props => props.theme['colors'].buttonDefaultColor};
+    text-decoration: none;
+    display: contents;
+    font-weight: 600;
+    cursor: pointer;
 
-  &:hover {
-    color: ${(props) => props.theme['colors'].buttonOnHoverColor};
-  }
+    &:hover {
+        color: ${(props) => props.theme['colors'].buttonOnHoverColor};
+    }
 `;
 
 const StyledLinkWrapper = styled.a`
-  color: ${props => props.theme['colors'].buttonDefaultColor};
-  text-decoration: none;
-  display: contents;
-  font-weight: 600;
+    color: ${props => props.theme['colors'].buttonDefaultColor};
+    text-decoration: none;
+    display: contents;
+    font-weight: 600;
+    cursor: pointer;
 
-  &:hover {
-    color: ${(props) => props.theme['colors'].buttonOnHoverColor};
-  }
+    &:hover {
+        color: ${(props) => props.theme['colors'].buttonOnHoverColor};
+    }
 `;
 
 

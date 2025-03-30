@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import styled from "styled-components";
 
 import MultiStepModal from "../../../../Common/MultiStepModal";
@@ -9,11 +9,11 @@ import { followUser } from "../../../../../utils/utils";
 import { Div, FlexColumn, FlexRow, Link, Span } from "../../../../../Components/Common/CombinedStyling";
 import { DEFAULT_PFP } from "../../../../../api/config";
 
-export const FOLLOWERS_MODAL_TYPE:number = 0;
-export const FOLLOWING_MODAL_TYPE:number = 1;
+export const FOLLOWERS_MODAL_TYPE: number = 0;
+export const FOLLOWING_MODAL_TYPE: number = 1;
 
 type FollowersModalProps = {
-    onClose: any;
+    onClose: () => void;
     profile: Profile;
     followModalType: number;
     zIndex: number;
@@ -24,7 +24,7 @@ type FollowersModalContentProps = {
     followModalType: number;
 }
 
-const LikeEntryContainer = styled.div`
+const LikeEntryContainer = styled(Div)`
     width: 100%;
     max-width: 100%;
 `;
@@ -50,103 +50,93 @@ type FollowData = {
 }
 
 const FollowersModalContent: React.FC<FollowersModalContentProps> = (props: FollowersModalContentProps) => {
-    const [followData, setFollowData] = useState<FollowData>({profiles: []});
+    const [followData, setFollowData] = useState<FollowData>({ profiles: [] });
 
-    useEffect(() => {        
-        const userId: string = props.profile.userId;
-        const results: ProfileWithFollowStatus[] = [];
+    // Fetch the followers and following data
+    const fetchFollowData = useCallback(async () => {
+        const userId = props.profile.userId;
+        const fetchProfiles = props.followModalType === FOLLOWERS_MODAL_TYPE
+            ? postGetFollowersByUserId({ userId })
+            : postGetFollowingByUserId({ userId });
 
-        if(props.followModalType === FOLLOWERS_MODAL_TYPE) {
-            postGetFollowersByUserId({userId}).then(entry => {                
-                for(const value of entry.data) {
-                    results.push(value);
-                }
+        const entry = await fetchProfiles;
+        setFollowData({ profiles: entry.data });
+    }, [props.profile.userId, props.followModalType]);
 
-                setFollowData({profiles: results});
-            })
-        } else if(props.followModalType === FOLLOWING_MODAL_TYPE) {
-            postGetFollowingByUserId({userId}).then(entry => {
-                for(const value of entry.data) {
-                    results.push(value);
-                }
+    useEffect(() => {
+        fetchFollowData();
+    }, [fetchFollowData]);
 
-                setFollowData({profiles: results});
-            });
-        }
-    }, []);
-
-    const toggleFollowState = async (userId: string, followUserId: string, shouldFollow: boolean) => {
+    const toggleFollowState = useCallback(async (userId: string, followUserId: string, shouldFollow: boolean) => {
         const result = await followUser(userId, followUserId, shouldFollow);
 
         // If successful the state needs to be updated to reflect the new follow status
         if (result) {
             const newFollowData = { ...followData };
-            for(const profile of newFollowData.profiles) {
-                if(profile.userId === followUserId) {
+            for (const profile of newFollowData.profiles) {
+                if (profile.userId === followUserId) {
                     profile.isFollowed = shouldFollow;
                     break;
                 }
             }
-            
+
             setFollowData(newFollowData);
         }
-    }
-
+    }, [followData]);
 
     const renderFollowList = () => {
         if (followData == null || followData.profiles.length === 0) {
             return <></>;
         }
 
-        const results = followData.profiles.map((entry:ProfileWithFollowStatus) => {
-            if(entry.userId == props.profile.userId) {
-                return <div key="0"></div>; //prevent 'element in list should have unique key' error                
+        return followData.profiles.map((entry: ProfileWithFollowStatus) => {
+            const { userId, userName, firstName, lastName, pfp, isFollowed } = entry;
+
+            if (userId == props.profile.userId) {
+                return <Div key="0"></Div>; //prevent 'element in list should have unique key' error                
             }
 
-            const profile:ProfileWithFollowStatus = entry;
-            const pfp:string = profile.pfp ? profile.pfp : DEFAULT_PFP;
-            const isFollowing:boolean = profile.isFollowed;
+            const isFollowing: boolean = isFollowed;
+            const pfpUrl: string = pfp || DEFAULT_PFP;
 
             return (
-                <LikeEntryContainer key={entry.userId}>
+                <LikeEntryContainer key={userId}>
                     <FlexRow $paddingBottom="8px" $paddingTop="8px">
-                        <div>
+                        <Div>
                             <Div $marginRight="10px">
-                                <ProfilePicLink href={`/${profile.userName}/`} role="link">
-                                    <ProfilePicImg src={pfp}
-                                        aria-label={`${profile.userName}'s profile picture`}
-                                        alt={`${profile.userName}'s profile picture`} />
+                                <ProfilePicLink href={`/${userName}/`} role="link">
+                                    <ProfilePicImg src={pfpUrl}
+                                        aria-label={`${userName}'s profile picture`}
+                                        alt={`${userName}'s profile picture`} />
                                 </ProfilePicLink>
                             </Div>
-                        </div>
+                        </Div>
                         <FlexRow $flexBasis="auto" $flexShrink="1" $flexGrow="1" $flexWrap="wrap" $position="relative" $paddingTop="5px">
                             <FlexColumn $flexGrow="1" $position="relative">
-                                <div>
-                                    <Link href={`/${profile.userName}/`} role="link">
-                                        <Span $fontWeight="700">{profile.userName}</Span>
+                                <Div>
+                                    <Link href={`/${userName}/`} role="link">
+                                        <Span $fontWeight="700">{userName}</Span>
                                     </Link>
-                                </div>
-                                <div>
-                                    <span>
-                                        {`${profile.firstName} ${profile.lastName}`}
-                                    </span>
-                                </div>
+                                </Div>
+                                <Div>
+                                    <Span>
+                                        {`${firstName} ${lastName}`}
+                                    </Span>
+                                </Div>
                             </FlexColumn>
                         </FlexRow>
-                        <div>
+                        <Div>
                             <StyledButton
                                 style={{ marginBottom: "12px" }}
                                 useSecondaryColors={isFollowing}
                                 text={isFollowing ? "Following" : "Follow"}
-                                onClick={async () => await toggleFollowState(props.profile.userId, entry.userId, !isFollowing)}>                                
+                                onClick={() => toggleFollowState(props.profile.userId, userId, !isFollowing)}>
                             </StyledButton>
-                        </div>
+                        </Div>
                     </FlexRow>
                 </LikeEntryContainer>
             );
         });
-
-        return results;
     }
 
     if (props.profile == null) {
@@ -163,11 +153,10 @@ const FollowersModalContent: React.FC<FollowersModalContentProps> = (props: Foll
 }
 
 const FollowersModal: React.FC<FollowersModalProps> = (props: FollowersModalProps) => {
-
     const steps = [
         {
             title: props.followModalType === FOLLOWERS_MODAL_TYPE ? "Followers" : "Following",
-            element: <FollowersModalContent profile={props.profile} followModalType={props.followModalType}/>,
+            element: <FollowersModalContent profile={props.profile} followModalType={props.followModalType} />,
             options: {
                 showFooter: false,
             },

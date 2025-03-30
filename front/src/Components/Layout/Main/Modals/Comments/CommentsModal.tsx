@@ -1,13 +1,12 @@
-import React, { ReactNode, useEffect, useRef, useState } from "react";
-import { useSelector } from "react-redux";
+import React, { useEffect, useRef, useState } from "react";
 import { renderToString } from "react-dom/server";
 import styled from "styled-components";
 
 import MultiStepModal from "../../../../Common/MultiStepModal";
-import { Post, PostWithCommentCount, Profile, User } from "../../../../../api/types";
+import { PostWithCommentCount, Profile } from "../../../../../api/types";
 import { BoldLink, Div, Flex, FlexColumn, FlexColumnFullWidth, FlexRow, FlexRowFullWidth, Link, Span } from "../../../../Common/CombinedStyling";
 import MediaSlider from "../../../../Common/MediaSlider";
-import { HOST } from "../../../../../api/config";
+import { DEFAULT_PFP, HOST } from "../../../../../api/config";
 import ProfileLink from "../../../../Common/ProfileLink";
 import { postAddComment, postGetCommentsByPostId, postToggleLike } from "../../../../../api/ServiceController";
 import { dateDiff, getDateAsText, getSanitizedText, isPostLiked, togglePostLikedState } from "../../../../../utils/utils";
@@ -22,26 +21,26 @@ import { LikeToggler, ViewLikesText } from "../../../../../Components/Common/Lik
 import { MODAL_TYPES } from "../../../../../Components/Redux/slices/modals.slice";
 import { actions, useAppDispatch, useAppSelector } from "../../../../../Components/Redux/redux";
 
-const MediaSliderWrapper = styled.div<{ $width: number }>`
+const MediaSliderWrapper = styled(Div) <{ $width: number }>`
     align-content: center;
-    background-color: black;          
+    background-color: ${props => props.theme['colors'].backgroundColorSecondary};          
     overflow: hidden;
     max-width: ${props => props.$width}px;
     width: ${props => props.$width}px;        
 `;
 
-const HeadingWrapper = styled.div`
+const HeadingWrapper = styled(Div)`
     max-width: 100%;
     width: 100%;
     border-bottom: 1px solid ${props => props.theme['colors'].borderDefaultColor};
 `;
 
-const PostOptionsWrapper = styled.div`
+const PostOptionsWrapper = styled(Div)`
     padding-left: 5px;
     padding-right: 5px;    
 `;
 
-const CommentsWrapper = styled.div`
+const CommentsWrapper = styled(Div)`
     overflow-y: scroll;
 
     max-height: calc(${props => props.theme['sizes'].maxCommentModalContentHeight} - 115px);
@@ -100,7 +99,7 @@ const ViewHideRepliesButton = styled.button`
     margin-top: 10px;
 `;
 
-const ViewHideRepliesLine = styled.div`
+const ViewHideRepliesLine = styled(Div)`
     border-bottom: 1px solid ${props => props.theme["colors"].mediumTextColor};
     width: 24px;
     display: inline-block;
@@ -119,7 +118,7 @@ const CommentReplyButton = styled.button`
 `;
 
 type CommentModalProps = {
-    onClose: any;
+    onClose: () => void;
     post: PostWithCommentCount;
     zIndex: number;
 }
@@ -133,26 +132,30 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
     const [commentText, setCommentText] = useState<string>("");
     const [parentCommentId, setParentCommentId] = useState<string | null>(null);
 
-    const commentTextAreaRef = useRef(null);
+    const commentTextAreaRef = useRef<HTMLTextAreaElement | null>(null);
 
     const authUser: AuthUser = useAppSelector((state: any) => state.auth.user);
-    const profile: Profile = useAppSelector((state:any) => state.profile.profile);
+    const profile: Profile = useAppSelector((state: any) => state.profile.profile);
 
     const dispatch = useAppDispatch();
-    
-    useEffect(() => {     
-        if(props.post != null) {
-            postGetCommentsByPostId({ postId: props.post.postId }).then((results) => {            
-                setComments(mapCommentsToCommentData(results.data, comments));
-            }).catch(e => console.error(e))
+
+    useEffect(() => {
+        if (props.post != null) {
+            postGetCommentsByPostId({ postId: props.post.postId })
+                .then((results) => setComments(mapCommentsToCommentData(results.data, comments)))
+                .catch(e => console.error(e))
         }
     }, [props.post]);
 
-    const renderSingleComment = (key: string, text: string, user: User, dateTime: Date, repliesEnabled: boolean,
-        isLiked: boolean, showLikeToggle: boolean, commentUiData: CommentUiData | null, level: number) => {
+    const renderSingleComment = (commentUiData: CommentUiData, level: number, showLikeToggle: boolean) => {
+        const { comment, repliesVisibleFlag, children, childCount } = commentUiData;
+        const { text, user, dateTime, commentId } = comment;
+        const { commentsDisabled } = props.post.global;
 
-        let [sanitizedHtml] = getSanitizedText(text);
-        sanitizedHtml = renderToString(
+        const isCommentLikedFlag: boolean = isCommentLiked(authUser.userName, comment);
+        const [sanitizedHtml] = getSanitizedText(text);
+
+        const profileLink = renderToString(
             <Theme>
                 <ProfileLink
                     showUserName={true}
@@ -161,10 +164,10 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                     url={`${HOST}/${user.userName}`}
                     userName={user.userName} />
             </Theme>
-        ) + sanitizedHtml;
+        );
 
         return (
-            <Flex key={key} style={{ padding: "15px 10px" }}>
+            <Flex key={commentId} style={{ padding: "15px 10px" }}>
                 <FlexRowFullWidth>
                     <ProfileLink
                         showUserName={false}
@@ -175,10 +178,10 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                         userName={user.userName}>
                     </ProfileLink>
                     <FlexColumnFullWidth>
-                        <Span $marginLeft="2px" $alignContent="center" dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />
-                        <div>
+                        <Span $marginLeft="2px" $alignContent="center" dangerouslySetInnerHTML={{ __html: `${profileLink}${sanitizedHtml}` }} />
+                        <Div>
                             <Span $marginRight="10px" $fontSize="13px">{dateDiff(dateTime)}</Span>
-                            {repliesEnabled &&
+                            {!commentsDisabled &&
                                 <CommentReplyButton
                                     onClick={(e) => {
                                         e.stopPropagation();
@@ -190,56 +193,42 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                                             textArea.focus();
 
                                             setCommentText(str);
-                                            setParentCommentId(key);
+                                            setParentCommentId(commentId);
                                         }
                                     }}>
                                     Reply
                                 </CommentReplyButton>
                             }
-                        </div>
-                        <div>
-                            {
-                                (commentUiData && commentUiData.children && commentUiData.childCount > 0) &&
+                        </Div>
+                        <Div>
+                            {(childCount > 0) &&
                                 <>
                                     <ViewHideRepliesButton onClick={(e => {
                                         e.stopPropagation();
-                                        setComments(toggleCommentReplyUiData(commentUiData, comments));
-                                    })}>
+                                        setComments(toggleCommentReplyUiData(commentUiData, comments))
+                                    }
+                                    )}>
                                         <ViewHideRepliesLine />
-                                        {!commentUiData.repliesVisibleFlag && <span>{`View replies (${commentUiData.childCount})`}</span>}
-                                        {commentUiData.repliesVisibleFlag && <span>Hide replies</span>}
+                                        {!repliesVisibleFlag && <Span>{`View replies (${childCount})`}</Span>}
+                                        {repliesVisibleFlag && <Span>Hide replies</Span>}
                                     </ViewHideRepliesButton>
 
-                                    {commentUiData.repliesVisibleFlag &&
-                                        <div>
-                                            {                                                
-                                                Object.values(commentUiData.children).map((c:any) => {
-                                                    return renderSingleComment(
-                                                        c.comment.commentId,
-                                                        c.comment.text,
-                                                        c.comment.user,
-                                                        c.comment.dateTime,
-                                                        !props.post.global.commentsDisabled,
-                                                        isCommentLiked(authUser.userName, c.comment),
-                                                        true,
-                                                        c,
-                                                        level + 1
-                                                    )
-                                                })
-                                            }
-                                        </div>
-                                    }
+                                    {repliesVisibleFlag && (
+                                        <Div>
+                                            {Object.values(children).map((c: any) => renderSingleComment(c, level + 1, true))}
+                                        </Div>
+                                    )}
                                 </>
                             }
-                        </div>
+                        </Div>
                     </FlexColumnFullWidth>
                     {showLikeToggle &&
                         <LikeToggler
                             offsetIndex={level}
                             width="18px"
                             height="18px"
-                            isLiked={isLiked}
-                            handleClick={async () => await toggleCommentLike(key, authUser.userName, authUser.id, comments, setComments)} />
+                            isLiked={isCommentLikedFlag}
+                            handleClick={async () => await toggleCommentLike(commentId, authUser.userName, authUser.id, comments, setComments)} />
                     }
                 </FlexRowFullWidth>
             </Flex>
@@ -251,96 +240,83 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
             return <></>;
         }
 
-        const nodes: ReactNode[] = [];
-
-        // Render the caption first
-        nodes.push(renderSingleComment(
-            props.post.postId,
-            props.post.global.captionText,
-            props.post.user,
-            props.post.global.dateTime,
-            false,
-            false,
-            false,
-            null,
-            0
-        ));
-
-        // Now populate all other user comments
-        nodes.push(Object.values(comments).map(entry => {
-            const commentUiData: CommentUiData = entry as CommentUiData;
-
-            return renderSingleComment(
-                commentUiData.comment.commentId,
-                commentUiData.comment.text,
-                commentUiData.comment.user,
-                commentUiData.comment.dateTime,
-                !props.post.global.commentsDisabled,
-                isCommentLiked(authUser.userName, commentUiData.comment),
-                true,
-                commentUiData,
-                0);
-        }));
-
-        return nodes;
-    }
-
-    const handleSubmitComment = async (text: string, post: PostWithCommentCount) => {
-        const data = {
-            text,
-            postId: `${post.postId}`,
-            parentCommentId: parentCommentId == null ? null : `${parentCommentId}`,
-            userName: `${authUser.userName}`,
-            userId: `${authUser.id}`,
-        };
-
-        const result = await postAddComment(data);
-
-        if (result.status === 200) {
-            // Update comment list with new comment
-            // To reduce server load, rather than pulling the comment list again
-            // just merge the comment into the local list
-
-            // first update the commentCount
-            let post:PostWithCommentCount|null = structuredClone(props.post);
-            post.commentCount++;
-            dispatch(actions.modalActions.updateModalData({ modalName: MODAL_TYPES.COMMENT_MODAL, data: {post} }));            
-            
-            const newComment: CommentUiData = {
+        const commentNodes = [
+            renderSingleComment({
                 comment: {
-                    commentId: result.data.id,
-                    dateTime: new Date(),
-                    text,
-                    user: {
-                        userName: data.userName,
-                        userId: data.userId,
-                        pfp: profile.pfp || ""
-                    },
-                    postId: post.postId,
-                    parentCommentId: parentCommentId,
-                    likes: []
+                    ...props.post.global, user: props.post.user, postId: props.post.postId,
+                    commentId: "",
+                    text: props.post.global.captionText,
+                    parentCommentId: null
                 },
                 repliesVisibleFlag: false,
                 children: {},
                 childCount: 0
-            };            
+            }, 0, false)];
 
-            const newComments = structuredClone(comments);            
-            const parent = searchCommentsById(parentCommentId as string, newComments);
-            if(parent != null) {
-                // New comment is a child node
-                parent.childCount++;
-                parent.children[result.data.id] = newComment;
-            } else {
-                // New comment is a root node
-                newComments[result.data.id] = newComment;
-            }
-            
-            setComments(newComments);
-            // Success adding comment, clear out comment text box
-            setCommentText("");
-            setParentCommentId(null);    
+        Object.values(comments).forEach((commentUiData: any) => {
+            commentNodes.push(renderSingleComment(commentUiData, 0, true));
+        });
+
+        return commentNodes;
+    }
+
+    const handleSubmitComment = async (text: string) => {
+        const data = {
+            text,
+            postId: props.post.postId,
+            parentCommentId,
+            userName: authUser.userName,
+            userId: authUser.id,
+        };
+
+        const result = await postAddComment(data);
+        if (result.status !== 200) {
+            return;
         }
+
+        // Update comment list with new comment
+        // To reduce server load, rather than pulling the comment list again
+        // just merge the comment into the local list
+
+        // first update the commentCount
+        let post: PostWithCommentCount | null = structuredClone(props.post);
+        post.commentCount++;
+        dispatch(actions.modalActions.updateModalData({ modalName: MODAL_TYPES.COMMENT_MODAL, data: { post } }));
+
+        const newComment: CommentUiData = {
+            comment: {
+                commentId: result.data.id,
+                dateTime: new Date(),
+                text,
+                user: {
+                    userName: data.userName,
+                    userId: data.userId,
+                    pfp: profile.pfp || DEFAULT_PFP
+                },
+                postId: post.postId,
+                parentCommentId: parentCommentId,
+                likes: []
+            },
+            repliesVisibleFlag: false,
+            children: {},
+            childCount: 0
+        };
+
+        const newComments = structuredClone(comments);
+        const parent = searchCommentsById(parentCommentId as string, newComments);
+        if (parent != null) {
+            // New comment is a child node
+            parent.childCount++;
+            parent.children[result.data.id] = newComment;
+        } else {
+            // New comment is a root node
+            newComments[result.data.id] = newComment;
+        }
+
+        setComments(newComments);
+        // Success adding comment, clear out comment text box
+        setCommentText("");
+        setParentCommentId(null);
     }
 
     const openLikesModal = (post: PostWithCommentCount) => {
@@ -349,21 +325,17 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
         }
 
         // Open the likes dialog by setting the state in redux        
-        const payload = {
-            post: post
-        };
-
-        dispatch(actions.modalActions.openModal({ modalName: MODAL_TYPES.LIKES_MODAL, data: payload }));
+        dispatch(actions.modalActions.openModal({ modalName: MODAL_TYPES.LIKES_MODAL, data: { post } }));
     }
 
     const toggleLike = async (userName: string, userId: string) => {
         // Greedily update only the local UI regardless of server response
-        let post:PostWithCommentCount|null = structuredClone(props.post);
-        post = togglePostLikedState(userName, userId, post) as PostWithCommentCount;       
-        dispatch(actions.modalActions.updateModalData({ modalName: MODAL_TYPES.COMMENT_MODAL, data: {post} }));
-        
+        let post: PostWithCommentCount | null = structuredClone(props.post);
+        post = togglePostLikedState(userName, userId, post) as PostWithCommentCount;
+        dispatch(actions.modalActions.updateModalData({ modalName: MODAL_TYPES.COMMENT_MODAL, data: { post } }));
+
         // Send the actual command to the server
-        await postToggleLike({postId: props.post.postId, userName, userId});       
+        await postToggleLike({ postId: props.post.postId, userName, userId });
     }
 
     if (props.post == null) {
@@ -375,12 +347,11 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
 
     return (
         <>
-            <div>
+            <Div>
                 <Flex>
                     <FlexRow>
                         <MediaSliderWrapper $width={sliderWidth}>
-                            <MediaSlider media={props.post.media}>
-                            </MediaSlider>
+                            <MediaSlider media={props.post.media} />
                         </MediaSliderWrapper>
                         <Flex>
                             <FlexColumn $maxWidth="500px">
@@ -393,11 +364,9 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                                                 showFullName={false}
                                                 pfp={props.post.user.pfp}
                                                 url={`${HOST}/${props.post.user.userName}`}
-                                                userName={props.post.user.userName}
-                                            >
-                                            </ProfileLink>
+                                                userName={props.post.user.userName} />
                                             <PostOptionsWrapper>
-                                                <BoldLink href="#" $fontSize="1.5em" onClick={() => 1}>...</BoldLink>
+                                                <BoldLink $fontSize="1.5em" onClick={() => 1}>...</BoldLink>
                                             </PostOptionsWrapper>
                                         </FlexRow>
                                         {props.post.global.locationText.length > 0 &&
@@ -417,7 +386,7 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                                         <Flex $paddingRight="8px" $position="relative" $top="2px">
                                             <LikeToggler
                                                 isLiked={isLiked}
-                                                handleClick={() => toggleLike(authUser.userName, authUser.id)}>
+                                                handleClick={async () => await toggleLike(authUser.userName, authUser.id)}>
                                             </LikeToggler>
                                         </Flex>
                                     </Div>
@@ -432,8 +401,7 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                                                         textArea.selectionStart = textArea.value.length;
                                                         setParentCommentId(null);
                                                     }
-                                                }
-                                                } />
+                                                }} />
                                             </ActionContainer>
                                         </Flex>
                                     </Div>
@@ -452,7 +420,7 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                                     </Span>
                                 </Div>
                                 {!props.post.global?.commentsDisabled &&
-                                    <div>
+                                    <Div>
                                         <CommentInputWrapper>
                                             <CommentTextArea value={commentText} ref={commentTextAreaRef}
                                                 placeholder="Add a new comment..."
@@ -467,11 +435,11 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                                                     element.style.height = element.scrollHeight + "px";
                                                 }}
                                                 onKeyDown={async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-                                                    if (e.key === "Enter") {
+                                                    if (e.key === "Enter" && commentText.trim()) {
                                                         // Prevent adding a new line
                                                         e.preventDefault();
 
-                                                        await handleSubmitComment(commentText, props.post);
+                                                        await handleSubmitComment(commentText);
                                                     }
                                                 }}
                                             />
@@ -479,8 +447,8 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                                                 {
                                                     (commentText && commentText.length > 0) &&
                                                     <Div $paddingLeft="5px" $paddingRight="5px">
-                                                        <StyledLink onClick={async () =>
-                                                            await handleSubmitComment(commentText, props.post)}>
+                                                        <StyledLink
+                                                            onClick={async () => await handleSubmitComment(commentText.trim())}>
                                                             Post
                                                         </StyledLink>
                                                     </Div>
@@ -490,18 +458,18 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                                                 }}></EmojiPickerPopup>
                                             </Flex>
                                         </CommentInputWrapper>
-                                    </div>
+                                    </Div>
                                 }
                             </FlexColumn>
                         </Flex>
                     </FlexRow>
                 </Flex>
-            </div>
+            </Div>
         </>
     );
 }
 
-const CommentModal: React.FC<CommentModalProps> = (props: CommentModalProps) => {    
+const CommentModal: React.FC<CommentModalProps> = (props: CommentModalProps) => {
     const steps = [
         {
             title: "Comments",

@@ -292,11 +292,6 @@ export const getPfpFromProfile = (profile: Profile|null):string => {
 
 export const getPfpFromPost = (post: Post):string => {
     if(post.user.pfp == null || post.user.pfp.length === 0) {
-       /* const result = postGetProfileByUserId({userId: post.user.userId});
-        if(result == null || result.status !== 200) {
-            return DEFAULT_PFP;
-        }        
-        return result.data.pfp;*/
         return DEFAULT_PFP;
     }    
 
