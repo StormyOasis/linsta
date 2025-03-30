@@ -8,7 +8,7 @@ import styled from "styled-components";
 import ProfileLink from "../../../Components/Common/ProfileLink";
 import StyledButton from "../../../Components/Common/StyledButton";
 import { HOST } from "../../../api/config";
-import { PROFILE_PIC_MODAL } from "../../../Components/Redux/slices/modals.slice";
+import { MODAL_TYPES } from "../../../Components/Redux/slices/modals.slice";
 import StyledInput from "../../../Components/Common/StyledInput";
 import { splitFullName, validateFullName, validateUrl } from "../../../utils/utils";
 import TextEditor from "../../../Components/Common/Lexical/TextEditor";
@@ -192,11 +192,7 @@ const EditProfileContent: React.FC = () => {
 
     const handlePfpClick = () => {
         // Open the upload profile pic dialog by setting the state in redux        
-        const payload = {
-            profile
-        };
-
-        dispatch(actions.modalActions.openModal({ modalName: PROFILE_PIC_MODAL, data: payload }));
+        dispatch(actions.modalActions.openModal({ modalName: MODAL_TYPES.PROFILE_PIC_MODAL, data: {profile} }));
     }
 
     const handleEmojiSelect = (emoji: any) => {

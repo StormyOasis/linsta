@@ -8,16 +8,15 @@ export type CommentUiData = {
     childCount: number;
 };
 
-export const isCommentLiked = (userName: string, comment: Comment): boolean => {
-    if (comment == null || userName == null) {
+// Checking if a comment is liked by a specific user
+export const isCommentLiked = (userName: string, comment: Comment | null): boolean => {
+    if (comment == null || userName == null || comment.likes == null) {
         return false;
     }
-
-    const result = comment.likes?.filter((like: any) => like.userName === userName);
-
-    return result && result.length > 0;
+    return comment.likes.some((like) => like.userName === userName);
 }
 
+// Search for a comment by ID (handles both root and child comments)
 export const searchCommentsById = (commentId: string, comments: any): CommentUiData | null => {
     if (commentId === null || comments == null) {
         return null;
@@ -39,8 +38,9 @@ export const searchCommentsById = (commentId: string, comments: any): CommentUiD
                 return node;
             }
 
-            for (const [, value] of Object.entries(node.children)) {
-                foundComment = traverse(commentId, value as CommentUiData);
+            // Recurse through children
+            for (const child of Object.values(node.children)) {
+                foundComment = traverse(commentId, child as CommentUiData);
                 if (foundComment != null) {
                     return foundComment;
                 }
@@ -49,10 +49,10 @@ export const searchCommentsById = (commentId: string, comments: any): CommentUiD
         };
 
         // Start the DFS (Note: we can have multiple root nodes hence the array/map)
-        for (const [, value] of Object.entries(comments)) {
-            foundComment = traverse(commentId, value as CommentUiData);
-            if (foundComment !== null) {
-                break;
+        for (const rootComment of Object.values(comments)) {
+            foundComment = traverse(commentId, rootComment as CommentUiData);
+            if (foundComment) {
+                return foundComment;
             }
         }
     }
@@ -60,6 +60,7 @@ export const searchCommentsById = (commentId: string, comments: any): CommentUiD
     return foundComment;
 }
 
+// Map the comments into a parent-child structure
 export const mapCommentsToCommentData = (comments: Comment[], existingComments: any): any => {
     if (comments == null || comments.length === 0) {
         return {};
@@ -71,14 +72,11 @@ export const mapCommentsToCommentData = (comments: Comment[], existingComments: 
     // Store all the comments in a key-value pair by comment id for quick retrieval
     comments.forEach((comment: Comment) => {
         const commentUiData: CommentUiData = {
-            repliesVisibleFlag: false,
-            comment: comment,
+            repliesVisibleFlag: existingComments[comment.commentId]?.repliesVisibleFlag || false,
+            comment,
             children: {},
             childCount: 0
         };
-
-        commentUiData.repliesVisibleFlag = 
-            existingComments[comment.commentId] == null ? false : existingComments[comment.commentId].repliesVisibleFlag;
 
         commentMap.set(comment.commentId, commentUiData);
     });
@@ -88,16 +86,16 @@ export const mapCommentsToCommentData = (comments: Comment[], existingComments: 
         if (entry.comment.parentCommentId !== null && commentMap.has(entry.comment.parentCommentId)) {
 
             // `entry` points to a comment that is a child of another. Add the association to the parent's child array
-            
+
             // Get parent node
-            const parent: CommentUiData|undefined = commentMap.get(entry.comment.parentCommentId);
-            if(parent == null) {
+            const parent: CommentUiData | undefined = commentMap.get(entry.comment.parentCommentId);
+            if (parent == null) {
                 console.warn("Invalid parent comment");
             } else {
                 // Add the current node as a child to the given parent
                 parent.children[entry.comment.commentId] = entry;
                 parent.childCount++;
-            }            
+            }
         } else {
             // `entry` does not have a parent so therefore it is a root node
             rootNodes.push(entry);
@@ -113,13 +111,14 @@ export const mapCommentsToCommentData = (comments: Comment[], existingComments: 
     return finalMap;
 }
 
-export const toggleCommentReplyUiData = (commentUiData: CommentUiData, commentList: any): any => {
+// Toggle the visibility of replies for a given comment
+export const toggleCommentReplyUiData = (commentUiData: CommentUiData, commentList: CommentUiData[]): CommentUiData[] => {
     if (commentList.length === 0) {
         return [];
     }
 
     // We're going to be using this to update React state so make a copy first
-    const newCommentsList = JSON.parse(JSON.stringify(commentList));
+    const newCommentsList: CommentUiData[] = structuredClone(commentList);
     const comment = searchCommentsById(commentUiData.comment.commentId, newCommentsList);
 
     if (comment != null) {
@@ -130,11 +129,11 @@ export const toggleCommentReplyUiData = (commentUiData: CommentUiData, commentLi
 }
 
 export const toggleCommentLike = async (commentId: string, userName: string, userId: string,
-    comments: CommentUiData[], setComments: (comments: any) => void) => {
+    comments: CommentUiData[], setComments: (comments: CommentUiData[]) => void): Promise<void> => {
 
     let result = await postToggleCommentLike({ commentId, userName, userId });
     if (result.status === 200) {
-        const newCommentsList: any = JSON.parse(JSON.stringify(comments));
+        const newCommentsList: any = structuredClone(comments);
 
         // update the comment list by updating the comment instance in the comment state array
         const comment: CommentUiData | null = searchCommentsById(commentId, newCommentsList);

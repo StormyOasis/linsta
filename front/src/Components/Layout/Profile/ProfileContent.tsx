@@ -1,18 +1,19 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import styled from "styled-components";
 import { useNavigate, useParams } from "react-router-dom";
-import { ContentWrapper, Div, Flex, FlexColumn, FlexRow, FlexRowFullWidth, Main, Section } from "../../../Components/Common/CombinedStyling";
+import { ContentWrapper, Div, Flex, FlexColumn, FlexRow, FlexRowFullWidth, Main, Section, Span } from "../../../Components/Common/CombinedStyling";
 import { useAppDispatch, actions, useAppSelector } from "../../../Components/Redux/redux";
 import { Post, PostPaginationResponse, PostWithCommentCount, Profile } from "../../../api/types";
 import { postGetPostsByUserId, postGetProfileByUserName, postGetProfileStatsById, postGetSingleFollowStatus, ServiceResponse } from "../../../api/ServiceController";
 import { followUser, getPfpFromProfile } from "../../../utils/utils";
 import StyledButton from "../../../Components/Common/StyledButton";
-import { COMMENT_MODAL, FOLLOW_MODAL, PROFILE_PIC_MODAL } from "../../../Components/Redux/slices/modals.slice";
+import { MODAL_TYPES, ModalState } from "../../../Components/Redux/slices/modals.slice";
 import { FOLLOWERS_MODAL_TYPE, FOLLOWING_MODAL_TYPE } from "../Main/Modals/Profile/FollowersModal";
 import HeartFilledSVG from "/public/images/heart-fill.svg";
 import MessageSVG from "/public/images/message.svg";
 import { AuthUser } from "../../../api/Auth";
 import StyledLink from "../../../Components/Common/StyledLink";
+import useThrottle from '../../../utils/throttle';
 
 const ProfilePicWrapper = styled(Div)`
     display: flex;
@@ -23,33 +24,33 @@ const ProfilePicWrapper = styled(Div)`
     padding-right: 20px;
 `;
 
-const UserNameSpan = styled.span`
+const UserNameSpan = styled(Span)`
     font-weight: 400;
     line-height: 25px;
     font-size: 20px;
     margin-bottom: 32px;
 `;
 
-const FullNameSpan = styled.span`
+const FullNameSpan = styled(Span)`
     font-weight: 600;
     line-height: 18px;
     font-size: 14px;
 `;
 
-const PronounSpan = styled.span`
+const PronounSpan = styled(Span)`
     font-weight: 400;
     font-size: 12px;    
     padding-left: 10px;
 `;
 
-const BioText = styled.div`
+const BioText = styled(Div)`
     font-weight: 400;
     font-size: 12px;
     padding-top: 4px;
     padding-bottom: 4px;
 `;
 
-const StatSpan = styled.span`
+const StatSpan = styled(Span)`
     color: ${props => props.theme['colors'].mediumTextColor};
     line-height: 20px;
     font-size: 16px;
@@ -73,6 +74,7 @@ const StatListItem = styled.li`
 const ProfileStatLink = styled.a`
     color: ${props => props.theme['colors'].defaultTextColor};
     text-decoration: none;
+    cursor: pointer;
 `;
 
 const GridContainer = styled(Div)`
@@ -84,7 +86,7 @@ const GridContainer = styled(Div)`
     height: 100%;
 `;
 
-const GridImageContainer = styled(Div)<{$width: string}>`
+const GridImageContainer = styled(Div) <{ $width: string }>`
     max-height: 256px;
     position: relative;
     max-width: 256px;
@@ -92,11 +94,11 @@ const GridImageContainer = styled(Div)<{$width: string}>`
     width: ${props => props.$width};
     cursor: pointer;
 
-    @media (max-width: ${props => props.theme["breakpoints"].md-1}px) {
+    @media (max-width: ${props => props.theme["breakpoints"].md - 1}px) {
         width: 50%;
     }  
 
-    @media (max-width: ${props => props.theme["breakpoints"].sm-1}px) {
+    @media (max-width: ${props => props.theme["breakpoints"].sm - 1}px) {
         width: 100%;
     }        
 `;
@@ -108,7 +110,7 @@ const GridImage = styled.img`
     height: 100%;
 `;
 
-const GridImageOverlay = styled.div`
+const GridImageOverlay = styled(Div)`
     position: absolute;
     top:0;
     left:0;
@@ -119,8 +121,6 @@ const GridImageOverlay = styled.div`
     justify-content: center;
     align-items: center;
 `;
-
-const GridImageOverlayDetails = styled.div``;
 
 const HeartFilled = styled(HeartFilledSVG)`
     width: 32px;
@@ -157,167 +157,196 @@ type ProfileStats = {
 
 const ProfileContent: React.FC = () => {
     const authUser: AuthUser = useAppSelector((state: any) => state.auth.user);
-    const childRef = useRef(null);
-    const navigate = useNavigate();
-    const [profile, setProfile] = useState<Profile>();
-    const [profileStats, setProfileStats] = useState<ProfileStats>();
-    const [paginationResult, setPaginationResult] = useState<PostPaginationResponse>();
+    const authUserProfileState: Profile = useAppSelector((state: any) => state.profile.profile);
+    const profileNonce: string = useAppSelector((state: any) => state.profile.nonce);
+    const commentModalState = useAppSelector((state: any) => state.modal.openModalStack?.find((modal: ModalState) => modal.modalName === MODAL_TYPES.COMMENT_MODAL));
+    const [profile, setProfile] = useState<Profile | null>(null);
+    const [profileStats, setProfileStats] = useState<ProfileStats | null>(null);
+    const [paginationResult, setPaginationResult] = useState<PostPaginationResponse | null>(null);
     const [posts, setPosts] = useState<PostWithCommentCount[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [hoverPost, setHoverPost] = useState<PostWithCommentCount|null>(null);
+    const [hoverPost, setHoverPost] = useState<PostWithCommentCount | null>(null);
     const [isLoggedInFollowing, setIsLoggedInFollowing] = useState<boolean>(false);
-    const { userName } = useParams();
+
+    const { userName } = useParams<{ userName: string }>();
+    const childRef = useRef<HTMLDivElement | null>(null);
+    const hasScrolled = useRef(false);  // Track if the user has scrolled
+    const navigate = useNavigate();
     const dispatch = useAppDispatch();
 
     useEffect(() => {
-        postGetProfileByUserName({ userName }).then(async (result) => {
-            setProfile(result.data);
+        const fetchProfileData = async () => {
+            try {
+                // Get the profile by the name passed in the url
+                let result = await postGetProfileByUserName({ userName });
+                setProfile(result.data);
 
-            const userId = result.data.userId;
+                const userId: string | null = result?.data?.userId;
 
-            // Get the post, follower, and following stats
-            if (result.data != null) {
-                const statsResult: ServiceResponse = await postGetProfileStatsById({ userId });
+                // Get the post, follower, and following stats
+                if (result.data != null) {
+                    const statsResult: ServiceResponse = await postGetProfileStatsById({ userId });
+                    setProfileStats(statsResult.data as ProfileStats);
+                }
+
+                // initial data request for the infinte scroll
+                result = await postGetPostsByUserId({ userId });
+                if (result.data != null) {
+                    const response: PostPaginationResponse = result.data;
+                    setPaginationResult(response);
+                    setPosts(response.posts);
+                }
+
+                // Simple query to see if the logged in user follows this profile
+                // skip if looking at own profile
+                if (authUser.id != userId) {
+                    const response = await postGetSingleFollowStatus({ userId: authUser.id, checkUserId: userId });
+                    setIsLoggedInFollowing(response ? response.data : false);
+                }
+
+            } catch (err) {
+                console.error(err);
+                navigate("/404");
+            }
+        }
+
+        fetchProfileData();
+
+        // This is needed in case the logged in user's profile changes (For example the Pfp changed)
+        if (authUserProfileState != null && profile?.profileId === authUserProfileState.profileId) {
+            setProfile(authUserProfileState);
+        }
+
+        //profile nonce is changed when the followers dialog is closed        
+        if (profile?.userId != null) {
+            postGetProfileStatsById({ userId: profile?.userId }).then((statsResult: ServiceResponse) => {
                 setProfileStats(statsResult.data as ProfileStats);
-            }
+            })
+        }
 
-            // initial data request for the infinte scroll
-            result = await postGetPostsByUserId({ userId });
-            if (result.data != null) {
-                const response: PostPaginationResponse = result.data;
-                setPaginationResult(response);
-                setPosts(response.posts);
-            }
+    }, [userName, authUserProfileState, profileNonce]);
 
-            // Simple query to see if the logged in user follows this profile
-            // skip if looking at own profile
-            if(authUser.id != userId) {
-                const results = await postGetSingleFollowStatus({userId: authUser.id, checkUserId: userId});
-                setIsLoggedInFollowing(results ? results.data : false);
-            }
+    const handleScroll = useCallback(() => {
+        if (typeof window !== 'undefined' && childRef.current) {
+            const element = childRef.current as HTMLElement;
+            const currentScroll = window.innerHeight + element.scrollTop;
 
-        }).catch(() => {
-            // A failure occurred, most likely the user navigated to a profile that doesn't exist
-            // Send to a 404 not found page
-            navigate("/404");
-        });
-    }, []);
+            if (currentScroll + 256 >= element.scrollHeight && !isLoading && !hasScrolled.current) {
+                hasScrolled.current = true;  // Mark as scrolled at least once
+                loadPosts();
+            }
+        }
+    }, [paginationResult, isLoading]);
+
+    const throttledHandleScroll = useThrottle(handleScroll, 200);
 
     useEffect(() => {
         if (childRef.current) {
-            (childRef.current as any).addEventListener('scroll', handleScroll);
+            (childRef.current as any).addEventListener('scroll', throttledHandleScroll);
         }
         return () => {
-            if(childRef && childRef.current) {
-                (childRef.current as any).removeEventListener('scroll', handleScroll);
+            if (childRef && childRef.current) {
+                (childRef.current as any).removeEventListener('scroll', throttledHandleScroll);
             }
-        };        
-    }, [paginationResult, isLoading]);
+        };
+    }, []);
 
+    useEffect(() => {
+        if (posts == null || commentModalState == null) {
+            return;
+        }
 
-    const loadPosts = async () => {
+        // Update the likes and comment count
+        const newPostState: PostWithCommentCount[] = structuredClone(posts);
+        for (const post of newPostState) {
+            if (post.postId == commentModalState?.data?.post?.postId) {
+                post.global.likes = commentModalState?.data?.post.global.likes;
+                post.commentCount = commentModalState?.data?.post.commentCount;
+                break;
+            }
+        }
+
+        setPosts(newPostState);
+
+    }, [commentModalState]);
+
+    useEffect(() => {
+        if (!isLoading) {
+            hasScrolled.current = false;
+        }
+    }, [isLoading]);
+
+    const loadPosts = useMemo(() => async () => {
         if (isLoading || (paginationResult && paginationResult.done)) {
             return;
         }
 
         setIsLoading(true);
 
-        const result = await postGetPostsByUserId({ userId: profile?.userId, dateTime: paginationResult?.dateTime, postId: paginationResult?.postId });
-        if (result.data != null) {
-            const response: PostPaginationResponse = result.data;
-            setPaginationResult(response);
-            setPosts((posts: PostWithCommentCount[]) => [...posts, ...response.posts]);
+        try {
+            const result = await postGetPostsByUserId({
+                userId: profile?.userId,
+                dateTime: paginationResult?.dateTime,
+                postId: paginationResult?.postId
+            });
+
+            if (result.data != null) {
+                const response: PostPaginationResponse = result.data;
+                setPaginationResult(response);
+                setPosts((posts: PostWithCommentCount[]) => [...posts, ...response.posts]);
+            }
+        } finally {
             setIsLoading(false);
         }
+
+    }, [isLoading, paginationResult, profile?.userId]);
+
+    const handleFollowCountClick = (modalType: number) => {
+        dispatch(actions.modalActions.openModal({ modalName: MODAL_TYPES.FOLLOW_MODAL, data: { followModalType: modalType, profile } }));
     };
-
-
-    const handleScroll = () => {
-        const element = (childRef?.current as any);
-        const currentScroll = window.innerHeight + element.scrollTop;
-
-        if (currentScroll + 256 >= element.scrollHeight) {
-            loadPosts();
-        }
-    };
-
-    const handleFollowerCountClick = () => {
-        const payload = {
-            followModalType: FOLLOWERS_MODAL_TYPE,
-            profile
-        };
-
-        dispatch(actions.modalActions.openModal({ modalName: FOLLOW_MODAL, data: payload }));
-    }
-
-    const handleFollowingCountClick = () => {
-        const payload = {
-            followModalType: FOLLOWING_MODAL_TYPE,
-            profile
-        };
-
-        dispatch(actions.modalActions.openModal({ modalName: FOLLOW_MODAL, data: payload }));
-    }
 
     const handlePfPClick = () => {
-        if(authUser != null && profile?.userId != authUser.id) {
+        if (authUser != null && profile?.userId != authUser.id) {
             return;
         }
 
-        // Open the upload profile pic dialog by setting the state in redux        
-        const payload = {
-            profile
-        };
-
-        dispatch(actions.modalActions.openModal({ modalName: PROFILE_PIC_MODAL, data: payload }));
+        // Open the upload profile pic dialog by setting the state in redux
+        dispatch(actions.modalActions.openModal({ modalName: MODAL_TYPES.PROFILE_PIC_MODAL, data: { profile } }));
     }
 
-    const handleMouseEnter = (post: PostWithCommentCount) => {
-        setHoverPost(post);
-    }
-
-    const handleMouseLeave = () => {
-        setHoverPost(null);
-    }    
-
-    const handleGridImageClicked = (post:PostWithCommentCount) => {
+    const handleGridImageClicked = (post: PostWithCommentCount | null) => {
         if (post == null) {
             return;
         }
-   
-        const payload = {
-            post: post as Post
-        };
-
-        const posts:Post[] = [];
+        const posts: Post[] = [];
         posts.push(post);
-        dispatch(actions.postActions.setPosts(posts));
-        dispatch(actions.modalActions.openModal({ modalName: COMMENT_MODAL, data: payload }));
+
+        // Open the comment dialog by setting the state in redux
+        dispatch(actions.modalActions.openModal({ modalName: MODAL_TYPES.COMMENT_MODAL, data: { post } }));
     }
 
-    const toggleFollowState = async (userId: string, followUserId: string|undefined, shouldFollow: boolean) => {
-        if(followUserId == null) {
+    const toggleFollowState = async (userId: string, followUserId: string | undefined, shouldFollow: boolean) => {
+        if (followUserId == undefined) {
             return;
         }
 
         const result = await followUser(userId, followUserId, shouldFollow);
 
         // If successful the state needs to be updated to reflect the new follow status
-        if(result) {
+        if (result) {
             setIsLoggedInFollowing(shouldFollow);
         }
     }
 
-    
     return (
         <>
-            <ContentWrapper ref={childRef} style={{ overflow: "auto", maxHeight: "100vh" }}>
+            <ContentWrapper ref={childRef} onScroll={throttledHandleScroll} $overflow="auto" $maxHeight="100vh">
                 <Section style={{ paddingBottom: "64px" }}>
                     <Div $marginTop="14px">
                         <Main role="main">
                             <FlexRowFullWidth $justifyContent="center">
                                 <ProfilePicWrapper>
-                                    {profile && <PfpImg                                        
+                                    {profile && <PfpImg
                                         onClick={handlePfPClick}
                                         src={getPfpFromProfile(profile)}
                                         alt={`${profile.userName}'s profile picture`}
@@ -329,19 +358,20 @@ const ProfileContent: React.FC = () => {
                                         <Div $display="inline-flex">
                                             <UserNameSpan>{profile?.userName}</UserNameSpan>
                                             {(authUser != null && profile?.userId === authUser.id) &&
-                                                <StyledButton 
-                                                    text="Edit Profile" 
+                                                <StyledButton
+                                                    text="Edit Profile"
+                                                    aria-label="Edit Profile"
                                                     useSecondaryColors={true}
-                                                    onClick={() => navigate(`/edit`)}>                                                    
-                                                </StyledButton>
+                                                    onClick={() => navigate(`/edit`)} />
                                             }
                                             {!(authUser != null && profile?.userId === authUser.id) &&
                                                 <StyledButton
                                                     style={{ marginBottom: "12px" }}
                                                     useSecondaryColors={isLoggedInFollowing}
                                                     text={isLoggedInFollowing ? "Following" : "Follow"}
-                                                    onClick={async () => await toggleFollowState(authUser.id, profile?.userId, !isLoggedInFollowing)}>                                
-                                                </StyledButton>                                              
+                                                    aria-label={isLoggedInFollowing ? "Following" : "Follow"}
+                                                    onClick={async () => await toggleFollowState(authUser.id, profile?.userId, !isLoggedInFollowing)}>
+                                                </StyledButton>
                                             }
                                         </Div>
                                     </FlexColumn>
@@ -349,12 +379,12 @@ const ProfileContent: React.FC = () => {
                                         <StatList>
                                             <StatListItem>{profileStats?.postCount} <StatSpan>posts</StatSpan></StatListItem>
                                             <StatListItem>
-                                                <ProfileStatLink href="#" onClick={handleFollowerCountClick}>
+                                                <ProfileStatLink onClick={() => handleFollowCountClick(FOLLOWERS_MODAL_TYPE)}>
                                                     {profileStats?.followerCount} <StatSpan>followers</StatSpan>
                                                 </ProfileStatLink>
                                             </StatListItem>
                                             <StatListItem>
-                                                <ProfileStatLink href="#" onClick={handleFollowingCountClick}>
+                                                <ProfileStatLink onClick={() => handleFollowCountClick(FOLLOWING_MODAL_TYPE)}>
                                                     {profileStats?.followingCount} <StatSpan>following</StatSpan>
                                                 </ProfileStatLink>
                                             </StatListItem>
@@ -365,56 +395,57 @@ const ProfileContent: React.FC = () => {
                                             <FullNameSpan>{`${profile?.firstName} ${profile?.lastName}`}</FullNameSpan>
                                             {profile?.pronouns && <PronounSpan>{`${profile.pronouns}`}</PronounSpan>}
                                         </Div>
-                                        {profile?.bio && <BioText dangerouslySetInnerHTML={{__html: profile.bio}}></BioText>}
-                                        {profile?.link && <StyledLink styleOverride={{fontSize: "12px"}} to={`${profile?.link}`}>{profile.link}</StyledLink>}
+                                        {profile?.bio && <BioText dangerouslySetInnerHTML={{ __html: profile.bio }}></BioText>}
+                                        {profile?.link && <StyledLink styleOverride={{ fontSize: "12px" }} to={`${profile?.link}`}>{profile.link}</StyledLink>}
                                     </FlexColumn>
                                 </Div>
                             </FlexRowFullWidth>
                         </Main>
                     </Div>
                 </Section>
-                <Section style={{alignItems: "center"}}>
-                    <Flex $justifyContent="center" $width="50%" style={{margin: "0 auto"}}>
-                        <GridContainer $width="100%" style={{justifyContent: "center"}}>
-                            {posts && posts.map((post: PostWithCommentCount, index: number) => {
+                <Section style={{ alignItems: "center" }}>
+                    <Flex $justifyContent="center" $width="50%" style={{ margin: "0 auto" }}>
+                        <GridContainer $width="100%" $justifyContent="center">
+                            {posts.map((post: PostWithCommentCount, index: number) => {
                                 const likeCount = post.global.likes ? post.global.likes.length : 0;
                                 const commentCount = post.commentCount;
                                 return (
                                     <GridImageContainer
                                         $width="50%"
                                         key={`${post.media[0].id}-${index}`}
-                                        onClick={() => handleGridImageClicked(post)}                                            
-                                        onMouseEnter={() => handleMouseEnter(post)}
-                                        onMouseLeave={() => handleMouseLeave()}>
+                                        onClick={() => handleGridImageClicked(post)}
+                                        onMouseEnter={() => setHoverPost(post)}
+                                        onMouseLeave={() => setHoverPost(null)}>
 
                                         <GridImage
                                             src={post.media[0].path}
                                             alt={`${post.media[0].altText}`}
-                                            aria-label={`${post.media[0].altText}`} 
-                                            />                                    
+                                            aria-label={`${post.media[0].altText}`}
+                                        />
 
-                                        {(hoverPost && hoverPost === post) && 
+                                        {(hoverPost && hoverPost === post) &&
                                             <GridImageOverlay>
-                                                <GridImageOverlayDetails>
+                                                <Div>
                                                     <Flex>
                                                         <FlexRow>
-                                                            <HeartFilled />                                                            
+                                                            <HeartFilled />
                                                             <ImageOverlayText>{likeCount}</ImageOverlayText>
                                                             <Message />
                                                             <ImageOverlayText>{commentCount}</ImageOverlayText>
                                                         </FlexRow>
-                                                    </Flex>                                                                                                        
-                                                </GridImageOverlayDetails>
+                                                    </Flex>
+                                                </Div>
                                             </GridImageOverlay>
-                                        }    
-                                    </GridImageContainer>                                                                      
-                                );}
+                                        }
+                                    </GridImageContainer>
+                                );
+                            }
                             )}
                         </GridContainer>
                     </Flex>
                     {isLoading &&
                         <Div $alignSelf="center">
-                            <img src="/public/images/loading.gif" />
+                            <img src="/public/images/loading.gif" alt="Loading..." />
                         </Div>
                     }
                 </Section>

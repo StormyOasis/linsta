@@ -1,13 +1,15 @@
-import { ActionReducerMapBuilder, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { historyUtils } from "../../../utils/utils";
 
-export const NEW_POST_MODAL = "newPostModal";
-export const COMMENT_MODAL = "commentModal";
-export const LIKES_MODAL = "likeModal";
-export const PROFILE_PIC_MODAL = "pfpModal";
-export const FOLLOW_MODAL = "followModal";
-
 const NAME = "modals";
+
+export const MODAL_TYPES = {
+    NEW_POST_MODAL: "newPostModal",
+    COMMENT_MODAL: "commentModal",
+    LIKES_MODAL: "likeModal",
+    PROFILE_PIC_MODAL: "pfpModal",
+    FOLLOW_MODAL: "followModal"
+};
 
 export interface ModalState {
     modalName: string;
@@ -24,10 +26,9 @@ const defaultState:GlobalModalState = {
     isOverlayEnabled: false,    
 };
 
-const modalSliceCreator = (preloadedState?: any) => {    
+const modalSliceCreator = (preloadedState?: Partial<GlobalModalState>) => {    
     const initialState = createInitialState();
     const reducers = createReducers();
-    const actions = createActions();
 
     function createInitialState() {
         if (historyUtils.isServer) {
@@ -72,21 +73,23 @@ const modalSliceCreator = (preloadedState?: any) => {
             }
         };
 
+        const updateModalData = (state: GlobalModalState, action: PayloadAction<ModalState>) => {
+            const { modalName, data } = action.payload;
+            const modal = state.openModalStack.find((modal) => modal.modalName === modalName);
+            if (modal) {
+                modal.data = data; // Update the data for the specific modal
+            }
+        };        
+
         return {
             openModal,
-            closeModal
+            closeModal,
+            updateModalData
         };
     }
 
-    function createActions() {
-        return {};
-    }
-
-    const extraReducers = (_builder: ActionReducerMapBuilder<any>) => {
-    }
-
-    const slice = createSlice({ name: NAME, initialState, reducers, extraReducers });
-    const modalActions = { ...slice.actions, ...actions };
+    const slice = createSlice({ name: NAME, initialState, reducers });
+    const modalActions = { ...slice.actions };
     const modalReducer = slice.reducer;
 
     return { modalActions, modalReducer };

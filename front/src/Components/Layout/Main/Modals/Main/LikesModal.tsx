@@ -12,7 +12,7 @@ import { useAppSelector } from "../../../../../Components/Redux/redux";
 import { DEFAULT_PFP } from "../../../../../api/config";
 
 type LikesModalProps = {
-    onClose: any;
+    onClose: () => void;
     post: Post;
     zIndex: number;
 }
@@ -21,11 +21,11 @@ type LikesModalContentProps = {
     post: Post;
 }
 
-const LikesModalInfoText = styled.span`
+const LikesModalInfoText = styled(Span)`
     color: ${props => props.theme['colors'].mediumTextColor};
 `;
 
-const LikeEntryContainer = styled.div`
+const LikeEntryContainer = styled(Div)`
     width: 100%;
     max-width: 100%;
 `;
@@ -43,6 +43,7 @@ const ProfilePicLink = styled(Link)`
 const ProfilePicImg = styled.img`
     width: 100%;
     height: 100%;
+    border-radius: 50%;
 `;
 
 const LikesModalContent: React.FC<LikesModalContentProps> = (props: LikesModalContentProps) => {
@@ -79,7 +80,7 @@ const LikesModalContent: React.FC<LikesModalContentProps> = (props: LikesModalCo
             return (
                 <LikeEntryContainer key={entry.userId}>
                     <FlexRow $paddingBottom="8px" $paddingTop="8px">
-                        <div>
+                        <Div>
                             <Div $marginRight="10px">
                                 <ProfilePicLink href={`/${lfd.userName}/`} role="link">
                                     <ProfilePicImg src={pfp}
@@ -87,29 +88,29 @@ const LikesModalContent: React.FC<LikesModalContentProps> = (props: LikesModalCo
                                         alt={`${lfd.userName}'s profile picture`} />
                                 </ProfilePicLink>
                             </Div>
-                        </div>
+                        </Div>
                         <FlexRow $flexBasis="auto" $flexShrink="1" $flexGrow="1" $flexWrap="wrap" $position="relative" $paddingTop="5px">
                             <FlexColumn $flexGrow="1" $position="relative">
-                                <div>
+                                <Div>
                                     <Link href={`/${lfd.userName}/`} role="link">
                                         <Span $fontWeight="700">{lfd.userName}</Span>
                                     </Link>
-                                </div>
-                                <div>
-                                    <span>
+                                </Div>
+                                <Div>
+                                    <Span>
                                         {`${lfd.firstName} ${lfd.lastName}`}
-                                    </span>
-                                </div>
+                                    </Span>
+                                </Div>
                             </FlexColumn>
                         </FlexRow>
-                        <div>
+                        <Div>
                             <StyledButton
                                 style={{ marginBottom: "12px" }}
                                 useSecondaryColors={isFollowing}
                                 text={isFollowing ? "Following" : "Follow"}
                                 onClick={async () => await toggleFollowState(props.post.user.userId, entry.userId, !isFollowing)}>
                             </StyledButton>
-                        </div>
+                        </Div>
                     </FlexRow>
                 </LikeEntryContainer>
             );

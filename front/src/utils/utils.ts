@@ -223,7 +223,7 @@ export const togglePostLikedState = (userName: string, userId: string, post: Pos
         post.global.likes = [];
     }
 
-    const index = post.global.likes.findIndex((value:any) => value.userName === userName);
+    const index = post.global.likes.findIndex((value:any) => value.userName === userName);    
     if(index === -1) {
         // Username is not in the post's like list, so add it
         post.global.likes.push({userName, userId});
@@ -292,11 +292,6 @@ export const getPfpFromProfile = (profile: Profile|null):string => {
 
 export const getPfpFromPost = (post: Post):string => {
     if(post.user.pfp == null || post.user.pfp.length === 0) {
-       /* const result = postGetProfileByUserId({userId: post.user.userId});
-        if(result == null || result.status !== 200) {
-            return DEFAULT_PFP;
-        }        
-        return result.data.pfp;*/
         return DEFAULT_PFP;
     }    
 

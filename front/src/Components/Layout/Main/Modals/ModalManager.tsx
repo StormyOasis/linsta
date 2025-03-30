@@ -1,12 +1,11 @@
-import React, { ReactNode } from "react";
+import React, { useCallback } from "react";
 import { styled } from "styled-components";
 import { Div, Flex } from "../../../Common/CombinedStyling";
 import { actions, useAppDispatch, useAppSelector } from "../../../../Components/Redux/redux";
-import { COMMENT_MODAL, LIKES_MODAL, ModalState, NEW_POST_MODAL, PROFILE_PIC_MODAL, FOLLOW_MODAL } from "../../../../Components/Redux/slices/modals.slice";
+import { MODAL_TYPES, ModalState } from "../../../../Components/Redux/slices/modals.slice";
 import CreatePostModal from "./CreatePost/CreatePostModal";
 import CommentModal from "./Comments/CommentsModal";
 import LikesModal from "./Main/LikesModal";
-import { Profile } from "../../../../api/types";
 import PfpModal from "./Profile/ProfilePicModal";
 import FollowersModal from "./Profile/FollowersModal";
 
@@ -19,98 +18,97 @@ const ModalOverlayBackground = styled(Flex) <{ $isOverlayEnabled: boolean, $zInd
     min-width: 100%;
     max-width: 100%;
     position: fixed;
-    z-index: ${props => props.$zIndex};   
+    z-index: ${props => props.$zIndex || MODAL_ZINDEX_BASE};   
     min-height: ${props => props.$isOverlayEnabled ? "100%" : "0"};
     height: ${props => props.$isOverlayEnabled ? "100%" : "0"};
 `;
 
-type ModalManagerProps = {
-};
-
-const ModalManager: React.FC<ModalManagerProps> = (_props: ModalManagerProps) => {
-    const profile: Profile = useAppSelector((state) => state.profile.profile);
-    const isOverlayEnabled: boolean = useAppSelector((state) => state.modal.isOverlayEnabled);
-    const openModals: ModalState[] = useAppSelector((state) => state.modal.openModalStack);
+const ModalManager: React.FC<{}> = () => {
+    const { isOverlayEnabled, openModalStack } = useAppSelector((state) => state.modal);
 
     const dispatch = useAppDispatch();
 
-    const closeModal = (modalName: string, data: any) => {
-        dispatch(actions.modalActions.closeModal({modalName, data}));
-    }
+    // Send the close command to Redux
+    const closeModal = useCallback((modalName: string, data: any) => {
+        dispatch(actions.modalActions.closeModal({ modalName, data }));
+    }, [dispatch]);
+
+    // Update the modal's data in Redux
+    const updateModalData = useCallback((modalName: string, data: any) => {
+        dispatch(actions.modalActions.updateModalData({ modalName, data }));
+    }, [dispatch]);
 
     const renderModals = () => {
-        const modals: ReactNode[] = [];
-
-        if (openModals.length === 0) {
+        if (openModalStack.length === 0) {
             return null;
         }
 
         // Render each Modal in the stack
         let zIndex = MODAL_ZINDEX_BASE;
-        for (let iter of openModals) {
-            const modalState: ModalState = iter as ModalState;            
-            switch (modalState.modalName) {
-                case NEW_POST_MODAL: {
-                    modals.push(                        
-                        <CreatePostModal                             
-                            key={NEW_POST_MODAL} 
-                            zIndex={zIndex}
-                            onClose={() => closeModal(NEW_POST_MODAL, {})} />);
-                    break;
+        return openModalStack.map((modalState: ModalState) => {
+            const { modalName, data } = modalState;
+
+            switch (modalName) {
+                case MODAL_TYPES.NEW_POST_MODAL: {
+                    return <CreatePostModal
+                        key={MODAL_TYPES.NEW_POST_MODAL}
+                        zIndex={zIndex++}
+                        onClose={() => closeModal(modalName, data)} />;
                 }
-                case COMMENT_MODAL: {
-                    modals.push(
-                        <CommentModal 
-                            key={COMMENT_MODAL}
-                            zIndex={zIndex}
-                            post={modalState.data.post}
-                            onClose={() => closeModal(COMMENT_MODAL, {})} />);                        
-                    break;
+                case MODAL_TYPES.COMMENT_MODAL: {
+                    return <CommentModal
+                        key={MODAL_TYPES.COMMENT_MODAL}
+                        zIndex={zIndex++}
+                        post={modalState.data.post}
+                        onClose={() => {
+                            // Before closing, update Redux state with the new data
+                            updateModalData(modalName, { post: data.post });
+                            closeModal(modalName, { post: data.post });
+                        }} />;
                 }
-                case LIKES_MODAL: {
-                    modals.push(
-                        <LikesModal 
-                            key={LIKES_MODAL}
-                            zIndex={zIndex}
-                            post={modalState.data.post}
-                            onClose={() => closeModal(LIKES_MODAL, {})} />);
-                    break;
-                }       
-                case PROFILE_PIC_MODAL: {
-                    modals.push(
-                        <PfpModal 
-                            key={PROFILE_PIC_MODAL}
-                            zIndex={zIndex}
-                            profile={profile}
-                            onClose={() => closeModal(PROFILE_PIC_MODAL, {})} />);
-                    break;
+                case MODAL_TYPES.LIKES_MODAL: {
+                    return <LikesModal
+                        key={MODAL_TYPES.LIKES_MODAL}
+                        zIndex={zIndex++}
+                        post={data.post}
+                        onClose={() => closeModal(modalName, data)} />;
                 }
-                case FOLLOW_MODAL: {
-                    modals.push(
-                        <FollowersModal 
-                            key={FOLLOW_MODAL}
-                            zIndex={zIndex}
-                            profile={modalState.data.profile}
-                            followModalType={modalState.data.followModalType}
-                            onClose={() => closeModal(FOLLOW_MODAL, {})} />);
-                    break;
-                }                                             
+                case MODAL_TYPES.PROFILE_PIC_MODAL: {
+                    return <PfpModal
+                        key={MODAL_TYPES.PROFILE_PIC_MODAL}
+                        zIndex={zIndex++}
+                        profile={data.profile}
+                        onClose={() => {
+                            // Before closing, update Redux state with the new data
+                            updateModalData(modalName, { profile: data.profile });
+                            closeModal(modalName, { profile: data.profile });
+                        }} />;
+                }
+                case MODAL_TYPES.FOLLOW_MODAL: {
+                    return <FollowersModal
+                        key={MODAL_TYPES.FOLLOW_MODAL}
+                        zIndex={zIndex++}
+                        profile={data.profile}
+                        followModalType={data.followModalType}
+                        onClose={() => {
+                            // Before closing, update Redux state with the new data
+                            dispatch(actions.profileActions.forceUpdate());
+                            closeModal(modalName, { nonce: data.nonce });
+                        }} />;
+                }
                 default: {
                     console.warn("Invalid modal");
-                    break;
+                    return null;
                 }
             }
-            zIndex++;
-        }
-
-        return modals;
+        });
     }
 
     return (
         <>
-            <ModalOverlayBackground $isOverlayEnabled={isOverlayEnabled} $zIndex={`${MODAL_ZINDEX_BASE + openModals.length - 1}`} />
-            <Div $position="relative" id="modalOverlay" >                
-                { isOverlayEnabled && renderModals() }
+            <ModalOverlayBackground $isOverlayEnabled={isOverlayEnabled} $zIndex={`${MODAL_ZINDEX_BASE + openModalStack.length - 1}`} />
+            <Div $position="relative" id="modalOverlay" >
+                {isOverlayEnabled && renderModals()}
             </Div>
         </>
     );

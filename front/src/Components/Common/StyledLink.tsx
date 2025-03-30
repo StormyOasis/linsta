@@ -3,34 +3,57 @@ import { Link } from "react-router-dom";
 import styled from "styled-components";
 
 export type StyledLinkProps = {
-  to?: string;
-  children?: any;
-  onClick?: any;
-  styleOverride?: any;
-  className?: any;
-  datatestid?: string
+    to?: string;
+    children?: any;
+    onClick?: any;
+    styleOverride?: any;
+    className?: any;
+    datatestid?: string
 };
 
-const StyledLinkWrapper = styled(Link)`
-  color: ${props => props.theme['colors'].buttonDefaultColor};
-  text-decoration: none;
-  display: contents;
-  font-weight: 600;
+const StyledLinkWrapperFromLink = styled(Link)`
+    color: ${props => props.theme['colors'].buttonDefaultColor};
+    text-decoration: none;
+    display: contents;
+    font-weight: 600;
+    cursor: pointer;
 
-  &:hover {
-    color: ${(props) => props.theme['colors'].buttonOnHoverColor};
-  }
+    &:hover {
+        color: ${(props) => props.theme['colors'].buttonOnHoverColor};
+    }
 `;
 
-const StyledLink: React.FC<StyledLinkProps> = (props: StyledLinkProps) => {
-  const onClick = props.onClick ? props.onClick : () => true;
-  const to = props.to ? props.to : "";
+const StyledLinkWrapper = styled.a`
+    color: ${props => props.theme['colors'].buttonDefaultColor};
+    text-decoration: none;
+    display: contents;
+    font-weight: 600;
+    cursor: pointer;
 
-  return (
-    <StyledLinkWrapper data-testid={props.datatestid} to={to} onClick={onClick} className={props.className} style={props.styleOverride}>
-      {props.children}
-    </StyledLinkWrapper>
-  );
+    &:hover {
+        color: ${(props) => props.theme['colors'].buttonOnHoverColor};
+    }
+`;
+
+
+const StyledLink: React.FC<StyledLinkProps> = (props: StyledLinkProps) => {
+    const onClick = props.onClick ? props.onClick : () => true;
+    const hasTo: boolean = (props.to != null && props.to.length > 0);
+
+    return (
+        <>
+            {hasTo && (
+                <StyledLinkWrapperFromLink data-testid={props.datatestid} to={props.to || "#"} onClick={onClick} className={props.className} style={props.styleOverride}>
+                    {props.children}
+                </StyledLinkWrapperFromLink>
+            )}
+            {!hasTo && (
+                <StyledLinkWrapper data-testid={props.datatestid} onClick={onClick} className={props.className} style={props.styleOverride}>
+                    {props.children}
+                </StyledLinkWrapper>
+            )}
+        </>
+    );
 };
 
 export default StyledLink;
