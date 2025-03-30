@@ -1,7 +1,7 @@
 import { Context } from "koa";
 import formidable from 'formidable';
 import Metrics from "../metrics/Metrics";
-import { getFileExtByMimeType, getVertexPropertySafe, sanitize, updateProfileInRedis } from "../utils/utils";
+import { getFileExtByMimeType, getVertexPropertySafe, handleValidationError, sanitizeInput, updateProfileInRedis } from "../utils/utils";
 import logger from "../logger/logger";
 import { updateProfile } from "../Connectors/ESConnector";
 import { getProfileByUserName, getProfileByUserId } from "../utils/utils";
@@ -26,35 +26,32 @@ export const updateProfileByUserId = async (ctx: Context) => {
     const data = <UpdateProfileRequest>ctx.request.body;
 
     if (data.userId == null) {
-        ctx.status = 400;
-        ctx.body = { status: "Invalid userId passed" };
-        return;
+        return handleValidationError(ctx, "Invalid params passed");         
     }
 
     const userIdFromJWT = ctx.state.user.id;
   
     // Check if the logged-in user is trying to access their own data
     if (userIdFromJWT != data.userId) {
-      ctx.status = 403; // Forbidden
-      ctx.body = { message: 'You do not have permission to access this data' };
-      return;
+        // 403 - Forbidden
+        return handleValidationError(ctx, "You do not have permission to access this data", 403);    
     }    
 
     try {
         // Sanitize the user input
-        const bio = sanitize(data.bio ? data.bio : "");
-        const pfp = sanitize(data.pfp ? data.pfp : "");
-        const gender = sanitize(data.gender ? data.gender : "");
-        const pronouns = sanitize(data.pronouns ? data.pronouns : "");
-        const link = sanitize(data.link ? data.link : "");
-        const firstName = sanitize(data.firstName ? data.firstName : "");
-        const lastName = sanitize(data.lastName ? data.lastName : "");
+        const bio:string = sanitizeInput(data.bio);
+        const pfp:string = sanitizeInput(data.pfp);
+        const gender:string = sanitizeInput(data.gender);
+        const pronouns:string = sanitizeInput(data.pronouns);
+        const link:string = sanitizeInput(data.link);
+        const firstName:string = sanitizeInput(data.firstName);
+        const lastName:string = sanitizeInput(data.lastName);
 
         // Need to get the ES id of the profile
         const profile: Profile|null = await getProfileByUserId(data.userId);
 
         if(profile === null) {
-            throw new Error("Invalid profile for user id");
+            return handleValidationError(ctx, "Invalid profile for user id");    
         }
 
         // Send updated profile data to ES
@@ -83,7 +80,7 @@ export const updateProfileByUserId = async (ctx: Context) => {
             .next();
 
         if(results == null || results.value == null) {
-            throw new Error("Error updating DB");
+            return handleValidationError(ctx, "Error updating profile");   
         }
         
         await DBConnector.commitTransaction();
@@ -104,9 +101,7 @@ export const updateProfileByUserId = async (ctx: Context) => {
     } catch(err) {
         DBConnector.rollbackTransaction();
         logger.error(err);
-        ctx.status = 400;
-        ctx.body = "Error updating profile";
-        return;        
+        return handleValidationError(ctx, "Error updating profile");   
     }        
 }
 
@@ -120,15 +115,13 @@ export const getPostProfileByUserId = async (ctx: Context) => {
     const data = <GetProfileByUserIdRequest>ctx.request.body;
 
     if (data.userId == null) {
-        ctx.status = 400;
-        ctx.body = { status: "Invalid params passed" };
-        return;
+        return handleValidationError(ctx, "Invalid params passed");   
     }
 
     try {
         const profile: Profile|null = await getProfileByUserId(data.userId);
         if(profile === null) {
-            throw new Error("Invalid profile");
+            return handleValidationError(ctx, "Invalid profile");
         }
 
         ctx.body = profile;
@@ -136,8 +129,7 @@ export const getPostProfileByUserId = async (ctx: Context) => {
     } catch(err) {
         console.log(err);
         logger.error(err);
-        ctx.status = 400;
-        return;        
+        return handleValidationError(ctx, "Invalid profile");
     }        
 }
 
@@ -151,15 +143,13 @@ export const getPostProfileByUserName = async (ctx: Context) => {
     const data = <GetProfileByUserNameRequest>ctx.request.body;
 
     if (data.userName == null) {
-        ctx.status = 400;
-        ctx.body = { status: "Invalid params passed" };
-        return;
+        return handleValidationError(ctx, "Invalid params passed");   
     }
 
     try {
         const profile: Profile|null = await getProfileByUserName(data.userName);
         if(profile === null) {
-            throw new Error("Invalid profile");
+            return handleValidationError(ctx, "Invalid profile");
         }
 
         ctx.body = profile;
@@ -167,8 +157,7 @@ export const getPostProfileByUserName = async (ctx: Context) => {
     } catch(err) {
         console.log(err);
         logger.error(err);
-        ctx.status = 400;
-        return;        
+        return handleValidationError(ctx, "Invalid profile");      
     }        
 }
 
@@ -188,9 +177,7 @@ export const getProfileStatsById = async(ctx: Context) => {
     const data = <GetProfileStatsByIdRequest>ctx.request.body;
 
     if (data.userId == null) {
-        ctx.status = 400;
-        ctx.body = { status: "Invalid params passed" };
-        return;
+        return handleValidationError(ctx, "Invalid params passed");   
     }
 
     try {        
@@ -201,9 +188,13 @@ export const getProfileStatsById = async(ctx: Context) => {
         };
 
         // First: Get the number of posts by the user
-        const postResult = await DBConnector.getGraph().V(data.userId).outE(EDGE_USER_TO_POST).count().next();
+        const postResult = await DBConnector.getGraph().V(data.userId)
+            .outE(EDGE_USER_TO_POST)
+            .count()
+            .next();
+
         if(postResult == null || postResult?.value == null) {
-            throw new Error("Failure getting post count");
+            return handleValidationError(ctx, "Error getting post count");   
         }
         stats.postCount = postResult.value;
 
@@ -214,7 +205,7 @@ export const getProfileStatsById = async(ctx: Context) => {
             .next();
 
         if(followerResult == null || followerResult?.value == null) {
-            throw new Error("Failure getting follower count");
+            return handleValidationError(ctx, "Error getting follower count");   
         }           
 
         stats.followingCount = followerResult.value;
@@ -226,7 +217,7 @@ export const getProfileStatsById = async(ctx: Context) => {
             .next();
 
         if(followingResult == null || followingResult?.value == null) {
-            throw new Error("Failure getting following count");
+            return handleValidationError(ctx, "Error getting following count");   
         }                   
         
         stats.followerCount = followingResult.value;
@@ -235,8 +226,7 @@ export const getProfileStatsById = async(ctx: Context) => {
         ctx.status = 200;
     } catch(err) {
         logger.error(err);
-        ctx.status = 400;
-        return;        
+        return handleValidationError(ctx, "Error getting stats");        
     }            
 }
 
@@ -251,25 +241,22 @@ export const putProfilePfp = async(ctx: Context) => {
     const files:formidable.Files = ctx.request.files as formidable.Files;
 
     if (data.userId == null) {
-        ctx.status = 400;
-        ctx.body = { status: "Invalid params passed" };
-        return;
+        return handleValidationError(ctx, "Invalid params passed");   
     }
         
     const userIdFromJWT = ctx.state.user.id;
   
     // Check if the logged-in user is trying to access their own data
     if (userIdFromJWT != data.userId) {
-        ctx.status = 403; // Forbidden
-        ctx.body = { message: 'You do not have permission to access this data' };
-        return;
+        // 403 - Forbidden
+        return handleValidationError(ctx, "You do not have permission to access this data", 403);  
     }        
 
     try {
         const profile:Profile|null = await getProfileByUserId(data.userId);
 
         if(profile === null) {
-            throw new Error("Invalid profile");
+            return handleValidationError(ctx, "Invalid profile");  
         }
 
         let url = "";
@@ -297,7 +284,7 @@ export const putProfilePfp = async(ctx: Context) => {
         // Update the entry in the DB
         const result = await DBConnector.getGraph().V(profile.userId).property("pfp", url).next();
         if(result == null || result.value == null) {
-            throw new Error("Error updating DB");
+            return handleValidationError(ctx, "Error updating profile");  
         }
 
         // Profile has just been updated, need to upsert into redis
@@ -308,8 +295,7 @@ export const putProfilePfp = async(ctx: Context) => {
     } catch(err) {
         console.log(err);
         logger.error(err);
-        ctx.status = 400;
-        return;        
+        return handleValidationError(ctx, "Error updating profile");       
     }    
 }
 
@@ -323,15 +309,11 @@ export const getFollowingByUserId = async(ctx: Context) => {
     const data = <GetFollowingByUserIdRequest>ctx.request.body;
 
     if (data.userId == null) {
-        ctx.status = 400;
-        ctx.body = { status: "Invalid user id" };
-        return;
+        return handleValidationError(ctx, "Invalid params passed"); 
     }
 
     try {
-
         // Find the following profiles from the specified user id
-
         // Now get the follow data
         const __ = DBConnector.__();
         const results = await DBConnector.getGraph().V(data.userId)
@@ -391,7 +373,7 @@ export const getFollowingByUserId = async(ctx: Context) => {
     } catch(err) {
         console.log(err);
         logger.error(err);
-        ctx.status = 400;       
+        return handleValidationError(ctx, "Error getting following users");     
     }
 }
 
@@ -405,9 +387,7 @@ export const getFollowersByUserId = async(ctx: Context) => {
     const data = <GetFollowersByUserIdRequest>ctx.request.body;
 
     if (data.userId == null) {
-        ctx.status = 400;
-        ctx.body = { status: "Invalid user id" };
-        return;
+        return handleValidationError(ctx, "Invalid params passed"); 
     }
 
     try {
@@ -471,32 +451,19 @@ export const getFollowersByUserId = async(ctx: Context) => {
             const vertex:any = result;
             const profile: ProfileWithFollowStatus|undefined = profileMap.get(vertex.id);
 
-            if(profile == null) {
-                continue;
+            if(profile) {
+                profile.isFollowed = true;
+                profileMap.set(profile.userId, profile);
             }
-
-            profile.isFollowed = true;
-            profileMap.set(profile.userId, profile);
         }
 
-        const returnData:ProfileWithFollowStatus[] = [];
-        const iter = profileMap.entries();
-        let element = await iter.next();
-        while(!element.done) {
-            const value = element.value;
-            const profile:ProfileWithFollowStatus = Object.assign({}, value[1]);
-            
-            returnData.push(profile);
-
-            element = await iter.next();
-        }        
-
+        const returnData:ProfileWithFollowStatus[] = Array.from(profileMap.values());
         ctx.body = returnData;
         ctx.status = 200;
     } catch(err) {
         console.log(err);
         logger.error(err);
-        ctx.status = 400;       
+        return handleValidationError(ctx, "Error getting followers");    
     }
 }    
 
@@ -511,9 +478,7 @@ export const getSingleFollowStatus = async(ctx: Context) => {
     const data = <SingleFollowRequest>ctx.request.body;
 
     if (data.userId == null || data.checkUserId == null) {
-        ctx.status = 400;
-        ctx.body = { status: "Invalid params passed" };
-        return;
+        return handleValidationError(ctx, "Invalid params passed"); 
     }   
 
     try {
@@ -526,7 +491,7 @@ export const getSingleFollowStatus = async(ctx: Context) => {
             .next();
 
         if(results == null || results.value === null) {
-            throw new Error("Error follow status");
+            return handleValidationError(ctx, "Error getting follow status"); 
         }
 
         ctx.body = results.value === 1;
@@ -534,8 +499,7 @@ export const getSingleFollowStatus = async(ctx: Context) => {
     } catch(err) {
         console.log(err);
         logger.error(err);
-        ctx.status = 400;
-        return;          
+        return handleValidationError(ctx, "Error getting followers");    
     }
 }
 
@@ -550,16 +514,14 @@ export const bulkGetProfilesAndFollowing = async(ctx: Context) => {
     const data = <BulkGetProfilesRequest>ctx.request.body;
 
     if (data.userId == null || data.userIds == null || data.userIds.length === 0) {
-        ctx.status = 400;
-        ctx.body = { status: "Invalid params passed" };
-        return;
+        return handleValidationError(ctx, "Invalid params passed"); 
     }    
 
     try {
         // Find the profile data of the given user ids
         const results = await DBConnector.getGraph().V(data.userIds).project("User").toList();
         if(results == null) {
-            throw new Error("Error getting profiles");
+            return handleValidationError(ctx, "Error getting profiles"); 
         }
 
         const profileMap:Map<string, ProfileWithFollowStatus> = new Map<string, ProfileWithFollowStatus>();
@@ -678,7 +640,6 @@ export const bulkGetProfilesAndFollowing = async(ctx: Context) => {
     } catch(err) {
         console.log(err);
         logger.error(err);
-        ctx.status = 400;
-        return;          
+        return handleValidationError(ctx, "Error getting profiles");    
     }
 }

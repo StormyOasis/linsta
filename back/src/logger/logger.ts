@@ -2,13 +2,13 @@ import winston from "winston";
 import config from 'config';
 
 const { combine, timestamp, json } = winston.format;
-let level:string|undefined = config.get("logging.logLevel");
-if(level == null) {
+let level: string | undefined = config.get("logging.logLevel");
+if (level == null) {
     level = "info"
 }
 
 const logger = winston.createLogger({
-    level:level,
+    level: level,
     format: combine(timestamp(), json()),
     transports: [
         new winston.transports.Console(),

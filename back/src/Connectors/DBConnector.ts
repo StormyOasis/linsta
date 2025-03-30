@@ -1,7 +1,6 @@
 import gremlin from 'gremlin';
 import config from 'config';
 import logger from '../logger/logger';
-import Metrics from '../metrics/Metrics';
 
 export const EDGE_POST_TO_USER:string = "post_to_user";
 export const EDGE_USER_TO_POST:string = "user_to_post";
@@ -15,7 +14,9 @@ export const EDGE_COMMENT_TO_POST:string = "comment_to_post";
 export const EDGE_PARENT_TO_CHILD_COMMENT:string = "parent_to_child_comment";
 export const EDGE_CHILD_TO_PARENT_COMMENT:string = "child_to_parent_comment";    
 export const EDGE_COMMENT_TO_USER:string = "comment_to_user";    
-export const EDGE_USER_TO_COMMENT:string = "user_to_comment";    
+export const EDGE_USER_TO_COMMENT:string = "user_to_comment"; 
+export const EDGE_USER_TO_TOKEN:string = "user_to_token";
+export const EDGE_TOKEN_TO_USER:string = "token_to_user";
 
 export class DBConnector {
     private static instance:DBConnector | null = null;
@@ -84,7 +85,7 @@ export class DBConnector {
         logger.info("Connection created");     
     }
 
-    public close = async () => {
+    public close = async (): Promise<void> => {
         if(this.connection?.isOpen) {
             await this.connection?.close();
             this.connection = null;
@@ -132,7 +133,7 @@ export class DBConnector {
         return this.transactionG;
     }
 
-    public commitTransaction = async () => {
+    public commitTransaction = async ():Promise<void> => {
         if(this.transactionG === null || this.tx === null) {
             throw new Error("No transaction in progress");
         }
@@ -142,7 +143,7 @@ export class DBConnector {
         this.tx = null;        
     }
 
-    public rollbackTransaction = async () => {
+    public rollbackTransaction = async ():Promise<void> => {
         if(this.transactionG === null  || this.tx === null) {
             // This is a noop
             return;
@@ -153,7 +154,7 @@ export class DBConnector {
         this.tx = null;
     }
 
-    public reconnectIfNeeded = async () => {        
+    public reconnectIfNeeded = async ():Promise<void> => {        
         if(!this.connection?.isOpen) {            
             logger.info("Reconnecting to DB");
             await this.connect();

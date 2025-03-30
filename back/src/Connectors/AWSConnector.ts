@@ -21,6 +21,12 @@ export type SESTemplate = {
     templateData: object;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const getAWSClient = <T extends { new (...args: any[]): any }>(ClientConstructor: T, clientConfig: object): InstanceType<T> => {
+    const REGION: string = config.get("aws.region");
+    return new ClientConstructor({ region: REGION, ...clientConfig });
+};
+
 export const sendEmailByTemplate = async (templateName: string, params: SESTemplate) => {
     const command = new SendTemplatedEmailCommand({
         Destination: params.destination,
@@ -30,30 +36,26 @@ export const sendEmailByTemplate = async (templateName: string, params: SESTempl
     });
 
     try {
-        const REGION: string = config.get("aws.region");
-        const sesClient = new SESClient({ region: REGION });
+        const sesClient = getAWSClient(SESClient, {});
 
         return await sesClient.send(command);
     } catch (error) {
         logger.error("Failure sending email", error);
         Metrics.increment("aws.sesfailurecount");
-        return {};
+        throw new Error("Failed to send email via SES.");
     }
 }
 
-export const sendSMS = async (phoneNumber: string, message: string) => {
+export const sendSMS = async (phoneNumber: string, message: string):Promise<boolean> => {
     try {
-        const REGION: string = config.get("aws.region");
-        const snsClient = new SNSClient({ region: REGION });
+        const snsClient = getAWSClient(SNSClient, {});
 
-        const response = await snsClient.send(
+        await snsClient.send(
             new PublishCommand({
                 Message: message,
                 PhoneNumber: phoneNumber,
             }),
         );
-
-        console.log(response);
 
         return true;
     } catch (error) {
@@ -65,22 +67,22 @@ export const sendSMS = async (phoneNumber: string, message: string) => {
 }
 
 export const getLocationData = async (term: string) => {
-    const authHelper = await withAPIKey(config.get("aws.location.apiKey"));
+    try {
+        const authHelper = await withAPIKey(config.get("aws.location.apiKey"));
+        const client = getAWSClient(LocationClient, authHelper.getLocationClientConfig());
+        const input = {
+            IndexName: `${config.get("aws.location.index")}`,
+            Text: term
+        }
 
-    const client = new LocationClient({
-        region: config.get("aws.region"),
-        ...authHelper.getLocationClientConfig()
-    });
+        const command = new SearchPlaceIndexForTextCommand(input);
+        const response = await client.send(command);
 
-    const input = {
-        IndexName: `${config.get("aws.location.index")}`,
-        Text: term
+        return response;
+    } catch(err) {
+        logger.error("Error fetching location data", err);
+        throw new Error("Failed to fetch location data");        
     }
-
-    const command = new SearchPlaceIndexForTextCommand(input);
-    const response = await client.send(command);
-
-    return response;
 }
 
 export const uploadFile = async (file: formidable.File, entryId: string, userId: string, fileExt?: string)
@@ -91,8 +93,7 @@ export const uploadFile = async (file: formidable.File, entryId: string, userId:
             throw new Error("Invalid filename");
         }
 
-        const REGION: string = config.get("aws.region");
-        const s3Client = new S3Client({ region: REGION });
+        const s3Client = getAWSClient(S3Client, {});
         const key = `${userId}/${entryId}${fileExt}`;
         const bucket = config.get("aws.s3.userMediaBucket") as string;
 
@@ -109,24 +110,26 @@ export const uploadFile = async (file: formidable.File, entryId: string, userId:
 
     } catch (err) {
         logger.error("Error uploading to s3", err);
-        throw err;
+        throw new Error("File upload failed.");
     }
 }
 
-export const removeFile = async (fileName: string) => {
+export const removeFile = async (fileName: string):Promise<void> => {
     if(fileName == null || fileName.length === 0) {
         return;
     }
-    // Get the relative file path minus host of the pfp.
-    // Also need to strip off leading slash
-    const s3FileName = new URL(fileName).pathname.substring(1);
 
-    const REGION: string = config.get("aws.region");
-    const s3Client = new S3Client({ region: REGION });
-    const bucket = config.get("aws.s3.userMediaBucket") as string;
+    try {
+        const s3FileName = new URL(fileName).pathname.substring(1);
+        const s3Client = getAWSClient(S3Client, {});
+        const bucket = config.get("aws.s3.userMediaBucket") as string;
 
-    await s3Client.send(new DeleteObjectCommand({
-        Bucket: bucket,
-        Key: s3FileName
-    }));
+        await s3Client.send(new DeleteObjectCommand({
+            Bucket: bucket,
+            Key: s3FileName
+        }));
+    } catch (error) {
+        logger.error("Error removing file from S3", error);
+        throw new Error("Failed to remove file.");
+    }
 }

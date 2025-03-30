@@ -2,9 +2,9 @@ import { Context } from "koa";
 import formidable from 'formidable';
 import Metrics from "../metrics/Metrics";
 import logger from "../logger/logger";
-import { getFileExtByMimeType, getLikesByPost, getPfpByUserId, getPostByPostId, getPostIdFromEsId, sanitize } from "../utils/utils";
+import { getFileExtByMimeType, getLikesByPost, getPfpByUserId, getPostByPostId, handleValidationError, sanitize } from "../utils/utils";
 import { uploadFile } from "../Connectors/AWSConnector";
-import { buildDataSetForES, buildSearchResultSet, insert, search, searchWithPagination, update } from '../Connectors/ESConnector';
+import { buildDataSetForES, insert, searchWithPagination, update } from '../Connectors/ESConnector';
 import { User, Global, Entry, Post, Like } from "../utils/types";
 import RedisConnector from "../Connectors/RedisConnector";
 import DBConnector, { EDGE_POST_LIKED_BY_USER, EDGE_POST_TO_COMMENT, EDGE_POST_TO_USER, EDGE_USER_LIKED_POST, EDGE_USER_TO_POST } from "../Connectors/DBConnector";
@@ -16,8 +16,7 @@ export const addPost = async (ctx: Context) => {
     const files = ctx.request.files;
 
     if (!data || !files) {
-        ctx.status = 400;
-        return;
+        return handleValidationError(ctx, "Invalid params passed"); 
     }
 
     const user:User = JSON.parse(data.user);
@@ -47,25 +46,26 @@ export const addPost = async (ctx: Context) => {
 
         const esResult = await insert(dataSet);        
         if(esResult.result !== 'created') {
-            throw new Error("Error adding post");
+            return handleValidationError(ctx, "Error adding post"); 
         }
 
         // Now add an associated vertex and edges to the graph for this post
         await DBConnector.beginTransaction();
         
         // Now add a post vertex to the graph
-        let graphResult = await DBConnector.getGraph(true).addV("Post")
+        let graphResult = await DBConnector.getGraph(true)
+            .addV("Post")
             .property("esId", esResult._id)
             .next();  
 
         if(graphResult == null || graphResult.value == null) {
-            throw new Error("Error creating post");
+            return handleValidationError(ctx, "Error adding post"); 
         }
 
         const postId: string = graphResult.value.id;
 
         // Now add the edges between the post and user verticies            
-        graphResult = await DBConnector.getGraph(true).V(graphResult.value.id)
+        graphResult = await DBConnector.getGraph(true).V(postId)
             .as('post')
             .V(user.userId)
             .as('user')
@@ -78,7 +78,7 @@ export const addPost = async (ctx: Context) => {
             .next();  
 
         if(graphResult == null || graphResult.value == null) {
-            throw new Error("Error creating profile links");
+            return handleValidationError(ctx, "Error creating profile links"); 
         }       
         
         await DBConnector.commitTransaction();
@@ -112,8 +112,7 @@ export const addPost = async (ctx: Context) => {
     } catch(err) {
         await DBConnector.rollbackTransaction();
         logger.error(err);
-        ctx.status = 400;
-        return;
+        return handleValidationError(ctx, "Error adding post"); 
     }
     
     ctx.status = 200;
@@ -137,13 +136,6 @@ export const getAllPosts = async (ctx: Context) => {
     const data = <GetPostsRequest>ctx.request.body;
 
     try {
-        const response: GetPostsResponse = {
-            posts: [],
-            dateTime: "",
-            postId: "",
-            done: true
-        };
-
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const query:any = {
             query: {
@@ -173,6 +165,13 @@ export const getAllPosts = async (ctx: Context) => {
             query.search_after = [data.dateTime, data.postId];
         }
         
+        const response: GetPostsResponse = {
+            posts: [],
+            dateTime: "",
+            postId: "",
+            done: true
+        };
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const results:any = await searchWithPagination(query);
     
@@ -225,38 +224,26 @@ export const getAllPosts = async (ctx: Context) => {
                 .fold()
             ).toList();
     
-        // Get the post likes 
         if(dbResults != null && dbResults.length > 0) {
             // At least one of the given post ids has a like
-            for(const result of dbResults) {                
+            dbResults.forEach(result => {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const postMap:Map<any, any> = (result as Map<any, any>);
                 const postId = postMap.get("postId");
-                const users = postMap.get("users");
-                
-                // Make sure that the postId found in DB matches one
-                // from the above ES query. They could be out of sync due to pagination
-                if(posts[postId] == null) {
-                    continue;
-                }
+                const users = postMap.get("users");                
 
-                const post:Post = (posts[postId] as Post);                
-                if(post.global.likes == null) {
-                    post.global.likes = [];
+                if (posts[postId]) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    posts[postId].global.likes = users.map((user: any) => ({
+                        userName: user.userName,
+                        userId: user.id,
+                        profileId: user.profileId,
+                        firstName: user.firstName,
+                        lastName: user.lastName,
+                        pfp: user.pfp
+                    }));
                 }
-    
-                for(const user of users) {
-                    const newLike:Like = {
-                        userName: user.get("userName"),
-                        userId: user.get("id"),
-                        profileId: user.get("profileId"),
-                        firstName: user.get("firstName"),
-                        lastName: user.get("lastName"),
-                        pfp: user.get("pfp")
-                    };
-                    post.global.likes.push(newLike);
-                }            
-            }            
+            });
         }
     
         // Add the posts to the response
@@ -269,8 +256,7 @@ export const getAllPosts = async (ctx: Context) => {
     } catch(err) {
         console.log(err);
         logger.error(err);
-        ctx.status = 400;
-        ctx.body = err;
+        return handleValidationError(ctx, "Error getting posts"); 
     }
 }
 
@@ -285,17 +271,16 @@ export const getPostById = async(ctx: Context) => {
     const postId = query.postId;
 
     if(postId == null || postId.trim().length === 0) {
-        ctx.status = 400;
-        return;
+        return handleValidationError(ctx, "Error getting post"); 
     }
 
-    try { 
-        ctx.status = 200;
+    try {         
         ctx.body = await getPostByPostId(postId);
+        ctx.status = 200;
     } catch(err) {
         console.log(err);
         logger.error(err);
-        ctx.status = 400;
+        return handleValidationError(ctx, "Error getting post"); 
     }    
 }
 
@@ -310,9 +295,7 @@ export const toggleLikePost = async (ctx: Context) => {
     const data = <LikeRequest>ctx.request.body;
 
     if (data.postId == null || data.userId == null) {
-        ctx.status = 400;
-        ctx.body = { status: "Invalid params passed" };
-        return;
+        return handleValidationError(ctx, "Invalid params passed");
     }
 
     let isLiked:boolean|undefined = false;
@@ -357,7 +340,7 @@ export const toggleLikePost = async (ctx: Context) => {
                 .next();
 
             if(result == null || result.value == null) {
-                throw new Error("Error toggling like state");
+                return handleValidationError(ctx, "Error toggling like state");
             }                   
         }
 
@@ -369,7 +352,7 @@ export const toggleLikePost = async (ctx: Context) => {
         console.log(err);
         logger.error(err);
         await DBConnector.rollbackTransaction();
-        ctx.status = 400;
+        return handleValidationError(ctx, "Error toggling like state");
     }
 }
 
@@ -379,9 +362,7 @@ export const postIsPostLikedByUserId = async (ctx: Context) => {
     const data = <LikeRequest>ctx.request.body;
 
     if (data.postId == null || data.userId == null) {
-        ctx.status = 400;
-        ctx.body = { status: "Invalid params passed" };
-        return;
+        return handleValidationError(ctx, "Invalid params passed");
     }
 
     let isLiked:boolean|undefined = false;
@@ -397,7 +378,7 @@ export const postIsPostLikedByUserId = async (ctx: Context) => {
         ctx.status = 200;
     } catch(err) {        
         logger.error(err);
-        ctx.status = 400;
+        return handleValidationError(ctx, "Error getting like state");
     }
 }
 
@@ -412,8 +393,7 @@ export const getAllLikesByPost = async (ctx: Context) => {
     const postId = req.postId?.trim();
     
     if (!postId || postId.length === 0) {
-        ctx.status = 400;
-        return;
+        return handleValidationError(ctx, "Error getting all likes");
     }
 
     try {     
@@ -422,7 +402,7 @@ export const getAllLikesByPost = async (ctx: Context) => {
     } catch(err) {        
         console.log(err);
         logger.error(err);
-        ctx.status = 400;
+        return handleValidationError(ctx, "Error getting all likes");
     }
 }
 
@@ -449,9 +429,7 @@ export const getPostsByUserId = async (ctx: Context) => {
     const data = <GetPostsByUserIdRequest>ctx.request.body;
 
     if (data.userId == null) {
-        ctx.status = 400;
-        ctx.body = { status: "Invalid params passed" };
-        return;
+        return handleValidationError(ctx, "Invalid params passed");
     }
 
     try {
@@ -618,7 +596,6 @@ export const getPostsByUserId = async (ctx: Context) => {
     } catch (err) {
         console.log(err);
         logger.error(err);
-        ctx.status = 400;
-        return;
+        return handleValidationError(ctx, "Error getting posts");
     }
 }

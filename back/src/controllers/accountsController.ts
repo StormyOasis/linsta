@@ -5,8 +5,8 @@ import jwt, { SignOptions } from 'jsonwebtoken';
 import moment, { MomentInput } from "moment";
 import logger from "../logger/logger";
 import Metrics from "../metrics/Metrics";
-import DBConnector, { EDGE_USER_FOLLOWS } from "../Connectors/DBConnector";
-import { isEmail, isPhone, isValidPassword, obfuscateEmail, obfuscatePhone } from "../utils/utils";
+import DBConnector, { EDGE_TOKEN_TO_USER, EDGE_USER_FOLLOWS, EDGE_USER_TO_TOKEN } from "../Connectors/DBConnector";
+import { handleValidationError, isEmail, isPhone, isValidPassword, obfuscateEmail, obfuscatePhone } from "../utils/utils";
 import { SEND_CONFIRM_TEMPLATE, 
          FORGOT_PASSWORD_TEMPLATE, 
          sendEmailByTemplate, sendSMS } from "../Connectors/AWSConnector";
@@ -15,23 +15,20 @@ import { insertProfile } from "../Connectors/ESConnector";
 export const getIsUnqiueUsername = async (ctx: Context) => {
     Metrics.increment("accounts.checkunique");
 
-    const userName = ctx["params"].userName;
+    const { userName } = ctx.params;
 
     // Error out if invalid data
-    if (userName == null || userName.trim().length == 0) {
-        ctx.status = 400;
-        return;
+    if (!userName || userName.trim().length === 0) {
+        return handleValidationError(ctx, "Invalid username");
     }
 
-    //sanatize input 
+    //sanitize input 
     const regex = /^[A-Za-z0-9]+$/;
     if (!regex.test(userName)) {
-        ctx.status = 400;
-        return;
+        return handleValidationError(ctx, "Invalid username format");
     }
 
     // Check against the db for username existence
-
     try {
         const uniquePropertyMatcher = await DBConnector.getGraph().V()
             .hasLabel("User")
@@ -43,11 +40,10 @@ export const getIsUnqiueUsername = async (ctx: Context) => {
 
         ctx.body = isUnique;
         ctx.status = 200;
-
     } catch (err) {
         console.log(err);
-        ctx.status = 400;
-        return;
+        logger.error(err);
+        return handleValidationError(ctx, "Error checking username uniqueness");
     }
 }
 
@@ -69,22 +65,13 @@ export const attemptCreateUser = async (ctx: Context) => {
     const data = <AttemptRequest>ctx.request.body;
     let res = null;
 
-    if (!data.emailOrPhone ||
-        !data.fullName ||
-        !data.userName ||
-        !data.password) {
-        ctx.status = 400;
-        ctx.body = {status: "Invalid input"};
-        return;
+    // Validate required fields
+    if (!data.emailOrPhone || !data.fullName || !data.userName || !data.password) {
+        return handleValidationError(ctx, "Invalid input");
     }
 
-    if (!data.dryRun &&
-        (data.confirmCode == null || data.day == null ||
-            data.month == null || data.year == null)) {
-
-        ctx.status = 400;
-        ctx.body = {status: "Invalid input"};
-        return;
+    if (!data.dryRun && (!data.confirmCode || !data.day || !data.month || !data.year)) {
+        return handleValidationError(ctx, "Invalid input");
     }
 
     // Determine if value passed to emailOrPhone is an email address or phone
@@ -93,26 +80,20 @@ export const attemptCreateUser = async (ctx: Context) => {
 
     //Make sure there isn't any invalid email/phone
     if (!isPhoneNum && !isEmailAddr) {
-        ctx.body = {status: "Invalid email and phone"};
-        ctx.status = 400;
-        return;
+        return handleValidationError(ctx, "Invalid email or phone");
     }
 
-    //strip out first name into component parts
+    //strip out full name into component parts
     const names: string[] = data.fullName.trim().split(' ');
     if (names.length == 0) {
-        ctx.status = 400;
-        ctx.body = {status: "Invalid full name"};
-        return;
+        return handleValidationError(ctx, "Invalid full name");
     }
 
     if (!data.dryRun) {
         // If this is not a dry run and instead an actual attempt then 
         // we need to compare the confirmation codes
         if (data.confirmCode?.trim().length !== 8 || data.emailOrPhone.trim().length === 0) {
-            ctx.status = 400;
-            ctx.body = {status: "Invalid Confirmation Code"};
-            return;
+            return handleValidationError(ctx, "Invalid confirmation code");
         }
 
         try {
@@ -125,22 +106,17 @@ export const attemptCreateUser = async (ctx: Context) => {
 
             if (res == null || res.value == null) {
                 // no matching code found so respond as invalid
-                ctx.status = 400;
-                ctx.body = {status: "Invalid Confirmation Code"};
-                return;
+                return handleValidationError(ctx, "Invalid confirmation code");
             }
         } catch (err) {       
-            console.log(err);
-            ctx.status = 500;
-            return;
+            logger.error(err);
+            return handleValidationError(ctx, "Error checking confirmation code");
         }
     }
 
     if (!isValidPassword(data.password)) {
         // Password does not pass rules check
-        ctx.status = 400;
-        ctx.body = {status: "Invalid Password"};
-        return;
+        return handleValidationError(ctx, "Invalid password");
     }
     
     const first: string = names[0];
@@ -162,9 +138,9 @@ export const attemptCreateUser = async (ctx: Context) => {
             millisecond: currentTime.millisecond()
         } as MomentInput;
         
-        const birthDate = data.dryRun ? currentTime : moment(momentData);
-        const email = isEmailAddr ? data.emailOrPhone : "";
-        const phone = isPhoneNum ? data.emailOrPhone : "";
+        const birthDate:moment.Moment = data.dryRun ? currentTime : moment(momentData);
+        const email:string = isEmailAddr ? data.emailOrPhone : "";
+        const phone:string = isPhoneNum ? data.emailOrPhone : "";
         
         await DBConnector.beginTransaction();
         
@@ -196,7 +172,8 @@ export const attemptCreateUser = async (ctx: Context) => {
             failureOccured = true;            
         } else {
             // Attempt to insert a user vertex
-            const result = await DBConnector.getGraph(true).addV("User")
+            const result = await DBConnector.getGraph(true)
+                .addV("User")
                 .property("email", email)
                 .property("phone", phone)
                 .property("userName", data.userName)
@@ -230,8 +207,7 @@ export const attemptCreateUser = async (ctx: Context) => {
 
     if (data.dryRun || failureOccured) {
         await DBConnector.rollbackTransaction();
-
-        ctx.body = {status: `${failureOccured ? "Error creating user" : "OK"}`};
+        ctx.body = { status: failureOccured ? "Error creating user" : "OK" };
     } else {
         try {
             // The User info has officially been inserted into the DB
@@ -260,10 +236,9 @@ export const attemptCreateUser = async (ctx: Context) => {
             ctx.body = {status: "OK"};
             ctx.status = 200;
         } catch (err) {            
-            logger.error(`Error Commiting transaction: ${err}`);
             await DBConnector.rollbackTransaction();
-            ctx.status = 400;
-            ctx.body = {status: "Error creating user"};
+            logger.error(`Error Commiting transaction: ${err}`);            
+            return handleValidationError(ctx, "Error creating user");
         }
     }
 }
@@ -275,13 +250,10 @@ type SendCodeRequest = {
 export const sendConfirmCode = async (ctx: Context) => {
     Metrics.increment("accounts.sendcode");
 
-    const req = <SendCodeRequest>ctx.request.query;
-    const userData = req.user?.trim();
+    const { user: userData } = <SendCodeRequest>ctx.request.query;
 
     if (!userData || userData.length < 3) {
-        ctx.status = 400;
-        ctx.body = { status: "Invalid confirmation input" };
-        return;
+        return handleValidationError(ctx, "Invalid confirmation input");
     }
 
     // Determine if value passed an email address or phone num
@@ -290,9 +262,7 @@ export const sendConfirmCode = async (ctx: Context) => {
 
     //Make sure there isn't any invalid email/phone
     if (!isPhoneNum && !isEmailAddr) {
-        ctx.response.res.statusCode = 400;
-        ctx.body = { status: "Can't parse confirmation data" };
-        return;
+        return handleValidationError(ctx, "Can't parse confirmation data");
     }
 
     const currentTime = moment();
@@ -302,27 +272,32 @@ export const sendConfirmCode = async (ctx: Context) => {
 
     try {
         // Upsert into DB
-        const res = await DBConnector.getGraph().mergeV(new Map([["userData", userData]]))
-            .option(DBConnector.Merge().onCreate, new Map([[DBConnector.T().label, "ConfirmCode"], ["token", token], ["userData", userData], ["sentTime", sentTime]]))
-            .option(DBConnector.Merge().onMatch, new Map([["token", token], ["sentTime", sentTime]]))
+        const res = await DBConnector.getGraph()
+            .mergeV(new Map([["userData", userData]]))
+            .option(DBConnector.Merge().onCreate, new Map([
+                [DBConnector.T().label, "ConfirmCode"],
+                ["token", token],
+                ["userData", userData],
+                ["sentTime", sentTime]
+            ]))
+            .option(DBConnector.Merge().onMatch, new Map([
+                ["token", token],
+                ["sentTime", sentTime]
+            ]))
             .next();
 
         if(res == null || res?.value == null) {
-            ctx.status = 400;
-            ctx.body = { status: "Invalid confirmation data" };
-            return;            
+            return handleValidationError(ctx, "Failed to generate confirmation code");        
         }
 
     } catch (err) {
-        ctx.status = 500;
-        return;
+        logger.error(err);
+        return handleValidationError(ctx, "Error processing confirmation data");
     }
 
-    if (isEmailAddr) {
-        // Send email
-        const replyToAddress: string = config.get("aws.ses.defaultReplyAddress");
-
-        try {
+    try {
+        if (isEmailAddr) {
+            const replyToAddress:string = config.get("aws.ses.defaultReplyAddress");
             await sendEmailByTemplate(SEND_CONFIRM_TEMPLATE, {
                 destination: { ToAddresses: [userData] },
                 source: replyToAddress,
@@ -334,12 +309,13 @@ export const sendConfirmCode = async (ctx: Context) => {
                 }
             });
             ctx.body = "OK";
-        } catch (err) {
-            ctx.body = "Send Error";
+        } else {
+            await sendSMS(userData, token);
+            ctx.body = "OK";
         }
-    } else {
-        // Send SMS
-        await sendSMS(userData, token);
+    } catch (err) {
+        logger.error(err);
+        return handleValidationError(ctx, "Error Sending confirmation code");
     }
 
     ctx.status = 200;
@@ -353,19 +329,17 @@ type LoginRequest = {
 export const loginUser = async (ctx: Context) => {
     Metrics.increment("accounts.userlogin");
 
-    const data = <LoginRequest>ctx.request.body;
+    const { userName, password }: LoginRequest = ctx.request.body;
 
-    if (data == null || data.userName == null || data.password == null) {
-        ctx.status = 400;
-        ctx.body = { status: "Invalid username or password" };
-        return;
+    if (!userName || !password) {
+        return handleValidationError(ctx, "Invalid username or password");
     }
     
     try {
         // Check against the db for username existence
         const result = await DBConnector.getGraph().V()
             .hasLabel("User")
-            .has("userName", data.userName)
+            .has("userName", userName)
             .project('id', 'userName', 'password')
             .by(DBConnector.T().id)
             .by('userName')
@@ -375,9 +349,7 @@ export const loginUser = async (ctx: Context) => {
         // Extract the returned value if present
         const value:Map<string, string|number> = result?.value;        
         if (value == null || value.size === 0) {
-            ctx.status = 400;
-            ctx.body = { status: "Invalid username or password" };
-            return;
+            return handleValidationError(ctx, "Invalid username or password");
         }
 
         if(value != null) {
@@ -395,31 +367,28 @@ export const loginUser = async (ctx: Context) => {
                 id: value.get('id') as number
             }            
 
-            const passwordMatch: boolean = await bcrypt.compare(data.password, dbData.password);
-
-            if (passwordMatch) {
-                // create the JWT token
-                const token = jwt.sign(
-                    {id: dbData.id},
-                    config.get("auth.jwt.secret") as string,
-                    {
-                        algorithm: 'HS256',
-                        allowInsecureKeySizes: true,
-                        expiresIn: config.get("auth.jwt.expiration")
-                    } as SignOptions
-                );
-                ctx.status = 200;
-                ctx.body = { token: token, userName: data.userName, id: dbData.id };
+            const passwordMatch: boolean = await bcrypt.compare(password, dbData.password);
+            if (!passwordMatch) {
+                return handleValidationError(ctx, "Invalid username or password");
             }
-            else {
-                ctx.status = 400;
-                ctx.body = { status: "Invalid username or password" };
-            }                        
+
+            // create the JWT token
+            const token = jwt.sign(
+                {id: dbData.id},
+                config.get("auth.jwt.secret") as string,
+                {
+                    algorithm: 'HS256',
+                    allowInsecureKeySizes: true,
+                    expiresIn: config.get("auth.jwt.expiration")
+                } as SignOptions
+            );
+            ctx.status = 200;
+            ctx.body = { token, userName, id: dbData.id };                     
         }
     } catch (err) {
         console.log(err);
         logger.error(err);
-        ctx.status = 500;
+        return handleValidationError(ctx, "Invalid username or password");
     }
 }
 
@@ -433,9 +402,7 @@ export const forgotPassword = async (ctx: Context) => {
     const data = <ForgotRequest>ctx.request.body;
 
     if (data.user == null) {
-        ctx.status = 400;
-        ctx.body = { status: "Invalid user info" };
-        return;
+        return handleValidationError(ctx, "User info is missing or invalid");
     }
 
     try {
@@ -449,7 +416,10 @@ export const forgotPassword = async (ctx: Context) => {
         const __ = DBConnector.__();
         const result = await DBConnector.getGraph().V()
             .hasLabel("User")           
-            .or(__.has("email", data.user), __.has("userName", data.user), __.has("phone", data.user))
+            .or(
+                __.has("email", data.user), 
+                __.has("userName", data.user), 
+                __.has("phone", data.user))
             .project("email","userName","phone", "id")
             .by("email")
             .by("userName")
@@ -459,9 +429,7 @@ export const forgotPassword = async (ctx: Context) => {
 
         const value:Map<string, string|number> = result?.value;        
         if (value == null || value.size === 0) {
-            ctx.status = 400;
-            ctx.body = { status: "Invalid user info" };
-            return;
+            return handleValidationError(ctx, "No matching user found");
         }
 
         const dbData: db_result = {
@@ -473,16 +441,13 @@ export const forgotPassword = async (ctx: Context) => {
 
         const res = await sendForgotMessage(ctx, dbData.email, dbData.phone, dbData.userName, dbData.id);
         if (!res) {
-            ctx.status = 400;
-            ctx.body = {status: "Failed to send message"};                
-            return;
+            return handleValidationError(ctx, "Failed to send message");
         }
         ctx.status = 200;        
-        
+        ctx.body = { status: "OK" };
     } catch (err) {
         logger.error(err);
-        ctx.status = 500;
-        return;
+        return handleValidationError(ctx, "Error handling forgot password");
     }
 }
 
@@ -498,15 +463,19 @@ const sendForgotMessage = async (ctx: Context, email: string, phone: string, use
 
     try {
         // Do an upsert so if user clicks resend it updates the existing token
-        let res = await DBConnector.getGraph().mergeV(new Map([["userId", `${userId}`]]))
-            .option(DBConnector.Merge().onCreate, new Map([[DBConnector.T().label, "ForgotToken"], ["token", token], ["userId", `${userId}`]]))
+        let res = await DBConnector.getGraph()
+            .mergeV(new Map([["userId", `${userId}`]]))
+            .option(DBConnector.Merge().onCreate, new Map([[
+                DBConnector.T().label, "ForgotToken"], 
+                ["token", token], 
+                ["userId", `${userId}`]
+            ]))
             .option(DBConnector.Merge().onMatch, new Map([["token", token]]))
-            .next();
+            .next();      
 
         if(res == null || res?.value == null) {
-            ctx.status = 400;
-            ctx.body = { status: "Invalid token data" };
-            return;            
+            handleValidationError(ctx, "Failed to create or update token");
+            return false;
         }
 
         // Add edges between the User and ForgotToken verticies
@@ -518,18 +487,17 @@ const sendForgotMessage = async (ctx: Context, email: string, phone: string, use
             .hasLabel("ForgotToken")
             .has("userId", userId)
             .as("forgot_user_id")
-            .addE("user_to_token")
+            .addE(EDGE_USER_TO_TOKEN)
             .from_("user_id")
             .to("forgot_user_id")
-            .addE("token_to_user")
+            .addE(EDGE_TOKEN_TO_USER)
             .to("user_id")
             .from_("forgot_user_id")            
             .next();
 
         if(res == null || res?.value == null) {
-            ctx.status = 400;
-            ctx.body = { status: "Failure creating token" };
-            return;            
+            handleValidationError(ctx, "Failure creating token");
+            return false;                     
         }   
 
 
@@ -538,7 +506,7 @@ const sendForgotMessage = async (ctx: Context, email: string, phone: string, use
             const replyToAddress: string = config.get("aws.ses.defaultReplyAddress");
 
             try {
-                const r = await sendEmailByTemplate(FORGOT_PASSWORD_TEMPLATE, {
+                const emailResponse = await sendEmailByTemplate(FORGOT_PASSWORD_TEMPLATE, {
                     destination: { ToAddresses: [email] },
                     source: replyToAddress,
                     template: FORGOT_PASSWORD_TEMPLATE,
@@ -551,20 +519,19 @@ const sendForgotMessage = async (ctx: Context, email: string, phone: string, use
                     }
                 });
 
-                if (r) {
+                if (emailResponse) {
                     ctx.status = 200;
                     ctx.body = {
                         status: "OK", title: "Email Sent",
                         text: `We sent an email to ${obfuscateEmail(email)} with a link to reset your password`
                     };
                 } else {
-                    ctx.status = 400;
-                    ctx.body = { status: "Failed to send message" };
+                    handleValidationError(ctx, "Failed to send message");
+                    return false;
                 }
             } catch (err) {
                 logger.error("Error sending forgot password message", err);
-                ctx.status = 400;
-                ctx.body = { status: "Failed to send message" };
+                handleValidationError(ctx, "Failed to send message");
                 return false;
             }
         } else {
@@ -572,17 +539,16 @@ const sendForgotMessage = async (ctx: Context, email: string, phone: string, use
 
             //Send forgot message as an SMS to user
             const message = `A request to reset your Linstagram password was made`
-            const r = await sendSMS(phone, message);
+            const response = await sendSMS(phone, message);
 
-            if (r) {
+            if (response) {
                 ctx.status = 200;
                 ctx.body = {
                     status: "OK", title: "SMS Sent",
                     text: `A request to reset your Linstagram password was made. Use this link to reset your password ${obfuscatePhone(phone)}`
                 };
             } else {
-                ctx.status = 400;
-                ctx.body = { status: "Failed to send message" };
+                handleValidationError(ctx, "Failed to send message");
                 return false;
             }
         }
@@ -590,6 +556,7 @@ const sendForgotMessage = async (ctx: Context, email: string, phone: string, use
         return true;
     } catch (err) {
         console.log(err);
+        logger.error("Error handling forgot message:", err);
         return false;
     }
 }
@@ -606,29 +573,17 @@ export const changePassword = async (ctx: Context) => {
 
     const data = <ChangePasswodType>ctx.request.body;
 
-    if (data == null) {
-        ctx.status = 400;
-        ctx.body = { status: "Invalid params" };
-        return;
+    if (data == null || (data.token == null && (data.userName == null || data.oldPassword == null))) {
+        return handleValidationError(ctx, "Invalid parameters or missing token");
     }    
 
     if (data.password1 !== data.password2) {
-        ctx.status = 400;
-        ctx.body = { status: "Passwords don't match" };
-        return;
+        return handleValidationError(ctx, "Passwords don't match");
     }
 
     if (!isValidPassword(data.password1)) {
         // Password does not pass rules check
-        ctx.status = 400;
-        ctx.body = {status: "Invalid Password"};
-        return;
-    }
-
-    if (data.token == null && (data.userName == null || data.oldPassword == null)) {
-        ctx.status = 400;
-        ctx.body = { status: "Invalid username, password, or token" };
-        return;
+        return handleValidationError(ctx, "Invalid password format");
     }
 
     const hashedPassword = await bcrypt.hash(data.password1, 10);
@@ -636,9 +591,7 @@ export const changePassword = async (ctx: Context) => {
     try {
         if (data.userName != null) {
             if (data.oldPassword == null) {
-                ctx.status = 400;
-                ctx.body = { status: "Invalid username, password, or token" };
-                return;
+                return handleValidationError(ctx, "Invalid parameters or missing token");
             }
 
             let result = await DBConnector.getGraph().V()
@@ -653,9 +606,7 @@ export const changePassword = async (ctx: Context) => {
             // Extract the returned value if present
             const value:Map<string, string|number> = result?.value;        
             if (value == null || value.size === 0) {
-                ctx.status = 400;
-                ctx.body = { status: "Invalid username or password" };
-                return;
+                return handleValidationError(ctx, "Invalid username or password");
             }
 
             type db_result = {
@@ -674,9 +625,7 @@ export const changePassword = async (ctx: Context) => {
             const passwordMatch: boolean = await bcrypt.compare(data.oldPassword, dbData.password);
 
             if (!passwordMatch) {
-                ctx.status = 400;
-                ctx.body = { status: "Invalid username or password" };
-                return;
+                return handleValidationError(ctx, "Invalid username or password");
             }                
             
             // Use the username and password to change password   
@@ -687,9 +636,7 @@ export const changePassword = async (ctx: Context) => {
                 .next();
 
             if(result?.value == null) {
-                ctx.status = 400;
-                ctx.body = { status: "Invalid username, password, or token" };
-                return;                
+                return handleValidationError(ctx, "Invalid username or password");       
             }
         } else {
             // use the token to change password and then delete the token from the db
@@ -701,12 +648,12 @@ export const changePassword = async (ctx: Context) => {
             let result = await DBConnector.getGraph(true).V()
                 .hasLabel("ForgotToken")
                 .has('token', token)
-                .out("token_to_user")
+                .out(EDGE_TOKEN_TO_USER)
                 .next();
 
             let value = result?.value;
             if(value == null || value.id == null) {
-                throw new Error("Invalid token");          
+                return handleValidationError(ctx, "Invalid token");               
             }            
 
             // Update the password in the User vertex            
@@ -716,11 +663,15 @@ export const changePassword = async (ctx: Context) => {
                 
             value = result?.value;
             if(value == null || value.id == null) {
-                throw new Error("Couldn't change password");              
+                return handleValidationError(ctx, "Error changing password");                      
             }
 
             // Now delete the forgot token vertex
-            result = await DBConnector.getGraph(true).V(value.id).out("user_to_token").drop().next();       
+            result = await DBConnector.getGraph(true)
+                .V(value.id)
+                .out(EDGE_USER_TO_TOKEN)
+                .drop()
+                .next();       
 
             // Done!
             await DBConnector.commitTransaction();
@@ -730,9 +681,7 @@ export const changePassword = async (ctx: Context) => {
         logger.error(err);
         await DBConnector.rollbackTransaction();
 
-        ctx.status = 400;
-        ctx.body = { status: "Error with token" };
-        return;
+        return handleValidationError(ctx, "Error with token");        
     }
 
     ctx.status = 200;
@@ -765,7 +714,7 @@ export const toggleFollowing = async (ctx: Context) => {
                 .next();                
 
             if(result == null || result?.value == null) {
-                throw new Error("Failure to follow user");
+                return handleValidationError(ctx, "Error following user");      
             }   
         } else {
             // unfollow the given follower
@@ -782,10 +731,7 @@ export const toggleFollowing = async (ctx: Context) => {
         console.log(err);
         logger.error(err);
         await DBConnector.rollbackTransaction();
-
-        ctx.status = 400;
-        ctx.body = { status: "Error changing follower status" };
-        return;        
+        return handleValidationError(ctx, "Error changing following status");         
     }
 
     ctx.status = 200;

@@ -1,6 +1,6 @@
 import { Context } from "koa";
 import Metrics from "../metrics/Metrics";
-import { getPostByPostId, getVertexPropertySafe, sanitize } from "../utils/utils";
+import { getPostByPostId, getVertexPropertySafe, handleValidationError, sanitize } from "../utils/utils";
 import { Comment, Like, Post, User } from "../utils/types";
 import logger from "../logger/logger";
 import DBConnector, { EDGE_CHILD_TO_PARENT_COMMENT, EDGE_COMMENT_LIKED_BY_USER, EDGE_COMMENT_TO_POST, EDGE_COMMENT_TO_USER, EDGE_PARENT_TO_CHILD_COMMENT, EDGE_POST_TO_COMMENT, EDGE_USER_LIKED_COMMENT, EDGE_USER_TO_COMMENT } from "../Connectors/DBConnector";
@@ -19,16 +19,14 @@ export const addComment = async (ctx: Context) => {
     const data = <AddCommentRequest>ctx.request.body;
 
     if (data.text == null || data.postId == null || data.userId == null) {
-        ctx.status = 400;
-        ctx.body = { status: "Invalid params passed" };
-        return;
+        return handleValidationError(ctx, "Invalid params passed");
     }
 
     try {
         // First grab the post data from redis / DB so we can check the comments disabled flag
         const postById = await getPostByPostId(data.postId);        
         if(postById === null) {
-            throw new Error("Error getting post");
+            return handleValidationError(ctx, "Error getting post");
         }
 
         const post: Post = postById.post;
@@ -43,16 +41,17 @@ export const addComment = async (ctx: Context) => {
         // Add the comment data to the db only(Comments won't be searchable)
         await DBConnector.beginTransaction();
 
-        let result = await DBConnector.getGraph(true).addV("Comment")
+        const result = await DBConnector.getGraph(true)
+            .addV("Comment")
             .property("dateTime", new Date())            
             .property("text", sanitize(data.text))
             .next();
 
         if(result == null || result?.value == null) {
-            throw new Error("Error adding comment");
+            return handleValidationError(ctx, "Error adding comment");
         }           
 
-        const id = result.value.id;
+        const commentId = result.value.id;
 
         // Add the edge to the graph. We need:
         // 1. Edges between user and comment
@@ -60,7 +59,7 @@ export const addComment = async (ctx: Context) => {
         // 3. Edges between comment and another parent comment
         
         // Edges between User and comment
-        result = await DBConnector.getGraph(true).V(id)
+        /*result = await DBConnector.getGraph(true).V(commentId)
             .as("comment")
             .V(data.userId)
             .as("user")
@@ -73,11 +72,11 @@ export const addComment = async (ctx: Context) => {
             .next();
 
         if(result == null || result.value == null) {
-            throw new Error("Error adding comment");
+            return handleValidationError(ctx, "Error adding comment");
         }          
 
         // Edges between comment and post
-        result = await DBConnector.getGraph(true).V(id)
+        result = await DBConnector.getGraph(true).V(commentId)
             .as("comment")
             .V(data.postId)
             .as("post")
@@ -90,12 +89,12 @@ export const addComment = async (ctx: Context) => {
             .next();
 
         if(result == null || result.value == null) {
-            throw new Error("Error adding comment");
+            return handleValidationError(ctx, "Error adding comment");
         }          
 
         // Edges between comment and another parent comment (if applicable)
         if(data.parentCommentId != null) {
-            result = await DBConnector.getGraph(true).V(id)
+            result = await DBConnector.getGraph(true).V(commentId)
                 .as("comment")
                 .V(data.parentCommentId)
                 .as("parent")
@@ -108,25 +107,60 @@ export const addComment = async (ctx: Context) => {
                 .next();            
 
             if(result == null || result.value == null) {
-                throw new Error("Error adding comment");
+                return handleValidationError(ctx, "Error adding comment");
             }                          
-        }
+        }*/
 
-        // Update the comment count field in the post in ES
-        ///await update(esId, {
-        //    source: "ctx._source.post.global.commentCount++",
-        //    lang: "painless"
-        //});
+        const edgesToAdd = [
+            // User to comment edges
+            DBConnector.getGraph(true).V(commentId)
+                .as("comment")
+                .V(data.userId)
+                .as("user")
+                .addE(EDGE_COMMENT_TO_USER)
+                .from_("comment")
+                .to("user")
+                .addE(EDGE_USER_TO_COMMENT)
+                .from_("user")
+                .to("comment"),
+
+            // Comment to post edges
+            DBConnector.getGraph(true).V(commentId)
+                .as("comment")
+                .V(data.postId)
+                .as("post")
+                .addE(EDGE_COMMENT_TO_POST)
+                .from_("comment")
+                .to("post")
+                .addE(EDGE_POST_TO_COMMENT)
+                .from_("post")
+                .to("comment"),
+
+            // Parent comment edges (if applicable)
+            data.parentCommentId && DBConnector.getGraph(true).V(commentId)
+                .as("comment")
+                .V(data.parentCommentId)
+                .as("parent")
+                .addE(EDGE_CHILD_TO_PARENT_COMMENT)
+                .from_("comment")
+                .to("parent")
+                .addE(EDGE_PARENT_TO_CHILD_COMMENT)
+                .from_("parent")
+                .to("comment")
+        ];
+
+        // Execute all edge addition operations concurrently
+        await Promise.all(edgesToAdd.filter(Boolean));        
 
         await DBConnector.commitTransaction();
 
         ctx.status = 200;
-        ctx.body = {id};
-    } catch(err) {        
+        ctx.body = {id: commentId};
+    } catch(err) {       
+        await DBConnector.rollbackTransaction();    
         console.log(err);
         logger.error(err);
-        ctx.status = 400;
-        await DBConnector.rollbackTransaction();     
+        return handleValidationError(ctx, "Error adding comment");
     }
 }
 
@@ -140,9 +174,7 @@ export const getCommentsByPostId = async (ctx: Context) => {
     const data = <GetCommentsByPostIdRequest>ctx.request.body;
 
     if (data.postId == null) {
-        ctx.status = 400;
-        ctx.body = { status: "Invalid params passed" };
-        return;
+        return handleValidationError(ctx, "Invalid params");
     }
 
     try {
@@ -163,7 +195,7 @@ export const getCommentsByPostId = async (ctx: Context) => {
             .toList();
      
         if(results == null) {
-            throw new Error("Error getting comment");
+            return handleValidationError(ctx, "Error getting comment");
         }      
         
         const commentMap: Map<string, Comment> = new Map<string, Comment>();
@@ -180,9 +212,9 @@ export const getCommentsByPostId = async (ctx: Context) => {
                 const vertex = map.get("comment");
                 const vertexProperties = vertex['properties'];
                 const newComment:Comment = {
-                    commentId: "",
-                    dateTime: "",
-                    text: "",
+                    commentId: vertex['id'],
+                    dateTime: getVertexPropertySafe(vertexProperties, 'dateTime'),
+                    text: getVertexPropertySafe(vertexProperties, 'text'),
                     user: {
                         userName: "",
                         userId: "",
@@ -193,32 +225,22 @@ export const getCommentsByPostId = async (ctx: Context) => {
                     likes: []
                 };
                 
-                newComment.commentId = vertex['id'];
-                newComment.dateTime = getVertexPropertySafe(vertexProperties, 'dateTime');
-                newComment.text = getVertexPropertySafe(vertexProperties, 'text');
-
                 commentMap.set(newComment.commentId, newComment);
             } else if(map.has("user")) {
                 const vertex = map.get("user");
                 const vertexProperties = vertex['properties'];
                 const newUser:User = {
-                    userName: "",
-                    userId: "",
-                    pfp: ""
+                    userName: getVertexPropertySafe(vertexProperties, 'userName'),
+                    userId: vertex['id'],
+                    pfp: getVertexPropertySafe(vertexProperties, 'pfp')
                 };
-                
-                newUser.userId = vertex['id'];
-                newUser.userName = getVertexPropertySafe(vertexProperties, 'userName');
-                newUser.pfp = getVertexPropertySafe(vertexProperties, 'pfp');
 
                 userMap.set(newUser.userId, newUser);
             } else if(map.has(EDGE_COMMENT_TO_USER)) {           
-                const edge = map.get(EDGE_COMMENT_TO_USER);
-                
+                const edge = map.get(EDGE_COMMENT_TO_USER);                
                 userFromCommentMap.set(edge.outV.id, edge.inV.id);
             } else if(map.has(EDGE_CHILD_TO_PARENT_COMMENT)) { 
-                const edge = map.get(EDGE_CHILD_TO_PARENT_COMMENT);
-                
+                const edge = map.get(EDGE_CHILD_TO_PARENT_COMMENT);                
                 childToParentMap.set(edge.outV.id, edge.inV.id);
             }                           
         }
@@ -226,24 +248,21 @@ export const getCommentsByPostId = async (ctx: Context) => {
         // Merge the 4 maps into one comment list object
         const comments:Comment[] = [];
 
-        for(const tmpComment of commentMap.entries()) {            
+        for (const [commentId, tmpComment] of commentMap.entries()) {          
             // Get the user data for the comment
-            const commentId = tmpComment[0];
             const userId = userFromCommentMap.get(commentId);
             if(userId == null) {
-                throw new Error("Invalid comment data");
+                return handleValidationError(ctx, "Invalid comment data");
             }
             const user:User = userMap.get(userId) as User;
 
             // Get the parent mapping for the comment
-            let parentId:string|null|undefined = childToParentMap.get(commentId);
-            if(parentId === undefined) {
-                parentId = null;
-            }
+            const parentId:string|null|undefined = childToParentMap.get(commentId) || null;
+
             const newComment: Comment = {
                 commentId,
-                dateTime: tmpComment[1].dateTime,
-                text: tmpComment[1].text,
+                dateTime: tmpComment.dateTime,
+                text: tmpComment.text,
                 user: {
                     userName: user.userName,
                     userId: user.userId,
@@ -293,8 +312,7 @@ export const getCommentsByPostId = async (ctx: Context) => {
     } catch(err) {
         console.log(err);
         logger.error(err);
-        ctx.status = 400;
-        return;        
+        return handleValidationError(ctx, "Error getting comment");      
     }
 }
 
@@ -309,9 +327,7 @@ export const toggleCommentLike = async (ctx: Context) => {
     const data = <LikeRequest>ctx.request.body;
 
     if (data.commentId == null || data.userId == null) {
-        ctx.status = 400;
-        ctx.body = { status: "Invalid params passed" };
-        return;
+        return handleValidationError(ctx, "Invalid params passed"); 
     }
 
     let isLiked:boolean = false;
@@ -327,7 +343,7 @@ export const toggleCommentLike = async (ctx: Context) => {
             .toList();
 
         if(isLikedResults == null) {
-            throw new Error("Error getting comment");
+            return handleValidationError(ctx, "Error getting like status"); 
         }
 
         isLiked = isLikedResults.length > 0;
@@ -343,7 +359,7 @@ export const toggleCommentLike = async (ctx: Context) => {
                 .toList();
 
             if(results == null) {
-                throw new Error("Error unliking comment");
+                return handleValidationError(ctx, "Error changing like status"); 
             }
 
             results = await DBConnector.getGraph().V(data.userId)
@@ -354,7 +370,7 @@ export const toggleCommentLike = async (ctx: Context) => {
                 .toList();
 
             if(results == null) {
-                throw new Error("Error unliking comment");
+                return handleValidationError(ctx, "Error changing like status"); 
             }
         } else {
             // add the edges
@@ -371,7 +387,7 @@ export const toggleCommentLike = async (ctx: Context) => {
                 .toList()
 
             if(results == null) {
-                throw new Error("Error liking comment");
+                return handleValidationError(ctx, "Error changing like status"); 
             }            
         }
 
@@ -379,7 +395,6 @@ export const toggleCommentLike = async (ctx: Context) => {
         ctx.status = 200;
     } catch(err) {        
         console.log(err);
-        ctx.status = 400;
-        return;
+        return handleValidationError(ctx, "Error changing like status"); 
     }    
 }

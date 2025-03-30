@@ -4,6 +4,7 @@ import { buildSearchResultSet, search, searchProfile } from '../Connectors/ESCon
 import RedisConnector from '../Connectors/RedisConnector';
 import DBConnector, { EDGE_USER_LIKED_POST } from '../Connectors/DBConnector';
 import logger from '../logger/logger';
+import { Context } from 'koa';
 
 export const isEmail = (str: string) : boolean => {
     const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
@@ -49,6 +50,8 @@ export const sanitize = (html: string):string => {
         },
     }).trim();
 }
+
+export const sanitizeInput = (input?: string | null): string => sanitize(input || "");
 
 export const getFileExtByMimeType = (mimeType: string|null):string => {
     switch(mimeType) {
@@ -132,11 +135,11 @@ export const getLikesByPost = async (postId: string):Promise<Like[]> => {
         const props = [];
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const propertyIter = (vertex as Map<any, any>).entries();
-        let property = await propertyIter.next();
+        let property = propertyIter.next();
         
         while(!property.done) {                
             props.push(property.value[1]);
-            property = await propertyIter.next();
+            property = propertyIter.next();
         }
 
         output.push({
@@ -167,11 +170,11 @@ export const getPostByPostId = async (postId: string):Promise<|{esId: string; po
         for (const vertex of result) {            
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const propertyIter = (vertex as Map<any, any>).entries();
-            let property = await propertyIter.next();
+            let property = propertyIter.next();
             
             while(!property.done) {
                 esId = (property.value[1]);
-                property = await propertyIter.next();
+                property = propertyIter.next();
             }            
         }
     } else {
@@ -211,7 +214,6 @@ export const getPostByPostId = async (postId: string):Promise<|{esId: string; po
     }
 
     // Get post likes
-    console.log(entries[0]);
     entries[0].global.likes = await getLikesByPost(postId);
     entries[0].postId = postId;
     entries[0].user.pfp = await getPfpByUserId(entries[0].user.userId);
@@ -314,15 +316,8 @@ const getProfileEx = async (userId: string|null, userName: string|null):Promise<
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const getVertexPropertySafe = (vertexProperties: any, propertyName: string, defaultValue: string = ""): string => {
-    if (vertexProperties[propertyName] == null) {
-        return defaultValue;
-    }
-    if (vertexProperties[propertyName][0] == null) {
-        return defaultValue;
-    }
-
-    return vertexProperties[propertyName][0]['value'];
-}
+    return vertexProperties[propertyName]?.[0]?.value ?? defaultValue;
+};
 
 export const updateProfileInRedis = async (profile: Profile) => {
     // Build the redis key based on if searching by user name or by user id
@@ -346,3 +341,9 @@ export const getPfpByUserId = async (userId: string):Promise<string> => {
 
     return results.value.properties.pfp[0]['value'];
 }
+
+// Helper function to validate and return errors
+export const handleValidationError = (ctx: Context, message: string, statusCode: number = 400) => {
+    ctx.status = statusCode;
+    ctx.body = { status: message };
+};
