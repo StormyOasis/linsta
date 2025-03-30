@@ -13,14 +13,14 @@ import MainSVG from "/public/images/main.svg";
 import * as styles from './Main.module.css';
 import { Link } from "react-router-dom";
 import { useMediaQuery } from "react-responsive";
-import { FlexColumn } from "../../../Components/Common/CombinedStyling";
+import { Div, FlexColumn, Span } from "../../../Components/Common/CombinedStyling";
 import { useAppDispatch, useAppSelector, actions } from "../../../Components/Redux/redux";
 import { MODAL_TYPES } from "../../../Components/Redux/slices/modals.slice";
 import { Profile } from "../../../api/types";
 import { AuthUser } from "../../../api/Auth";
 import { getPfpFromProfile, historyUtils } from "../../../utils/utils";
 
-const SideBarWrapper = styled.div`
+const SideBarWrapper = styled(Div)`
     z-index: 50;
     margin: 0;
     padding: 0;
@@ -66,7 +66,7 @@ const NavLink = styled(Link)`
     justify-content: center;
 `;
 
-const InnerNavLinkWrapper = styled.div`
+const InnerNavLinkWrapper = styled(Div)`
     padding: 12px;
     margin: 2px 0;
     display: inline-flex;
@@ -85,13 +85,19 @@ const InnerNavLinkWrapper = styled.div`
     }
 `;
 
-const ProfilePicWrapper = styled.span`
+const ProfilePicWrapper = styled(Span)`
     display: inline-block;
     width: 32px;
     height: 32px;
     object-fit: contain;
     border-radius: 50%;
     padding-right: 7px;
+`;
+
+const PfpImg = styled.img`
+    border-radius: 50%;
+    max-width: 32px;
+    max-height: 32px;
 `;
 
 const SideBar: React.FC = () => {    
@@ -103,30 +109,39 @@ const SideBar: React.FC = () => {
 
     const dispatch = useAppDispatch();
 
-    const createPostHandler = (e: React.SyntheticEvent<MouseEvent>) => {
-        e.preventDefault();
-        e.stopPropagation();
-
+    const createPostHandler = () => {
         // Open the create dialog by setting the state in redux
         dispatch(actions.modalActions.openModal({modalName: MODAL_TYPES.NEW_POST_MODAL, data: {}}));
     }
 
-    const renderMenuItem = (text: string, to: string, iconElement:any, paddingLeft: number = 16, onClick?: any) => {
-        const onClickHandler = onClick ? onClick : () => true;
-
+    const MemoizedNavLink = React.memo(({to, text, iconElement, paddingLeft, onClick}:any) => {
         return (
-            <NavLink to={to} onClick={onClickHandler} aria-label={text}>
+            <NavLink to={to} onClick={onClick} aria-label={text}>
                 <InnerNavLinkWrapper>
-                    <div className={styles.iconWrapper}>
+                    <Div className={styles.iconWrapper}>
                         {iconElement}
-                    </div>
+                    </Div>
                     {matchesLargestBP &&
-                        <div className={styles.textWrapper} style={{paddingLeft: paddingLeft + "px"}}>
-                            <span className={styles.text}>{text}</span>                                
-                        </div>                            
+                        <Div style={{paddingLeft: `${paddingLeft}px`}}>
+                            <Span className={styles.text}>{text}</Span>                                
+                        </Div>                            
                     }
                 </InnerNavLinkWrapper>
             </NavLink>
+        );
+    });    
+
+    const renderMenuItem = (text: string, to: string, iconElement: JSX.Element, paddingLeft: number = 16, onClick?: (() => void)|null) => {
+        const onClickHandler = onClick ? onClick : () => true;
+
+        return (
+            <MemoizedNavLink
+                to={to}
+                text={text}
+                iconElement={iconElement}
+                paddingLeft={paddingLeft}
+                onClick={onClickHandler}
+            />
         );
     }
 
@@ -138,11 +153,11 @@ const SideBar: React.FC = () => {
     return (
         <SideBarWrapper>
             {!matchesSmallestBP && 
-                <div className={styles.logoWrapper}>
+                <Div className={styles.logoWrapper}>
                     <Link to="/" aria-label="Home">
                         {matchesLargestBP ? <LogoSVG /> : <MainSVG />}
                     </Link>
-                </div>
+                </Div>
             }
             <NavWrapper>
                 {renderMenuItem("Home", "/", <HomeSVG/>, undefined, null)}
@@ -154,8 +169,7 @@ const SideBar: React.FC = () => {
                 {renderMenuItem("Create", "#", <CreateSVG/>, undefined, createPostHandler)}
                 {renderMenuItem("Profile", `/${profileUrl}`, 
                     <ProfilePicWrapper>
-                        {profile && <img
-                            style={{width:"32px", height: "32px", borderRadius: "50%"}}
+                        {profile && <PfpImg                            
                             src={getPfpFromProfile(profile)}
                             alt={`${profile.userName}'s profile picture`}
                             aria-label={`${profile.userName}'s profile picture`} />

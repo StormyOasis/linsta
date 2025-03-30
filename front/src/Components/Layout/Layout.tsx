@@ -30,7 +30,6 @@ const Layout: React.FC = () => {
     } 
 
     const renderHeader = () => {
-        //const path = historyUtils.location.pathname.toLowerCase();
         // Don't want to display the header on the login or signup routes
         // or if user is logged in
         if ((!historyUtils.isServer && authUser && authUser.token != null)) {

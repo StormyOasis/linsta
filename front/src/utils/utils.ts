@@ -1,9 +1,8 @@
 import sanitizeHtml from 'sanitize-html';
 
 import { HistoryType, Post, Profile } from "../api/types";
-import { postGetProfileByUserId, postSetFollowStatus } from '../api/ServiceController';
+import { postSetFollowStatus } from '../api/ServiceController';
 import { DEFAULT_PFP } from '../api/config';
-import { getProfileByUserId } from 'src/Components/Redux/slices/profile.slice';
 
 export const historyUtils: HistoryType = {
     navigate: null,
@@ -24,17 +23,13 @@ export const validateEmailPhone = (value: string): boolean => {
     }
 
     const phoneRegex = /(?:([+]\d{1,4})[-.\s]?)?(?:[(](\d{1,3})[)][-.\s]?)?(\d{1,4})[-.\s]?(\d{1,4})[-.\s]?(\d{1,9})/g;
-    const emailRegex =
-        /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
+    const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
+    
     return emailRegex.test(value) || phoneRegex.test(value);
 };
 
 export const validateFullName = (value: string): boolean => {
-    return (
-        value !== null &&
-        value.trim().length > 0 &&
-        value.trim().split(" ").length > 1
-    );
+    return value?.trim().length > 0 && value.trim().split(" ").length > 1;
 };
 
 export const validateUrl = (text: string|undefined): boolean => {
@@ -70,8 +65,9 @@ export const isVideoFileFromType = (type: string): boolean => {
 }
 
 export const base64ToBlob = (base64String: string, outFileName: string): File | null => {
-    if (base64String === null || base64String.length === 0)
+    if (base64String === null || base64String.length === 0) {
         return null;
+    }
 
     const contentType = base64String.substring(5, base64String.indexOf(';'));
     const data = base64String.substring(base64String.indexOf(",") + 1);
@@ -79,29 +75,26 @@ export const base64ToBlob = (base64String: string, outFileName: string): File | 
     return base64ToBlobEx(data, contentType, outFileName);
 }
 
-export const base64ToBlobEx = (base64String: string, contentType: string, outFileName: string) => {
+export const base64ToBlobEx = (base64String: string, contentType: string, outFileName: string):File => {
     const sliceSize = 512;
+    const byteCharacters = atob(base64String);
+    const byteArrays = [];
 
-    var byteCharacters = atob(base64String);
-    var byteArrays = [];
+    for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+        const slice = byteCharacters.slice(offset, offset + sliceSize);
+        const byteNumbers = new Array(slice.length);
 
-    for (var offset = 0; offset < byteCharacters.length; offset += sliceSize) {
-        var slice = byteCharacters.slice(offset, offset + sliceSize);
-
-        var byteNumbers = new Array(slice.length);
-        for (var i = 0; i < slice.length; i++) {
+        for (let i = 0; i < slice.length; i++) {
             byteNumbers[i] = slice.charCodeAt(i);
         }
 
-        var byteArray = new Uint8Array(byteNumbers);
-
-        byteArrays.push(byteArray);
+        byteArrays.push(new Uint8Array(byteNumbers));
     }
 
     return new File(byteArrays, outFileName, { type: contentType });
 }
 
-export const blobToBase64 = async (blob: any) => {
+export const blobToBase64 = async (blob: any): Promise<string | ArrayBuffer | null> => {
     blob = await createBlob(blob);
 
     return new Promise((resolve, _reject) => {
@@ -111,7 +104,7 @@ export const blobToBase64 = async (blob: any) => {
     });
 }
 
-export const createBlob = async (url: string) => {
+export const createBlob = async (url: string): Promise<Blob | null> => {
     try {
         const response = await fetch(url);
         const data = await response.blob();
@@ -154,7 +147,7 @@ export const extractFrameFromVideo = async (video: HTMLVideoElement): Promise<st
     })
 }
 
-export const dateDiff = (dateTime: Date) => {
+export const dateDiff = (dateTime: Date):string => {
     if(dateTime == null) {
         return "now";
     }
@@ -191,7 +184,7 @@ export const dateDiff = (dateTime: Date) => {
     return "now";
 }
 
-export const getDateAsText = (date: Date) => {
+export const getDateAsText = (date: Date): string => {
     return new Date(date).toLocaleDateString('en-us', { year: "numeric", month: "long", day: "numeric" });
 }
 
@@ -266,7 +259,7 @@ export const isOverflowed = (id: string):boolean => {
     return element.offsetHeight < element.scrollHeight;
 }
 
-export const followUser = async (userId: string, followUserId: string, shouldFollow: boolean) => {
+export const followUser = async (userId: string, followUserId: string, shouldFollow: boolean):Promise<boolean> => {
     if(userId === followUserId) {
         return true;
     }
@@ -298,7 +291,7 @@ export const getPfpFromPost = (post: Post):string => {
     return post.user.pfp;
 }
 
-export const splitFullName = (fullName:string) => {
+export const splitFullName = (fullName:string):{ firstName: string, middleNames: string, lastName: string } => {
     const names = fullName.trim().split(' ');
     const firstName = names[0];
     const lastName = names[names.length - 1];

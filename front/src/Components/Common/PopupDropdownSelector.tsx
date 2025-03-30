@@ -7,7 +7,7 @@ import StyledInput from './StyledInput';
 import UpSVG from "/public/images/up-line.svg";
 import DownSVG from "/public/images/down-line.svg";
 
-const DropdownContainer = styled.div`
+const DropdownContainer = styled(Div)`
     position: relative;
     width: 100%;
 `;
@@ -30,7 +30,7 @@ const DropdownToggle = styled.button`
     }
 `;
 
-const DropdownMenu = styled.div`
+const DropdownMenu = styled(Div)`
     position: absolute;
     left: 0;
     top: 100%;  
@@ -55,7 +55,7 @@ const TextOptionContainer = styled(FlexRow)`
     }  
 `;
 
-const ArrowContainer = styled.div`
+const ArrowContainer = styled(Div)`
     height: 24px;
     width: 24px;
     position: relative;
@@ -134,11 +134,14 @@ const PopupDropdownSelector: React.FC<DropdownProps> = (props: DropdownProps) =>
 
     return (
         <DropdownContainer ref={dropdownRef}>
-            <DropdownToggle onClick={() => setIsOpen((prev) => !prev)}>
-                <Span>{props.selectedItem}</Span>
-                <ArrowContainer>
-                    {isOpen ? <UpSVG /> : <DownSVG />}
-                </ArrowContainer>
+            <DropdownToggle 
+                aria-expanded={isOpen ? 'true' : 'false'}
+                aria-controls="dropdown-menu"
+                onClick={() => setIsOpen((prev) => !prev)}>
+                    <Span>{props.selectedItem}</Span>
+                    <ArrowContainer>
+                        {isOpen ? <UpSVG /> : <DownSVG />}
+                    </ArrowContainer>
             </DropdownToggle>
 
             {isOpen && <DropdownMenu>{props.children(props.onSelect)}</DropdownMenu>}

@@ -3,47 +3,44 @@ import { styled } from "styled-components";
 
 import UpSVG from "/public/images/up-line.svg";
 import DownSVG from "/public/images/down-line.svg";
+import { Div, FlexColumn, FlexRow } from "./CombinedStyling";
 
-const Container = styled.div`
+const Container = styled(FlexColumn)`
     margin-top: 10px;
     height: fit-content;
-    display: flex;
-    flex-direction: column;
     pointer-events: all;
 `;
 
-const MainContainer = styled.div`
+const MainContainer = styled(FlexRow)`
     height: 30px;
-    display: flex;
-    flex-direction: row;
     align-items: center;
     cursor: pointer;        
 `;
 
-const Title = styled.div<{$isOpen: boolean}>`
+const Title = styled(Div) <{ $isOpen: boolean }>`
     font-weight: ${props => props.$isOpen ? "700" : "400"};
     font-size: 1.05em;
     width: 100%
 `;
 
-const ArrowContainer = styled.div`
+const ArrowContainer = styled(Div)`
     height: 24px;
     width: 24px;
     position: relative;
     align-self: center;
 `;
 
-const ContentContainer = styled.div<{$isOpen: boolean}>`
+const ContentContainer = styled(Div) <{ $isOpen: boolean }>`
     display: ${props => props.$isOpen ? "flex" : "none"};
 `;
 
 type DropdownProps = {
     title: string;
-    children?: any;
+    children?: React.ReactNode;
 };
 
 const Dropdown: React.FC<DropdownProps> = (props: DropdownProps) => {
-    const [isOpen, setIsOpen] = useState(false);
+    const [isOpen, setIsOpen] = useState<boolean>(false);
 
     const handleContainerClick = (event: SyntheticEvent) => {
         event.preventDefault();
@@ -53,7 +50,7 @@ const Dropdown: React.FC<DropdownProps> = (props: DropdownProps) => {
 
     return (
         <Container>
-            <MainContainer onClick={handleContainerClick}>
+            <MainContainer onClick={handleContainerClick} aria-expanded={isOpen}>
                 <Title $isOpen={isOpen}>
                     {props.title}
                 </Title>

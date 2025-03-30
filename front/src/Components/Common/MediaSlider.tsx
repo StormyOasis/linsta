@@ -5,9 +5,9 @@ import * as styles from './Common.module.css';
 
 import LeftArrowSVG from "/public/images/left_arrow.svg";
 import RightArrowSVG from "/public/images/right_arrow.svg";
-import { FlexRow } from './CombinedStyling';
+import { Div, Flex, FlexRow } from './CombinedStyling';
 
-const MediaSliderWrapper = styled.div`
+const MediaSliderWrapper = styled(Div)`
     z-index: 20;
     position: absolute;
     bottom: calc(50% - 9px);
@@ -20,7 +20,7 @@ const MediaSliderRightButtonWrapper = styled(MediaSliderWrapper)`
     left: calc(100% - 26px);
 `;
 
-const MediaSliderButtonContainer = styled.div`
+const MediaSliderButtonContainer = styled(Flex)`
     width: 16px;
     height: 16px;
     color: ${props => props.theme['colors'].mediaSliderButtonColor};
@@ -28,15 +28,14 @@ const MediaSliderButtonContainer = styled.div`
     border-radius: 50%;
     padding: 5px; 
     cursor: pointer;
-    display: flex;
-    
+
     &:hover {
         color: ${props => props.theme['colors'].borderDefaultColor};
         background-color: ${props => props.theme['colors'].mediaSliderButtonColor};
     };    
 `;
 
-const MediaCircle = styled.div`
+const MediaCircle = styled(Div)`
     background-color: ${props => props.theme['colors'].backgroundColor};
     margin-right: 5px;
     border-radius: 50%;
@@ -44,7 +43,7 @@ const MediaCircle = styled.div`
     width: 6px;
 `;
 
-const SlideItem = styled.div`
+const SlideItem = styled(Div)`
     box-sizing: border-box;
     min-width: 100%;
     height: auto;
@@ -53,7 +52,6 @@ const SlideItem = styled.div`
     transition: transform .5s ease;
 `;
   
-
 type MediaSliderProps = {
     media: Media[]
 };
@@ -111,7 +109,7 @@ const MediaSlider: React.FC<MediaSliderProps> = (props: MediaSliderProps) => {
                                 <video autoPlay src={media.path} 
                                     aria-label={media.altText} 
                                     className={styles.mediaSliderMedia} /> :
-                                <img src={media.path} alt={media.altText} 
+                                <img src={media.path} alt={media.altText}
                                     aria-label={media.altText} 
                                     className={styles.mediaSliderMedia} />            
                         }

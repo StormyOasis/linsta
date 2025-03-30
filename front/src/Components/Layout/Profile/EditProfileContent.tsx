@@ -21,7 +21,7 @@ import { useNavigate } from 'react-router-dom';
 const MAX_BIO_LENGTH = 255;
 const MAX_CUSTOM_LENGTH = 64;
 
-const TextEditorContainerWrapper = styled.div`
+const TextEditorContainerWrapper = styled(Div)`
     min-height: ${props => props.theme['sizes'].minPostTextEditorHeight};
     max-height: ${props => props.theme['sizes'].maxPostTextEditorHeight};
     position: relative;
@@ -32,21 +32,20 @@ const TextEditorContainerWrapper = styled.div`
     border-radius: 8px;
 `;
 
-const TextEditorContainer = styled.div`
+const TextEditorContainer = styled(Div)`
     align-items: center;
     position: relative;
     width: 100%;  
 `;
 
-const TextEditorBottomWrapper = styled.div`
-    display: flex;
+const TextEditorBottomWrapper = styled(Flex)`
     align-items: center;
     justify-content: space-between;
     padding-left: 10px;
     padding-right: 10px;
 `;
 
-const CharacterCountContainer = styled.div`
+const CharacterCountContainer = styled(Div)`
     color: ${props => props.theme['colors'].mediumTextColor};
     font-size: .9em;
 `;
@@ -439,7 +438,6 @@ const EditProfileContent: React.FC = () => {
                                     <StyledButton text="Submit" onClick={handleSubmit}></StyledButton>
                                 </Div>
                             </Div>
-
                         </FlexColumn>
                     </Flex>
                 </Main>

@@ -15,13 +15,13 @@ type ProfileLinkProps = {
     children?: any;
 };
 
-const ProfilePicWrapper = styled.span`
+const ProfilePicWrapper = styled(Span)`
     display: inline-block;
     border-radius: 50%;
     padding-right: 7px;
 `;
 
-const ProfileLinkWrapper = styled.span`
+const ProfileLinkWrapper = styled(Span)`
     height: fit-content;
 `;
 

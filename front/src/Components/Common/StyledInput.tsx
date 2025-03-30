@@ -2,8 +2,9 @@ import React from "react";
 import { styled } from "styled-components";
 
 import * as styles from "./Common.module.css";
+import { Div } from "./CombinedStyling";
 
-const StyledInputWrapper = styled.div<{ $noMargin?: boolean | undefined }>`
+const StyledInputWrapper = styled(Div)<{ $noMargin?: boolean | undefined }>`
     display: flex;
     flex-direction: row;
     margin: ${props => props.$noMargin ? 0 : "0 40px 5px 40px"};

@@ -2,13 +2,12 @@ import React from "react";
 import { styled } from "styled-components";
 import { Link } from "react-router-dom";
 import LogoSVG from "/public/images/linsta.svg";
+import { FlexColumn } from "./CombinedStyling";
 
-const LogoWrapper = styled.div`
+const LogoWrapper = styled(FlexColumn)`
   align-content: stretch;
   align-items: stretch;
   border: none;
-  display: flex;
-  flex-direction: column;
   flex-grow: 0;
   flex-shrink: 0;
   justify-content: flex-start;

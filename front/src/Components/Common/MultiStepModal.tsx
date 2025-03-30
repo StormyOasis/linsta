@@ -2,11 +2,10 @@ import React from "react";
 import { createPortal } from "react-dom";
 import styled from "styled-components";
 import StyledLink from "./StyledLink";
-import { Flex, FlexColumn } from "./CombinedStyling";
+import { Div, Flex, FlexColumn, FlexRow, Span } from "./CombinedStyling";
 
-const ModalWrapper = styled.div`
+const ModalWrapper = styled(Flex)`
     align-items: center;
-    display: flex;
     flex-direction: column;
     justify-content: center;
     overflow: hidden;
@@ -20,7 +19,7 @@ const ModalWrapper = styled.div`
     width:100%;
 `;
 
-const ModalInnerWrapper = styled.div`
+const ModalInnerWrapper = styled(Div)`
     animation-duration: 0.15s;
     animation-iteration-count: 1;
     animation-timing-function: ease-out;
@@ -38,20 +37,19 @@ const ModalInnerWrapper = styled.div`
     background-color: ${props => props.theme['colors'].backgroundColor};
 `;
 
-const ModalInnerWrapper2 = styled.div`  
+const ModalInnerWrapper2 = styled(Div)`  
     display: block;
     overflow: hidden;
     pointer-events: all;
 `;
 
-const ModalTitleBarWrapper = styled.div`
+const ModalTitleBarWrapper = styled(Flex)`
     align-items: stretch;
-    display: flex;
     flex-direction: column;
     pointer-events: all;
 `;
 
-const ModalTitleBarInnerWrapper = styled.div`
+const ModalTitleBarInnerWrapper = styled(Div)`
     align-items: center;
     display: block;
     border-bottom: 1px solid ${props => props.theme['colors'].borderDefaultColor};
@@ -61,12 +59,10 @@ const ModalTitleBarInnerWrapper = styled.div`
     width: 100%;
 `;
 
-const ModalTitleBarInnerWrapper2 = styled.div`
+const ModalTitleBarInnerWrapper2 = styled(Div)`
     align-content: stretch;
     align-items: center;
     box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
     flex-grow: 0;
     flex-shrink: 0;
     height: 42px;
@@ -77,10 +73,8 @@ const ModalTitleBarInnerWrapper2 = styled.div`
     position: absolute;
 `;
 
-const ModalTitle = styled.div`
+const ModalTitle = styled(FlexColumn)`
     align-items: center;
-    display: flex;
-    flex-direction: column;
     flex-grow: 1
     font-size: 16px;
     font-weight: 600;
@@ -90,11 +84,9 @@ const ModalTitle = styled.div`
     width: calc(100%-100); 
 `;
 
-const ModalCloseWrapper = styled.div`
+const ModalCloseWrapper = styled(FlexColumn)`
     align-items: center;
-    display: flex;
     flex-basis: 48px;
-    flex-direction: column;
     float: right;
     height: 42px;
     justify-content: center;
@@ -102,12 +94,10 @@ const ModalCloseWrapper = styled.div`
     position: relative;
 `;
 
-const ModalClose = styled.div`
+const ModalClose = styled(FlexColumn)`
     align-content: stretch;
     align-items: stretch;
     border: none;
-    display: flex;
-    flex-direction: column;
     justify-content: flex-start;
     overflow: visible;
     padding: 0 8px;
@@ -126,19 +116,17 @@ const ModalCloseButton = styled.button`
     text-align: center;
 `;
 
-const CloseButton = styled.span`
+const CloseButton = styled(Span)`
     width: 12px;
     height: 12px;
     margin-right: 5px;
     background: url('/public/images/x.svg');
 `;
 
-export const ModalContentWrapper = styled.div<{ $hideMargins?: boolean | undefined, $alignItems: string }>`
+export const ModalContentWrapper = styled(FlexColumn)<{ $hideMargins?: boolean | undefined, $alignItems: string }>`
     align-content: stretch;
     align-items: ${props => props.$alignItems};
     border: none;
-    display: flex;
-    flex-direction: column;
     flex-grow: 0;
     flex-shrink: 0;
     justify-content: flex-start;
@@ -148,11 +136,9 @@ export const ModalContentWrapper = styled.div<{ $hideMargins?: boolean | undefin
     margin: ${props => props.$hideMargins ? 0 : "20px 28px 20px 28px"};
 `;
 
-export const ModalSectionWrapper = styled.div`
+export const ModalSectionWrapper = styled(FlexColumn)`
     align-content: stretch;
     align-items: center;
-    display: flex;
-    flex-direction: column;
     flex-grow: 0;
     flex-shrink: 0;
     justify-content: flex-start;
@@ -161,15 +147,13 @@ export const ModalSectionWrapper = styled.div`
     pointer-events: all;
 `;
 
-const ModalFooter = styled.div`
+const ModalFooter = styled(FlexRow)`
     padding: 10px;
-    display: flex;
-    flex-direction: row;
     justify-content: space-between;
     border-top: 1px solid ${props => props.theme['colors'].borderDefaultColor};
 `;
 
-const PrevButton = styled.div`
+const PrevButton = styled(Div)`
     background: url('/public/images/backarrow.svg') no-repeat;
     cursor: pointer;
     height: 17px;
@@ -209,9 +193,6 @@ export default class MultiStepModal extends React.Component<MultiStepModalProps,
         this.props.onClose && this.props.onClose(event);
     };
 
-    override componentDidMount(): void {
-    }
-
     override render() {
         const cont = document.getElementById("modalOverlay");
         if (cont === null) {
@@ -249,9 +230,9 @@ export default class MultiStepModal extends React.Component<MultiStepModalProps,
                                 }
                                 <ModalContentWrapper $hideMargins={step.options.hideMargins} $alignItems={alignItems}>
                                     {this.props.showLoadingAnimation &&
-                                        <div>
+                                        <Div>
                                             <img src="/public/images/loading.gif" />
-                                        </div>
+                                        </Div>
                                     }
                                     {!this.props.showLoadingAnimation && step.element}
                                 </ModalContentWrapper>

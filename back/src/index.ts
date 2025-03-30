@@ -21,12 +21,12 @@ App.use(json())
     .use(koaJwt({ secret: config.get("auth.jwt.secret") }).unless({
         path: [
             /^\/api\/v1\/accounts\/check\/[^/]+$/,  // Matches /api/v1/accounts/check/:userName (dynamic username)
-            /^\/api\/v1\/accounts\/send_confirm_code$/,  // Matches /api/v1/accounts/send_confirm_code
-            /^\/api\/v1\/accounts\/attempt$/,  // Matches /api/v1/accounts/attempt
-            /^\/api\/v1\/accounts\/login$/,  // Matches /api/v1/accounts/login
-            /^\/api\/v1\/accounts\/forgot$/,  // Matches /api/v1/accounts/forgot
-            /^\/api\/v1\/accounts\/change_password$/,  // Matches /api/v1/accounts/change_password
-      ] }))    
+            /^\/api\/v1\/accounts\/send_confirm_code\/?$/,  // Matches /api/v1/accounts/send_confirm_code
+            /^\/api\/v1\/accounts\/attempt\/?$/,  // Matches /api/v1/accounts/attempt
+            /^\/api\/v1\/accounts\/login\/?$/,  // Matches /api/v1/accounts/login
+            /^\/api\/v1\/accounts\/forgot\/?$/,  // Matches /api/v1/accounts/forgot
+            /^\/api\/v1\/accounts\/change_password\/?$/,  // Matches /api/v1/accounts/change_password
+      ] }))
     .use(compress({
         gzip: {
             flush: zlib.constants.Z_SYNC_FLUSH

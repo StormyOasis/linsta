@@ -6,12 +6,11 @@ import LogoSVG from '/public/images/linsta_small.svg';
 import SearchSVG from '/public/images/search.svg';
 
 import * as styles from './Header.module.css';
+import { Div, FlexColumn, FlexRow, Span } from "../Common/CombinedStyling";
 
-const HeaderWrapper = styled.div`
+const HeaderWrapper = styled(FlexColumn)`
   z-index: 100;
   align-items: center;
-  flex-direction: column;
-  display:flex;
   height: 60px;  
   width: 100%;
   padding: 0;
@@ -20,7 +19,7 @@ const HeaderWrapper = styled.div`
   top: 0;  
 `;
 
-const LogoWrapper = styled.div`
+const LogoWrapper = styled(Div)`
   flex-basis: 128px;
   flex-grow: 1;
 `;
@@ -59,12 +58,10 @@ const SearchBox = styled.input`
   background-color: ${props => props.theme["input"].backgroundColor};
 `;
 
-const SearchWrapper = styled.div`
+const SearchWrapper = styled(FlexColumn)`
   align-content: stretch;
   align-items: stretch;
   border-radius: 100px;
-  display: flex;
-  flex-direction: column;
   justify-content: flex-start;
   height: 36px;
   min-width: 125px;
@@ -73,7 +70,7 @@ const SearchWrapper = styled.div`
   cursor: pointer;
 `;
 
-const SearchSpan = styled.span`
+const SearchSpan = styled(Span)`
   color: rgb(115,115,115);
   cursor: pointer;
   font-size: 16px;
@@ -87,22 +84,18 @@ const SearchSpan = styled.span`
   }
 `;
 
-const ActionWrapper = styled.div`
+const ActionWrapper = styled(FlexRow)`
   align-items: center;
   align-content: center;
-  display: flex;
-  flex-direction: row;
   flex-basis: 128px;
   justify-content: flex-end;
   position: relative;
   flex-grow: 1;
 `;
 
-const ActionLinkWrapper = styled.div`
+const ActionLinkWrapper = styled(FlexColumn)`
   align-content: stretch;
   align-items: stretch;
-  display: flex;
-  flex-direction: column;
   justify-content: flex-start;
   position: relative;
   margin-left: 16px;
@@ -110,48 +103,48 @@ const ActionLinkWrapper = styled.div`
 `;
 
 const LoginButton = styled(Link)`
-  border-radius: 8px; 
-  text-decoration: none;
-  align-items: center;
-  font-weight: 600;
-  justify-content: center;
-  text-wrap: nowrap;
-  color: white; 
-  background-color: rgb(0, 150, 245);
-  cursor: pointer; 
-  display: flex;
-  height: 32px; 
-  position: relative;
-  text-align: center;
-  padding-left: 16px; 
-  padding-right: 16px; 
-  flex-direction: row;
+    border-radius: 8px; 
+    text-decoration: none;
+    align-items: center;
+    font-weight: 600;
+    justify-content: center;
+    text-wrap: nowrap;
+    color: white; 
+    background-color: rgb(0, 150, 245);
+    cursor: pointer; 
+    display: flex;
+    height: 32px; 
+    position: relative;
+    text-align: center;
+    padding-left: 16px; 
+    padding-right: 16px; 
+    flex-direction: row;
 
-  &:hover {
-    background-color: rgb(25, 120, 240);
-  }
+    &:hover {
+        background-color: rgb(25, 120, 240);
+    }
 `;
 
 const SignupButton = styled(Link)`
-  border-radius: 8px; 
-  text-decoration: none;
-  align-items: center;
-  font-weight: 600;
-  justify-content: center;
-  text-wrap: nowrap;
-  color: rgb(0, 150, 245); 
-  background-color: white;
-  cursor: pointer; 
-  display: flex;
-  height: 32px; 
-  position: relative;
-  text-align: center;  
-  padding-right: 16px; 
-  flex-direction: row;
+    border-radius: 8px; 
+    text-decoration: none;
+    align-items: center;
+    font-weight: 600;
+    justify-content: center;
+    text-wrap: nowrap;
+    color: rgb(0, 150, 245); 
+    background-color: white;
+    cursor: pointer; 
+    display: flex;
+    height: 32px; 
+    position: relative;
+    text-align: center;  
+    padding-right: 16px; 
+    flex-direction: row;
 
-  &:hover {
-    color: rgb(0, 50, 100);
-  }  
+    &:hover {
+        color: rgb(0, 50, 100);
+    }  
 `;
 
 class Header extends React.Component<any, any> {

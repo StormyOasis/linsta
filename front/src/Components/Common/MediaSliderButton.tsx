@@ -3,8 +3,9 @@ import styled from 'styled-components';
 
 import LeftArrowSVG from "/public/images/left_arrow.svg";
 import RightArrowSVG from "/public/images/right_arrow.svg";
+import { Div, Flex } from './CombinedStyling';
 
-const MediaSliderWrapper = styled.div`
+const MediaSliderWrapper = styled(Div)`
     z-index: 20;
     position: absolute;
     bottom: 0;
@@ -28,7 +29,7 @@ const MediaSliderBottomRightWrapper = styled(MediaSliderWrapper)`
     right: 5px;
 `;
 
-const MediaSliderButtonContainer = styled.div`
+const MediaSliderButtonContainer = styled(Flex)`
     width: 24px;
     height: 24px;
     color: ${props => props.theme['colors'].borderDefaultColor};
@@ -36,7 +37,6 @@ const MediaSliderButtonContainer = styled.div`
     border-radius: 50%;
     padding: 5px; 
     cursor: pointer;
-    display: flex;
     
     &:hover {
         color: ${props => props.theme['colors'].borderDefaultColor};

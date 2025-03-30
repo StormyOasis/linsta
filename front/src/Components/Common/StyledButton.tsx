@@ -39,8 +39,7 @@ const StyledButtonComponent = styled.button<{ $props?: any, $useSecondaryColors?
     cursor: ${(props) => (props.disabled ? "default" : "pointer")};
 
     &:hover {
-    background-color: ${(props) =>
-        props.disabled ?
+        background-color: ${(props) => props.disabled ?
             (props.$useSecondaryColors ? props.theme['colors'].buttonSecondaryDefaultColorTrans : props.theme['colors'].buttonDefaultColorTrans) :
             (props.$useSecondaryColors ? props.theme['colors'].buttonSecondaryOnHoverColor : props.theme['colors'].buttonOnHoverColor)};
     }
@@ -56,7 +55,7 @@ const StyledButton: React.FC<StyledButtonProps> = (props: StyledButtonProps) => 
             style={props.style}
             $useSecondaryColors={props.useSecondaryColors}
             data-testid={props.datatestid}>
-            {props.text}
+                {props.text}
         </StyledButtonComponent>
     );
 }

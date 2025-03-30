@@ -15,12 +15,12 @@ import App from "../Components/App";
 import { buildStore } from "../Components/Redux/redux";
 import { Provider } from "react-redux";
 
-const PORT = process.env["PORT"] || 8080;
+export const PORT = process.env["PORT"] || 8080;
 
 const router = new Router();
 const app = new Koa();
 
-const renderHtml = (title: string, styles: any, html: any, preloadState: any) => {
+const renderHtml = (title: string, styles: any, html: any, preloadState: any):string => {
     return `
     <!DOCTYPE html>
     <html lang="en">

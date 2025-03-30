@@ -13,7 +13,7 @@ import HeartFilledSVG from "/public/images/heart-fill.svg";
 import MessageSVG from "/public/images/message.svg";
 import { AuthUser } from "../../../api/Auth";
 import StyledLink from "../../../Components/Common/StyledLink";
-import useThrottle from '../../../utils/throttle';
+import useThrottle from '../../../utils/useThrottle';
 
 const ProfilePicWrapper = styled(Div)`
     display: flex;

@@ -15,7 +15,6 @@ export const loginUser = createAsyncThunk(`${NAME}/login`, async ({ userName, pa
 const authSliceCreator = (preloadedState?: any) => {    
     const initialState = createInitialState();
     const reducers = createReducers();
-    const actions = createActions();
 
     const defaultState = {
         user: {},
@@ -49,10 +48,6 @@ const authSliceCreator = (preloadedState?: any) => {
         };
     }
 
-    function createActions() {
-        return {};
-    }
-
     const extraReducers = (builder: ActionReducerMapBuilder<any>) => {
         builder.addCase(loginUser.pending, (state) => {
             state.status = "pending";
@@ -73,7 +68,7 @@ const authSliceCreator = (preloadedState?: any) => {
 
     const slice = createSlice({ name: NAME, initialState, reducers, extraReducers });
 
-    const authActions = { ...slice.actions, ...actions };
+    const authActions = { ...slice.actions };
     const authReducer = slice.reducer;
 
     return { authActions, authReducer };

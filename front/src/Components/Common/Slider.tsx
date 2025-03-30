@@ -1,5 +1,6 @@
 import React from 'react';
 import { styled } from "styled-components";
+import { Flex } from './CombinedStyling';
 
 export type SliderProps = {
     value: number;
@@ -11,8 +12,7 @@ export type SliderProps = {
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-const SliderWrapper = styled.div`
-    display: flex;
+const SliderWrapper = styled(Flex)`
     justify-content: flex-end;
     margin-top: 20px;
     margin-right: 10px;

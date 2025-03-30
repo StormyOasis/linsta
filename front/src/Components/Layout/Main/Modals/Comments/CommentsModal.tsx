@@ -183,6 +183,7 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                             <Span $marginRight="10px" $fontSize="13px">{dateDiff(dateTime)}</Span>
                             {!commentsDisabled &&
                                 <CommentReplyButton
+                                    aria-label="Reply to comment"
                                     onClick={(e) => {
                                         e.stopPropagation();
 
@@ -224,6 +225,7 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                     </FlexColumnFullWidth>
                     {showLikeToggle &&
                         <LikeToggler
+                            aria-label="Toogle comment like"
                             offsetIndex={level}
                             width="18px"
                             height="18px"
@@ -385,6 +387,7 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                                     <Div $cursor="pointer">
                                         <Flex $paddingRight="8px" $position="relative" $top="2px">
                                             <LikeToggler
+                                                aria-label="Toogle post like"
                                                 isLiked={isLiked}
                                                 handleClick={async () => await toggleLike(authUser.userName, authUser.id)}>
                                             </LikeToggler>

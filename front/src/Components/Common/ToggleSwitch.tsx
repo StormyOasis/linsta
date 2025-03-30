@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { styled } from "styled-components";
+import { Span } from "./CombinedStyling";
 
 const SwitchLabel = styled.label`
     display: flex;
@@ -34,7 +35,7 @@ const SwitchInput = styled.input`
     }
 `;
 
-const SwitchSliderSpan = styled.span`
+const SwitchSliderSpan = styled(Span)`
     content: '';
     position: absolute;
     top: 2px;
