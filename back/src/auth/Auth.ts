@@ -7,7 +7,6 @@ export type JWTData = {
 }
 
 export const verifyJWT = async (ctx: Context, next: () => unknown) => {    
-    //const token = ctx.request.headers["x-access-token"];
     const authHeader:string|undefined = ctx.request.headers['authorization'];
     let token:string|undefined = undefined;
     if(authHeader) {

@@ -19,7 +19,7 @@ type RedisServerStats = {
 export class RedisConnector {
     private static instance: RedisConnector | null = null;
     private client: RedisClientType | null = null;
-    private metricsInterval: NodeJS.Timeout;
+    private metricsInterval: NodeJS.Timeout | null;
     private metricsPrevCpuSample: number = 0;
 
     private constructor() {
@@ -115,6 +115,7 @@ export class RedisConnector {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public set = async (key: string, value: any, ttl: number | null = null): Promise<void> => {
         if (this.client == null) {
             Metrics.increment("redis.errorCount");
@@ -144,8 +145,18 @@ export class RedisConnector {
             await this.client.disconnect();
             this.client = null;
         }
-        clearInterval(this.metricsInterval);
+        if(this.metricsInterval) {
+            clearInterval(this.metricsInterval);
+        }
+        this.metricsInterval = null;
     }
+
+    public static resetInstance(): void {
+        if (RedisConnector.instance) {
+          RedisConnector.instance.close();
+          RedisConnector.instance = null;
+        }
+    }    
 
     public getKeyCount = async (): Promise<number> => {
         if (this.client == null) {

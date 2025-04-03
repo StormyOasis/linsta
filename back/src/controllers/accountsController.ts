@@ -6,11 +6,11 @@ import moment, { MomentInput } from "moment";
 import logger from "../logger/logger";
 import Metrics from "../metrics/Metrics";
 import DBConnector, { EDGE_TOKEN_TO_USER, EDGE_USER_FOLLOWS, EDGE_USER_TO_TOKEN } from "../Connectors/DBConnector";
-import { handleValidationError, isEmail, isPhone, isValidPassword, obfuscateEmail, obfuscatePhone } from "../utils/utils";
+import { handleValidationError, isEmail, isPhone, isValidPassword, obfuscateEmail, obfuscatePhone, stripNonNumericCharacters } from "../utils/utils";
 import { SEND_CONFIRM_TEMPLATE, 
          FORGOT_PASSWORD_TEMPLATE, 
          sendEmailByTemplate, sendSMS } from "../Connectors/AWSConnector";
-import { insertProfile } from "../Connectors/ESConnector";
+import ESConnector from "../Connectors/ESConnector";
 
 export const getIsUnqiueUsername = async (ctx: Context) => {
     Metrics.increment("accounts.checkunique");
@@ -63,7 +63,7 @@ export const attemptCreateUser = async (ctx: Context) => {
     Metrics.increment("accounts.attempt");
 
     const data = <AttemptRequest>ctx.request.body;
-    let res = null;
+    let res = null;    
 
     // Validate required fields
     if (!data.emailOrPhone || !data.fullName || !data.userName || !data.password) {
@@ -74,9 +74,15 @@ export const attemptCreateUser = async (ctx: Context) => {
         return handleValidationError(ctx, "Invalid input");
     }
 
+    let emailOrPhone = data.emailOrPhone;
+
     // Determine if value passed to emailOrPhone is an email address or phone
     const isEmailAddr: boolean = isEmail(data.emailOrPhone);
-    const isPhoneNum: boolean = isPhone(data.emailOrPhone);
+    const isPhoneNum: boolean = isPhone(stripNonNumericCharacters(data.emailOrPhone));
+
+    if (isPhoneNum) {
+        emailOrPhone = stripNonNumericCharacters(emailOrPhone);
+    }
 
     //Make sure there isn't any invalid email/phone
     if (!isPhoneNum && !isEmailAddr) {
@@ -92,7 +98,7 @@ export const attemptCreateUser = async (ctx: Context) => {
     if (!data.dryRun) {
         // If this is not a dry run and instead an actual attempt then 
         // we need to compare the confirmation codes
-        if (data.confirmCode?.trim().length !== 8 || data.emailOrPhone.trim().length === 0) {
+        if (data.confirmCode?.trim().length !== 8 || emailOrPhone.trim().length === 0) {
             return handleValidationError(ctx, "Invalid confirmation code");
         }
 
@@ -100,7 +106,7 @@ export const attemptCreateUser = async (ctx: Context) => {
             // Check if confirmation code + email/phone entry exists
             res = await DBConnector.getGraph().V()
                 .hasLabel("ConfirmCode")
-                .has("userData", data.emailOrPhone.trim())
+                .has("userData", emailOrPhone.trim())
                 .has("token", data.confirmCode.trim())
                 .next();
 
@@ -139,8 +145,8 @@ export const attemptCreateUser = async (ctx: Context) => {
         } as MomentInput;
         
         const birthDate:moment.Moment = data.dryRun ? currentTime : moment(momentData);
-        const email:string = isEmailAddr ? data.emailOrPhone : "";
-        const phone:string = isPhoneNum ? data.emailOrPhone : "";
+        const email:string = isEmailAddr ? emailOrPhone : "";
+        const phone:string = isPhoneNum ? emailOrPhone : "";
         
         await DBConnector.beginTransaction();
         
@@ -194,7 +200,7 @@ export const attemptCreateUser = async (ctx: Context) => {
                     // We now want to delete it from the DB
                     res = await DBConnector.getGraph(true).V()
                         .hasLabel("ConfirmCode")
-                        .has("userData", data.emailOrPhone.trim())
+                        .has("userData", emailOrPhone.trim())
                         .drop().toList();
                 }
             }
@@ -220,7 +226,11 @@ export const attemptCreateUser = async (ctx: Context) => {
             };
 
             // Insert into ES
-            const esResult = await insertProfile(profileData);
+            const esResult = await ESConnector.getInstance().insertProfile(profileData);
+
+            if(!esResult) {
+                throw new Error("Error inserting profile");
+            }
 
             // Now add update the profile id in the user vertex
             const graphResult = await DBConnector.getGraph(true).V(userId)

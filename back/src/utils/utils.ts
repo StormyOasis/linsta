@@ -1,10 +1,14 @@
 import sanitizeHtml from 'sanitize-html';
 import { Like, Post, Profile } from './types';
-import { buildSearchResultSet, search, searchProfile } from '../Connectors/ESConnector';
+import ESConnector, { buildSearchResultSet } from '../Connectors/ESConnector';
 import RedisConnector from '../Connectors/RedisConnector';
 import DBConnector, { EDGE_USER_LIKED_POST } from '../Connectors/DBConnector';
 import logger from '../logger/logger';
 import { Context } from 'koa';
+
+export const stripNonNumericCharacters = (str: string): string => {
+    return str.replace(/\D/g, '');
+}
 
 export const isEmail = (str: string) : boolean => {
     const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
@@ -12,8 +16,9 @@ export const isEmail = (str: string) : boolean => {
 }
 
 export const isPhone = (str: string): boolean => {
-    const phoneRegex = /(?:([+]\d{1,4})[-.\s]?)?(?:[(](\d{1,3})[)][-.\s]?)?(\d{1,4})[-.\s]?(\d{1,4})[-.\s]?(\d{1,9})/g;
-    return phoneRegex.test(str);
+    const phone = stripNonNumericCharacters(str);
+    const phoneRegex = /^\d{7,15}$/;
+    return phoneRegex.test(phone);
 }
 
 export const isValidPassword = (str: string): boolean => {
@@ -22,7 +27,7 @@ export const isValidPassword = (str: string): boolean => {
     return regex.test(str);    
 }
 
-export const obfuscateEmail = (email: string):string => {
+export const obfuscateEmail = (email: string|null):string => {
     if(email == null) {
         return "";
     }
@@ -32,14 +37,12 @@ export const obfuscateEmail = (email: string):string => {
     return `${email.at(0)}${"*".repeat(starCount)}${email.at(indexOfAt - 1)}@${email.substring(indexOfAt + 1)}`;
 }
 
-export const obfuscatePhone = (phone: string):string => {
+export const obfuscatePhone = (phone: string|null):string => {
     if(phone == null) {
         return "";
     }
 
-    const maxLength = phone.length;
-    const starLength = maxLength - 5;
-    return `${phone.substring(0,3)}${"*".repeat(starLength)}${phone.substring(maxLength - 2)}`;
+    return `${phone.slice(0, 2)}${"*".repeat(phone.length-4)}${phone.slice(-2)}`;
 }
 
 export const sanitize = (html: string):string => {
@@ -199,7 +202,7 @@ export const getPostByPostId = async (postId: string):Promise<|{esId: string; po
         // Pull Post data from ES
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const results:any = await search({
+        const results:any = await ESConnector.getInstance().search({
             bool: {
                 must: [{
                     match: {_id: esId}                    
@@ -269,14 +272,14 @@ const getProfileEx = async (userId: string|null, userName: string|null):Promise<
         
         // Now get profile from ES
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        results = await searchProfile({            
+        results = await ESConnector.getInstance().searchProfile({            
             "term": {
                 "_id": profileId
             }            
         }, null);
 
         const hits = results?.body?.hits?.hits;
-        if(results.statusCode !== 200 || hits == null) {
+        if(!results || results.statusCode !== 200 || hits == null) {
             throw new Error("Error querying ES");
         }
         

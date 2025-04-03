@@ -35,7 +35,7 @@ services:
     environment:
          # Configuration options for JanusGraph desribed at:
          # https://docs.janusgraph.org/configs/configuration-reference
-         - graph.replace-instance-if-exists=true # addresses error described at       
+         - graph.replace-instance-if-exists=true # addresses error described at        
 
   linsta-redis:
     image: redis/redis-stack-server
@@ -279,6 +279,7 @@ services:
       interval: 10s
       timeout: 10s
       retries: 120
+
 
 volumes:
   certs:

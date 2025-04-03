@@ -4,7 +4,7 @@ import Metrics from "../metrics/Metrics";
 import logger from "../logger/logger";
 import { getFileExtByMimeType, getLikesByPost, getPfpByUserId, getPostByPostId, handleValidationError, sanitize } from "../utils/utils";
 import { uploadFile } from "../Connectors/AWSConnector";
-import { buildDataSetForES, insert, searchWithPagination, update } from '../Connectors/ESConnector';
+import ESConnector, { buildDataSetForES } from '../Connectors/ESConnector';
 import { User, Global, Entry, Post, Like } from "../utils/types";
 import RedisConnector from "../Connectors/RedisConnector";
 import DBConnector, { EDGE_POST_LIKED_BY_USER, EDGE_POST_TO_COMMENT, EDGE_POST_TO_USER, EDGE_USER_LIKED_POST, EDGE_USER_TO_POST } from "../Connectors/DBConnector";
@@ -44,8 +44,8 @@ export const addPost = async (ctx: Context) => {
         // Now add the data to ES
         const dataSet = buildDataSetForES(user, global, entries);
 
-        const esResult = await insert(dataSet);        
-        if(esResult.result !== 'created') {
+        const esResult = await ESConnector.getInstance().insert(dataSet);        
+        if(!esResult || esResult.result !== 'created') {
             return handleValidationError(ctx, "Error adding post"); 
         }
 
@@ -85,7 +85,7 @@ export const addPost = async (ctx: Context) => {
 
         // Update the media entries with the postId for easier
         // and faster lookup. First update in ES
-        await update(esResult._id, {
+        await ESConnector.getInstance().update(esResult._id, {
             source:
                 `for (int i = 0; i < ctx._source.post.media.size(); i++) {
                     ctx._source.post.media[i].postId = params.postId;
@@ -173,7 +173,7 @@ export const getAllPosts = async (ctx: Context) => {
         };
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const results:any = await searchWithPagination(query);
+        const results:any = await ESConnector.getInstance().searchWithPagination(query);
     
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const posts:any = {};
@@ -476,7 +476,7 @@ export const getPostsByUserId = async (ctx: Context) => {
             query.search_after = [data.dateTime, data.postId];
         }
 
-        const results = await searchWithPagination(query);
+        const results = await ESConnector.getInstance().searchWithPagination(query);
 
         const response: GetPostsByUserIdResponse = {
             posts: [],
@@ -488,7 +488,7 @@ export const getPostsByUserId = async (ctx: Context) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const posts:any = {};
         const postIds:string[] = [];
-        if (results.body.hits.hits.length > 0) {
+        if (results && results.body.hits.hits.length > 0) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const hits: any = results.body.hits.hits;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any            

@@ -8,6 +8,7 @@ module.exports = {
     testEnvironmentOptions: {
         customExportConditions: [''],
     },
+    testPathIgnorePatterns: ["/__mocks__/"], // Ignore mocks for integration tests
     testMatch: ['**/?(*.)+(spec|test).ts?(x)'],
     coverageDirectory: 'coverage',
     coverageReporters: ['html'],
