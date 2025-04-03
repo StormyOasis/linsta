@@ -247,6 +247,7 @@ export const Link = styled.a<{$fontSize?: string}>`
     color: ${props => props.theme['colors'].defaultLinkColor};
     font-size: ${props => props.$fontSize ? props.$fontSize : "14px"};
     text-decoration: none;
+    cursor: pointer;
 `;
 
 export const LightLink = styled(Link)`

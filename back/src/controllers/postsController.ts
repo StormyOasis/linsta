@@ -226,7 +226,7 @@ export const getAllPosts = async (ctx: Context) => {
     
         if(dbResults != null && dbResults.length > 0) {
             // At least one of the given post ids has a like
-            dbResults.forEach(result => {
+            /*dbResults.forEach(result => {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const postMap:Map<any, any> = (result as Map<any, any>);
                 const postId = postMap.get("postId");
@@ -243,9 +243,39 @@ export const getAllPosts = async (ctx: Context) => {
                         pfp: user.pfp
                     }));
                 }
-            });
-        }
-    
+            });*/
+
+            for(const result of dbResults) {                
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const postMap:Map<any, any> = (result as Map<any, any>);
+                const postId = postMap.get("postId");
+                const users = postMap.get("users");
+
+                // Make sure that the postId found in DB matches one
+                // from the above ES query. They could be out of sync due to pagination
+                if(posts[postId] == null) {
+                    continue;
+                }
+
+                const post:Post = (posts[postId] as Post);                
+                if(post.global.likes == null) {
+                    post.global.likes = [];
+                }
+
+                for(const user of users) {
+                    const newLike:Like = {
+                        userName: user.get("userName"),
+                        userId: user.get("id"),
+                        profileId: user.get("profileId"),
+                        firstName: user.get("firstName"),
+                        lastName: user.get("lastName"),
+                        pfp: user.get("pfp")
+                    };
+                    post.global.likes.push(newLike);
+                }            
+            }            
+        }            
+        
         // Add the posts to the response
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         response.posts = Object.values(posts).map((entry:any) => entry);

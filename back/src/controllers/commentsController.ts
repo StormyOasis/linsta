@@ -41,7 +41,7 @@ export const addComment = async (ctx: Context) => {
         // Add the comment data to the db only(Comments won't be searchable)
         await DBConnector.beginTransaction();
 
-        const result = await DBConnector.getGraph(true)
+        let result = await DBConnector.getGraph(true)
             .addV("Comment")
             .property("dateTime", new Date())            
             .property("text", sanitize(data.text))
@@ -59,7 +59,7 @@ export const addComment = async (ctx: Context) => {
         // 3. Edges between comment and another parent comment
         
         // Edges between User and comment
-        /*result = await DBConnector.getGraph(true).V(commentId)
+        result = await DBConnector.getGraph(true).V(commentId)
             .as("comment")
             .V(data.userId)
             .as("user")
@@ -109,48 +109,7 @@ export const addComment = async (ctx: Context) => {
             if(result == null || result.value == null) {
                 return handleValidationError(ctx, "Error adding comment");
             }                          
-        }*/
-
-        const edgesToAdd = [
-            // User to comment edges
-            DBConnector.getGraph(true).V(commentId)
-                .as("comment")
-                .V(data.userId)
-                .as("user")
-                .addE(EDGE_COMMENT_TO_USER)
-                .from_("comment")
-                .to("user")
-                .addE(EDGE_USER_TO_COMMENT)
-                .from_("user")
-                .to("comment"),
-
-            // Comment to post edges
-            DBConnector.getGraph(true).V(commentId)
-                .as("comment")
-                .V(data.postId)
-                .as("post")
-                .addE(EDGE_COMMENT_TO_POST)
-                .from_("comment")
-                .to("post")
-                .addE(EDGE_POST_TO_COMMENT)
-                .from_("post")
-                .to("comment"),
-
-            // Parent comment edges (if applicable)
-            data.parentCommentId && DBConnector.getGraph(true).V(commentId)
-                .as("comment")
-                .V(data.parentCommentId)
-                .as("parent")
-                .addE(EDGE_CHILD_TO_PARENT_COMMENT)
-                .from_("comment")
-                .to("parent")
-                .addE(EDGE_PARENT_TO_CHILD_COMMENT)
-                .from_("parent")
-                .to("comment")
-        ];
-
-        // Execute all edge addition operations concurrently
-        await Promise.all(edgesToAdd.filter(Boolean));        
+        }
 
         await DBConnector.commitTransaction();
 

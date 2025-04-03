@@ -105,7 +105,7 @@ export const uploadFile = async (file: formidable.File, entryId: string, userId:
 
         return {
             tag: (result.ETag as string),
-            url: `https://${bucket}.s3.${REGION}.amazonaws.com/${key}`
+            url: `https://${bucket}.s3.${config.get("aws.region")}.amazonaws.com/${key}`
         };
 
     } catch (err) {

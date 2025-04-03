@@ -59,7 +59,7 @@ const ModalTitleBarInnerWrapper = styled(Div)`
     width: 100%;
 `;
 
-const ModalTitleBarInnerWrapper2 = styled(Div)`
+const ModalTitleBarInnerWrapper2 = styled(FlexColumn)`
     align-content: stretch;
     align-items: center;
     box-sizing: border-box;
@@ -75,7 +75,7 @@ const ModalTitleBarInnerWrapper2 = styled(Div)`
 
 const ModalTitle = styled(FlexColumn)`
     align-items: center;
-    flex-grow: 1
+    flex-grow: 1;
     font-size: 16px;
     font-weight: 600;
     line-height: 20px;
