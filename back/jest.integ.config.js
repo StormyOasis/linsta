@@ -8,7 +8,6 @@ module.exports = {
     testEnvironmentOptions: {
         customExportConditions: [''],
     },
-    testPathIgnorePatterns: ["/__mocks__/"], // Ignore mocks for integration tests
     testMatch: ['**/?(*.)+(spec|test).ts?(x)'],
     coverageDirectory: 'coverage',
     coverageReporters: ['html'],
@@ -41,6 +40,6 @@ module.exports = {
         '^.+\\.(js|jsx)$': 'babel-jest', // If using Babel for JS
     },
     transformIgnorePatterns: [
-        '/node_modules/(?!uuid|other-esm-package)/'
+        '/node_modules/(?!uuid|other-esm-package)/',        
     ]    
 }

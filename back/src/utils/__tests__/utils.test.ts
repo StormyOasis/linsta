@@ -1,8 +1,13 @@
 import { Context } from 'koa';
 import DBConnector from '../../Connectors/DBConnector';
-import { getFileExtByMimeType, getLikesByPost, handleValidationError, isEmail, isPhone, isValidPassword, obfuscateEmail, obfuscatePhone, sanitizeInput, stripNonNumericCharacters } from '../utils';
+import * as utilService from '../utils';
+import { getFileExtByMimeType, getLikesByPost, getPostByPostId, getPostIdFromEsId, handleValidationError, isEmail, isPhone, isValidPassword, obfuscateEmail, obfuscatePhone, sanitizeInput, stripNonNumericCharacters } from '../utils';
+import { RedisConnector } from '../../Connectors/RedisConnector';
+import ESConnector from '../../Connectors/ESConnector';
 
 jest.mock('../../Connectors/DBConnector');
+jest.mock('../../Connectors/RedisConnector');
+jest.mock('../../Connectors/ESConnector');
 
 describe('stripNonNumericCharacters', () => {
 
@@ -193,10 +198,125 @@ describe('getFileExtByMimeType', () => {
     });
 });
 
+describe('getPostIdFromEsId', () => {
+    it('should return post id when a valid esId is provided', async () => {
+        // Mock the result of DBConnector.getGraph().V()...
+        const mockIdMethod = jest.fn().mockReturnThis();
+
+        const mockNext = jest.fn().mockResolvedValueOnce({
+            value: new Map([['id', '123']]), // Simulate the result with a valid post id
+        });
+
+        DBConnector.getGraph = jest.fn().mockReturnValue({
+            V: jest.fn().mockReturnThis(),
+            hasLabel: jest.fn().mockReturnThis(),
+            has: jest.fn().mockReturnThis(),
+            project: jest.fn().mockReturnThis(),
+            by: jest.fn().mockReturnThis(),
+            next: mockNext, // Mock the next method
+        });
+
+        DBConnector.__ = jest.fn().mockReturnValue({
+            id: mockIdMethod, // Return the mock id method
+        });
+
+        const result = await getPostIdFromEsId('someEsId');
+        expect(result).toBe('123');
+        expect(mockNext).toHaveBeenCalledTimes(1);
+        expect(mockIdMethod).toHaveBeenCalledTimes(1); // Ensure id() is called
+    });
+
+    it('should throw an error if there is an issue fetching post likes', async () => {
+        DBConnector.getGraph = jest.fn().mockReturnValue({
+            V: jest.fn().mockReturnThis(),
+            hasLabel: jest.fn().mockReturnThis(),
+            has: jest.fn().mockReturnThis(),
+            project: jest.fn().mockReturnThis(),
+            by: jest.fn().mockReturnThis(),
+            next: jest.fn().mockRejectedValueOnce(new Error('Error getting post likes')),
+        });
+
+        // Mock DBConnector.__() to avoid issues in the chain
+        DBConnector.__ = jest.fn().mockReturnValue({
+            id: jest.fn(), // Empty mock for id()
+        });
+
+        await expect(getPostIdFromEsId('someEsId')).rejects.toThrow('Error getting post likes');
+    });
+
+    it('should return null if no post is found for the given esId', async () => {
+        // Mock DBConnector to simulate no result found
+        DBConnector.getGraph = jest.fn().mockReturnValue({
+            V: jest.fn().mockReturnThis(),
+            hasLabel: jest.fn().mockReturnThis(),
+            has: jest.fn().mockReturnThis(),
+            project: jest.fn().mockReturnThis(),
+            by: jest.fn().mockReturnThis(),
+            next: jest.fn().mockResolvedValueOnce({ value: null }),
+        });
+
+        // Mock DBConnector.__() to avoid issues in the chain
+        DBConnector.__ = jest.fn().mockReturnValue({
+            id: jest.fn(), // Empty mock for id()
+        });
+
+        const result = await getPostIdFromEsId('someEsId');
+        expect(result).toBeNull();
+    });
+
+    it('should throw an error if the result is null (missing esId or something went wrong)', async () => {
+        DBConnector.getGraph = jest.fn().mockReturnValue({
+            V: jest.fn().mockReturnThis(),
+            hasLabel: jest.fn().mockReturnThis(),
+            has: jest.fn().mockReturnThis(),
+            project: jest.fn().mockReturnThis(),
+            by: jest.fn().mockReturnThis(),
+            next: jest.fn().mockResolvedValueOnce(null), // Simulate null result
+        });
+
+        // Mock DBConnector.__() to avoid issues in the chain
+        DBConnector.__ = jest.fn().mockReturnValue({
+            id: jest.fn(), // Empty mock for id()
+        });
+
+        await expect(getPostIdFromEsId('someEsId')).rejects.toThrow('Error getting post likes');
+    });
+
+    it('should return the correct post id when there is a result', async () => {
+        // Simulate a valid response from DBConnector
+        DBConnector.getGraph = jest.fn().mockReturnValue({
+            V: jest.fn().mockReturnThis(),
+            hasLabel: jest.fn().mockReturnThis(),
+            has: jest.fn().mockReturnThis(),
+            project: jest.fn().mockReturnThis(),
+            by: jest.fn().mockReturnThis(),
+            next: jest.fn().mockResolvedValueOnce({
+                value: new Map([['id', '987']]), // Simulate valid post id
+            }),
+        });
+
+        // Mock DBConnector.__() to avoid issues in the chain
+        DBConnector.__ = jest.fn().mockReturnValue({
+            id: jest.fn(), // Mock id method
+        });
+
+        const result = await getPostIdFromEsId('validEsId');
+        expect(result).toBe('987');
+    });
+});
+
 describe('getLikesByPost', () => {
     afterEach(() => {
         jest.clearAllMocks();
     });
+
+    it('should return an empty array when postId is null or empty', async () => {
+        const result = await getLikesByPost(null);
+        expect(result).toEqual([]);
+    
+        const resultEmpty = await getLikesByPost('');
+        expect(resultEmpty).toEqual([]);
+    });   
 
     it('should return an array of likes for valid postId', async () => {
         // Mock the DBConnector to simulate database query

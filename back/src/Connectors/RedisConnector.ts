@@ -2,7 +2,24 @@ import { createClient, RedisClientOptions } from "redis";
 import config from 'config';
 import logger from "../logger/logger";
 import Metrics from "../metrics/Metrics";
-import { parseRedisInfo, RedisInfo } from "../utils/utils";
+
+export interface RedisInfo {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any;
+}
+
+export const parseRedisInfo = (infoString: string): RedisInfo => {
+    const info: RedisInfo = {};
+
+    const lines = infoString.split('\r\n');
+    for (let i = 0; i < lines.length; ++i) {
+        const parts = lines[i].split(':');
+        if (parts[1]) {
+            info[parts[0]] = parts[1];
+        }
+    }
+    return info;
+};
 
 // Minor annoyance. see: https://github.com/redis/node-redis/issues/1673
 export type RedisClientType = ReturnType<typeof createClient>;
@@ -87,12 +104,7 @@ export class RedisConnector {
         }
 
         try {
-            this.client = await createClient({ ...options })
-                .on('error', err => {
-                    logger.error("Redis connection error", err);
-                    Metrics.increment("redis.errorCount");
-                    throw new Error(err);
-                }).connect();
+            this.client = await createClient({ ...options }).connect();
             logger.info("Redis connection created");
         } catch (err) {
             logger.error("Failed to connect to Redis:", err);

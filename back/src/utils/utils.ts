@@ -73,24 +73,6 @@ export const getFileExtByMimeType = (mimeType: string|null):string => {
     }
 }
 
-export interface RedisInfo {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [key: string]: any;
-}
-
-export const parseRedisInfo = (infoString: string): RedisInfo => {
-    const info: RedisInfo = {};
-
-    const lines = infoString.split('\r\n');
-    for (let i = 0; i < lines.length; ++i) {
-        const parts = lines[i].split(':');
-        if (parts[1]) {
-            info[parts[0]] = parts[1];
-        }
-    }
-    return info;
-};
-
 export const getPostIdFromEsId = async (esId: string):Promise<string|null> => {    
     // Get a list of all users that like the given post id
     const result = await DBConnector.getGraph().V()
@@ -111,7 +93,7 @@ export const getPostIdFromEsId = async (esId: string):Promise<string|null> => {
     return result.value.get("id");
 }
 
-export const getLikesByPost = async (postId: string):Promise<Like[]> => {
+export const getLikesByPost = async (postId: string|null):Promise<Like[]> => {
     if(postId == null || postId.length === 0) {
         return [];
     }
