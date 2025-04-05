@@ -2,7 +2,24 @@ import { createClient, RedisClientOptions } from "redis";
 import config from 'config';
 import logger from "../logger/logger";
 import Metrics from "../metrics/Metrics";
-import { parseRedisInfo, RedisInfo } from "../utils/utils";
+
+export interface RedisInfo {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any;
+}
+
+export const parseRedisInfo = (infoString: string): RedisInfo => {
+    const info: RedisInfo = {};
+
+    const lines = infoString.split('\r\n');
+    for (let i = 0; i < lines.length; ++i) {
+        const parts = lines[i].split(':');
+        if (parts[1]) {
+            info[parts[0]] = parts[1];
+        }
+    }
+    return info;
+};
 
 // Minor annoyance. see: https://github.com/redis/node-redis/issues/1673
 export type RedisClientType = ReturnType<typeof createClient>;
@@ -19,7 +36,7 @@ type RedisServerStats = {
 export class RedisConnector {
     private static instance: RedisConnector | null = null;
     private client: RedisClientType | null = null;
-    private metricsInterval: NodeJS.Timeout;
+    private metricsInterval: NodeJS.Timeout | null;
     private metricsPrevCpuSample: number = 0;
 
     private constructor() {
@@ -87,12 +104,7 @@ export class RedisConnector {
         }
 
         try {
-            this.client = await createClient({ ...options })
-                .on('error', err => {
-                    logger.error("Redis connection error", err);
-                    Metrics.increment("redis.errorCount");
-                    throw new Error(err);
-                }).connect();
+            this.client = await createClient({ ...options }).connect();
             logger.info("Redis connection created");
         } catch (err) {
             logger.error("Failed to connect to Redis:", err);
@@ -115,6 +127,7 @@ export class RedisConnector {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public set = async (key: string, value: any, ttl: number | null = null): Promise<void> => {
         if (this.client == null) {
             Metrics.increment("redis.errorCount");
@@ -144,8 +157,18 @@ export class RedisConnector {
             await this.client.disconnect();
             this.client = null;
         }
-        clearInterval(this.metricsInterval);
+        if(this.metricsInterval) {
+            clearInterval(this.metricsInterval);
+        }
+        this.metricsInterval = null;
     }
+
+    public static resetInstance(): void {
+        if (RedisConnector.instance) {
+          RedisConnector.instance.close();
+          RedisConnector.instance = null;
+        }
+    }    
 
     public getKeyCount = async (): Promise<number> => {
         if (this.client == null) {

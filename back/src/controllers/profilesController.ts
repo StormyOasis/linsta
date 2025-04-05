@@ -3,7 +3,7 @@ import formidable from 'formidable';
 import Metrics from "../metrics/Metrics";
 import { getFileExtByMimeType, getVertexPropertySafe, handleValidationError, sanitizeInput, updateProfileInRedis } from "../utils/utils";
 import logger from "../logger/logger";
-import { updateProfile } from "../Connectors/ESConnector";
+import ESConnector from "../Connectors/ESConnector";
 import { getProfileByUserName, getProfileByUserId } from "../utils/utils";
 import { Profile, ProfileWithFollowStatus, ProfileWithFollowStatusInt } from "../utils/types";
 import DBConnector, { EDGE_USER_FOLLOWS, EDGE_USER_TO_POST } from "../Connectors/DBConnector";
@@ -55,7 +55,7 @@ export const updateProfileByUserId = async (ctx: Context) => {
         }
 
         // Send updated profile data to ES
-        await updateProfile(profile.profileId, undefined, {
+        await ESConnector.getInstance().updateProfile(profile.profileId, undefined, {
             doc: {
                 bio,
                 pfp,
@@ -275,7 +275,7 @@ export const putProfilePfp = async(ctx: Context) => {
         profile.pfp = url;
 
         // Now update the profile data in ES with the new pfp 
-        await updateProfile(profile.profileId, undefined, {
+        await ESConnector.getInstance().updateProfile(profile.profileId, undefined, {
             doc: {
                 pfp: url,
             }

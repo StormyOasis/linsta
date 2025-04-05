@@ -5,115 +5,137 @@ import config from 'config';
 import { Entry, User, Global, Post } from '../utils/types';
 import fs from 'fs';
 
-const client = new Client({
-    node: config.get("es.node"),
-    auth: {
-        apiKey: config.get("es.apiKey")
-    },
-    tls: {
-        ca: fs.readFileSync( "/usr/share/es/certs/ca.crt" ),
-    }
-});
+export default class ESConnector {
+    private static instance: ESConnector | null = null;
 
-export const search = async (query: object, resultSize: number|null) => {
-    const size: number = resultSize ? resultSize : config.get("es.defaultResultSize");
+    private client:Client | null = null; 
 
-    const result = await client.search({
-        index: config.get("es.mainIndex"),
-        query,
-        size,
-        sort: [
-            {
-              "post.global.dateTime": {
-                "nested" : {
-                  "path": "post.global"
-                }
-              }
+    private constructor() {    
+        this.client = new Client({
+            node: config.get("es.node"),
+            auth: {
+                apiKey: config.get("es.apiKey")
+            },
+            tls: {
+                ca: fs.readFileSync( "/usr/share/es/certs/ca.crt" ),
             }
-          ]
-    }, { meta: true});
+        });             
+    }
 
-    return result;
-}
+    public static getInstance(): ESConnector {
+        if (!ESConnector.instance) {            
+            ESConnector.instance = new ESConnector();
+        }
 
-export const searchWithPagination = async (query: object, resultSize?: number|null) => {
-    const size: number = resultSize ? resultSize : config.get("es.defaultMediaPaginationSize");
+        return ESConnector.instance;
+    }
 
-    const result = await client.search({
-        index: config.get("es.mainIndex"),
-        body: query,
-        size,
-    }, { meta: true});
+    public search = async (query: object, resultSize: number|null) => {
+        const size: number = resultSize ? resultSize : config.get("es.defaultResultSize");        
+        
+        const result = await this.client?.search({
+            index: config.get("es.mainIndex"),
+            query,
+            size,
+            sort: [
+                {
+                  "post.global.dateTime": {
+                    "nested" : {
+                      "path": "post.global"
+                    }
+                  }
+                }
+              ]
+        }, { meta: true});
 
-    return result;
-}
-
-export const count = async (query: object) => {
-    const result = await client.count({
-        index: config.get("es.mainIndex"),
-        query,
-    }, { meta: true});
-
-    return result;
-}
-
-export const searchProfile = async (query: object, resultSize: number|null) => {
-    const size: number = resultSize ? resultSize : config.get("es.defaultResultSize");
-
-    const result = await client.search({
-        index: config.get("es.profileIndex"),
-        query,
-        size,
-    }, { meta: true});
-
-    return result;
-}
-
-export const countProfile = async (query: object) => {
-    const result = await client.count({
-        index: config.get("es.profileIndex"),
-        query,
-    }, { meta: true});
-
-    return result;
-}
-
-export const insert = async (dataSet: object) => {
-    const result = await client.index({
-        index: config.get("es.mainIndex"),
-        document: dataSet
-    });
-
-    return result;
-}
-
-export const insertProfile = async (dataSet: object) => {
-    const result = await client.index({
-        index: config.get("es.profileIndex"),
-        document: dataSet
-    });
-
-    return result;
-}
-
-export const update = async (id: string, script?: object, body?: object) => {
-    const result = await client.update({
-        index: config.get("es.mainIndex"),
-        id,
-        script,
-        body
-    });
-    return result;
-}
-
-export const updateProfile = async (id: string, script?: object, body?: object) => {
-    const result = await client.update({
-        index: config.get("es.profileIndex"),
-        id,
-        script,
-        body
-    });
-    return result;
+        return result;
+    }
+    
+    public searchWithPagination = async (query: object, resultSize?: number|null) => {
+        const size: number = resultSize ? resultSize : config.get("es.defaultMediaPaginationSize");
+    
+        const result = await this.client?.search({
+            index: config.get("es.mainIndex"),
+            body: query,
+            size,
+        }, { meta: true});
+    
+        return result;
+    }
+    
+    public count = async (query: object) => {
+        const result = await this.client?.count({
+            index: config.get("es.mainIndex"),
+            query,
+        }, { meta: true});
+    
+        return result;
+    }
+    
+    public searchProfile = async (query: object, resultSize: number|null) => {
+        const size: number = resultSize ? resultSize : config.get("es.defaultResultSize");
+    
+        const result = await this.client?.search({
+            index: config.get("es.profileIndex"),
+            query,
+            size,
+        }, { meta: true});
+    
+        return result;
+    }
+    
+    public countProfile = async (query: object) => {
+        const result = await this.client?.count({
+            index: config.get("es.profileIndex"),
+            query,
+        }, { meta: true});
+    
+        return result;
+    }
+    
+    public insert = async (dataSet: object) => {
+        const result = await this.client?.index({
+            index: config.get("es.mainIndex"),
+            document: dataSet
+        });
+    
+        return result;
+    }
+    
+    public insertProfile = async (dataSet: object) => {
+        const result = await this.client?.index({
+            index: config.get("es.profileIndex"),
+            document: dataSet
+        });
+    
+        return result;
+    }
+    
+    public update = async (id: string, script?: object, body?: object) => {
+        const result = await this.client?.update({
+            index: config.get("es.mainIndex"),
+            id,
+            script,
+            body
+        });
+        return result;
+    }
+    
+    public updateProfile = async (id: string, script?: object, body?: object) => {
+        const result = await this.client?.update({
+            index: config.get("es.profileIndex"),
+            id,
+            script,
+            body
+        });
+        return result;
+    }
+    
+    public close = async () => {        
+        await this.client?.close();
+        ESConnector.instance = null;
+        this.client = null;
+    }
 }
 
 export const buildDataSetForES = (user:User, global:Global, entries:Entry[]):object => {

@@ -40,6 +40,6 @@ module.exports = {
         '^.+\\.(js|jsx)$': 'babel-jest', // If using Babel for JS
     },
     transformIgnorePatterns: [
-        '/node_modules/(?!uuid|other-esm-package)/'
-    ]
+        '/node_modules/(?!uuid|other-esm-package)/',        
+    ]    
 }
