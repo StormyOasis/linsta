@@ -30,7 +30,7 @@ const EditContainer = styled.div`
 
 const ImageContainer = styled.div`    
     display: flex;
-    width: 50%;
+    width: 386px;
     justify-content: flex-end;
     vertical-align: middle;
 `;
@@ -38,7 +38,7 @@ const ImageContainer = styled.div`
 const ControlsContainer = styled.div`
     display: flex;    
     flex-direction: column;
-    width: 50%;  
+    width: 386px;  
     padding-left: 5px;
     pointer-events: all;
 `;
@@ -52,7 +52,18 @@ const ControlContentContainer = styled.div`
 
 const PreviewImage = styled.img`
     display:flex;
-    max-height: 100%;
+    width: 386px;
+    height:412px;
+    object-fit: cover;
+    overflow: hidden;
+`;
+
+const PreviewVideo = styled.video`
+    display:flex;
+    width: 386px;
+    height:412px;
+    object-fit: cover;
+    overflow: hidden;
 `;
 
 const TextEditorContainerWrapper = styled.div`
@@ -306,7 +317,7 @@ const CreatePostModalFinal: React.FC<CreatePostModalFinalProps> = (props: Create
                 <EditContainer>                 
                     <ImageContainer>
                         {!data.isVideoFile && <PreviewImage src={data.data} />}
-                        {data.isVideoFile && <video src={data.originalUrl}></video>}
+                        {data.isVideoFile && <PreviewVideo src={data.originalUrl}></PreviewVideo>}
 
                         {(currentFileIndex > 0) && 
                             <MediaSliderButton direction="left" onClick={() => {handlePrevFile(); setIsFlaggedForReset(true)}} />

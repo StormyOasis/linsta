@@ -45,6 +45,7 @@ const CommentsWrapper = styled(Div)`
 
     max-height: calc(${props => props.theme['sizes'].maxCommentModalContentHeight} - 115px);
     min-height: calc(${props => props.theme['sizes'].minCommentModalContentHeight} - 40px);
+    height:100%;
     
     scrollbar-width: none;
     -ms-overflow-style: none;      
@@ -356,7 +357,7 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                             <MediaSlider media={props.post.media} />
                         </MediaSliderWrapper>
                         <Flex>
-                            <FlexColumn $maxWidth="500px">
+                            <FlexColumn $maxWidth="500px" $width="350px">
                                 <HeadingWrapper>
                                     <Div $marginLeft="10px" $paddingTop="10px" $paddingBottom="10px" $paddingRight="10px">
                                         <FlexRow $justifyContent="space-between">
