@@ -151,7 +151,8 @@ export const buildDataSetForES = (user:User, global:Global, entries:Entry[]):obj
                 captionText: global.captionText,
                 commentsDisabled: global.commentsDisabled,
                 likesDisabled: global.likesDisabled,
-                locationText: global.locationText          
+                locationText: global.locationText,
+                likes: global.likes || []                          
             },
             media: entries.map((entry) => {return {
                 altText: entry.alt,
