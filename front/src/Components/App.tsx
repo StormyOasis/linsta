@@ -22,7 +22,7 @@ const App: React.FC<any> = ({ children }) => {
         if (authUser && authUser.id != null) {
             dispatch(getProfileByUserId({ userId: authUser.id }));
         }
-    }, []);
+    }, [authUser]);
 
     historyUtils.location = useLocation();
     historyUtils.navigate = useNavigate();

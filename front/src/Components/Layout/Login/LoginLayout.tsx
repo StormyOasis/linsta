@@ -13,6 +13,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { historyUtils, validatePassword } from "../../../utils/utils";
 import { AppDispatch } from "../../../Components/Redux/redux";
 import { loginUser } from "../../../Components/Redux/slices/auth.slice";
+import { Div, Flex, Span } from "../../../Components/Common/CombinedStyling";
 
 type LoginLayoutProps = {
 };
@@ -31,7 +32,7 @@ const LoginForm = styled.form`
   vertical-align: baseline;
 `;
 
-const StatusText = styled.div`
+const StatusText = styled(Flex)`
     display: flex;
     text-align: center;
     color: rgb(200, 10, 10);
@@ -83,11 +84,11 @@ const LoginLayout: React.FC<LoginLayoutProps> = (_props: LoginLayoutProps) => {
             <Theme>
                 <LargeLogo />
                 <LoginForm method="post" onSubmit={submitForm}>
-                    <div className={styles.default.signupFormDiv1}>
-                        <span className={styles.default.signupIntroSpan}>
+                    <Div className={styles.default.signupFormDiv1}>
+                        <Span className={styles.default.signupIntroSpan}>
                             Log in to see photos and videos from your friends.
-                        </span>
-                    </div>                    
+                        </Span>
+                    </Div>                    
                     <StyledInput
                         name="userName"
                         placeholder="Username"
@@ -110,12 +111,12 @@ const LoginLayout: React.FC<LoginLayoutProps> = (_props: LoginLayoutProps) => {
                         disabled={!isFormValid()}                        
                         text="Login">
                     </StyledButton>
-                    <div className={styles.default.signupFormFbLoginDiv} style={widthStyle}>
+                    <Div className={styles.default.signupFormFbLoginDiv} style={widthStyle}>
                         <LoginWithFB top={true} onClick={loginWithFacebookClicked}>Log in with Facebook</LoginWithFB>
-                    </div> 
-                    <div>
+                    </Div> 
+                    <Div>
                         <StyledLink to="/forgot" className={styles.default.forgotWrapper}>Forgot Password?</StyledLink>
-                    </div>
+                    </Div>
                 </LoginForm>
             </Theme>
         );
@@ -124,18 +125,18 @@ const LoginLayout: React.FC<LoginLayoutProps> = (_props: LoginLayoutProps) => {
     return (
         <Theme>
             <LoginLayoutWrapper role="main">
-                <div className={styles.default.innerDiv1}>
-                    <div className={styles.default.innerDiv2}>
-                        <div className={styles.default.signupBox}>
+                <Div className={styles.default.innerDiv1}>
+                    <Div className={styles.default.innerDiv2}>
+                        <Div className={styles.default.signupBox}>
                             {renderLoginForm()}
-                        </div>
-                        <div
+                        </Div>
+                        <Div
                             className={styles.default.signupBox}
                             style={{ padding: "20px 0" }}>
                             Don't have an account? <StyledLink to="/signup">Sign up</StyledLink>
-                        </div>
-                    </div>
-                </div>
+                        </Div>
+                    </Div>
+                </Div>
             </LoginLayoutWrapper>
         </Theme>
     );
