@@ -13,12 +13,11 @@ const MediaSliderWrapper = styled(Div)`
 
 const MediaSliderLeftNormalWrapper = styled(MediaSliderWrapper)`
     bottom: 43%;
-    left: -3%;
+    left: -1%;
 `;
 
 const MediaSliderRightNormalWrapper = styled(MediaSliderWrapper)`
-    bottom: 43%;
-    right: 51%;
+    bottom: 43%;    
 `;
 
 const MediaSliderBottomLeftWrapper = styled(MediaSliderWrapper)`

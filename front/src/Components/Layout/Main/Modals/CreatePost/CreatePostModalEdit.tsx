@@ -62,7 +62,18 @@ const ControlContentContainer = styled.div`
 
 const PreviewImage = styled.img`
     display:flex;
-    max-height: 100%;
+    width: 386px;
+    height:412px;
+    object-fit: cover;
+    overflow: hidden;
+`;
+
+const PreviewVideo = styled.video`
+    display:flex;
+    width: 386px;
+    height:412px;
+    object-fit: cover;
+    overflow: hidden;
 `;
 
 const FilterTile = styled.div`
@@ -377,7 +388,7 @@ const CreatePostModalEditor: React.FC<CreatePostModalEditorProps> = (props: Crea
                 <ImageContainer>
                     {!props.editData.isVideoFile && 
                         <PreviewImage ref={imageRef} src={props.loadImage(props.editData, props.editData.data)} />}
-                    {props.editData.isVideoFile && <video src={props.editData.originalUrl}></video>}
+                    {props.editData.isVideoFile && <PreviewVideo src={props.editData.originalUrl}></PreviewVideo>}
 
                     {props.hasPrev && 
                         <MediaSliderButton direction="left" onClick={() => {props.onPrevFile(); setIsFlaggedForReset(true)}} />
