@@ -336,6 +336,12 @@ const ProfileContent: React.FC = () => {
         }
     }
 
+    // Don't display anything until the profile data is populated so that we don't briefly show a
+    // bunch of undefineds
+    if(!profile) {
+        return <></>
+    }
+
     return (
         <>
             <ContentWrapper ref={childRef} onScroll={throttledHandleScroll} $overflow="auto" $maxHeight="100vh">
