@@ -178,8 +178,8 @@ export const getPostByPostId = async (postId: string):Promise<|{esId: string; po
 
     const data = await RedisConnector.get(esId);
     let entries:Post[] = [];
-    if(data) {
-        entries[0] = JSON.parse(data).post;
+    if(data) {  
+        entries[0] = JSON.parse(data);
     } else {
         // Pull Post data from ES
 

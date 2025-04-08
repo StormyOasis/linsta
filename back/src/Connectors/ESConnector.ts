@@ -140,30 +140,28 @@ export default class ESConnector {
 
 export const buildDataSetForES = (user:User, global:Global, entries:Entry[]):object => {
     const dataSet = {
-        post: {
-            user: {
-                userId: user.userId,
-                userName: user.userName,
-                pfp: user.pfp
-            },
-            global: {
-                dateTime: new Date(),
-                captionText: global.captionText,
-                commentsDisabled: global.commentsDisabled,
-                likesDisabled: global.likesDisabled,
-                locationText: global.locationText,
-                likes: global.likes || []                          
-            },
-            media: entries.map((entry) => {return {
-                altText: entry.alt,
-                entityTag: entry.entityTag,
-                id: entry.id,
-                mimeType: entry.mimeType,
-                path: entry.url,
-                postId: entry.postId,
-                userId: entry.userId
-            }})
-        }
+        user: {
+            userId: user.userId,
+            userName: user.userName,
+            pfp: user.pfp
+        },
+        global: {
+            dateTime: new Date(),
+            captionText: global.captionText,
+            commentsDisabled: global.commentsDisabled,
+            likesDisabled: global.likesDisabled,
+            locationText: global.locationText,
+            likes: global.likes || []                          
+        },
+        media: entries.map((entry) => {return {
+            altText: entry.alt,
+            entityTag: entry.entityTag,
+            id: entry.id,
+            mimeType: entry.mimeType,
+            path: entry.url,
+            postId: entry.postId,
+            userId: entry.userId
+        }})
     };
 
     return dataSet;
@@ -172,7 +170,7 @@ export const buildDataSetForES = (user:User, global:Global, entries:Entry[]):obj
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const buildSearchResultSet = (hits: any[]):Post[] => {    
     const results:Post[] = hits.map((entry):Post => {
-        const source = entry._source.post;
+        const source = entry._source;
         return {
             postId: "",
             user: {

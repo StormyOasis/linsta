@@ -16,12 +16,12 @@ export const addPost = async (ctx: Context) => {
     const files = ctx.request.files;
 
     if (!data || !files) {
-        return handleValidationError(ctx, "Invalid params passed"); 
+        return handleValidationError(ctx, "Invalid params passed");
     }
 
-    const user:User = JSON.parse(data.user);
-    const global:Global = JSON.parse(data.global);
-    const entries:Entry[] = JSON.parse(data.entries);
+    const user: User = JSON.parse(data.user);
+    const global: Global = JSON.parse(data.global);
+    const entries: Entry[] = JSON.parse(data.entries);
 
     // strip out any potentially problematic html tags
     user.userId = sanitize(user.userId);
@@ -30,8 +30,8 @@ export const addPost = async (ctx: Context) => {
 
     try {
         // Upload each file to s3
-        for(const entry of entries) {
-            const file:formidable.File = (files[entry.id] as formidable.File);            
+        for (const entry of entries) {
+            const file: formidable.File = (files[entry.id] as formidable.File);
 
             const result = await uploadFile(file, entry.id, user.userId, getFileExtByMimeType(file.mimetype));
             entry.entityTag = result.tag.replace('"', '').replace('"', '');
@@ -44,22 +44,22 @@ export const addPost = async (ctx: Context) => {
         // Now add the data to ES
         const dataSet = buildDataSetForES(user, global, entries);
 
-        const esResult = await ESConnector.getInstance().insert(dataSet);        
-        if(!esResult || esResult.result !== 'created') {
-            return handleValidationError(ctx, "Error adding post"); 
+        const esResult = await ESConnector.getInstance().insert(dataSet);
+        if (!esResult || esResult.result !== 'created') {
+            return handleValidationError(ctx, "Error adding post");
         }
 
         // Now add an associated vertex and edges to the graph for this post
         await DBConnector.beginTransaction();
-        
+
         // Now add a post vertex to the graph
         let graphResult = await DBConnector.getGraph(true)
             .addV("Post")
             .property("esId", esResult._id)
-            .next();  
+            .next();
 
-        if(graphResult == null || graphResult.value == null) {
-            return handleValidationError(ctx, "Error adding post"); 
+        if (graphResult == null || graphResult.value == null) {
+            return handleValidationError(ctx, "Error adding post");
         }
 
         const postId: string = graphResult.value.id;
@@ -74,21 +74,19 @@ export const addPost = async (ctx: Context) => {
             .to("user")
             .addE(EDGE_USER_TO_POST)
             .from_("user")
-            .to("post")            
-            .next();  
+            .to("post")
+            .next();
 
-        if(graphResult == null || graphResult.value == null) {
-            return handleValidationError(ctx, "Error creating profile links"); 
-        }       
-        
-        await DBConnector.commitTransaction();
+        if (graphResult == null || graphResult.value == null) {
+            return handleValidationError(ctx, "Error creating profile links");
+        }
 
         // Update the media entries with the postId for easier
         // and faster lookup. First update in ES
         await ESConnector.getInstance().update(esResult._id, {
             source:
-                `for (int i = 0; i < ctx._source.post.media.size(); i++) {
-                    ctx._source.post.media[i].postId = params.postId;
+                `for (int i = 0; i < ctx._source.media.size(); i++) {
+                    ctx._source.media[i].postId = params.postId;
                 }
             `,
             "params": {
@@ -100,21 +98,23 @@ export const addPost = async (ctx: Context) => {
         // Now update the data set that is put into redis adding the postId
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (dataSet as any).post.media = entries.map((entry:Entry) => {
-            const newData = {...entry};
+        (dataSet as any).media = entries.map((entry: Entry) => {
+            const newData = { ...entry };
             newData.postId = postId;
             return newData;
         });
 
+        await DBConnector.commitTransaction();
+
         // Finally add the post data to redis
         await RedisConnector.set(esResult._id, JSON.stringify(dataSet));
 
-    } catch(err) {
+    } catch (err) {
         await DBConnector.rollbackTransaction();
         logger.error(err);
-        return handleValidationError(ctx, "Error adding post"); 
+        return handleValidationError(ctx, "Error adding post");
     }
-    
+
     ctx.status = 200;
 }
 
@@ -137,34 +137,28 @@ export const getAllPosts = async (ctx: Context) => {
 
     try {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const query:any = {
+        const query: any = {
             query: {
                 match_all: {}
             },
             sort: [
                 {
-                    "post.global.dateTime": {
-                        "order": "asc",
-                        "nested": {
-                            "path": "post.global"
-                        }
+                    "media.postId.keyword": {
+                        "order": "asc"
                     }
                 },
                 {
-                    "post.media.postId": {
-                        "order": "asc",
-                        "nested": {
-                            "path": "post.media"
-                        }
+                    "global.dateTime": {
+                        "order": "asc"
                     }
                 }
-            ]                        
+            ]
         }
-        
+
         if (data.dateTime != null && data.postId != null) {
             query.search_after = [data.dateTime, data.postId];
         }
-        
+
         const response: GetPostsResponse = {
             posts: [],
             dateTime: "",
@@ -173,39 +167,39 @@ export const getAllPosts = async (ctx: Context) => {
         };
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const results:any = await ESConnector.getInstance().searchWithPagination(query);
-    
+        const results: any = await ESConnector.getInstance().searchWithPagination(query);
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const posts:any = {};
-        const postIds:string[] = [];
+        const posts: any = {};
+        const postIds: string[] = [];
         if (results.body.hits.hits.length > 0) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const hits: any = results.body.hits.hits;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any            
-            hits.map(async (entry: any) => {                
+            hits.map(async (entry: any) => {
                 // Use this postId to avoid having to do a esId to postId DB query
-                const postId = entry._source.post.media[0].postId;
-                posts[postId] = entry._source.post;
-                posts[postId].postId = postId;                
+                const postId = entry._source.media[0].postId;
+                posts[postId] = entry._source;
+                posts[postId].postId = postId;
                 posts[postId].user.pfp = await getPfpByUserId(posts[postId].user.userId);
-                
+
                 postIds.push(postId);
             });
-    
+
             response.dateTime = hits[hits.length - 1].sort[0];
             response.postId = hits[hits.length - 1].sort[1];
             response.done = false;
         }
-    
-        if(response.done) {
+
+        if (response.done) {
             // No more results to return, so return here
             ctx.status = 200;
             ctx.body = response;
             return;
         }
-    
+
         // Now update the posts' return values by adding all the likes and just the comment counts
-        
+
         // Get all posts' likes
         const __ = DBConnector.__();
         const dbResults = await DBConnector.getGraph().V(postIds)
@@ -223,47 +217,27 @@ export const getAllPosts = async (ctx: Context) => {
                 .by(__.id())
                 .fold()
             ).toList();
-    
-        if(dbResults != null && dbResults.length > 0) {
-            // At least one of the given post ids has a like
-            /*dbResults.forEach(result => {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const postMap:Map<any, any> = (result as Map<any, any>);
-                const postId = postMap.get("postId");
-                const users = postMap.get("users");                
 
-                if (posts[postId]) {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    posts[postId].global.likes = users.map((user: any) => ({
-                        userName: user.userName,
-                        userId: user.id,
-                        profileId: user.profileId,
-                        firstName: user.firstName,
-                        lastName: user.lastName,
-                        pfp: user.pfp
-                    }));
-                }
-            });*/
-
-            for(const result of dbResults) {                
+        if (dbResults != null && dbResults.length > 0) {
+            for (const result of dbResults) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const postMap:Map<any, any> = (result as Map<any, any>);
+                const postMap: Map<any, any> = (result as Map<any, any>);
                 const postId = postMap.get("postId");
                 const users = postMap.get("users");
 
                 // Make sure that the postId found in DB matches one
                 // from the above ES query. They could be out of sync due to pagination
-                if(posts[postId] == null) {
+                if (posts[postId] == null) {
                     continue;
                 }
 
-                const post:Post = (posts[postId] as Post);                
-                if(post.global.likes == null) {
+                const post: Post = (posts[postId] as Post);
+                if (post.global.likes == null) {
                     post.global.likes = [];
                 }
 
-                for(const user of users) {
-                    const newLike:Like = {
+                for (const user of users) {
+                    const newLike: Like = {
                         userName: user.get("userName"),
                         userId: user.get("id"),
                         profileId: user.get("profileId"),
@@ -272,21 +246,21 @@ export const getAllPosts = async (ctx: Context) => {
                         pfp: user.get("pfp")
                     };
                     post.global.likes.push(newLike);
-                }            
-            }            
-        }            
-        
+                }
+            }
+        }
+
         // Add the posts to the response
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        response.posts = Object.values(posts).map((entry:any) => entry);
-    
+        response.posts = Object.values(posts).map((entry: any) => entry);
+
         ctx.body = response;
         ctx.status = 200;
-    
-    } catch(err) {
+
+    } catch (err) {
         console.log(err);
         logger.error(err);
-        return handleValidationError(ctx, "Error getting posts"); 
+        return handleValidationError(ctx, "Error getting posts");
     }
 }
 
@@ -294,24 +268,24 @@ type GetPostByIdRequest = {
     postId: string
 };
 
-export const getPostById = async(ctx: Context) => {
+export const getPostById = async (ctx: Context) => {
     Metrics.increment("posts.getById");
 
     const query = <GetPostByIdRequest>ctx.request.query;
     const postId = query.postId;
 
-    if(postId == null || postId.trim().length === 0) {
-        return handleValidationError(ctx, "Error getting post"); 
+    if (postId == null || postId.trim().length === 0) {
+        return handleValidationError(ctx, "Error getting post");
     }
 
-    try {         
+    try {
         ctx.body = await getPostByPostId(postId);
         ctx.status = 200;
-    } catch(err) {
+    } catch (err) {
         console.log(err);
         logger.error(err);
-        return handleValidationError(ctx, "Error getting post"); 
-    }    
+        return handleValidationError(ctx, "Error getting post");
+    }
 }
 
 type LikeRequest = {
@@ -328,7 +302,7 @@ export const toggleLikePost = async (ctx: Context) => {
         return handleValidationError(ctx, "Invalid params passed");
     }
 
-    let isLiked:boolean|undefined = false;
+    let isLiked: boolean | undefined = false;
 
     try {
         const __ = DBConnector.__();
@@ -341,7 +315,7 @@ export const toggleLikePost = async (ctx: Context) => {
             .hasId(data.postId)
             .hasNext();
 
-        if(isLiked) {
+        if (isLiked) {
             // User currently likes this post which means we need to unlike
             // Drop both the edges            
             await DBConnector.getGraph(true).V(data.postId)
@@ -354,7 +328,7 @@ export const toggleLikePost = async (ctx: Context) => {
                 .outE(EDGE_USER_LIKED_POST)
                 .filter(__.inV().hasId(data.postId))
                 .drop()
-                .next();           
+                .next();
         } else {
             // Need to like the post by adding the edges
             const result = await DBConnector.getGraph(true).V(data.postId)
@@ -369,16 +343,16 @@ export const toggleLikePost = async (ctx: Context) => {
                 .to("post")
                 .next();
 
-            if(result == null || result.value == null) {
+            if (result == null || result.value == null) {
                 return handleValidationError(ctx, "Error toggling like state");
-            }                   
+            }
         }
 
-        await DBConnector.commitTransaction();        
+        await DBConnector.commitTransaction();
 
-        ctx.body = {liked: !isLiked};
+        ctx.body = { liked: !isLiked };
         ctx.status = 200;
-    } catch(err) {        
+    } catch (err) {
         console.log(err);
         logger.error(err);
         await DBConnector.rollbackTransaction();
@@ -395,18 +369,18 @@ export const postIsPostLikedByUserId = async (ctx: Context) => {
         return handleValidationError(ctx, "Invalid params passed");
     }
 
-    let isLiked:boolean|undefined = false;
+    let isLiked: boolean | undefined = false;
 
-    try {                
+    try {
         // Check the graph to see if the user likes the post
         isLiked = await DBConnector.getGraph().V(data.userId)
             .out(EDGE_USER_LIKED_POST)
             .hasId(data.postId)
-            .hasNext();    
+            .hasNext();
 
-        ctx.body = {liked: isLiked};
+        ctx.body = { liked: isLiked };
         ctx.status = 200;
-    } catch(err) {        
+    } catch (err) {
         logger.error(err);
         return handleValidationError(ctx, "Error getting like state");
     }
@@ -421,15 +395,15 @@ export const getAllLikesByPost = async (ctx: Context) => {
 
     const req = <GetAllLikesByPostRequest>ctx.request.query;
     const postId = req.postId?.trim();
-    
+
     if (!postId || postId.length === 0) {
         return handleValidationError(ctx, "Error getting all likes");
     }
 
-    try {     
+    try {
         ctx.body = await getLikesByPost(postId);
         ctx.status = 200;
-    } catch(err) {        
+    } catch (err) {
         console.log(err);
         logger.error(err);
         return handleValidationError(ctx, "Error getting all likes");
@@ -467,36 +441,19 @@ export const getPostsByUserId = async (ctx: Context) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const query: any = {
             query: {
-                nested: {
-                    path: "post.media",
-                    query: {
-                        bool: {
-                            must: [
-                                {
-                                    match: {
-                                        "post.media.userId": data.userId
-                                    }
-                                }
-                            ]
-                        }
-                    }
+                match: {
+                  "media.userId": data.userId
                 }
             },
             sort: [
                 {
-                    "post.global.dateTime": {
-                        "order": "asc",
-                        "nested": {
-                            "path": "post.global"
-                        }
+                    "media.postId.keyword": {
+                        "order": "asc"
                     }
                 },
                 {
-                    "post.media.postId": {
-                        "order": "asc",
-                        "nested": {
-                            "path": "post.media"
-                        }
+                    "global.dateTime": {
+                        "order": "asc"
                     }
                 }
             ]
@@ -516,18 +473,18 @@ export const getPostsByUserId = async (ctx: Context) => {
         };
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const posts:any = {};
-        const postIds:string[] = [];
+        const posts: any = {};
+        const postIds: string[] = [];
         if (results && results.body.hits.hits.length > 0) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const hits: any = results.body.hits.hits;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any            
             hits.map((entry: any) => {
                 // Use this postId to avoid having to do a esId to postId DB query
-                const postId = entry._source.post.media[0].postId;
-                posts[postId] = entry._source.post;
+                const postId = entry._source.media[0].postId;
+                posts[postId] = entry._source;
                 posts[postId].postId = postId;
-                
+
                 postIds.push(postId);
             });
 
@@ -536,7 +493,7 @@ export const getPostsByUserId = async (ctx: Context) => {
             response.done = false;
         }
 
-        if(response.done) {
+        if (response.done) {
             // No more results to return, so return here
             ctx.status = 200;
             ctx.body = response;
@@ -544,7 +501,7 @@ export const getPostsByUserId = async (ctx: Context) => {
         }
 
         // Now update the posts' return values by adding all the likes and just the comment counts
-        
+
         // Get all posts' likes
         const __ = DBConnector.__();
         let dbResults = await DBConnector.getGraph().V(postIds)
@@ -564,27 +521,27 @@ export const getPostsByUserId = async (ctx: Context) => {
             ).toList();
 
         // Get the post likes 
-        if(dbResults != null && dbResults.length > 0) {
+        if (dbResults != null && dbResults.length > 0) {
             // At least one of the given post ids has a like
-            for(const result of dbResults) {
+            for (const result of dbResults) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const postMap:Map<any, any> = (result as Map<any, any>);
+                const postMap: Map<any, any> = (result as Map<any, any>);
                 const postId = postMap.get("postId");
                 const users = postMap.get("users");
-                
+
                 // Make sure that the postId found in DB matches one
                 // from the above ES query. They could be out of sync due to pagination
-                if(posts[postId] == null) {
+                if (posts[postId] == null) {
                     continue;
                 }
 
-                const post:PostWithCommentCount = (posts[postId] as PostWithCommentCount); 
-                if(post.global.likes == null) {
+                const post: PostWithCommentCount = (posts[postId] as PostWithCommentCount);
+                if (post.global.likes == null) {
                     post.global.likes = [];
                 }
 
-                for(const user of users) {
-                    const newLike:Like = {
+                for (const user of users) {
+                    const newLike: Like = {
                         userName: user.get("userName"),
                         userId: user.get("id"),
                         profileId: user.get("profileId"),
@@ -593,33 +550,33 @@ export const getPostsByUserId = async (ctx: Context) => {
                         pfp: user.get("pfp")
                     };
                     post.global.likes.push(newLike);
-                }            
-            }            
+                }
+            }
         }
 
         // Get the per post comment counts
         dbResults = await DBConnector.getGraph().V(postIds)
             .project("postId", "commentCount")
-            .by(__.id())                         
+            .by(__.id())
             .by(__.outE(EDGE_POST_TO_COMMENT).count())
             .toList();
 
-        if(dbResults != null && dbResults.length > 0) {
+        if (dbResults != null && dbResults.length > 0) {
             // At least one of the given post ids has a like
-            for(const result of dbResults) {  
+            for (const result of dbResults) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const postMap:Map<any, any> = (result as Map<any, any>);
+                const postMap: Map<any, any> = (result as Map<any, any>);
                 const postId = postMap.get("postId");
                 const commentCount = postMap.get("commentCount");
-                
-                const post:PostWithCommentCount = (posts[postId] as PostWithCommentCount); 
+
+                const post: PostWithCommentCount = (posts[postId] as PostWithCommentCount);
                 post.commentCount = commentCount;
-            }          
+            }
         }
 
         // Add the posts to the response
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        response.posts = Object.values(posts).map((entry:any) => entry);
+        response.posts = Object.values(posts).map((entry: any) => entry);
 
         ctx.body = response;
         ctx.status = 200;

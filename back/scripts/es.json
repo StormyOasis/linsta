@@ -2,67 +2,65 @@ PUT main
 {
   "mappings": {
     "properties": {
-      "post": {
-        "type": "nested",
-        "properties": {
-          "user": {
-            "type": "nested",
-            "properties": {
-              "userId": {
-                "type": "text"
-              },
-              "userName": {
-                "type": "text"
-              }
+      "type": "nested",
+      "properties": {
+        "user": {
+          "type": "nested",
+          "properties": {
+            "userId": {
+              "type": "text"
+            },
+            "userName": {
+              "type": "text"
             }
-          },
-          "global": {
-            "type": "nested",
-            "properties": {
-              "dateTime": {
-                "type": "date"
-              },
-              "commentsDisabled": {
-                "type": "boolean"
-              },
-              "commentCount": {
-                "type": "long"
-              },
-              "likesDisabled": {
-                "type": "boolean"
-              },
-              "locationText": {
-                "type": "text"
-              },
-              "captionText": {
-                "type": "text"
-              }       
+          }
+        },
+        "global": {
+          "type": "nested",
+          "properties": {
+            "dateTime": {
+              "type": "date"
+            },
+            "commentsDisabled": {
+              "type": "boolean"
+            },
+            "commentCount": {
+              "type": "long"
+            },
+            "likesDisabled": {
+              "type": "boolean"
+            },
+            "locationText": {
+              "type": "text"
+            },
+            "captionText": {
+              "type": "text"
             }
-          },
-          "media": {
-            "type": "nested",
-            "properties": {
-              "id": {
-                "type": "text"
-              },
-              "userId": {
-                "type": "keyword"
-              },    
-              "postId": {
-                "type": "keyword"
-              },                          
-              "entityTag": {
-                "type": "keyword"
-              },
-              "path": {
-                "type": "text"
-              },
-              "altText": {
-                "type": "text"
-              },
-              "mimeType": {
-                "type": "text"
-              }
+          }
+        },
+        "media": {
+          "type": "nested",
+          "properties": {
+            "id": {
+              "type": "text"
+            },
+            "userId": {
+              "type": "keyword"
+            },
+            "postId": {
+              "type": "keyword"
+            },
+            "entityTag": {
+              "type": "keyword"
+            },
+            "path": {
+              "type": "text"
+            },
+            "altText": {
+              "type": "text"
+            },
+            "mimeType": {
+              "type": "text"
             }
           }
         }
@@ -99,7 +97,7 @@ PUT profiles
           "gender": {
             "type": "text"
           },
-          "pronouns" : {
+          "pronouns": {
             "type": "text"
           },
           "link": {

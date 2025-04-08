@@ -115,11 +115,11 @@ describe('ESConnector', () => {
             };
             const entries: Entry[] = [{ alt: 'Alt', entityTag: 'tag', id: '1', mimeType: 'image/jpeg', url: 'url', postId: 'post1', userId: '123' }];
             const result = buildDataSetForES(user, global, entries);
-            expect(result).toHaveProperty('post.user');
-            expect(result).toHaveProperty('post.global');
-            expect(result).toHaveProperty('post.media');
+            expect(result).toHaveProperty('user');
+            expect(result).toHaveProperty('global');
+            expect(result).toHaveProperty('media');
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            expect((result as any).post.media.length).toBe(1);
+            expect((result as any).media.length).toBe(1);
         });
     });
 
@@ -127,11 +127,9 @@ describe('ESConnector', () => {
         it('should build search result set from hits', () => {
             const hits = [{
                 _source: {
-                    post: {
-                        user: { userId: '123', userName: 'Test', pfp: '' },
-                        global: { dateTime: new Date(), captionText: 'Caption', commentsDisabled: false, likesDisabled: false, locationText: 'Location' },
-                        media: [{ altText: 'Alt', id: '1', mimeType: 'image/jpeg', path: 'url', postId: 'post1', userId: '123' }]
-                    }
+                    user: { userId: '123', userName: 'Test', pfp: '' },
+                    global: { dateTime: new Date(), captionText: 'Caption', commentsDisabled: false, likesDisabled: false, locationText: 'Location' },
+                    media: [{ altText: 'Alt', id: '1', mimeType: 'image/jpeg', path: 'url', postId: 'post1', userId: '123' }]
                 },
                 _id: '1'
             }];
