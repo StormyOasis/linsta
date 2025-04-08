@@ -5,7 +5,7 @@ import { ContentWrapper, Div, Flex, FlexColumn, FlexRow, FlexRowFullWidth, Main,
 import { useAppDispatch, actions, useAppSelector } from "../../../Components/Redux/redux";
 import { Post, PostPaginationResponse, PostWithCommentCount, Profile } from "../../../api/types";
 import { postGetPostsByUserId, postGetProfileByUserName, postGetProfileStatsById, postGetSingleFollowStatus, ServiceResponse } from "../../../api/ServiceController";
-import { followUser, getPfpFromProfile } from "../../../utils/utils";
+import { followUser, getPfpFromProfile, isVideoFileFromPath } from "../../../utils/utils";
 import StyledButton from "../../../Components/Common/StyledButton";
 import { MODAL_TYPES, ModalState } from "../../../Components/Redux/slices/modals.slice";
 import { FOLLOWERS_MODAL_TYPE, FOLLOWING_MODAL_TYPE } from "../Main/Modals/Profile/FollowersModal";
@@ -93,6 +93,7 @@ const GridImageContainer = styled(Div) <{ $width: string }>`
     height: auto;
     width: ${props => props.$width};
     cursor: pointer;
+    overflow: hidden;
 
     @media (max-width: ${props => props.theme["breakpoints"].md - 1}px) {
         width: 50%;
@@ -108,6 +109,15 @@ const GridImage = styled.img`
     object-fit: cover;    
     width: 100%;
     height: 100%;
+`;
+
+const GridVideo = styled.video`
+    aspect-ratio: 1 / 1;
+    display:flex;
+    width: 386px;
+    height:412px;
+    object-fit: cover;
+    overflow: hidden;
 `;
 
 const GridImageOverlay = styled(Div)`
@@ -413,6 +423,7 @@ const ProfileContent: React.FC = () => {
                             {posts.map((post: PostWithCommentCount, index: number) => {
                                 const likeCount = post.global.likes ? post.global.likes.length : 0;
                                 const commentCount = post.commentCount;
+                                const isVideo = isVideoFileFromPath(post.media[0].path);
                                 return (
                                     <GridImageContainer
                                         $width="50%"
@@ -421,11 +432,17 @@ const ProfileContent: React.FC = () => {
                                         onMouseEnter={() => setHoverPost(post)}
                                         onMouseLeave={() => setHoverPost(null)}>
 
-                                        <GridImage
+                                        {!isVideo && <GridImage 
                                             src={post.media[0].path}
                                             alt={`${post.media[0].altText}`}
                                             aria-label={`${post.media[0].altText}`}
-                                        />
+                                            />
+                                        }
+                                        {isVideo && <GridVideo
+                                            src={post.media[0].path}
+                                            aria-label={`${post.media[0].altText}`}
+                                            />
+                                        }
 
                                         {(hoverPost && hoverPost === post) &&
                                             <GridImageOverlay>

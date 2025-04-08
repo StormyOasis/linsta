@@ -2,7 +2,7 @@ import { Context } from "koa";
 import formidable from 'formidable';
 import Metrics from "../metrics/Metrics";
 import logger from "../logger/logger";
-import { getFileExtByMimeType, getLikesByPost, getPfpByUserId, getPostByPostId, handleValidationError, sanitize } from "../utils/utils";
+import { getFileExtByMimeType, getFollowingUserIds, getLikesByPost, getPfpByUserId, getPostByPostId, handleValidationError, sanitize } from "../utils/utils";
 import { uploadFile } from "../Connectors/AWSConnector";
 import ESConnector, { buildDataSetForES } from '../Connectors/ESConnector';
 import { User, Global, Entry, Post, Like } from "../utils/types";
@@ -121,6 +121,7 @@ export const addPost = async (ctx: Context) => {
 type GetPostsRequest = {
     dateTime?: string;
     postId?: string;
+    userId: string;
 };
 
 type GetPostsResponse = {
@@ -136,10 +137,24 @@ export const getAllPosts = async (ctx: Context) => {
     const data = <GetPostsRequest>ctx.request.body;
 
     try {
+        if (data.userId == null) {
+            return handleValidationError(ctx, "Invalid params passed"); 
+        }
+
+        const followingIds:string[] = await getFollowingUserIds(data.userId);
+
+        if(followingIds.length === 0) {
+            ctx.status = 200;
+            ctx.body = [];
+            return;            
+        }
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const query: any = {
-            query: {
-                match_all: {}
+            "query": {
+                "terms": {
+                    "user.userId": followingIds
+                }
             },
             sort: [
                 {
@@ -442,7 +457,7 @@ export const getPostsByUserId = async (ctx: Context) => {
         const query: any = {
             query: {
                 match: {
-                  "media.userId": data.userId
+                    "media.userId": data.userId
                 }
             },
             sort: [

@@ -2,7 +2,7 @@ import sanitizeHtml from 'sanitize-html';
 import { Like, Post, Profile } from './types';
 import ESConnector, { buildSearchResultSet } from '../Connectors/ESConnector';
 import RedisConnector from '../Connectors/RedisConnector';
-import DBConnector, { EDGE_USER_LIKED_POST } from '../Connectors/DBConnector';
+import DBConnector, { EDGE_USER_FOLLOWS, EDGE_USER_LIKED_POST } from '../Connectors/DBConnector';
 import logger from '../logger/logger';
 import { Context } from 'koa';
 
@@ -207,6 +207,32 @@ export const getPostByPostId = async (postId: string):Promise<|{esId: string; po
     await RedisConnector.set(esId, JSON.stringify(entries[0]));    
 
     return {esId, post: entries[0]};
+}
+
+export const getFollowingUserIds = async (userId: string): Promise<string[]> => {
+    const followingIds:string[] = [];
+
+    try {
+        const results = await DBConnector.getGraph().V(userId)
+            .out(EDGE_USER_FOLLOWS)
+            .toList();     
+            
+        if(results == null || results.values == null) {
+            return [];
+        }
+
+        for(const result of results) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const vertex:any = result;
+            followingIds.push(vertex.id);   
+        }
+
+    } catch(err) {
+        console.log(err);
+        logger.error(err);   
+    } 
+    
+    return followingIds;
 }
 
 export const getProfileByUserId = async (userId: string):Promise<Profile|null> => {
