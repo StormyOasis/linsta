@@ -151,8 +151,8 @@ export const getAllPosts = async (ctx: Context) => {
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const query: any = {
-            "query": {
-                "terms": {
+            query: {
+                terms: {
                     "user.userId": followingIds
                 }
             },

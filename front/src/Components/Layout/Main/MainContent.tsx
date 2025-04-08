@@ -126,8 +126,8 @@ const MainContent: React.FC = () => {
 
         setIsLoading(true);
 
-        const result = await getPosts({ dateTime: paginationResult?.dateTime, postId: paginationResult?.postId, userId: authUser.id });
-        if (result.data != null) {
+        const result = await getPosts({ dateTime: paginationResult?.dateTime, postId: paginationResult?.postId, userId: authUser?.id });        
+        if (result.data != null && result.data.length !== 0) {
             const response: PostPaginationResponse = result.data;
             setPaginationResult(response);
             setPosts((posts: Post[]) => [...posts, ...response.posts]);
