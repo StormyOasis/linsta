@@ -64,11 +64,11 @@ const LikesModalContent: React.FC<LikesModalContentProps> = (props: LikesModalCo
             return <></>;
         }
 
-        const results = props.post.global.likes.map(entry => {                 
+        const results = props.post.global.likes.map((entry, index) => {                             
             if (entry.userId == props.post.user.userId || entry.userId == authUser.id) {
-                return <div key="0"></div>; //prevent 'element in list should have unique key' error
+                return <div key={`${index}`}></div>; //prevent 'element in list should have unique key' error
             }
-
+            
             const lfd = likeFollowData[entry.userId];
             if (lfd == null) {
                 return <div key="0"></div>; //prevent 'element in list should have unique key' error

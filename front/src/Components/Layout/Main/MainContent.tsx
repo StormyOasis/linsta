@@ -126,7 +126,7 @@ const MainContent: React.FC = () => {
 
         setIsLoading(true);
 
-        const result = await getPosts({ dateTime: paginationResult?.dateTime, postId: paginationResult?.postId });
+        const result = await getPosts({ dateTime: paginationResult?.dateTime, postId: paginationResult?.postId, userId: authUser.id });
         if (result.data != null) {
             const response: PostPaginationResponse = result.data;
             setPaginationResult(response);
@@ -184,7 +184,7 @@ const MainContent: React.FC = () => {
     }
 
     const handleEmojiClick = useCallback((emoji: EmojiClickData, postId: string) => {
-        const newText = commentText[`${postId}`] + emoji.emoji;
+        const newText = (commentText[`${postId}`] || "") + emoji.emoji;
         setCommentText((prevState) => ({ ...prevState, [postId]: newText }));
     }, [commentText]);
 

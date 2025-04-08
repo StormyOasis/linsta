@@ -303,7 +303,7 @@ type GetFollowingByUserIdRequest = {
     userId: string;
 };
 
-export const getFollowingByUserId = async(ctx: Context) => {
+export const getFollowingByUserId = async (ctx: Context) => {
     Metrics.increment("profiles.getFollowingByUserId");
 
     const data = <GetFollowingByUserIdRequest>ctx.request.body;
