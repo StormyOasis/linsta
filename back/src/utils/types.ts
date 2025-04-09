@@ -71,3 +71,7 @@ export interface ProfileWithFollowStatus extends Profile {
 export interface ProfileWithFollowStatusInt {
     [key: string]: ProfileWithFollowStatus;
 }        
+
+export interface PostWithCommentCount extends Post {
+    commentCount: number;
+}

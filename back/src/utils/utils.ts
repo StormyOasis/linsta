@@ -1,8 +1,8 @@
 import sanitizeHtml from 'sanitize-html';
-import { Like, Post, Profile } from './types';
+import { Like, PostWithCommentCount, Profile, Post } from './types';
 import ESConnector, { buildSearchResultSet } from '../Connectors/ESConnector';
 import RedisConnector from '../Connectors/RedisConnector';
-import DBConnector, { EDGE_USER_FOLLOWS, EDGE_USER_LIKED_POST } from '../Connectors/DBConnector';
+import DBConnector, { EDGE_USER_FOLLOWS, EDGE_USER_LIKED_POST, EDGE_POST_TO_COMMENT } from '../Connectors/DBConnector';
 import logger from '../logger/logger';
 import { Context } from 'koa';
 
@@ -137,7 +137,7 @@ export const getLikesByPost = async (postId: string|null):Promise<Like[]> => {
     return output;
 }
 
-export const getPostByPostId = async (postId: string):Promise<|{esId: string; post:Post}|null> => {
+export const getPostByPostId = async (postId: string):Promise<|{esId: string; post:PostWithCommentCount}|null> => {
     let esId: string = "";
 
     // Try to pull the postId to ES id mapping from Redis
@@ -177,7 +177,7 @@ export const getPostByPostId = async (postId: string):Promise<|{esId: string; po
     // Now attempt to pull the full Post object from Redis
 
     const data = await RedisConnector.get(esId);
-    let entries:Post[] = [];
+    let entries:PostWithCommentCount[] = [];
     if(data) {  
         entries[0] = JSON.parse(data);
     } else {
@@ -192,11 +192,28 @@ export const getPostByPostId = async (postId: string):Promise<|{esId: string; po
             }
         }, 1);
         
-        entries = buildSearchResultSet(results.body.hits.hits);
+        entries = buildSearchResultSet(results.body.hits.hits) as PostWithCommentCount[];
         if(entries.length === 0) {
             throw new Error("Invalid post");
         }
     }
+
+    // Get the per post comment counts
+    const __ = DBConnector.__();
+    const dbResults = await DBConnector.getGraph().V(postId)
+        .project("postId", "commentCount")
+        .by(__.id())
+        .by(__.outE(EDGE_POST_TO_COMMENT).count())
+        .toList();
+
+    if (dbResults != null && dbResults.length > 0) {
+        for (const result of dbResults) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const postMap: Map<any, any> = (result as Map<any, any>);
+            const commentCount = postMap.get("commentCount");
+            entries[0].commentCount = commentCount;
+        }
+    }    
 
     // Get post likes
     entries[0].global.likes = await getLikesByPost(postId);

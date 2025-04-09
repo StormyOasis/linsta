@@ -8,7 +8,8 @@ export const MODAL_TYPES = {
     COMMENT_MODAL: "commentModal",
     LIKES_MODAL: "likeModal",
     PROFILE_PIC_MODAL: "pfpModal",
-    FOLLOW_MODAL: "followModal"
+    FOLLOW_MODAL: "followModal",
+    COMMENT_DELETE_MODAL: "commentDeleteModal"
 };
 
 export interface ModalState {
