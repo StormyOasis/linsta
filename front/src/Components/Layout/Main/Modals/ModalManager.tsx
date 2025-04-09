@@ -8,6 +8,7 @@ import CommentModal from "./Comments/CommentsModal";
 import LikesModal from "./Main/LikesModal";
 import PfpModal from "./Profile/ProfilePicModal";
 import FollowersModal from "./Profile/FollowersModal";
+import DeleteCommentModal from "./Comments/DeleteCommentModal";
 
 const MODAL_ZINDEX_BASE: number = 9990;
 
@@ -59,7 +60,7 @@ const ModalManager: React.FC<{}> = () => {
                     return <CommentModal
                         key={MODAL_TYPES.COMMENT_MODAL}
                         zIndex={zIndex++}
-                        post={modalState.data.post}
+                        post={data.post}
                         onClose={() => {
                             // Before closing, update Redux state with the new data
                             updateModalData(modalName, { post: data.post });
@@ -94,6 +95,19 @@ const ModalManager: React.FC<{}> = () => {
                             // Before closing, update Redux state with the new data
                             dispatch(actions.profileActions.forceUpdate());
                             closeModal(modalName, { nonce: data.nonce });
+                        }} />;
+                }
+                case MODAL_TYPES.COMMENT_DELETE_MODAL: {
+                    return <DeleteCommentModal
+                        key={MODAL_TYPES.COMMENT_DELETE_MODAL}
+                        zIndex={zIndex++}
+                        commentId={data.commentId}
+                        onClose={(closeData: any) => {
+                            // Before closing, update Redux state with the new data
+                            if(closeData.isCommited) {
+                                dispatch(actions.miscActions.updateDeletedCommentId(data.commentId));
+                            }
+                            closeModal(modalName, {deletedCommentId: data.commentId})
                         }} />;
                 }
                 default: {

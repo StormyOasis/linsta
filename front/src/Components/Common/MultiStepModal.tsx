@@ -170,16 +170,13 @@ export type MultiStepModalStepOptions = {
 
 export type MultiStepModalProps = {
     steps: Array<{ title: string, options: MultiStepModalStepOptions, element: JSX.Element, onNext?: any, onPrev?: any }>;
-    onClose: any;
+    onClose: (data?: any) => void;
     stepNumber: number;
     showLoadingAnimation: boolean;
     zIndex: number;
 };
 
-type MultiStepModalState = {
-};
-
-export default class MultiStepModal extends React.Component<MultiStepModalProps, MultiStepModalState> {
+export default class MultiStepModal extends React.Component<MultiStepModalProps> {
 
     constructor(props: MultiStepModalProps) {
         super(props);
@@ -204,7 +201,7 @@ export default class MultiStepModal extends React.Component<MultiStepModalProps,
 
         return createPortal(
             <>
-                <ModalWrapper role="dialog" style={{zIndex: this.props.zIndex}}>
+                <ModalWrapper role="dialog" $zIndex={`${this.props.zIndex}`}>
                     <ModalInnerWrapper>
                         <ModalInnerWrapper2>
                             <FlexColumn $height="100%">
@@ -213,7 +210,7 @@ export default class MultiStepModal extends React.Component<MultiStepModalProps,
                                     <ModalTitleBarInnerWrapper>
                                         <ModalTitleBarInnerWrapper2>
                                             <ModalTitle>
-                                                <div>{step.title}</div>
+                                                <Div>{step.title}</Div>
                                             </ModalTitle>
                                         </ModalTitleBarInnerWrapper2>
                                         <ModalCloseWrapper>

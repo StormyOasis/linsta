@@ -142,8 +142,8 @@ export const getPosts = async (data: any): Promise<ServiceResponse> => {
     }
 }
 
-export const getPostById = async (postId: string): Promise<ServiceResponse> => {
-    const res = await axios.get(`${host}/api/v1/posts/getPostById?postId=${postId}`, {headers: authHeader()});
+export const postGetPostByPostId = async (data: any): Promise<ServiceResponse> => {
+    const res = await axios.post(`${host}/api/v1/posts/getPostById`, data, {headers: authHeader()});
     return {
         data: res.data,
         status: res.status,
@@ -171,6 +171,15 @@ export const postSetFollowStatus = async (data: any): Promise<ServiceResponse> =
 
 export const postAddComment = async (data: any): Promise<ServiceResponse> => {
     const res = await axios.post(`${host}/api/v1/comment/add`, data, {headers: authHeader()});
+    return {
+        data: res.data,
+        status: res.status,
+        statusText: res.statusText,
+    }
+}
+
+export const postDeleteComment = async (data: any): Promise<ServiceResponse> => {
+    const res = await axios.post(`${host}/api/v1/comment/delete`, data, {headers: authHeader()});
     return {
         data: res.data,
         status: res.status,

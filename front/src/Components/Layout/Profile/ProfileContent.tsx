@@ -4,7 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ContentWrapper, Div, Flex, FlexColumn, FlexRow, FlexRowFullWidth, Main, Section, Span } from "../../../Components/Common/CombinedStyling";
 import { useAppDispatch, actions, useAppSelector } from "../../../Components/Redux/redux";
 import { Post, PostPaginationResponse, PostWithCommentCount, Profile } from "../../../api/types";
-import { postGetPostsByUserId, postGetProfileByUserName, postGetProfileStatsById, postGetSingleFollowStatus, ServiceResponse } from "../../../api/ServiceController";
+import { postGetPostByPostId, postGetPostsByUserId, postGetProfileByUserName, postGetProfileStatsById, postGetSingleFollowStatus, ServiceResponse } from "../../../api/ServiceController";
 import { followUser, getPfpFromProfile, isVideoFileFromPath } from "../../../utils/utils";
 import StyledButton from "../../../Components/Common/StyledButton";
 import { MODAL_TYPES, ModalState } from "../../../Components/Redux/slices/modals.slice";
@@ -170,6 +170,7 @@ const ProfileContent: React.FC = () => {
     const authUserProfileState: Profile = useAppSelector((state: any) => state.profile.profile);
     const profileNonce: string = useAppSelector((state: any) => state.profile.nonce);
     const commentModalState = useAppSelector((state: any) => state.modal.openModalStack?.find((modal: ModalState) => modal.modalName === MODAL_TYPES.COMMENT_MODAL));
+    const deletedCommentId:string|null = useAppSelector((state: any) => state.misc.deletedCommentId);
     const [profile, setProfile] = useState<Profile | null>(null);
     const [profileStats, setProfileStats] = useState<ProfileStats | null>(null);
     const [paginationResult, setPaginationResult] = useState<PostPaginationResponse | null>(null);
@@ -283,6 +284,28 @@ const ProfileContent: React.FC = () => {
             hasScrolled.current = false;
         }
     }, [isLoading]);
+
+    useEffect(() => {
+        const updatePostCommentCount = async () => {            
+            // A comment has been deleted, so we need to force a recount of the comment counts
+            // for that specific post 
+            const result = await postGetPostByPostId({postId: commentModalState?.data?.post?.postId});            
+            if (result.data != null) {
+                const response: PostWithCommentCount = result.data.post;
+                setPosts((posts: PostWithCommentCount[]) => {
+                    const newPosts = [...posts];
+                    const index = newPosts.findIndex((post: PostWithCommentCount) => post.postId === response.postId);
+                    if (index !== -1) {
+                        newPosts[index].commentCount = response.commentCount;
+                    }
+                    return newPosts;
+                });
+            }
+        }
+        if(deletedCommentId) {
+            updatePostCommentCount();
+        }
+    }, [deletedCommentId]);    
 
     const loadPosts = useMemo(() => async () => {
         if (isLoading || (paginationResult && paginationResult.done)) {

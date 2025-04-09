@@ -5,7 +5,7 @@ import logger from "../logger/logger";
 import { getFileExtByMimeType, getFollowingUserIds, getLikesByPost, getPfpByUserId, getPostByPostId, handleValidationError, sanitize } from "../utils/utils";
 import { uploadFile } from "../Connectors/AWSConnector";
 import ESConnector, { buildDataSetForES } from '../Connectors/ESConnector';
-import { User, Global, Entry, Post, Like } from "../utils/types";
+import { User, Global, Entry, Post, PostWithCommentCount, Like } from "../utils/types";
 import RedisConnector from "../Connectors/RedisConnector";
 import DBConnector, { EDGE_POST_LIKED_BY_USER, EDGE_POST_TO_COMMENT, EDGE_POST_TO_USER, EDGE_USER_LIKED_POST, EDGE_USER_TO_POST } from "../Connectors/DBConnector";
 
@@ -283,11 +283,11 @@ type GetPostByIdRequest = {
     postId: string
 };
 
-export const getPostById = async (ctx: Context) => {
+export const postGetPostById = async (ctx: Context) => {
     Metrics.increment("posts.getById");
 
-    const query = <GetPostByIdRequest>ctx.request.query;
-    const postId = query.postId;
+    const data = <GetPostByIdRequest>ctx.request.body;
+    const postId = data.postId;
 
     if (postId == null || postId.trim().length === 0) {
         return handleValidationError(ctx, "Error getting post");
@@ -430,10 +430,6 @@ type GetPostsByUserIdRequest = {
     dateTime?: string;
     postId?: string;
 };
-
-interface PostWithCommentCount extends Post {
-    commentCount: number;
-}
 
 type GetPostsByUserIdResponse = {
     posts: PostWithCommentCount[];

@@ -118,6 +118,16 @@ const CommentReplyButton = styled.button`
     padding: 0;
 `;
 
+const DotMenuButton = styled.button`
+    font-size: 1.5em;
+    font-weight: 600;
+    background: none;
+    cursor: pointer;
+    border: none;
+    padding-left: 5px;
+    padding-right: 5px;
+`;
+
 type CommentModalProps = {
     onClose: () => void;
     post: PostWithCommentCount;
@@ -137,10 +147,11 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
 
     const authUser: AuthUser = useAppSelector((state: any) => state.auth.user);
     const profile: Profile = useAppSelector((state: any) => state.profile.profile);
+    const deletedCommentId:string|null = useAppSelector((state: any) => state.misc.deletedCommentId);
 
     const dispatch = useAppDispatch();
 
-    useEffect(() => {
+    useEffect(() => {        
         if (props.post != null) {
             postGetCommentsByPostId({ postId: props.post.postId })
                 .then((results) => setComments(mapCommentsToCommentData(results.data, comments)))
@@ -148,7 +159,33 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
         }
     }, [props.post]);
 
-    const renderSingleComment = (commentUiData: CommentUiData, level: number, showLikeToggle: boolean) => {
+    useEffect(() => {        
+        if (deletedCommentId) {
+            const newComments = structuredClone(comments);
+            const comment = searchCommentsById(deletedCommentId, newComments);
+            
+            if (comment) {
+                // A comment exists with the given id. It is either a root comment (if parentCommentId is null)
+                // Or a child comment (if parentCommentId is not null)                
+                if(comment.comment.parentCommentId == null) {
+                    // parent, can just delete from the list
+                    delete newComments[deletedCommentId];                    
+                } else {
+                    // A child comment, which means we need to find the parent, then remove this
+                    // comment from the parent's children array
+                    const parentComment = searchCommentsById(comment.comment.parentCommentId, newComments);
+                    if(parentComment) {
+                        parentComment.childCount--;
+                        delete parentComment.children[deletedCommentId];
+                    }
+                }
+
+                setComments(newComments);
+            }
+        }
+    }, [deletedCommentId]);
+
+    const renderSingleComment = (commentUiData: CommentUiData, level: number, isRegularComment: boolean) => {
         const { comment, repliesVisibleFlag, children, childCount } = commentUiData;
         const { text, user, dateTime, commentId } = comment;
         const { commentsDisabled } = props.post.global;
@@ -183,23 +220,34 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                         <Div>
                             <Span $marginRight="10px" $fontSize="13px">{dateDiff(dateTime)}</Span>
                             {!commentsDisabled &&
-                                <CommentReplyButton
-                                    aria-label="Reply to comment"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
+                                <>
+                                    <CommentReplyButton
+                                        aria-label="Reply to comment"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
 
-                                        if (commentTextAreaRef.current) {
-                                            const textArea = (commentTextAreaRef.current as HTMLTextAreaElement);
-                                            const str: string = `@${user.userName} `;
-                                            textArea.selectionStart = str.length;
-                                            textArea.focus();
+                                            if (commentTextAreaRef.current) {
+                                                const textArea = (commentTextAreaRef.current as HTMLTextAreaElement);
+                                                const str: string = `@${user.userName} `;
+                                                textArea.selectionStart = str.length;
+                                                textArea.focus();
 
-                                            setCommentText(str);
-                                            setParentCommentId(commentId);
-                                        }
-                                    }}>
-                                    Reply
-                                </CommentReplyButton>
+                                                setCommentText(str);
+                                                setParentCommentId(commentId);
+                                            }
+                                        }}>
+                                        Reply
+                                    </CommentReplyButton>
+                                    {(isRegularComment && authUser.id === user.userId) &&
+                                        <DotMenuButton 
+                                            aria-label="Comment Options"
+                                            onClick={() => 
+                                                dispatch(actions.modalActions.openModal({ modalName: MODAL_TYPES.COMMENT_DELETE_MODAL, data: { commentId } }))
+                                            }> 
+                                                ...
+                                        </DotMenuButton>
+                                    }
+                                </>
                             }
                         </Div>
                         <Div>
@@ -208,8 +256,7 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                                     <ViewHideRepliesButton onClick={(e => {
                                         e.stopPropagation();
                                         setComments(toggleCommentReplyUiData(commentUiData, comments))
-                                    }
-                                    )}>
+                                    })}>
                                         <ViewHideRepliesLine />
                                         {!repliesVisibleFlag && <Span>{`View replies (${childCount})`}</Span>}
                                         {repliesVisibleFlag && <Span>Hide replies</Span>}
@@ -224,7 +271,7 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                             }
                         </Div>
                     </FlexColumnFullWidth>
-                    {showLikeToggle &&
+                    {isRegularComment &&
                         <LikeToggler
                             aria-label="Toogle comment like"
                             offsetIndex={level}
@@ -431,8 +478,7 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                                                 aria-label="Add a new comment..."
                                                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
                                                     setCommentText(e.currentTarget.value);
-                                                }
-                                                }
+                                                }}
                                                 onInput={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
                                                     const element = e.currentTarget;
                                                     element.style.height = "";

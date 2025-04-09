@@ -35,7 +35,7 @@ services:
     environment:
          # Configuration options for JanusGraph desribed at:
          # https://docs.janusgraph.org/configs/configuration-reference
-         - graph.replace-instance-if-exists=true # addresses error described at        
+         - janusgraph.graph.replace-instance-if-exists=true
 
   linsta-redis:
     image: redis/redis-stack-server
