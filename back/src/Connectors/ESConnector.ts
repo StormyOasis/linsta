@@ -4,11 +4,15 @@ import Metrics from "../metrics/Metrics";
 import config from 'config';
 import { Entry, User, Global, Post } from '../utils/types';
 import fs from 'fs';
+import { ClusterHealthResponse, IndicesStatsResponse } from '@elastic/elasticsearch/lib/api/types';
 
 export default class ESConnector {
     private static instance: ESConnector | null = null;
 
     private client:Client | null = null; 
+
+    private metricsInterval: NodeJS.Timeout | null;
+
 
     private constructor() {    
         this.client = new Client({
@@ -19,7 +23,29 @@ export default class ESConnector {
             tls: {
                 ca: fs.readFileSync( "/usr/share/es/certs/ca.crt" ),
             }
-        });             
+        });
+        
+        const timeout: number = config.get("es.metricsIntervalMs") as number;
+
+        this.metricsInterval = setInterval(async (connector: ESConnector) => {
+            if (connector === null || connector.getClient() === null) {
+                return;
+            }
+
+            const health:ClusterHealthResponse|undefined = await connector.client?.cluster.health();
+            const stats:IndicesStatsResponse|undefined = await connector.client?.indices.stats();
+            if(health && stats) {
+                Metrics.gauge('es.cluster_status', Metrics.mapEsStatus(health.status));                                
+                Metrics.gauge('es.number_of_nodes', health.number_of_nodes);
+                Metrics.gauge('es.active_primary_shards', health.active_primary_shards);
+                Metrics.gauge('es.active_shards', health.active_shards);            
+                Metrics.gauge('es.task_max_waiting_in_queue_millis', health.task_max_waiting_in_queue_millis);           
+                Metrics.gauge('es.number_of_pending_tasks', health.number_of_pending_tasks);
+                Metrics.gauge('es.total_docs_count', stats._all.total?.docs?.count || -1);    
+                Metrics.gauge('es.unassigned_shards', health?.unassigned_shards || 0);                         
+            }
+
+        }, timeout, this);            
     }
 
     public static getInstance(): ESConnector {
@@ -29,6 +55,10 @@ export default class ESConnector {
 
         return ESConnector.instance;
     }
+
+    public getClient = ():(Client | null) => {
+        return this.client;
+    }    
 
     public search = async (query: object, resultSize: number|null) => {
         const size: number = resultSize ? resultSize : config.get("es.defaultResultSize");        
@@ -131,7 +161,8 @@ export default class ESConnector {
         return result;
     }
     
-    public close = async () => {        
+    public close = async () => {                
+        this.metricsInterval && clearInterval(this.metricsInterval);
         await this.client?.close();
         ESConnector.instance = null;
         this.client = null;

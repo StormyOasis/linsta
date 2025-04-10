@@ -60,6 +60,7 @@
         "mainIndex": "main",
         "profileIndex": "profiles",
         "defaultResultSize": 10000,
-        "defaultMediaPaginationSize": 12
+        "defaultMediaPaginationSize": 12,
+        "metricsIntervalMs": 5000
     }
 }

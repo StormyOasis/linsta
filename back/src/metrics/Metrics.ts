@@ -1,7 +1,6 @@
 import StatsDClient, { ClientOptions } from "hot-shots";
 import config from 'config';
 
-
 export class Metrics extends StatsDClient {
     private static instance:Metrics | null = null;
 
@@ -18,6 +17,15 @@ export class Metrics extends StatsDClient {
         }
         return Metrics.instance;
     }    
+
+    public mapEsStatus(status: string): number {
+        switch (status) {
+            case 'green': return 0;
+            case 'yellow': return 1;
+            case 'red': return 2;
+            default: return -1;
+        }
+    }
 }
 
 export default Metrics.getInstance();
