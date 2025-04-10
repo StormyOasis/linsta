@@ -1,5 +1,5 @@
 import sanitizeHtml from 'sanitize-html';
-import { Like, PostWithCommentCount, Profile, Post } from './types';
+import { Like, PostWithCommentCount, Profile } from './types';
 import ESConnector, { buildSearchResultSet } from '../Connectors/ESConnector';
 import RedisConnector from '../Connectors/RedisConnector';
 import DBConnector, { EDGE_USER_FOLLOWS, EDGE_USER_LIKED_POST, EDGE_POST_TO_COMMENT } from '../Connectors/DBConnector';

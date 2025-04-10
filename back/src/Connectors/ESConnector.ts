@@ -32,17 +32,23 @@ export default class ESConnector {
                 return;
             }
 
-            const health:ClusterHealthResponse|undefined = await connector.client?.cluster.health();
-            const stats:IndicesStatsResponse|undefined = await connector.client?.indices.stats();
-            if(health && stats) {
-                Metrics.gauge('es.cluster_status', Metrics.mapEsStatus(health.status));                                
-                Metrics.gauge('es.number_of_nodes', health.number_of_nodes);
-                Metrics.gauge('es.active_primary_shards', health.active_primary_shards);
-                Metrics.gauge('es.active_shards', health.active_shards);            
-                Metrics.gauge('es.task_max_waiting_in_queue_millis', health.task_max_waiting_in_queue_millis);           
-                Metrics.gauge('es.number_of_pending_tasks', health.number_of_pending_tasks);
-                Metrics.gauge('es.total_docs_count', stats._all.total?.docs?.count || -1);    
-                Metrics.gauge('es.unassigned_shards', health?.unassigned_shards || 0);                         
+            try {
+                const health:ClusterHealthResponse|undefined = await connector.client?.cluster.health();
+                const stats:IndicesStatsResponse|undefined = await connector.client?.indices.stats();
+                if(health && stats) {
+                    Metrics.gauge('es.cluster_status', Metrics.mapEsStatus(health.status));                                
+                    Metrics.gauge('es.number_of_nodes', health.number_of_nodes);
+                    Metrics.gauge('es.active_primary_shards', health.active_primary_shards);
+                    Metrics.gauge('es.active_shards', health.active_shards);            
+                    Metrics.gauge('es.task_max_waiting_in_queue_millis', health.task_max_waiting_in_queue_millis);           
+                    Metrics.gauge('es.number_of_pending_tasks', health.number_of_pending_tasks);
+                    Metrics.gauge('es.total_docs_count', stats._all.total?.docs?.count || -1);    
+                    Metrics.gauge('es.unassigned_shards', health?.unassigned_shards || 0);                         
+                }
+            } catch(err) {
+                logger.error("Error getting ES Metrics", err);
+                Metrics.gauge('es.cluster_status', Metrics.mapEsStatus("red"));                                
+                Metrics.gauge('es.number_of_nodes', 0);            
             }
 
         }, timeout, this);            

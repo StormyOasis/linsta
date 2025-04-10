@@ -151,7 +151,7 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
 
     const dispatch = useAppDispatch();
 
-    useEffect(() => {        
+    useEffect(() => {
         if (props.post != null) {
             postGetCommentsByPostId({ postId: props.post.postId })
                 .then((results) => setComments(mapCommentsToCommentData(results.data, comments)))
@@ -293,7 +293,9 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
         const commentNodes = [
             renderSingleComment({
                 comment: {
-                    ...props.post.global, user: props.post.user, postId: props.post.postId,
+                    ...props.post.global, 
+                    user: props.post.user, 
+                    postId: props.post.postId,
                     commentId: "",
                     text: props.post.global.captionText,
                     parentCommentId: null

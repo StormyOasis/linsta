@@ -349,11 +349,12 @@ const ProfileContent: React.FC = () => {
         if (post == null) {
             return;
         }
-        const posts: Post[] = [];
-        posts.push(post);
-
+        
+        const newPost: Post = structuredClone(post);
+        newPost.user.pfp = getPfpFromProfile(profile);
+        
         // Open the comment dialog by setting the state in redux
-        dispatch(actions.modalActions.openModal({ modalName: MODAL_TYPES.COMMENT_MODAL, data: { post } }));
+        dispatch(actions.modalActions.openModal({ modalName: MODAL_TYPES.COMMENT_MODAL, data: { post: newPost } }));
     }
 
     const toggleFollowState = async (userId: string, followUserId: string | undefined, shouldFollow: boolean) => {
