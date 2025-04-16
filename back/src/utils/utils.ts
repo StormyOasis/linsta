@@ -375,3 +375,10 @@ export const handleValidationError = (ctx: Context, message: string, statusCode:
     ctx.status = statusCode;
     ctx.body = { status: message };
 };
+
+export const convertSingleToDoubleQuotes = (input:string) => {
+    return input
+        .replace(/'/g, '"')                               // Replace all single quotes with double quotes
+        .replace(/([{,]\s*)"(.*?)"(?=\s*:)/g, '$1"$2"');  // Ensure property keys are properly quoted
+}
+  

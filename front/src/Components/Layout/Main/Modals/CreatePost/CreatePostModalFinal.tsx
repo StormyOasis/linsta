@@ -180,11 +180,13 @@ const AdvancedDropdownLabel = styled.label`
 `;
 
 export type CreatePostModalFinalProps = {
+    lexicalText?: string;
     locationText?: string;
     isCommentsDisabled: boolean;
     isLikesDisabled: boolean;
     hasErrorOccured: boolean;
     editData: EditData[];
+    hideAdvancedSettings?: boolean;
     onLexicalChange: (data: string, charCount: number) => void;
     onDisableCommentsChanged: (value: boolean) => void;
     onDisableLikesChanged: (value: boolean) => void;
@@ -333,7 +335,7 @@ const CreatePostModalFinal: React.FC<CreatePostModalFinalProps> = (props: Create
                         <ControlContentContainer>
                             <TextEditorContainerWrapper>
                                 <TextEditorContainer>
-                                    <TextEditor onChange={handleLexicalChange} 
+                                    <TextEditor onChange={handleLexicalChange} defaultValue={props.lexicalText}
                                         maxTextLength={MAX_TEXT_LENGTH} emoji={emoji} getCurrentLength={getCurrentLength} />                                
                                 </TextEditorContainer>                                                         
                                 <TextEditorBottomWrapper>
@@ -381,32 +383,34 @@ const CreatePostModalFinal: React.FC<CreatePostModalFinalProps> = (props: Create
                                         {renderAltImages()}
                                     </div>
                                 </Dropdown>
-                                <Dropdown title="Advanced Settings">
-                                    <FlexColumn>
-                                        <Div $paddingTop="5px">
-                                            <FlexRow>
-                                                <AdvancedDropdownLabel>
-                                                    Hide like and view counts    
-                                                </AdvancedDropdownLabel>
-                                                <ToggleSwitch isChecked={props.isLikesDisabled} onChange={props.onDisableLikesChanged} />
-                                            </FlexRow>
-                                            <Text>
-                                                Only you will see the total number of likes and views on this post. You can change this later by going to the menu at the top of the post.  
-                                            </Text>
-                                        </Div>
-                                        <Div $paddingTop="5px">
-                                            <FlexRow>
-                                                <AdvancedDropdownLabel>
-                                                    Turn off commenting
-                                                </AdvancedDropdownLabel>
-                                                <ToggleSwitch isChecked={props.isCommentsDisabled} onChange={props.onDisableCommentsChanged} />
-                                            </FlexRow>
-                                            <Text>
-                                                You can change this later by going to the menu at the top of the post.
-                                            </Text>
-                                        </Div>                                
-                                    </FlexColumn>
-                                </Dropdown>                                           
+                                {!props.hideAdvancedSettings &&
+                                    <Dropdown title="Advanced Settings">
+                                        <FlexColumn>
+                                            <Div $paddingTop="5px">
+                                                <FlexRow>
+                                                    <AdvancedDropdownLabel>
+                                                        Hide like and view counts    
+                                                    </AdvancedDropdownLabel>
+                                                    <ToggleSwitch isChecked={props.isLikesDisabled} onChange={props.onDisableLikesChanged} />
+                                                </FlexRow>
+                                                <Text>
+                                                    Only you will see the total number of likes and views on this post. You can change this later by going to the menu at the top of the post.  
+                                                </Text>
+                                            </Div>
+                                            <Div $paddingTop="5px">
+                                                <FlexRow>
+                                                    <AdvancedDropdownLabel>
+                                                        Turn off commenting
+                                                    </AdvancedDropdownLabel>
+                                                    <ToggleSwitch isChecked={props.isCommentsDisabled} onChange={props.onDisableCommentsChanged} />
+                                                </FlexRow>
+                                                <Text>
+                                                    You can change this later by going to the menu at the top of the post.
+                                                </Text>
+                                            </Div>                                
+                                        </FlexColumn>
+                                    </Dropdown>
+                                }                                     
                             </AdditionalControlsContainer>                            
                         </ControlContentContainer>
                     </ControlsContainer>

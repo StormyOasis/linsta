@@ -193,7 +193,7 @@ export default class Modal extends React.Component<ModalProps> {
                                         </ModalTitleBarInnerWrapper2>
                                         <ModalCloseWrapper>
                                             <ModalClose>
-                                                <ModalCloseButton title="data-modal-close" aria-label="Close" onClick={this.onClose}>
+                                                <ModalCloseButton title="Close" aria-label="Close" onClick={this.onClose}>
                                                     <div style={{ alignItems: "center", display: "flex", justifyContent: "center", cursor: "pointer" }}>
                                                         <CloseButton />
                                                     </div>

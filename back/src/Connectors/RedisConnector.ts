@@ -175,6 +175,20 @@ export class RedisConnector {
         }
     }
 
+    public del = async (key: string): Promise<void> => {
+        try {
+            if (this.client == null) {
+                throw new Error("Redis connection not found");
+            }            
+            
+            await this.client.del(key);
+
+        } catch (err) {
+            Metrics.gauge("redis.errorCount", this.metricsErrorCount++);
+            logger.error("Error deleting key from Redis:", err);
+        }
+    }    
+
     public close = async (): Promise<void> => {
         if(this.metricsInterval) {
             clearInterval(this.metricsInterval);

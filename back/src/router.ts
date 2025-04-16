@@ -10,7 +10,7 @@ import {
 } from './controllers/accountsController';
 import { verifyJWT } from "./auth/Auth";
 import { getLocation } from "./controllers/locationsController";
-import { addPost, getAllLikesByPost, getAllPosts, postGetPostById, postIsPostLikedByUserId, toggleLikePost, getPostsByUserId } from "./controllers/postsController";
+import { addPost, getAllLikesByPost, getAllPosts, postGetPostById, postIsPostLikedByUserId, toggleLikePost, getPostsByUserId, deletePost, updatePost } from "./controllers/postsController";
 import { addComment, deleteComment, getCommentsByPostId, toggleCommentLike } from "./controllers/commentsController";
 import {
     bulkGetProfilesAndFollowing, getFollowersByUserId, getFollowingByUserId, getPostProfileByUserId, getPostProfileByUserName,
@@ -34,6 +34,8 @@ router.get("/api/v1/locations/get", verifyJWT, getLocation);
 
 // posts handlers
 router.put("/api/v1/posts/addPost", verifyJWT, addPost);
+router.post("/api/v1/posts/updatePost", verifyJWT, updatePost);
+router.post("/api/v1/posts/deletePost", verifyJWT, deletePost);
 router.post("/api/v1/posts/getAll", verifyJWT, getAllPosts);
 router.post("/api/v1/posts/getPostById", verifyJWT, postGetPostById);
 router.post("/api/v1/posts/likePost", verifyJWT, toggleLikePost);
