@@ -342,7 +342,7 @@ const MainContent: React.FC = () => {
                                                         </FlexRow>
                                                         <Div>
                                                             <Div $marginTop="5px" $marginBottom="5px">
-                                                                <ViewLikesText post={post} handleClick={() => openLikesModal(post)}></ViewLikesText>
+                                                                <ViewLikesText post={post} authUserId={authUser?.id} handleClick={() => openLikesModal(post)}></ViewLikesText>
                                                             </Div>
                                                         </Div>
                                                         <Div>

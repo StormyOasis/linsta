@@ -493,7 +493,7 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                                     </Div>
                                 </ActionWrapper>
                                 <Div $paddingLeft="10px" $paddingBottom="10px">
-                                    <ViewLikesText post={props.post} handleClick={() => openLikesModal(props.post)}></ViewLikesText>
+                                    <ViewLikesText post={props.post} authUserId={authUser.id} handleClick={() => openLikesModal(props.post)}></ViewLikesText>
                                     <Span $marginRight="10px" $fontSize="13px">
                                         {getDateAsText(props.post.global.dateTime)}
                                     </Span>

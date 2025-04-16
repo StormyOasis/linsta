@@ -8,14 +8,18 @@ import { BoldLink, Div, Span } from "./CombinedStyling";
 import HeartSVG from "/public/images/heart.svg";
 import HeartFilledSVG from "/public/images/heart-fill.svg";
 
+
 type ViewLikesTextProps = {
     post: Post;
+    authUserId?: string;
     handleClick: (post: Post) => void;
 }
 
 export const ViewLikesText = (props: ViewLikesTextProps) => {
-    if (props.post?.global?.likes == null || props.post.global.likesDisabled || props.post.global.likes.length === 0) {
-        return null;
+    if (props.post?.global?.likes == null || 
+        (props.post.global.likesDisabled && props.authUserId != props.post.user.userId) || 
+        props.post.global.likes.length === 0) {
+            return null;
     }
 
     return (
