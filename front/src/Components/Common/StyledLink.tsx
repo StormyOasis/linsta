@@ -23,7 +23,7 @@ const StyledLinkWrapperFromLink = styled(Link)`
     }
 `;
 
-const StyledLinkWrapper = styled.a`
+const StyledLinkWrapper = styled.div`
     color: ${props => props.theme['colors'].buttonDefaultColor};
     text-decoration: none;
     display: contents;
