@@ -237,7 +237,7 @@ export default class MultiStepModal extends React.Component<MultiStepModalProps>
                             {(step.options.showFooter && !this.props.showLoadingAnimation) &&
                                 <ModalFooter>
                                     <PrevButton onClick={step?.onPrev} />
-                                    <StyledLink to="#" onClick={step?.onNext}>{step.options.footerNextPageText}</StyledLink>
+                                    <StyledLink onClick={step?.onNext}>{step.options.footerNextPageText}</StyledLink>
                                 </ModalFooter>
                             }
                         </ModalInnerWrapper2>

@@ -187,7 +187,7 @@ const ProfileContent: React.FC = () => {
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
 
-    useEffect(() => {        
+    useEffect(() => {   
         const fetchProfileData = async () => {
             try {
                 // Get the profile by the name passed in the url

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { ReactNode } from "react";
 import styled from "styled-components";
 import LogoSVG from "/public/images/linsta.svg";
 import HomeSVG from "/public/images/home.svg";
@@ -66,6 +66,15 @@ const NavLink = styled(Link)`
     justify-content: center;
 `;
 
+const DivLink = styled(Div)`
+    text-decoration: none;
+    color: ${props => props.theme["colors"].navLinkTextColor};
+
+    display: flex;
+    flex-basis: 100%;
+    justify-content: center;
+`;
+
 const InnerNavLinkWrapper = styled(Div)`
     padding: 12px;
     margin: 2px 0;
@@ -115,23 +124,34 @@ const SideBar: React.FC = () => {
     }
 
     const MemoizedNavLink = React.memo(({to, text, iconElement, paddingLeft, onClick}:any) => {
-        return (
-            <NavLink to={to} onClick={onClick} aria-label={text}>
-                <InnerNavLinkWrapper>
-                    <Div className={styles.iconWrapper}>
-                        {iconElement}
+        const LinkContents:ReactNode =
+            <InnerNavLinkWrapper>
+                <Div className={styles.iconWrapper}>
+                    {iconElement}
+                </Div>
+                {matchesLargestBP &&
+                    <Div style={{ paddingLeft: `${paddingLeft}px` }}>
+                        <Span className={styles.text}>{text}</Span>
                     </Div>
-                    {matchesLargestBP &&
-                        <Div style={{paddingLeft: `${paddingLeft}px`}}>
-                            <Span className={styles.text}>{text}</Span>                                
-                        </Div>                            
-                    }
-                </InnerNavLinkWrapper>
-            </NavLink>
+                }
+            </InnerNavLinkWrapper>;
+
+        if(to != null) {
+            return (
+                <NavLink to={to} onClick={onClick} aria-label={text}>
+                    {LinkContents}
+                </NavLink>
+            );
+        }
+
+        return (
+            <DivLink onClick={onClick} aria-label={text}>
+                {LinkContents}
+            </DivLink>
         );
     });    
 
-    const renderMenuItem = (text: string, to: string, iconElement: JSX.Element, paddingLeft: number = 16, onClick?: (() => void)|null) => {
+    const renderMenuItem = (text: string, to: string|null, iconElement: JSX.Element, paddingLeft: number = 16, onClick?: (() => void)|null) => {
         const onClickHandler = onClick ? onClick : () => true;
 
         return (
@@ -166,7 +186,7 @@ const SideBar: React.FC = () => {
                 {renderMenuItem("Reels", "/reels", <ReelsSVG/>, undefined, null)}
                 {renderMenuItem("Messages", "/messages", <MessagesSVG/>, undefined, null)}
                 {renderMenuItem("Notifications", "#", <NotificationsSVG/>, undefined, null)}
-                {renderMenuItem("Create", "#", <CreateSVG/>, undefined, createPostHandler)}
+                {renderMenuItem("Create", null, <CreateSVG/>, undefined, createPostHandler)}
                 {renderMenuItem("Profile", `/${profileUrl}`, 
                     <ProfilePicWrapper>
                         {profile && <PfpImg                            
