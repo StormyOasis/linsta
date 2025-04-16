@@ -1,4 +1,4 @@
-import React, { SyntheticEvent, useCallback, useState } from 'react';
+import React, { SyntheticEvent, useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 
 import LocationSVG from "/public/images/location.svg";
@@ -34,9 +34,9 @@ const Input = styled.input`
 const LocationPopupContainer = styled(Div)<{$isOpen: boolean}>`
     display: ${props => props.$isOpen ? "flex" : "none"};
     position: fixed;
-    top: 10px;
+    top: 36px;
     width: 20%;
-    height: 50%;
+    height: 40%;
     z-index: 9;
     background-color: ${props => props.theme['colors'].backgroundColor};
     border: 1px solid ${props => props.theme['colors'].borderDefaultColor};
@@ -71,6 +71,32 @@ const LocationPopup: React.FC<LocationProps> = (props: LocationProps) => {
     const [isLocationOpen, setIsLocationOpen] = useState<boolean>(false);
     const [locationData, setLocationData] = useState<LocationData[]>([]);
     
+    // Refs to detect outside click
+    const inputRef = useRef<HTMLInputElement>(null);
+    const popupRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            const target = event.target as Node;
+            if (
+                popupRef.current &&
+                !popupRef.current.contains(target) &&
+                inputRef.current &&
+                !inputRef.current.contains(target)
+            ) {
+                setIsLocationOpen(false);
+            }
+        };
+
+        if (isLocationOpen) {
+            document.addEventListener("mousedown", handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [isLocationOpen]);
+
     const handleLocationInputBoxClick = useCallback(() => {
         setIsLocationOpen(true);
     }, []);
@@ -80,7 +106,7 @@ const LocationPopup: React.FC<LocationProps> = (props: LocationProps) => {
             setIsLocationOpen(false);
             return;
         }
-    }, []);
+    }, [isLocationOpen]);
 
     const handleLocationClear = useCallback((e:React.SyntheticEvent<HTMLInputElement>) => {
         e.stopPropagation();
@@ -104,7 +130,7 @@ const LocationPopup: React.FC<LocationProps> = (props: LocationProps) => {
         props.onLocationChanged(inputValue);
         const result = await getLocation(inputValue);
         setLocationData(result.data);
-    }, 150);
+    }, 75);
     
     const handleSelectLocationClick = useCallback((event: SyntheticEvent, label: string) => {        
         event.stopPropagation();
@@ -132,6 +158,7 @@ const LocationPopup: React.FC<LocationProps> = (props: LocationProps) => {
     return (
         <Label>
             <Input type="text" 
+                ref={inputRef}
                 placeholder="Add Location" 
                 spellCheck={true}
                 aria-label="Add Location" 
@@ -148,7 +175,7 @@ const LocationPopup: React.FC<LocationProps> = (props: LocationProps) => {
                     <LocationSVG />
                 }
             </SVGContainer>
-            <LocationPopupContainer $isOpen={isLocationOpen}>
+            <LocationPopupContainer ref={popupRef} $isOpen={isLocationOpen}>
                 <FlexColumn>
                     {renderLocationEntries()}
                 </FlexColumn>

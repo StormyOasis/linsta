@@ -353,6 +353,7 @@ const CreatePostModalFinal: React.FC<CreatePostModalFinalProps> = (props: Create
                                 <InputContainer>
                                     <LocationPopup locationText={props.locationText} onLocationChanged={props.onLocationChanged} />
                                 </InputContainer>
+                                {/*
                                 <InputContainer>
                                     <Label>
                                         <Input type="text" placeholder="Add Collaborators" spellCheck={true} 
@@ -374,7 +375,8 @@ const CreatePostModalFinal: React.FC<CreatePostModalFinalProps> = (props: Create
                                             </FlexColumn>                                    
                                         </CollabPopupContainer>
                                     </Label>
-                                </InputContainer>        
+                                </InputContainer>  
+                                */}      
                                 <Dropdown title="Accessibility">
                                     <div>
                                         <Text>

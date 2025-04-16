@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 
 import MultiStepModal from "../../../../Common/MultiStepModal";
 import { Post } from "../../../../../api/types";
-import { isVideoFileFromType, updatePost, updatePostFields } from "../../../../../utils/utils";
+import { isVideoFileFromType, updatePostFields } from "../../../../../utils/utils";
 import CreatePostModalFinal from "../CreatePost/CreatePostModalFinal";
 import { EditData } from "../CreatePost/CreatePostModal";
 
