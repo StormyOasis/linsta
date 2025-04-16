@@ -58,14 +58,23 @@ body {
     overflow-y: auto;
 }
 
+#editor-selector-parent div[contenteditable] {
+    outline: none;
+    margin-top: 14px;
+    margin-left: 2px;    
+}
+
 #editor-selector-parent div[contenteditable]:focus {
     outline: none;
+    margin-top: 14px;
+    margin-left: 2px;    
 }
 
 .editor-placeholder {
     position: absolute;
     top: 0px;
     margin-top: 14px;
+    margin-left: 2px;
 }
 
 

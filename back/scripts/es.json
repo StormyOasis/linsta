@@ -2,72 +2,75 @@ PUT main
 {
   "mappings": {
     "properties": {
-      "type": "nested",
-      "properties": {
-        "user": {
-          "type": "nested",
-          "properties": {
-            "userId": {
-              "type": "text"
-            },
-            "userName": {
-              "type": "text"
-            }
+      "user": {
+        "type": "nested",
+        "properties": {
+          "userId": {
+            "type": "keyword",
+            "ignore_above": 256
+          },
+          "userName": {
+            "type": "keyword",
+            "ignore_above": 256
           }
-        },
-        "global": {
-          "type": "nested",
-          "properties": {
-            "dateTime": {
-              "type": "date"
-            },
-            "commentsDisabled": {
-              "type": "boolean"
-            },
-            "commentCount": {
-              "type": "long"
-            },
-            "likesDisabled": {
-              "type": "boolean"
-            },
-            "locationText": {
-              "type": "text"
-            },
-            "captionText": {
-              "type": "text"
-            }
+        }
+      },
+      "global": {
+        "type": "nested",
+        "properties": {
+          "dateTime": {
+            "type": "date"
+          },
+          "commentsDisabled": {
+            "type": "boolean"
+          },
+          "commentCount": {
+            "type": "long"
+          },
+          "likesDisabled": {
+            "type": "boolean"
+          },
+          "locationText": {
+            "type": "keyword",
+            "ignore_above": 256
+          },
+          "captionText": {
+            "type": "text"
           }
-        },
-        "media": {
-          "type": "nested",
-          "properties": {
-            "id": {
-              "type": "text"
-            },
-            "userId": {
-              "type": "keyword"
-            },
-            "postId": {
-              "type": "keyword"
-            },
-            "entityTag": {
-              "type": "keyword"
-            },
-            "path": {
-              "type": "text"
-            },
-            "altText": {
-              "type": "text"
-            },
-            "mimeType": {
-              "type": "text"
-            }
+        }
+      },
+      "media": {
+        "type": "nested",
+        "properties": {
+          "id": {
+            "type": "text"
+          },
+          "userId": {
+            "type": "keyword",
+            "ignore_above": 256
+          },
+          "postId": {
+            "type": "keyword",
+            "ignore_above": 256
+          },
+          "entityTag": {
+            "type": "txt"
+          },
+          "path": {
+            "type": "text"
+          },
+          "altText": {
+            "type": "text"
+          },
+          "mimeType": {
+            "type": "text"
           }
         }
       }
     }
   }
 }
+
 
 PUT profiles 
 {

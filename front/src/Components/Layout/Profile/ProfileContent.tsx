@@ -14,6 +14,7 @@ import MessageSVG from "/public/images/message.svg";
 import { AuthUser } from "../../../api/Auth";
 import StyledLink from "../../../Components/Common/StyledLink";
 import useThrottle from '../../../utils/useThrottle';
+import { update } from "idb-keyval";
 
 const ProfilePicWrapper = styled(Div)`
     display: flex;
@@ -171,6 +172,8 @@ const ProfileContent: React.FC = () => {
     const profileNonce: string = useAppSelector((state: any) => state.profile.nonce);
     const commentModalState = useAppSelector((state: any) => state.modal.openModalStack?.find((modal: ModalState) => modal.modalName === MODAL_TYPES.COMMENT_MODAL));
     const deletedCommentId:string|null = useAppSelector((state: any) => state.misc.deletedCommentId);
+    const deletedPostId:string|null = useAppSelector((state: any) => state.misc.deletedPostId);
+    const updatedPost:PostWithCommentCount|null = useAppSelector((state: any) => state.misc.updatedPost);
     const [profile, setProfile] = useState<Profile | null>(null);
     const [profileStats, setProfileStats] = useState<ProfileStats | null>(null);
     const [paginationResult, setPaginationResult] = useState<PostPaginationResponse | null>(null);
@@ -178,14 +181,13 @@ const ProfileContent: React.FC = () => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [hoverPost, setHoverPost] = useState<PostWithCommentCount | null>(null);
     const [isLoggedInFollowing, setIsLoggedInFollowing] = useState<boolean>(false);
-
     const { userName } = useParams<{ userName: string }>();
     const childRef = useRef<HTMLDivElement | null>(null);
     const hasScrolled = useRef(false);  // Track if the user has scrolled
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
 
-    useEffect(() => {
+    useEffect(() => {        
         const fetchProfileData = async () => {
             try {
                 // Get the profile by the name passed in the url
@@ -305,9 +307,38 @@ const ProfileContent: React.FC = () => {
         if(deletedCommentId) {
             updatePostCommentCount();
         }
-    }, [deletedCommentId]);    
+    }, [deletedCommentId]);   
 
-    const loadPosts = useMemo(() => async () => {
+    useEffect(() => {
+        if(deletedPostId) {
+            // A post has been deleted so we need to remove it from the list
+            // and update the post counts
+            const newPosts = posts.filter((post:PostWithCommentCount) => post.postId !== deletedPostId);
+            setPosts(newPosts);
+
+            // Get the post, follower, and following stats
+            if (profile?.userId != null && profileStats != null) {
+                const newStats:ProfileStats = profileStats;
+                newStats.postCount--;
+                setProfileStats(newStats);
+            }
+        }
+    }, [deletedPostId]); 
+
+    useEffect(() => {        
+        // A post has been updated, so we need to update the post in the list
+        if(updatedPost) {
+            const newPosts = posts.map((post:PostWithCommentCount) => {
+                if(post.postId === updatedPost.postId) {
+                    return updatedPost;
+                }
+                return post;
+            });
+            setPosts(newPosts);
+        }        
+    }, [updatedPost]);
+
+    const loadPosts = useMemo(() => async () => {        
         if (isLoading || (paginationResult && paginationResult.done)) {
             return;
         }
@@ -446,7 +477,7 @@ const ProfileContent: React.FC = () => {
                         <GridContainer $width="100%" $justifyContent="center">
                             {posts.map((post: PostWithCommentCount, index: number) => {
                                 const likeCount = post.global.likes ? post.global.likes.length : 0;
-                                const commentCount = post.commentCount;
+                                const commentCount = post.global.commentsDisabled ? 0 : post.commentCount;
                                 const isVideo = isVideoFileFromPath(post.media[0].path);
                                 return (
                                     <GridImageContainer
@@ -473,8 +504,12 @@ const ProfileContent: React.FC = () => {
                                                 <Div>
                                                     <Flex>
                                                         <FlexRow>
-                                                            <HeartFilled />
-                                                            <ImageOverlayText>{likeCount}</ImageOverlayText>
+                                                            {(!post.global.likesDisabled || (authUser != null && profile?.userId === authUser.id)) &&
+                                                                <>
+                                                                    <HeartFilled />
+                                                                    <ImageOverlayText>{likeCount}</ImageOverlayText>
+                                                                </>
+                                                            }
                                                             <Message />
                                                             <ImageOverlayText>{commentCount}</ImageOverlayText>
                                                         </FlexRow>

@@ -3,7 +3,7 @@ import { renderToString } from "react-dom/server";
 import styled from "styled-components";
 
 import MultiStepModal from "../../../../Common/MultiStepModal";
-import { PostWithCommentCount, Profile } from "../../../../../api/types";
+import { Post, PostWithCommentCount, Profile } from "../../../../../api/types";
 import { BoldLink, Div, Flex, FlexColumn, FlexColumnFullWidth, FlexRow, FlexRowFullWidth, Link, Span } from "../../../../Common/CombinedStyling";
 import MediaSlider from "../../../../Common/MediaSlider";
 import { DEFAULT_PFP, HOST } from "../../../../../api/config";
@@ -135,6 +135,7 @@ type CommentModalProps = {
 }
 
 type CommentModalContentProps = {
+    onClose: () => void;
     post: PostWithCommentCount;
 }
 
@@ -144,11 +145,10 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
     const [parentCommentId, setParentCommentId] = useState<string | null>(null);
 
     const commentTextAreaRef = useRef<HTMLTextAreaElement | null>(null);
-
     const authUser: AuthUser = useAppSelector((state: any) => state.auth.user);
     const profile: Profile = useAppSelector((state: any) => state.profile.profile);
-    const deletedCommentId:string|null = useAppSelector((state: any) => state.misc.deletedCommentId);
-
+    const deletedCommentId:string|null = useAppSelector((state: any) => state.misc.deletedCommentId);    
+    
     const dispatch = useAppDispatch();
 
     useEffect(() => {
@@ -290,29 +290,39 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
             return <></>;
         }
 
-        const commentNodes = [
-            renderSingleComment({
-                comment: {
-                    ...props.post.global, 
-                    user: props.post.user, 
-                    postId: props.post.postId,
-                    commentId: "",
-                    text: props.post.global.captionText,
-                    parentCommentId: null
-                },
-                repliesVisibleFlag: false,
-                children: {},
-                childCount: 0
-            }, 0, false)];
+        const commentNodes = [];
 
-        Object.values(comments).forEach((commentUiData: any) => {
-            commentNodes.push(renderSingleComment(commentUiData, 0, true));
-        });
+        if(props.post.global.captionText?.length > 0) {
+            commentNodes.push(
+                renderSingleComment({
+                    comment: {
+                        ...props.post.global, 
+                        user: props.post.user, 
+                        postId: props.post.postId,
+                        commentId: "",
+                        text: props.post.global.captionText,
+                        parentCommentId: null
+                    },
+                    repliesVisibleFlag: false,
+                    children: {},
+                    childCount: 0
+                }, 0, false));
+        }
+
+        if(!props.post.global.commentsDisabled) {            
+            Object.values(comments).forEach((commentUiData: any) => {
+                commentNodes.push(renderSingleComment(commentUiData, 0, true));
+            });
+        }
 
         return commentNodes;
     }
 
     const handleSubmitComment = async (text: string) => {
+        if(props.post.global.commentsDisabled) {
+            return;
+        }
+        
         const data = {
             text,
             postId: props.post.postId,
@@ -380,6 +390,15 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
         dispatch(actions.modalActions.openModal({ modalName: MODAL_TYPES.LIKES_MODAL, data: { post } }));
     }
 
+    const openPostMenuModal = (post: PostWithCommentCount) => {
+        if(post === null) {
+            return;
+        }
+
+        // open the post menu dialog by setting the state in redux
+        dispatch(actions.modalActions.openModal({ modalName: MODAL_TYPES.POST_EDIT_MENU_MODAL, data: { post } }));
+    }
+
     const toggleLike = async (userName: string, userId: string) => {
         // Greedily update only the local UI regardless of server response
         let post: PostWithCommentCount | null = structuredClone(props.post);
@@ -389,14 +408,14 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
         // Send the actual command to the server
         await postToggleLike({ postId: props.post.postId, userName, userId });
     }
-
+    
     if (props.post == null) {
         return <></>;
     }
 
     const sliderWidth = document.body.clientWidth >= 470 ? 470 : document.body.clientWidth;
     const isLiked = isPostLiked(authUser.userName, props.post);
-
+    
     return (
         <>
             <Div>
@@ -417,9 +436,11 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                                                 pfp={props.post.user.pfp}
                                                 url={`${HOST}/${props.post.user.userName}`}
                                                 userName={props.post.user.userName} />
-                                            <PostOptionsWrapper>
-                                                <BoldLink $fontSize="1.5em" onClick={() => 1}>...</BoldLink>
-                                            </PostOptionsWrapper>
+                                            {(authUser.id == props.post.user.userId) &&
+                                                <PostOptionsWrapper>
+                                                    <BoldLink $fontSize="1.5em" onClick={() => openPostMenuModal(props.post)}>...</BoldLink>
+                                                </PostOptionsWrapper>
+                                            }
                                         </FlexRow>
                                         {props.post.global.locationText.length > 0 &&
                                             <Div $marginLeft="39px" $marginTop="-9px" $fontSize="13px">
@@ -431,7 +452,12 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                                     </Div>
                                 </HeadingWrapper>
                                 <CommentsWrapper>
-                                    {renderComments()}
+                                    {!props.post.global.commentsDisabled && renderComments()}
+                                    {(props.post.global.commentsDisabled || props.post.commentCount === 0) && 
+                                        <FlexColumnFullWidth $height="100%" $justifyContent="center">
+                                            <Div $alignSelf="center" $fontSize="1.3em" $fontWeight="500">No Comments Yet</Div>
+                                        </FlexColumnFullWidth>
+                                    }
                                 </CommentsWrapper>
                                 <ActionWrapper>
                                     <Div $cursor="pointer">
@@ -525,7 +551,7 @@ const CommentModal: React.FC<CommentModalProps> = (props: CommentModalProps) => 
     const steps = [
         {
             title: "Comments",
-            element: <CommentModalContent post={props.post} />,
+            element: <CommentModalContent post={props.post} onClose={props.onClose} />,
             options: {
                 showFooter: false,
                 hideMargins: true,

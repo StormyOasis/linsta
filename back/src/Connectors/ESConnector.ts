@@ -4,7 +4,7 @@ import Metrics from "../metrics/Metrics";
 import config from 'config';
 import { Entry, User, Global, Post } from '../utils/types';
 import fs from 'fs';
-import { ClusterHealthResponse, IndicesStatsResponse } from '@elastic/elasticsearch/lib/api/types';
+import { ClusterHealthResponse, DeleteResponse, IndicesStatsResponse, WriteResponseBase } from '@elastic/elasticsearch/lib/api/types';
 
 export default class ESConnector {
     private static instance: ESConnector | null = null;
@@ -66,6 +66,28 @@ export default class ESConnector {
         return this.client;
     }    
 
+    public delete = async (id:string):Promise<DeleteResponse> => {
+        if(!this.client) {
+            throw new Error("ES client not initialized");
+        }
+
+        try {            
+            const result = await this.client?.delete({
+                index: config.get("es.mainIndex"),
+                id
+            });
+
+            return result;
+        } catch(err) {            
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            if((err as any).statusCode === 404) {
+                logger.warn(`ES document with id ${id} not found`);
+                return {result: "not_found"} as DeleteResponse;
+            }
+            throw err;
+        }
+    }
+
     public search = async (query: object, resultSize: number|null) => {
         const size: number = resultSize ? resultSize : config.get("es.defaultResultSize");        
         
@@ -81,7 +103,7 @@ export default class ESConnector {
                     }
                   }
                 }
-              ]
+            ]
         }, { meta: true});
 
         return result;
@@ -147,12 +169,13 @@ export default class ESConnector {
         return result;
     }
     
-    public update = async (id: string, script?: object, body?: object) => {
+    public update = async (id: string, script?: object, source?: boolean, body?: object) => {
         const result = await this.client?.update({
             index: config.get("es.mainIndex"),
             id,
             script,
-            body
+            body,
+            _source: source || false
         });
         return result;
     }

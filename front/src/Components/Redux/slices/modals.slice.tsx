@@ -9,7 +9,9 @@ export const MODAL_TYPES = {
     LIKES_MODAL: "likeModal",
     PROFILE_PIC_MODAL: "pfpModal",
     FOLLOW_MODAL: "followModal",
-    COMMENT_DELETE_MODAL: "commentDeleteModal"
+    COMMENT_DELETE_MODAL: "commentDeleteModal",
+    POST_EDIT_MENU_MODAL: "postEditMenuModal",
+    POST_EDIT_MODAL: "postEditModal"
 };
 
 export interface ModalState {

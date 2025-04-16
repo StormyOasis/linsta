@@ -215,7 +215,7 @@ export default class MultiStepModal extends React.Component<MultiStepModalProps>
                                         </ModalTitleBarInnerWrapper2>
                                         <ModalCloseWrapper>
                                             <ModalClose>
-                                                <ModalCloseButton title="data-modal-close" aria-label="Close" onClick={this.onClose}>
+                                                <ModalCloseButton title="Close" aria-label="Close" onClick={this.onClose}>
                                                     <Flex $alignItems="center" $justifyContent="center" $cursor="pointer">
                                                         <CloseButton />
                                                     </Flex>

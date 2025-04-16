@@ -9,6 +9,9 @@ import LikesModal from "./Main/LikesModal";
 import PfpModal from "./Profile/ProfilePicModal";
 import FollowersModal from "./Profile/FollowersModal";
 import DeleteCommentModal from "./Comments/DeleteCommentModal";
+import EditPostMenuModal from "./Comments/EditPostMenuModal";
+import { PostWithCommentCount } from "../../../../api/types";
+import EditPostModal from "./Comments/EditPostModal";
 
 const MODAL_ZINDEX_BASE: number = 9990;
 
@@ -26,6 +29,7 @@ const ModalOverlayBackground = styled(Flex) <{ $isOverlayEnabled: boolean, $zInd
 
 const ModalManager: React.FC<{}> = () => {
     const { isOverlayEnabled, openModalStack } = useAppSelector((state) => state.modal);
+    const updatedPost:PostWithCommentCount|null = useAppSelector((state: any) => state.misc.updatedPost);
 
     const dispatch = useAppDispatch();
 
@@ -110,6 +114,46 @@ const ModalManager: React.FC<{}> = () => {
                             closeModal(modalName, {deletedCommentId: data.commentId})
                         }} />;
                 }
+                case MODAL_TYPES.POST_EDIT_MENU_MODAL: {
+                    return <EditPostMenuModal 
+                        key={MODAL_TYPES.POST_EDIT_MENU_MODAL}
+                        zIndex={zIndex++}
+                        post={data.post}
+                        onClose={(closeData: any) => {
+                            // Before closing, update Redux state with the new data
+                            if(closeData.isCommited) {
+                                if(closeData.isDeleted) {
+                                    dispatch(actions.miscActions.updateDeletedPostId(data.post.postId));
+                                    updateModalData(MODAL_TYPES.COMMENT_MODAL, { post: data.post });
+                                    closeModal(MODAL_TYPES.COMMENT_MODAL, { post: data.post });                                    
+                                } else {    
+                                    dispatch(actions.miscActions.updateUpdatedPost(closeData.post));
+                                    updateModalData(MODAL_TYPES.COMMENT_MODAL, { post: closeData.post });                                                                 
+                                }
+                            }
+                            closeModal(modalName, {postId: data.post.postId})
+                        }} />;                                                
+                }
+                case MODAL_TYPES.POST_EDIT_MODAL: {
+                    return <EditPostModal
+                        key={MODAL_TYPES.POST_EDIT_MODAL}
+                        zIndex={zIndex++}
+                        post={data.post}
+                        onClose={(closeData: any) => {
+                            // Before closing, update Redux state with the new data
+                            if(closeData.isCommited) {
+                                if(closeData.isDeleted) {
+                                    dispatch(actions.miscActions.updateDeletedPostId(data.post.postId));
+                                    updateModalData(MODAL_TYPES.COMMENT_MODAL, { post: data.post });
+                                    closeModal(MODAL_TYPES.COMMENT_MODAL, { post: data.post });                                    
+                                } else {    
+                                    dispatch(actions.miscActions.updateUpdatedPost(closeData.post));
+                                    updateModalData(MODAL_TYPES.COMMENT_MODAL, { post: closeData.post });                                                                 
+                                }
+                            }
+                            closeModal(modalName, {postId: data.post.postId})
+                        }} />;
+                }                
                 default: {
                     console.warn("Invalid modal");
                     return null;

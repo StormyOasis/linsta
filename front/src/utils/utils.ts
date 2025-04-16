@@ -1,7 +1,7 @@
 import sanitizeHtml from 'sanitize-html';
 
-import { HistoryType, Post, Profile } from "../api/types";
-import { postSetFollowStatus } from '../api/ServiceController';
+import { HistoryType, Post, PostWithCommentCount, Profile } from "../api/types";
+import { postSetFollowStatus, postUpdatePost } from '../api/ServiceController';
 import { DEFAULT_PFP } from '../api/config';
 
 export const historyUtils: HistoryType = {
@@ -298,4 +298,51 @@ export const splitFullName = (fullName:string):{ firstName: string, middleNames:
     const middleNames = names.slice(1, names.length - 1).join(' ');
 
     return { firstName, middleNames, lastName };
+}
+
+export const updatePostFields = async (post:Post, fieldsToUpdate: {key:string, value:any}[], onClose:(data:any) => void) => {
+    if(fieldsToUpdate == null || fieldsToUpdate.length === 0) {
+        return;
+    }
+
+    try {
+        const newPost:Post = await updatePost(post, fieldsToUpdate);
+        // Close the modal
+        onClose({isCommited: true, post: newPost, isDeleted: false});
+    } catch(err) {
+        console.error(err)
+    }        
+}
+
+export const updatePost = async (post:PostWithCommentCount, fieldsToUpdate: {key:string, value:any}[]):Promise<PostWithCommentCount> => {
+    if(fieldsToUpdate == null || fieldsToUpdate.length === 0) {
+        return post;
+    }
+
+    try {
+        // build the query from the given fieldsToUpdate array
+        let fields:any = null;
+        if(fieldsToUpdate.length > 0) {
+            fields = {};
+            fieldsToUpdate.forEach((field) => {
+                fields[field.key] = field.value;
+            });
+        } 
+
+        // Call the update post service
+        const results = await postUpdatePost({ postId: post.postId, fields });
+        if(results == null || results.status !== 200) {
+            throw new Error("Error updating post");
+        }
+
+        // update the local returned post adding the fields not returned by ES
+        results.data.postId = post.postId
+        results.data.user.pfp = post.user.pfp;
+        results.data.global.likes = [...post.global.likes];
+        results.data.commentCount = post.commentCount;
+        return results.data as PostWithCommentCount;
+    } catch(err) {
+        console.error(err)
+    }
+    return post;        
 }
