@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 
 import MultiStepModal from "../../../../Common/MultiStepModal";
-import { Post, ProfileWithFollowStatusInt } from "../../../../../api/types";
+import { Like, Post, ProfileWithFollowStatusInt } from "../../../../../api/types";
 import { postBulkGetProfileAndFollowStatus } from "../../../../../../src/api/ServiceController";
 import StyledButton from "../../../../../Components/Common/StyledButton";
 import { followUser } from "../../../../../utils/utils";
@@ -64,14 +64,10 @@ const LikesModalContent: React.FC<LikesModalContentProps> = (props: LikesModalCo
             return <></>;
         }
 
-        const results = props.post.global.likes.map((entry, index) => {                             
-            if (entry.userId == props.post.user.userId || entry.userId == authUser.id) {
-                return <div key={`${index}`}></div>; //prevent 'element in list should have unique key' error
-            }
-            
+        const results = props.post.global.likes.map((entry:Like, index:number) => {                             
             const lfd = likeFollowData[entry.userId];
             if (lfd == null) {
-                return <div key="0"></div>; //prevent 'element in list should have unique key' error
+                return <Div key={`${index}`}></Div>; //prevent 'element in list should have unique key' error
             } 
 
             const pfp = lfd.pfp ? lfd.pfp : DEFAULT_PFP;
@@ -103,14 +99,16 @@ const LikesModalContent: React.FC<LikesModalContentProps> = (props: LikesModalCo
                                 </Div>
                             </FlexColumn>
                         </FlexRow>
-                        <Div>
-                            <StyledButton
-                                style={{ marginBottom: "12px" }}
-                                useSecondaryColors={isFollowing}
-                                text={isFollowing ? "Following" : "Follow"}
-                                onClick={async () => await toggleFollowState(props.post.user.userId, entry.userId, !isFollowing)}>
-                            </StyledButton>
-                        </Div>
+                        {entry.userId != authUser.id && 
+                            <Div>
+                                <StyledButton
+                                    style={{ marginBottom: "12px" }}
+                                    useSecondaryColors={isFollowing}
+                                    text={isFollowing ? "Following" : "Follow"}
+                                    onClick={async () => await toggleFollowState(props.post.user.userId, entry.userId, !isFollowing)}>
+                                </StyledButton>
+                            </Div>
+                        }
                     </FlexRow>
                 </LikeEntryContainer>
             );
