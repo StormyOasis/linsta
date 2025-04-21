@@ -300,7 +300,7 @@ export const splitFullName = (fullName:string):{ firstName: string, middleNames:
     return { firstName, middleNames, lastName };
 }
 
-export const updatePostFields = async (post:Post, fieldsToUpdate: {key:string, value:any}[], onClose:(data:any) => void) => {
+export const updatePostFields = async (post:PostWithCommentCount, fieldsToUpdate: {key:string, value:any}[], onClose:(data:any) => void) => {
     if(fieldsToUpdate == null || fieldsToUpdate.length === 0) {
         return;
     }

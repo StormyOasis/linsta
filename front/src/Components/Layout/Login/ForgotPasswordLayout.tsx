@@ -11,10 +11,6 @@ import Modal, { ModalContentWrapper, ModalSectionWrapper } from "../../../Compon
 import { postForgotPassword } from "../../../api/ServiceController";
 import { Div, Span } from "../../../Components/Common/CombinedStyling";
 
-type ForgotProps = {
-
-};
-
 const ForgotLayoutWrapper = styled.main<any>`
   display: flex;
   flex-direction: column;
@@ -35,7 +31,7 @@ const HeadingText = styled.div`
 `;
 
 const SubHeadingText = styled.div`
-    color: rgb(115,115,155);
+    color: rgb(75, 75, 75);
     text-align: center;
     margin-top:6px;
     margin-bottom: 10px;
@@ -140,7 +136,7 @@ const renderForgotForm = () => {
     );
 }
 
-const ForgotPasswordLayout: React.FC<ForgotProps> = (props: ForgotProps) => {
+const ForgotPasswordLayout: React.FC = () => {
     return (
         <Theme>
             <ForgotLayoutWrapper role="main">

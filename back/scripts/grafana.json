@@ -100,7 +100,7 @@
         "x": 0,
         "y": 1
       },
-      "id": 6,
+      "id": 2,
       "options": {
         "legend": {
           "calcs": [],
@@ -120,10 +120,10 @@
             "uid": "aehrfngpsexa8a"
           },
           "refId": "A",
-          "target": "stats.response.*"
+          "target": "stats.comments.*"
         }
       ],
-      "title": "Responses",
+      "title": "Comments",
       "type": "timeseries"
     },
     {
@@ -222,6 +222,7 @@
         "type": "graphite",
         "uid": "aehrfngpsexa8a"
       },
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -282,7 +283,7 @@
         "x": 0,
         "y": 9
       },
-      "id": 2,
+      "id": 1,
       "options": {
         "legend": {
           "calcs": [],
@@ -295,6 +296,7 @@
           "sort": "none"
         }
       },
+      "pluginVersion": "11.1.3",
       "targets": [
         {
           "datasource": {
@@ -302,10 +304,10 @@
             "uid": "aehrfngpsexa8a"
           },
           "refId": "A",
-          "target": "stats.comments.*"
+          "target": "stats.accounts.*"
         }
       ],
-      "title": "Comments",
+      "title": "Accounts",
       "type": "timeseries"
     },
     {
@@ -350,6 +352,7 @@
               "mode": "off"
             }
           },
+          "decimals": 0,
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -404,7 +407,6 @@
         "type": "graphite",
         "uid": "aehrfngpsexa8a"
       },
-      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -465,7 +467,7 @@
         "x": 0,
         "y": 17
       },
-      "id": 1,
+      "id": 24,
       "options": {
         "legend": {
           "calcs": [],
@@ -478,7 +480,6 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "11.1.3",
       "targets": [
         {
           "datasource": {
@@ -486,10 +487,10 @@
             "uid": "aehrfngpsexa8a"
           },
           "refId": "A",
-          "target": "stats.accounts.*"
+          "target": "stats.search.*"
         }
       ],
-      "title": "Accounts",
+      "title": "Search",
       "type": "timeseries"
     },
     {
@@ -1148,10 +1149,6 @@
               {
                 "color": "green",
                 "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
               }
             ]
           }
@@ -1514,20 +1511,20 @@
       "type": "stat"
     }
   ],
-  "refresh": "auto",
+  "refresh": "5s",
   "schemaVersion": 39,
   "tags": [],
   "templating": {
     "list": []
   },
   "time": {
-    "from": "now-1h",
+    "from": "now-3h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
   "title": "Back-End",
   "uid": "dei5m1k93d4owc",
-  "version": 18,
+  "version": 22,
   "weekStart": ""
 }

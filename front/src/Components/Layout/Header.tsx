@@ -3,10 +3,9 @@ import { styled } from "styled-components";
 import { Link } from "react-router-dom";
 
 import LogoSVG from '/public/images/linsta_small.svg';
-import SearchSVG from '/public/images/search.svg';
 
 import * as styles from './Header.module.css';
-import { Div, FlexColumn, FlexRow, Span } from "../Common/CombinedStyling";
+import { Div, FlexColumn, FlexRow } from "../Common/CombinedStyling";
 
 const HeaderWrapper = styled(FlexColumn)`
   z-index: 100;
@@ -28,60 +27,6 @@ const LogoImage = styled(LogoSVG)`
    display:flex;
    overflow: visible;
    background: transparent;
-`;
-
-const SearchImage = styled(SearchSVG)`
-  overflow: hidden;
-  height: 16px;
-  line-height: 18px;
-  width: 16px;
-  position: relative;
-  cursor: pointer;
-  color: rgb(142, 142, 142);
-  display: block;
-`;
-
-const SearchBox = styled.input`
-  display:flex;
-  padding-top: 3px;
-  padding-bottom: 3px;
-  padding-left: 16px;
-  padding-right: 16px;
-  border-radius: 8px;
-  border: none;
-  font-size: 16px;
-  height: 36px;
-  line-height: 18px;
-  text-align: start;
-  width: 350px;
-  cursor: pointer;
-  background-color: ${props => props.theme["input"].backgroundColor};
-`;
-
-const SearchWrapper = styled(FlexColumn)`
-  align-content: stretch;
-  align-items: stretch;
-  border-radius: 100px;
-  justify-content: flex-start;
-  height: 36px;
-  min-width: 125px;
-  overflow: hidden;
-  position: relative;
-  cursor: pointer;
-`;
-
-const SearchSpan = styled(Span)`
-  color: rgb(115,115,115);
-  cursor: pointer;
-  font-size: 16px;
-  line-height: 20px;
-  margin: 0;
-  text-wrap: wrap;
-  position: relative;
-
-  &:before {
-    content: "Search"
-  }
 `;
 
 const ActionWrapper = styled(FlexRow)`
@@ -159,18 +104,6 @@ class Header extends React.Component<any, any> {
                                 <LogoImage />
                             </Link>
                         </LogoWrapper>
-                        <SearchWrapper>
-                            <SearchBox aria-label="Search input box" type="text" placeholder="" >
-                            </SearchBox>
-                            <div className={styles.searchBoxDiv1}>
-                                <div className={styles.searchBoxDiv2}>
-                                    <div className={styles.searchBoxDiv3}>
-                                        <SearchImage />
-                                    </div>
-                                    <SearchSpan />
-                                </div>
-                            </div>
-                        </SearchWrapper>
                         <ActionWrapper>
                             <div className={styles.actionWrapperInner}>
                                 <ActionLinkWrapper>

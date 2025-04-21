@@ -42,7 +42,7 @@ const renderHtml = (title: string, styles: any, html: any, preloadState: any):st
             </script>
             <script type="application/javascript" src="vendor.bundle.js" async></script>
             <script type="application/javascript" src="main.bundle.js"></script>            
-            <script crossorigin type="application/javascript" src="/public/Pixels.js" defer></script>            
+            <script crossorigin type="application/javascript" src="/public/Pixels.js" defer></script>                   
         </body>
     </html>`;
 };

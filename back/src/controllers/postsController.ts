@@ -2,7 +2,7 @@ import { Context } from "koa";
 import formidable from 'formidable';
 import Metrics from "../metrics/Metrics";
 import logger from "../logger/logger";
-import { convertSingleToDoubleQuotes, getFileExtByMimeType, getFollowingUserIds, getLikesByPost, getPfpByUserId, getPostByPostId, handleValidationError, sanitize, sanitizeInput } from "../utils/utils";
+import { getFileExtByMimeType, getFollowingUserIds, getLikesByPost, getPfpByUserId, getPostByPostId, handleValidationError, sanitize, sanitizeInput } from "../utils/utils";
 import { uploadFile } from "../Connectors/AWSConnector";
 import ESConnector, { buildDataSetForES } from '../Connectors/ESConnector';
 import { User, Global, Entry, Post, PostWithCommentCount, Like } from "../utils/types";
@@ -408,15 +408,16 @@ export const getAllPosts = async (ctx: Context) => {
             },
             sort: [
                 {
-                    "media.postId.keyword": {
-                        "order": "asc"
-                    }
+                    "postId": "asc"                    
                 },
                 {
                     "global.dateTime": {
-                        "order": "asc"
+                      "order": "asc",
+                      "nested": {
+                        "path": "global"
+                      }
                     }
-                }
+                  }
             ]
         }
 
@@ -708,15 +709,16 @@ export const getPostsByUserId = async (ctx: Context) => {
             },
             sort: [
                 {
-                    "media.postId.keyword": {
-                        "order": "asc"
-                    }
+                    "postId": "asc"                    
                 },
                 {
                     "global.dateTime": {
-                        "order": "asc"
+                      "order": "asc",
+                      "nested": {
+                        "path": "global"
+                      }
                     }
-                }
+                  }
             ]
         };
 

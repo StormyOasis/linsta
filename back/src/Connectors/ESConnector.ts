@@ -4,7 +4,7 @@ import Metrics from "../metrics/Metrics";
 import config from 'config';
 import { Entry, User, Global, Post } from '../utils/types';
 import fs from 'fs';
-import { ClusterHealthResponse, DeleteResponse, IndicesStatsResponse, WriteResponseBase } from '@elastic/elasticsearch/lib/api/types';
+import { ClusterHealthResponse, DeleteResponse, IndicesStatsResponse } from '@elastic/elasticsearch/lib/api/types';
 
 export default class ESConnector {
     private static instance: ESConnector | null = null;
