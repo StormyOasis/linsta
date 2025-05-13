@@ -55,7 +55,7 @@ const SearchBox: React.FC<SearchBoxProps> = (props: SearchBoxProps) => {
             </IconWrapper>            
             <Input
                 type="text"
-                placeholder={props.placeholder}
+                placeholder={props.placeholder || "Search..."}
                 value={props.value}
                 onChange={props.onChange}
             />

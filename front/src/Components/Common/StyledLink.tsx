@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
+import { Div } from "./CombinedStyling";
 
 export type StyledLinkProps = {
     to?: string;
@@ -14,7 +15,6 @@ export type StyledLinkProps = {
 const StyledLinkWrapperFromLink = styled(Link)`
     color: ${props => props.theme['colors'].buttonDefaultColor};
     text-decoration: none;
-    display: contents;
     font-weight: 600;
     cursor: pointer;
 
@@ -23,10 +23,9 @@ const StyledLinkWrapperFromLink = styled(Link)`
     }
 `;
 
-const StyledLinkWrapper = styled.div`
+const StyledLinkWrapper = styled(Div)`
     color: ${props => props.theme['colors'].buttonDefaultColor};
     text-decoration: none;
-    display: contents;
     font-weight: 600;
     cursor: pointer;
 
@@ -34,7 +33,6 @@ const StyledLinkWrapper = styled.div`
         color: ${(props) => props.theme['colors'].buttonOnHoverColor};
     }
 `;
-
 
 const StyledLink: React.FC<StyledLinkProps> = (props: StyledLinkProps) => {
     const onClick = props.onClick ? props.onClick : () => true;

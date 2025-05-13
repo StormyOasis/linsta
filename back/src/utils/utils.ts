@@ -1,16 +1,17 @@
 import sanitizeHtml from 'sanitize-html';
-import { Like, PostWithCommentCount, Profile } from './types';
+import { Like, Post, PostWithCommentCount, Profile } from './types';
 import ESConnector, { buildSearchResultSet } from '../Connectors/ESConnector';
 import RedisConnector from '../Connectors/RedisConnector';
 import DBConnector, { EDGE_USER_FOLLOWS, EDGE_USER_LIKED_POST, EDGE_POST_TO_COMMENT } from '../Connectors/DBConnector';
 import logger from '../logger/logger';
 import { Context } from 'koa';
+import config from 'config';
 
 export const stripNonNumericCharacters = (str: string): string => {
     return str.replace(/\D/g, '');
 }
 
-export const isEmail = (str: string) : boolean => {
+export const isEmail = (str: string): boolean => {
     const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
     return emailRegex.test(str);
 }
@@ -24,11 +25,11 @@ export const isPhone = (str: string): boolean => {
 export const isValidPassword = (str: string): boolean => {
     const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@.#$!%*?&^])[A-Za-z\d@.#$!%*?&]{8,15}$/;
 
-    return regex.test(str);    
+    return regex.test(str);
 }
 
-export const obfuscateEmail = (email: string|null):string => {
-    if(email == null) {
+export const obfuscateEmail = (email: string | null): string => {
+    if (email == null) {
         return "";
     }
 
@@ -37,17 +38,17 @@ export const obfuscateEmail = (email: string|null):string => {
     return `${email.at(0)}${"*".repeat(starCount)}${email.at(indexOfAt - 1)}@${email.substring(indexOfAt + 1)}`;
 }
 
-export const obfuscatePhone = (phone: string|null):string => {
-    if(phone == null) {
+export const obfuscatePhone = (phone: string | null): string => {
+    if (phone == null) {
         return "";
     }
 
-    return `${phone.slice(0, 2)}${"*".repeat(phone.length-4)}${phone.slice(-2)}`;
+    return `${phone.slice(0, 2)}${"*".repeat(phone.length - 4)}${phone.slice(-2)}`;
 }
 
-export const sanitize = (html: string):string => {
+export const sanitize = (html: string): string => {
     return sanitizeHtml(html, {
-        allowedTags: [ 'b', 'i', 'em', 'strong', 'a', 'br', 'sub', 'sup' ],
+        allowedTags: ['b', 'i', 'em', 'strong', 'a', 'br', 'sub', 'sup'],
         allowedAttributes: {
             'a': ['href']
         },
@@ -56,14 +57,14 @@ export const sanitize = (html: string):string => {
 
 export const sanitizeInput = (input?: string | null): string => sanitize(input || "");
 
-export const getFileExtByMimeType = (mimeType: string|null):string => {
-    switch(mimeType) {
+export const getFileExtByMimeType = (mimeType: string | null): string => {
+    switch (mimeType) {
         case "image/jpeg": {
             return ".jpg";
         }
         case "image/png": {
             return ".png";
-        }        
+        }
         case "video/mp4": {
             return ".mp4";
         }
@@ -73,32 +74,32 @@ export const getFileExtByMimeType = (mimeType: string|null):string => {
     }
 }
 
-export const getPostIdFromEsId = async (esId: string):Promise<string|null> => {    
+export const getPostIdFromEsId = async (esId: string): Promise<string | null> => {
     // Get a list of all users that like the given post id
     const result = await DBConnector.getGraph().V()
-        .hasLabel("Post")          
+        .hasLabel("Post")
         .has("esId", esId)
         .project("id")
         .by(DBConnector.__().id())
-        .next();    
+        .next();
 
-    if(result == null) {
+    if (result == null) {
         throw new Error("Error getting post likes");
     }
 
-    if(result.value === null) {
+    if (result.value === null) {
         return null;
     }
 
     return result.value.get("id");
 }
 
-export const getLikesByPost = async (postId: string|null):Promise<Like[]> => {
-    if(postId == null || postId.length === 0) {
+export const getLikesByPost = async (postId: string | null): Promise<Like[]> => {
+    if (postId == null || postId.length === 0) {
         return [];
     }
 
-    const output:Like[] = [];
+    const output: Like[] = [];
 
     // Get a list of all users that like the given post id
     const result = await DBConnector.getGraph().V(postId)
@@ -107,10 +108,10 @@ export const getLikesByPost = async (postId: string|null):Promise<Like[]> => {
         .project("userId", "userName", "profileId")
         .by(DBConnector.__().id())
         .by("userName")
-        .by("profileId")            
-        .toList();    
+        .by("profileId")
+        .toList();
 
-    if(result == null) {
+    if (result == null) {
         throw new Error("Error getting post likes");
     }
 
@@ -121,8 +122,8 @@ export const getLikesByPost = async (postId: string|null):Promise<Like[]> => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const propertyIter = (vertex as Map<any, any>).entries();
         let property = propertyIter.next();
-        
-        while(!property.done) {                
+
+        while (!property.done) {
             props.push(property.value[1]);
             property = propertyIter.next();
         }
@@ -137,63 +138,63 @@ export const getLikesByPost = async (postId: string|null):Promise<Like[]> => {
     return output;
 }
 
-export const getPostByPostId = async (postId: string):Promise<|{esId: string; post:PostWithCommentCount}|null> => {
+export const getPostByPostId = async (postId: string): Promise<| { esId: string; post: PostWithCommentCount } | null> => {
     let esId: string = "";
 
     // Try to pull the postId to ES id mapping from Redis
-    const postIdToESIdMapping:string|null = await RedisConnector.get(postId);
-    if(!postIdToESIdMapping) {
+    const postIdToESIdMapping: string | null = await RedisConnector.get(postId);
+    if (!postIdToESIdMapping) {
         // If mapping not found in Redis then pull from the graph and set in redis
         const result = await DBConnector.getGraph().V(postId).project("esId").by("esId").toList();
 
-        if(result == null) {
+        if (result == null) {
             throw new Error("Error getting post");
-        }    
+        }
 
         // Store the returned vertex info to return to user
         // There HAS to be a less hacky feeling way to do this but I'm not sure            
-        for (const vertex of result) {            
+        for (const vertex of result) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const propertyIter = (vertex as Map<any, any>).entries();
             let property = propertyIter.next();
-            
-            while(!property.done) {
+
+            while (!property.done) {
                 esId = (property.value[1]);
                 property = propertyIter.next();
-            }            
+            }
         }
     } else {
         esId = postIdToESIdMapping;
     }
 
-    if(esId == null || esId.length === 0) {
+    if (esId == null || esId.length === 0) {
         throw new Error("Invalid post id");
     }
 
     // Add to / update to Redis
-    await RedisConnector.set(postId, esId); 
-    
+    await RedisConnector.set(postId, esId);
+
     // esId should now contain the ES id for the given postId
     // Now attempt to pull the full Post object from Redis
 
     const data = await RedisConnector.get(esId);
-    let entries:PostWithCommentCount[] = [];
-    if(data) {  
+    let entries: PostWithCommentCount[] = [];
+    if (data) {
         entries[0] = JSON.parse(data);
     } else {
         // Pull Post data from ES
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const results:any = await ESConnector.getInstance().search({
+        const results: any = await ESConnector.getInstance().search({
             bool: {
                 must: [{
-                    match: {_id: esId}                    
+                    match: { _id: esId }
                 }]
             }
         }, 1);
-        
+
         entries = buildSearchResultSet(results.body.hits.hits) as PostWithCommentCount[];
-        if(entries.length === 0) {
+        if (entries.length === 0) {
             throw new Error("Invalid post");
         }
     }
@@ -213,7 +214,7 @@ export const getPostByPostId = async (postId: string):Promise<|{esId: string; po
             const commentCount = postMap.get("commentCount");
             entries[0].commentCount = commentCount;
         }
-    }    
+    }
 
     // Get post likes
     entries[0].global.likes = await getLikesByPost(postId);
@@ -221,47 +222,47 @@ export const getPostByPostId = async (postId: string):Promise<|{esId: string; po
     entries[0].user.pfp = await getPfpByUserId(entries[0].user.userId);
 
     // Add to Redis
-    await RedisConnector.set(esId, JSON.stringify(entries[0]));    
+    await RedisConnector.set(esId, JSON.stringify(entries[0]));
 
-    return {esId, post: entries[0]};
+    return { esId, post: entries[0] };
 }
 
 export const getFollowingUserIds = async (userId: string): Promise<string[]> => {
-    const followingIds:string[] = [];
+    const followingIds: string[] = [];
 
     try {
         const results = await DBConnector.getGraph().V(userId)
             .out(EDGE_USER_FOLLOWS)
-            .toList();     
-            
-        if(results == null || results.values == null) {
+            .toList();
+
+        if (results == null || results.values == null) {
             return [];
         }
 
-        for(const result of results) {
+        for (const result of results) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const vertex:any = result;
-            followingIds.push(vertex.id);   
+            const vertex: any = result;
+            followingIds.push(vertex.id);
         }
 
-    } catch(err) {
+    } catch (err) {
         console.log(err);
-        logger.error(err);   
-    } 
-    
+        logger.error(err);
+    }
+
     return followingIds;
 }
 
-export const getProfileByUserId = async (userId: string):Promise<Profile|null> => {
+export const getProfileByUserId = async (userId: string): Promise<Profile | null> => {
     return await getProfileEx(userId, null);
 }
 
-export const getProfileByUserName = async (userName: string):Promise<Profile|null> => {
+export const getProfileByUserName = async (userName: string): Promise<Profile | null> => {
     return await getProfileEx(null, userName);
 }
 
-const getProfileEx = async (userId: string|null, userName: string|null):Promise<Profile|null> => {
-    if(userId == null && userName == null) {
+const getProfileEx = async (userId: string | null, userName: string | null): Promise<Profile | null> => {
+    if (userId == null && userName == null) {
         return null;
     }
 
@@ -269,10 +270,10 @@ const getProfileEx = async (userId: string|null, userName: string|null):Promise<
     const key = `profile:${userId != null ? 'id' : 'name'}:${userId != null ? userId : userName}`;
 
     try {
-    
+
         // Attempt to pull from redis first
         const res = await RedisConnector.get(key);
-        if(res !== null) {
+        if (res !== null) {
             // Found in redis
             return JSON.parse(res) as Profile;
         }
@@ -281,40 +282,40 @@ const getProfileEx = async (userId: string|null, userName: string|null):Promise<
         let results;
 
         // DB first
-        if(userName !== null) {
-            results = await DBConnector.getGraph().V().has("userName", userName).next(); 
+        if (userName !== null) {
+            results = await DBConnector.getGraph().V().has("userName", userName).next();
         } else {
             results = await DBConnector.getGraph().V(userId).next();
         }
 
-        if(results == null || results.value == null) {
+        if (results == null || results.value == null) {
             throw new Error("Invalid user name or id");
         }
-        
+
         const vertexProperties = results.value.properties;
-        const userIdFromResult:string = results.value.id;
-        const profileId:string = getVertexPropertySafe(vertexProperties, 'profileId');
-        
+        const userIdFromResult: string = results.value.id;
+        const profileId: string = getVertexPropertySafe(vertexProperties, 'profileId');
+
         // Now get profile from ES
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        results = await ESConnector.getInstance().searchProfile({            
+        results = await ESConnector.getInstance().searchProfile({
             "term": {
                 "_id": profileId
-            }            
+            }
         }, null);
 
         const hits = results?.body?.hits?.hits;
-        if(!results || results.statusCode !== 200 || hits == null) {
+        if (!results || results.statusCode !== 200 || hits == null || hits.length === 0) {
             throw new Error("Error querying ES");
         }
-        
+
         // Should only be at most 1 results since we are querying by id
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const source:any = hits[0]._source;
-        
-        const profile:Profile = {
+        const source: any = hits[0]._source;
+
+        const profile: Profile = {
             userId: userIdFromResult,
-            profileId: profileId,            
+            profileId: profileId,
             userName: getVertexPropertySafe(vertexProperties, 'userName'),
             pronouns: getVertexPropertySafe(vertexProperties, 'pronouns'),
             pfp: getVertexPropertySafe(vertexProperties, 'pfp'),
@@ -327,18 +328,18 @@ const getProfileEx = async (userId: string|null, userName: string|null):Promise<
 
         // Inverse key used to update the other copy of profile stored in redis
         const inverseKey = `profile:${userName != null ? 'id' : 'name'}:${userName != null ? profile.userId : profile.userName}`;
-        
+
         // Add to redis. Store the profile under both the userId and userName(hence inverseKey var)    
         const profileString = JSON.stringify(profile);
         await RedisConnector.set(key, profileString);
         await RedisConnector.set(inverseKey, profileString);
 
         return profile;
-    } catch(err) {
+    } catch (err) {
         console.log(err);
-        logger.error(err);    
+        logger.error(err);
     }
-    
+
     return null;
 }
 
@@ -353,17 +354,17 @@ export const updateProfileInRedis = async (profile: Profile) => {
 
     // Inverse key used to update the other copy of profile stored in redis
     const inverseKey = `profile:name:${profile.userName}`;
-    
+
     // Add to redis. Store the profile under both the userId and userName(hence inverseKey var)    
     const profileString = JSON.stringify(profile);
     await RedisConnector.set(key, profileString);
-    await RedisConnector.set(inverseKey, profileString);    
+    await RedisConnector.set(inverseKey, profileString);
 }
 
-export const getPfpByUserId = async (userId: string):Promise<string> => {
+export const getPfpByUserId = async (userId: string): Promise<string> => {
     const results = await DBConnector.getGraph().V(userId).next();
 
-    if(results == null || results.value == null || results.value.properties.pfp == null) {
+    if (results == null || results.value == null || results.value.properties.pfp == null) {
         return "";
     }
 
@@ -376,9 +377,117 @@ export const handleValidationError = (ctx: Context, message: string, statusCode:
     ctx.body = { status: message };
 };
 
-export const convertSingleToDoubleQuotes = (input:string) => {
+export const convertSingleToDoubleQuotes = (input: string) => {
     return input
         .replace(/'/g, '"')                               // Replace all single quotes with double quotes
         .replace(/([{,]\s*)"(.*?)"(?=\s*:)/g, '$1"$2"');  // Ensure property keys are properly quoted
 }
-  
+
+export const extractHashtags = (text: string): string[] => {
+    if (!text) {
+        return [];
+    }
+    
+    const hashtagRegex = /#[\p{L}0-9_]+/gu; // Matches hashtags like #fun
+    const matches = text.match(hashtagRegex);
+
+    return matches ? Array.from(new Set(matches.map(tag => tag.toLowerCase()))) : [];
+}
+
+// Define the type for the combined search results
+interface CombinedSearchResults {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    posts: any[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    profiles: any[];
+    next: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        postCursor: any[] | null;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        profileCursor: any[] | null;
+    };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const combinedSearch = async (query: string, isAuto: boolean, searchType: string, searchAfter?: any, resultSize?: number) => {
+    const size: number = resultSize || config.get("es.defaultPaginationSize");
+    const cacheKey = `search:${searchType}:${isAuto ? "auto" : "full"}:${query}:${JSON.stringify(searchAfter || [])}`;
+
+    // Check Redis for cached results
+    const cachedResults = await RedisConnector.get(cacheKey);
+
+    if (cachedResults) {
+        // If cache hit, return cached results
+        return JSON.parse(cachedResults);
+    }
+
+    let postRes = null;
+    let profilesRes = null;
+
+    if(searchType === "both") {
+        // Build the query for posts and profiles
+        const postQuery = ESConnector.getInstance().buildSearchQuery(true, isAuto, query, searchAfter?.post);
+        const profileQuery = ESConnector.getInstance().buildSearchQuery(false, isAuto, query, searchAfter?.profile);
+
+        // Perform the Elasticsearch queries
+        [postRes, profilesRes] = await Promise.all([
+            ESConnector.getInstance()?.getClient()?.search(postQuery),
+            ESConnector.getInstance()?.getClient()?.search(profileQuery)
+        ]);
+    } else if(searchType === "profile") {
+        // Just query by profile
+        const profileQuery = ESConnector.getInstance().buildSearchQuery(false, isAuto, query, searchAfter?.profile);
+        profilesRes = await ESConnector.getInstance()?.getClient()?.search(profileQuery);
+    } else if(searchType === "post") {
+        // Just query by posts
+        const postQuery = ESConnector.getInstance().buildSearchQuery(true, isAuto, query, searchAfter?.post);
+        postRes = await ESConnector.getInstance()?.getClient()?.search(postQuery);
+    } else {
+        // Invalid
+        throw new Error("Invalid search type");
+    }
+
+    const postHits = postRes?.hits?.hits ?? [];
+    const profileHits = profilesRes?.hits?.hits ?? [];
+    
+    const lastPost:Post = postHits.at(-1)?._source as Post;
+    const lastProfile:Profile = profileHits.at(-1)?._source as Profile;
+    const lastProfileId = lastProfile?.userId;
+
+    // Combine posts and profiles results
+    const combinedResults: CombinedSearchResults = {
+        posts: postHits,
+        profiles: profileHits,
+        next: {
+            postCursor: postHits.length >= size && lastPost
+                ? [lastPost.global?.dateTime, lastPost.postId] : null,
+            profileCursor: profileHits.length >= size && lastProfileId
+                ? [lastProfileId] : null
+        }
+    };
+
+    // Cache the result for future use
+    await RedisConnector.getClient()?.setEx(cacheKey, 3600, JSON.stringify(combinedResults));
+
+    return combinedResults;
+}
+
+export const extractTextSuggestionsFlat = (suggestObj: unknown, size:number = Infinity): string[] => {
+    const seen = new Set<string>();
+    const flat: string[] = [];
+
+    const suggestEntries = suggestObj as Record<string, Array<{ options: Array<{ text: string }> }>>;
+    for (const entries of Object.values(suggestEntries || {})) {
+        for (const opt of entries?.[0]?.options || []) {
+            if (!seen.has(opt.text)) {
+                seen.add(opt.text);
+                flat.push(opt.text);
+                if (flat.length >= size) {
+                    return flat;
+                }
+            }
+        }
+    }
+
+    return flat;
+};

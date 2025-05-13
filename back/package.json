@@ -10,7 +10,8 @@
     "clean": "rm -rf ./dist/* ./build/* ./package/* ./coverage/* ./app/* ./snapshots/*",
     "build": "tsc -p tsconfig.json --skipLibCheck",
     "lint": "eslint src/ --ext .js,.jsx,.ts,.tsx",
-    "templates": "node scripts/createTemplates.mjs"
+    "templates": "node scripts/createTemplates.mjs",
+    "generateData": "node scripts/generateData.mjs"
   },
   "repository": {
     "type": "git",

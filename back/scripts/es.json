@@ -13,12 +13,17 @@ PUT /main
         "hashtag_autocomplete": {
           "type": "custom",
           "tokenizer": "standard",
-          "filter": ["lowercase", "autocomplete_filter"]
+          "filter": [
+            "lowercase",
+            "autocomplete_filter"
+          ]
         },
         "hashtag_search": {
           "type": "custom",
           "tokenizer": "standard",
-          "filter": ["lowercase"]
+          "filter": [
+            "lowercase"
+          ]
         }
       }
     }
@@ -27,9 +32,20 @@ PUT /main
     "properties": {
       "postId": {
         "type": "keyword"
-      },      
+      },
       "hashtags": {
-        "type": "keyword"
+        "type": "text",
+        "analyzer": "hashtag_autocomplete",
+        "search_analyzer": "hashtag_search",
+        "fields": {
+          "raw": {
+            "type": "keyword"
+          },
+          "suggest": {
+            
+            "type": "completion"
+          }
+        }
       },
       "mentions": {
         "type": "keyword"
@@ -37,27 +53,53 @@ PUT /main
       "user": {
         "type": "nested",
         "properties": {
-          "userId": { "type": "keyword" },
-          "userName": { "type": "keyword" }  // plain keyword, no analyzer
+          "userId": {
+            "type": "keyword"
+          },
+          "userName": {
+            "type": "text",
+            "analyzer": "hashtag_autocomplete",
+            "search_analyzer": "hashtag_search",
+            "fields": {
+              "fuzzy": {
+                "type": "text"
+              },
+              "suggest": {
+                
+                "type": "completion"
+              }
+            }
+          }
         }
       },
       "global": {
         "type": "nested",
         "properties": {
-          "dateTime": { "type": "date" },
-          "commentsDisabled": { "type": "boolean" },
-          "commentCount": { "type": "long" },
-          "likesDisabled": { "type": "boolean" },
+          "dateTime": {
+            "type": "date"
+          },
+          "commentsDisabled": {
+            "type": "boolean"
+          },
+          "commentCount": {
+            "type": "long"
+          },
+          "likesDisabled": {
+            "type": "boolean"
+          },
           "locationText": {
             "type": "text",
             "analyzer": "hashtag_autocomplete",
             "search_analyzer": "hashtag_search",
             "fields": {
               "fuzzy": {
-                "type": "text",
-                "analyzer": "standard"
+                "type": "text"
+              },
+              "suggest": {
+                
+                "type": "completion"
               }
-            }            
+            }
           },
           "captionText": {
             "type": "text",
@@ -65,8 +107,11 @@ PUT /main
             "search_analyzer": "hashtag_search",
             "fields": {
               "fuzzy": {
-                "type": "text",
-                "analyzer": "standard"
+                "type": "text"
+              },
+              "suggest": {
+                
+                "type": "completion"
               }
             }
           }
@@ -75,22 +120,35 @@ PUT /main
       "media": {
         "type": "nested",
         "properties": {
-          "id": { "type": "text" },
-          "userId": { "type": "keyword" },
-          "postId": { "type": "keyword" },
-          "path": { "type": "text" },
+          "id": {
+            "type": "text"
+          },
+          "userId": {
+            "type": "keyword"
+          },
+          "postId": {
+            "type": "keyword"
+          },
+          "path": {
+            "type": "text"
+          },
           "altText": {
             "type": "text",
             "analyzer": "hashtag_autocomplete",
             "search_analyzer": "hashtag_search",
             "fields": {
               "fuzzy": {
-                "type": "text",
-                "analyzer": "standard"
+                "type": "text"
+              },
+              "suggest": {
+                
+                "type": "completion"
               }
             }
           },
-          "mimeType": { "type": "text" }
+          "mimeType": {
+            "type": "text"
+          }
         }
       }
     }
@@ -98,41 +156,125 @@ PUT /main
 }
 
 
-PUT profiles 
+PUT /profiles
 {
+  "settings": {
+    "analysis": {
+      "filter": {
+        "autocomplete_filter": {
+          "type": "edge_ngram",
+          "min_gram": 1,
+          "max_gram": 20
+        }
+      },
+      "analyzer": {
+        "hashtag_autocomplete": {
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "autocomplete_filter"
+          ]
+        },
+        "hashtag_search": {
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase"
+          ]
+        }
+      }
+    }
+  },
   "mappings": {
     "properties": {
-      "profile": {
-        "type": "nested",
-        "properties": {
-          "bio": {
+      "userId": {
+        "type": "keyword"
+      },
+      "userName": {
+        "type": "text",
+        "analyzer": "hashtag_autocomplete",
+        "search_analyzer": "hashtag_search",
+        "fields": {
+          "fuzzy": {
             "type": "text"
           },
-          "userId": {
-            "type": "long"
-          },
-          "userName": {
-            "type": "text"
-          },
-          "pfp": {
-            "type": "text"
-          },
-          "firstName": {
-            "type": "text"
-          },
-          "lastName": {
-            "type": "text"
-          },
-          "gender": {
-            "type": "text"
-          },
-          "pronouns": {
-            "type": "text"
-          },
-          "link": {
-            "type": "text"
+          "suggest": {
+            
+            "type": "completion"
           }
         }
+      },
+      "firstName": {
+        "type": "text",
+        "analyzer": "hashtag_autocomplete",
+        "search_analyzer": "hashtag_search",
+        "fields": {
+          "fuzzy": {
+            "type": "text"
+          },
+          "suggest": {
+            
+            "type": "completion"
+          }
+        }
+      },
+      "lastName": {
+        "type": "text",
+        "analyzer": "hashtag_autocomplete",
+        "search_analyzer": "hashtag_search",
+        "fields": {
+          "fuzzy": {
+            "type": "text"
+          },
+          "suggest": {
+            
+            "type": "completion"
+          }
+        }
+      },
+      "bio": {
+        "type": "text",
+        "analyzer": "hashtag_autocomplete",
+        "search_analyzer": "hashtag_search",
+        "fields": {
+          "fuzzy": {
+            "type": "text"
+          },
+          "suggest": {
+            
+            "type": "completion"
+          }
+        }
+      },
+      "mentions": {
+        "type": "keyword"
+      },
+      "hashtags": {
+        "type": "text",
+        "analyzer": "hashtag_autocomplete",
+        "search_analyzer": "hashtag_search",
+        "fields": {
+          "raw": {
+            "type": "keyword"
+          },
+          "suggest": {
+            
+            "type": "completion"
+          }
+        }
+      },
+      "pfp": {
+        "type": "text"
+      },
+      "gender": {
+        "type": "text"
+      },
+      "pronouns": {
+        "type": "text"
+      },
+      "link": {
+        "type": "text"
       }
     }
   }

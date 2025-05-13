@@ -105,14 +105,14 @@ export const Div = styled.div.attrs<{
     height: ${(props) => props.$height};
     max-height: ${(props) => props.$maxHeight};    
     
-    margin-left: ${(props) => props.$marginLeft};
-    margin-right: ${(props) => props.$marginRight};
-    margin-top: ${(props) => props.$marginTop};
-    margin-bottom: ${(props) => props.$marginBottom};
-    padding-left: ${(props) => props.$paddingLeft};
-    padding-right: ${(props) => props.$paddingRight};
-    padding-top: ${(props) => props.$paddingTop};
-    padding-bottom: ${(props) => props.$paddingBottom}; 
+    margin-left: ${(props) => props.$marginLeft ? props.$marginLeft + " !important" : null};
+    margin-right: ${(props) => props.$marginRight ? props.$marginRight + " !important" : null};
+    margin-top: ${(props) => props.$marginTop ? props.$marginTop + " !important" : null};
+    margin-bottom: ${(props) => props.$marginBottom ? props.$marginBottom + " !important" : null};
+    padding-left: ${(props) => props.$paddingLeft ? props.$paddingLeft + " !important" : null};
+    padding-right: ${(props) => props.$paddingRight ? props.$paddingRight + " !important" : null};
+    padding-top: ${(props) => props.$paddingTop ? props.$paddingTop + " !important" : null};
+    padding-bottom: ${(props) => props.$paddingBottom ? props.$paddingBottom + " !important" : null};
 
     left: ${(props) => props.$left};
     right: ${(props) => props.$right};
@@ -212,14 +212,14 @@ export const Span = styled.span.attrs<{
     height: ${(props) => props.$height};
     max-height: ${(props) => props.$maxHeight};
 
-    margin-left: ${(props) => props.$marginLeft};
-    margin-right: ${(props) => props.$marginRight};
-    margin-top: ${(props) => props.$marginTop};
-    margin-bottom: ${(props) => props.$marginBottom};
-    padding-left: ${(props) => props.$paddingLeft};
-    padding-right: ${(props) => props.$paddingRight};
-    padding-top: ${(props) => props.$paddingTop};
-    padding-bottom: ${(props) => props.$paddingBottom}; 
+    margin-left: ${(props) => props.$marginLeft ? props.$marginLeft + " !important" : null};
+    margin-right: ${(props) => props.$marginRight ? props.$marginRight + " !important" : null};
+    margin-top: ${(props) => props.$marginTop ? props.$marginTop + " !important" : null};
+    margin-bottom: ${(props) => props.$marginBottom ? props.$marginBottom + " !important" : null};
+    padding-left: ${(props) => props.$paddingLeft ? props.$paddingLeft + " !important" : null};
+    padding-right: ${(props) => props.$paddingRight ? props.$paddingRight + " !important" : null};
+    padding-top: ${(props) => props.$paddingTop ? props.$paddingTop + " !important" : null};
+    padding-bottom: ${(props) => props.$paddingBottom ? props.$paddingBottom + " !important" : null};
 
     left: ${(props) => props.$left};
     right: ${(props) => props.$right};

@@ -38,7 +38,7 @@ const defaultTheme = {
         sideBarNavWidthDefault: "244px",
         sideBarNavWidthNarrow: "72px",
         sideBarNavBottomHeight: "50px",
-        searchPanelWidth: "396px",
+        searchPanelWidth: "300px",
         cropperHeight: "275px",
         defaultModalWidth: "600px",
         maxModalWidth: "75vw",

@@ -16,7 +16,7 @@ import {
     bulkGetProfilesAndFollowing, getFollowersByUserId, getFollowingByUserId, getPostProfileByUserId, getPostProfileByUserName,
     getProfileStatsById, getSingleFollowStatus, putProfilePfp, updateProfileByUserId
 } from "./controllers/profilesController";
-import { getSearch } from "./controllers/searchController";
+import { getSearch, getSuggestions } from "./controllers/searchController";
 
 
 const router = new Router();
@@ -63,5 +63,6 @@ router.put("/api/v1/profiles/updatePfp", verifyJWT, putProfilePfp);
 
 // Search handlers
 router.get("/api/v1/search/search", getSearch);
+router.get("/api/v1/search/suggest", getSuggestions);
 
 export default router;
