@@ -14,7 +14,7 @@ import MessageSVG from "/public/images/message.svg";
 import { AuthUser } from "../../../api/Auth";
 import StyledLink from "../../../Components/Common/StyledLink";
 import useThrottle from '../../../utils/useThrottle';
-import { update } from "idb-keyval";
+import LoadingImage from "../../../Components/Common/LoadingImage";
 
 const ProfilePicWrapper = styled(Div)`
     display: flex;
@@ -523,11 +523,7 @@ const ProfileContent: React.FC = () => {
                             )}
                         </GridContainer>
                     </Flex>
-                    {isLoading &&
-                        <Div $alignSelf="center">
-                            <img src="/public/images/loading.gif" alt="Loading..." />
-                        </Div>
-                    }
+                    <LoadingImage isLoading={isLoading} />
                 </Section>
             </ContentWrapper>
         </>

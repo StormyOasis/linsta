@@ -20,46 +20,6 @@
     height: 60px;
 }
 
-.searchBoxDiv1 {
-    border: none; 
-    align-content: stretch;
-    align-items: stretch;
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    overflow: visible;
-    padding: 0 16px;
-    position: absolute;
-    height: 36px;
-}
-
-.searchBoxDiv2 {
-    align-content: stretch;
-    align-items: center;
-    border: none;
-    display: flex;
-    flex-direction: row;
-    font-size: 14px;
-    justify-content: flex-start;
-    overflow: visible;
-    position: static;
-    line-height: 18px;
-}
-
-.searchBoxDiv3 {
-    align-content: stretch;
-    align-items: stretch;
-    border: none;
-    display: flex;
-    flex-direction: column;
-    font-size: 14px;
-    justify-content: flex-start;
-    overflow: visible;
-    position: static;
-    margin-right: 8px;
-    line-height: 18px;
-}
-
 .actionWrapperInner {
     position: relative; 
     display: flex; 

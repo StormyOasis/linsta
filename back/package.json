@@ -10,7 +10,8 @@
     "clean": "rm -rf ./dist/* ./build/* ./package/* ./coverage/* ./app/* ./snapshots/*",
     "build": "tsc -p tsconfig.json --skipLibCheck",
     "lint": "eslint src/ --ext .js,.jsx,.ts,.tsx",
-    "templates": "node scripts/createTemplates.mjs"
+    "templates": "node scripts/createTemplates.mjs",
+    "generateData": "node scripts/generateData.mjs"
   },
   "repository": {
     "type": "git",
@@ -60,6 +61,7 @@
     "@babel/preset-env": "^7.26.9",
     "@babel/preset-react": "^7.24.7",
     "@babel/preset-typescript": "7.24.7",
+    "@faker-js/faker": "^9.7.0",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.4.8",
     "@testing-library/react": "^16.0.0",

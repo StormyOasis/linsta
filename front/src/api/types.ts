@@ -79,12 +79,17 @@ export interface PostWithCommentCount extends Post {
 }
 
 export interface PaginationResponse {    
-    dateTime: string;
-    postId: string;
     done: boolean;
+    postCursor: any[];
+    profileCursor: any[];    
 }
 
 export interface PostPaginationResponse extends PaginationResponse {
+    dateTime: string;
+    postId: string;    
     posts: PostWithCommentCount[];
 }
 
+export interface ProfilePaginationResponse extends PaginationResponse {
+
+}

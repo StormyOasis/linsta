@@ -1,8 +1,9 @@
 import axios from "axios";
 import { authHeader, AuthUser } from "./Auth";
-import { base64ToBlob, blobToBase64 } from "../utils/utils";
+import { base64ToBlob } from "../utils/utils";
 
 let host = "http://localhost:3001"; //TODO: From config or env
+const API_VERSION = "v1";
 
 export type ServiceResponse = {
     data: any;
@@ -11,7 +12,7 @@ export type ServiceResponse = {
 }
 
 export const postAccountsAttempt = async (data: any): Promise<ServiceResponse> => {
-    const res = await axios.post(`${host}/api/v1/accounts/attempt/`, data);
+    const res = await axios.post(`${host}/api/${API_VERSION}/accounts/attempt/`, data);
     return {
         data: res.data,
         status: res.status,
@@ -20,7 +21,7 @@ export const postAccountsAttempt = async (data: any): Promise<ServiceResponse> =
 };
 
 export const getAccountsCheckUserUnique = async (value: string | number): Promise<ServiceResponse> => {
-    const res = await axios.get(`${host}/api/v1/accounts/check/${value}`);
+    const res = await axios.get(`${host}/api/${API_VERSION}/accounts/check/${value}`);
     return {
         data: res.data,
         status: res.status,
@@ -29,7 +30,7 @@ export const getAccountsCheckUserUnique = async (value: string | number): Promis
 };
 
 export const getAccountsSendVerifyNotification = async (userData: string): Promise<ServiceResponse>  => {
-    const res = await axios.get(`${host}/api/v1/accounts/send_confirm_code?user=${userData}`);
+    const res = await axios.get(`${host}/api/${API_VERSION}/accounts/send_confirm_code?user=${userData}`);
     return {
         data: res.data,
         status: res.status,
@@ -38,7 +39,7 @@ export const getAccountsSendVerifyNotification = async (userData: string): Promi
 }
 
 export const postLogin = async (data: any): Promise<ServiceResponse> => {
-    const res = await axios.post(`${host}/api/v1/accounts/login`, data);
+    const res = await axios.post(`${host}/api/${API_VERSION}/accounts/login`, data);
     return {
         data: res.data,
         status: res.status,
@@ -47,7 +48,7 @@ export const postLogin = async (data: any): Promise<ServiceResponse> => {
 }
 
 export const postForgotPassword = async (data: any): Promise<ServiceResponse> => {
-    const res = await axios.post(`${host}/api/v1/accounts/forgot`, data);
+    const res = await axios.post(`${host}/api/${API_VERSION}/accounts/forgot`, data);
     return {
         data: res.data,
         status: res.status,
@@ -56,7 +57,7 @@ export const postForgotPassword = async (data: any): Promise<ServiceResponse> =>
 }
 
 export const postChangePassword = async (data: any): Promise<ServiceResponse> => {
-    const res = await axios.post(`${host}/api/v1/accounts/change_password`, data);
+    const res = await axios.post(`${host}/api/${API_VERSION}/accounts/change_password`, data);
     return {
         data: res.data,
         status: res.status,
@@ -65,7 +66,7 @@ export const postChangePassword = async (data: any): Promise<ServiceResponse> =>
 }
 
 export const getLocation = async (data: any): Promise<ServiceResponse> => {
-    const res = await axios.get(`${host}/api/v1/locations/get?term=${data}`, {headers: authHeader()});
+    const res = await axios.get(`${host}/api/${API_VERSION}/locations/get?term=${data}`, {headers: authHeader()});
     return {
         data: res.data,
         status: res.status,
@@ -83,7 +84,7 @@ export const putSubmitPfp = async (data: any, userId: string): Promise<ServiceRe
     // Pfp file data
     form.append("fileData", data);
 
-    const res = await axios.putForm(`${host}/api/v1/profiles/updatePfp`, form, {headers: authHeader()});
+    const res = await axios.putForm(`${host}/api/${API_VERSION}/profiles/updatePfp`, form, {headers: authHeader()});
     return {
         data: res.data,
         status: res.status,
@@ -125,7 +126,7 @@ export const putSubmitPost = async (data: any, authUser:AuthUser): Promise<Servi
         form.append(entry.id, entry.data);
     });
 
-    const res = await axios.putForm(`${host}/api/v1/posts/addPost`, form, {headers: authHeader()});
+    const res = await axios.putForm(`${host}/api/${API_VERSION}/posts/addPost`, form, {headers: authHeader()});
     return {
         data: res.data,
         status: res.status,
@@ -134,7 +135,7 @@ export const putSubmitPost = async (data: any, authUser:AuthUser): Promise<Servi
 }
 
 export const getPosts = async (data: any): Promise<ServiceResponse> => {
-    const res = await axios.post(`${host}/api/v1/posts/getAll`, data, {headers: authHeader()});
+    const res = await axios.post(`${host}/api/${API_VERSION}/posts/getAll`, data, {headers: authHeader()});
     return {
         data: res.data,
         status: res.status,
@@ -143,7 +144,7 @@ export const getPosts = async (data: any): Promise<ServiceResponse> => {
 }
 
 export const postGetPostByPostId = async (data: any): Promise<ServiceResponse> => {
-    const res = await axios.post(`${host}/api/v1/posts/getPostById`, data, {headers: authHeader()});
+    const res = await axios.post(`${host}/api/${API_VERSION}/posts/getPostById`, data, {headers: authHeader()});
     return {
         data: res.data,
         status: res.status,
@@ -152,7 +153,7 @@ export const postGetPostByPostId = async (data: any): Promise<ServiceResponse> =
 }
 
 export const postToggleLike = async (data: any): Promise<ServiceResponse> => {
-    const res = await axios.post(`${host}/api/v1/posts/likePost`, data, {headers: authHeader()});
+    const res = await axios.post(`${host}/api/${API_VERSION}/posts/likePost`, data, {headers: authHeader()});
     return {
         data: res.data,
         status: res.status,
@@ -161,7 +162,7 @@ export const postToggleLike = async (data: any): Promise<ServiceResponse> => {
 }
 
 export const postDeletePost = async (data: any): Promise<ServiceResponse> => {
-    const res = await axios.post(`${host}/api/v1/posts/deletePost`, data, {headers: authHeader()});
+    const res = await axios.post(`${host}/api/${API_VERSION}/posts/deletePost`, data, {headers: authHeader()});
     return {
         data: res.data,
         status: res.status,
@@ -170,7 +171,7 @@ export const postDeletePost = async (data: any): Promise<ServiceResponse> => {
 }
 
 export const postUpdatePost = async (data: any): Promise<ServiceResponse> => {
-    const res = await axios.post(`${host}/api/v1/posts/updatePost`, data, {headers: authHeader()});
+    const res = await axios.post(`${host}/api/${API_VERSION}/posts/updatePost`, data, {headers: authHeader()});
     return {
         data: res.data,
         status: res.status,
@@ -179,7 +180,7 @@ export const postUpdatePost = async (data: any): Promise<ServiceResponse> => {
 }
 
 export const postSetFollowStatus = async (data: any): Promise<ServiceResponse> => {
-    const res = await axios.post(`${host}/api/v1/accounts/follow`, data, {headers: authHeader()});
+    const res = await axios.post(`${host}/api/${API_VERSION}/accounts/follow`, data, {headers: authHeader()});
     return {
         data: res.data,
         status: res.status,
@@ -188,7 +189,7 @@ export const postSetFollowStatus = async (data: any): Promise<ServiceResponse> =
 }
 
 export const postAddComment = async (data: any): Promise<ServiceResponse> => {
-    const res = await axios.post(`${host}/api/v1/comment/add`, data, {headers: authHeader()});
+    const res = await axios.post(`${host}/api/${API_VERSION}/comment/add`, data, {headers: authHeader()});
     return {
         data: res.data,
         status: res.status,
@@ -197,7 +198,7 @@ export const postAddComment = async (data: any): Promise<ServiceResponse> => {
 }
 
 export const postDeleteComment = async (data: any): Promise<ServiceResponse> => {
-    const res = await axios.post(`${host}/api/v1/comment/delete`, data, {headers: authHeader()});
+    const res = await axios.post(`${host}/api/${API_VERSION}/comment/delete`, data, {headers: authHeader()});
     return {
         data: res.data,
         status: res.status,
@@ -206,7 +207,7 @@ export const postDeleteComment = async (data: any): Promise<ServiceResponse> => 
 }
 
 export const postGetCommentsByPostId = async (data: any): Promise<ServiceResponse> => {
-    const res = await axios.post(`${host}/api/v1/comment/getByPostId`, data, {headers: authHeader()});
+    const res = await axios.post(`${host}/api/${API_VERSION}/comment/getByPostId`, data, {headers: authHeader()});
     return {
         data: res.data,
         status: res.status,
@@ -215,7 +216,7 @@ export const postGetCommentsByPostId = async (data: any): Promise<ServiceRespons
 }
 
 export const postToggleCommentLike = async (data: any): Promise<ServiceResponse> => {
-    const res = await axios.post(`${host}/api/v1/comment/toggleLike`, data, {headers: authHeader()});
+    const res = await axios.post(`${host}/api/${API_VERSION}/comment/toggleLike`, data, {headers: authHeader()});
     return {
         data: res.data,
         status: res.status,
@@ -224,7 +225,7 @@ export const postToggleCommentLike = async (data: any): Promise<ServiceResponse>
 }
 
 export const postGetProfileByUserId = async (data: any): Promise<ServiceResponse> => {
-    const res = await axios.post(`${host}/api/v1/profiles/getByUserId`, data, {headers: authHeader()});
+    const res = await axios.post(`${host}/api/${API_VERSION}/profiles/getByUserId`, data, {headers: authHeader()});
     return {
         data: res.data,
         status: res.status,
@@ -233,7 +234,7 @@ export const postGetProfileByUserId = async (data: any): Promise<ServiceResponse
 }
 
 export const postGetProfileByUserName = async (data: any): Promise<ServiceResponse> => {
-    const res = await axios.post(`${host}/api/v1/profiles/getByUserName`, data, {headers: authHeader()});
+    const res = await axios.post(`${host}/api/${API_VERSION}/profiles/getByUserName`, data, {headers: authHeader()});
     return {
         data: res.data,
         status: res.status,
@@ -242,7 +243,7 @@ export const postGetProfileByUserName = async (data: any): Promise<ServiceRespon
 }
 
 export const postGetFollowersByUserId = async (data: any): Promise<ServiceResponse> => {
-    const res = await axios.post(`${host}/api/v1/profiles/getFollowersByUserId`, data, {headers: authHeader()});
+    const res = await axios.post(`${host}/api/${API_VERSION}/profiles/getFollowersByUserId`, data, {headers: authHeader()});
     return {
         data: res.data,
         status: res.status,
@@ -251,7 +252,7 @@ export const postGetFollowersByUserId = async (data: any): Promise<ServiceRespon
 }
 
 export const postGetFollowingByUserId = async (data: any): Promise<ServiceResponse> => {
-    const res = await axios.post(`${host}/api/v1/profiles/getFollowingByUserId`, data, {headers: authHeader()});
+    const res = await axios.post(`${host}/api/${API_VERSION}/profiles/getFollowingByUserId`, data, {headers: authHeader()});
     return {
         data: res.data,
         status: res.status,
@@ -260,7 +261,7 @@ export const postGetFollowingByUserId = async (data: any): Promise<ServiceRespon
 }
 
 export const postUpdateProfile = async (data: any): Promise<ServiceResponse> => {
-    const res = await axios.post(`${host}/api/v1/profiles/update`, data, {headers: authHeader()});
+    const res = await axios.post(`${host}/api/${API_VERSION}/profiles/update`, data, {headers: authHeader()});
     return {
         data: res.data,
         status: res.status,
@@ -269,7 +270,7 @@ export const postUpdateProfile = async (data: any): Promise<ServiceResponse> => 
 }
 
 export const postGetProfileStatsById = async (data: any): Promise<ServiceResponse> => {
-    const res = await axios.post(`${host}/api/v1/profiles/getStatsById`, data, {headers: authHeader()});
+    const res = await axios.post(`${host}/api/${API_VERSION}/profiles/getStatsById`, data, {headers: authHeader()});
     return {
         data: res.data,
         status: res.status,
@@ -278,7 +279,7 @@ export const postGetProfileStatsById = async (data: any): Promise<ServiceRespons
 }
 
 export const postBulkGetProfileAndFollowStatus = async (data: any): Promise<ServiceResponse> => {
-    const res = await axios.post(`${host}/api/v1/profiles/bulkGetProfiles`, data, {headers: authHeader()});
+    const res = await axios.post(`${host}/api/${API_VERSION}/profiles/bulkGetProfiles`, data, {headers: authHeader()});
     return {
         data: res.data,
         status: res.status,
@@ -287,7 +288,7 @@ export const postBulkGetProfileAndFollowStatus = async (data: any): Promise<Serv
 }
 
 export const postGetPostsByUserId = async (data: any): Promise<ServiceResponse> => {
-    const res = await axios.post(`${host}/api/v1/posts/getByUserId`, data, {headers: authHeader()});
+    const res = await axios.post(`${host}/api/${API_VERSION}/posts/getByUserId`, data, {headers: authHeader()});
     return {
         data: res.data,
         status: res.status,
@@ -296,7 +297,7 @@ export const postGetPostsByUserId = async (data: any): Promise<ServiceResponse> 
 }
 
 export const postUpdateProfileByUserId = async (data: any): Promise<ServiceResponse> => {
-    const res = await axios.post(`${host}/api/v1/profiles/update`, data, {headers: authHeader()});
+    const res = await axios.post(`${host}/api/${API_VERSION}/profiles/update`, data, {headers: authHeader()});
     return {
         data: res.data,
         status: res.status,
@@ -305,7 +306,37 @@ export const postUpdateProfileByUserId = async (data: any): Promise<ServiceRespo
 }
 
 export const postGetSingleFollowStatus = async (data: any): Promise<ServiceResponse> => {
-    const res = await axios.post(`${host}/api/v1/profiles/getSingleFollowStatus`, data, {headers: authHeader()});
+    const res = await axios.post(`${host}/api/${API_VERSION}/profiles/getSingleFollowStatus`, data, {headers: authHeader()});
+    return {
+        data: res.data,
+        status: res.status,
+        statusText: res.statusText,
+    }
+}
+
+export const getSearch = async (query: string, isAuto:boolean, searchType: "both" | "post" | "profile", searchAfter: string|null): Promise<ServiceResponse> => {
+    const res = await axios.get(`${host}/api/${API_VERSION}/search/search`, {
+        params: {
+            q: query,
+            auto: isAuto,
+            searchType,
+            searchAfter
+        },        
+        headers: authHeader()
+    });
+    return {
+        data: res.data,
+        status: res.status,
+        statusText: res.statusText,
+    }
+}
+export const getSuggestions = async (query: string): Promise<ServiceResponse> => {
+    const res = await axios.get(`${host}/api/${API_VERSION}/search/suggest`, {
+        params: {
+            q: query
+        },        
+        headers: authHeader()
+    });
     return {
         data: res.data,
         status: res.status,

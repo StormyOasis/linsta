@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import styled from "styled-components";
 import StyledLink from "./StyledLink";
 import { Div, Flex, FlexColumn, FlexRow, Span } from "./CombinedStyling";
+import LoadingImage from "./LoadingImage";
 
 const ModalWrapper = styled(Flex)`
     align-items: center;
@@ -226,11 +227,7 @@ export default class MultiStepModal extends React.Component<MultiStepModalProps>
                                     </ModalTitleBarWrapper>
                                 }
                                 <ModalContentWrapper $hideMargins={step.options.hideMargins} $alignItems={alignItems}>
-                                    {this.props.showLoadingAnimation &&
-                                        <Div>
-                                            <img src="/public/images/loading.gif" />
-                                        </Div>
-                                    }
+                                    <LoadingImage isLoading={this.props.showLoadingAnimation} />
                                     {!this.props.showLoadingAnimation && step.element}
                                 </ModalContentWrapper>
                             </FlexColumn>

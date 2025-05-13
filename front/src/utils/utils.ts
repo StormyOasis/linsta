@@ -1,7 +1,7 @@
 import sanitizeHtml from 'sanitize-html';
 
 import { HistoryType, Post, PostWithCommentCount, Profile } from "../api/types";
-import { postSetFollowStatus, postUpdatePost } from '../api/ServiceController';
+import { postSetFollowStatus, postUpdatePost, getSearch } from '../api/ServiceController';
 import { DEFAULT_PFP } from '../api/config';
 
 export const historyUtils: HistoryType = {
@@ -300,7 +300,7 @@ export const splitFullName = (fullName:string):{ firstName: string, middleNames:
     return { firstName, middleNames, lastName };
 }
 
-export const updatePostFields = async (post:Post, fieldsToUpdate: {key:string, value:any}[], onClose:(data:any) => void) => {
+export const updatePostFields = async (post:PostWithCommentCount, fieldsToUpdate: {key:string, value:any}[], onClose:(data:any) => void) => {
     if(fieldsToUpdate == null || fieldsToUpdate.length === 0) {
         return;
     }
@@ -346,3 +346,118 @@ export const updatePost = async (post:PostWithCommentCount, fieldsToUpdate: {key
     }
     return post;        
 }
+
+export type SearchResults = {
+    posts: Post[];
+    profiles: Profile[];
+};
+
+export type SearchResponse = {
+    results: SearchResults | null;
+    loading: boolean;
+    hasMore: boolean;
+    searchAfter: any[] | null;
+};
+
+export const search = async (query: string, isAuto: boolean, searchType: 'both' | 'post' | 'profile', searchAfter: any[] | null)
+    :Promise<SearchResponse | null> => {
+
+    const trimmedQuery = query.trim();
+    if (!trimmedQuery) {
+        return {
+            results: null,
+            loading: false,
+            hasMore: true,
+            searchAfter: null
+        };
+    }
+
+    if(trimmedQuery.length === 1 && trimmedQuery.charAt(0) === '#') {
+        return null;
+    }
+
+    const delay = isAuto ? 150 : 300;
+    await new Promise(res => setTimeout(res, delay)); // debounce
+    
+    const result = await getSearch(query, isAuto, searchType, JSON.stringify(searchAfter));
+    const { posts, profiles, next } = result.data;
+
+    const searchResults:SearchResults = {
+        posts,
+        profiles
+    };
+
+    return {
+        results: searchResults,
+        loading: false,
+        hasMore: !!next,
+        searchAfter: next
+    };
+}
+
+export const storeSearchQueries = (value: string | Profile):(string | Profile)[] => {
+    const key:string = "recentSearches";
+    try {
+        const storedData = localStorage.getItem(key);
+        const parsedData = storedData ? JSON.parse(storedData) : [];
+
+        // Check if value is a duplicate
+        const isDuplicate: boolean = parsedData.some((item: string | Profile) => {
+            if (typeof item === 'string') {
+                return item === value;
+            } else {
+                return item.userId === (value as Profile).userId;
+            }
+        })
+
+        if(isDuplicate) {
+            return parsedData;
+        }
+
+        parsedData.push(value);
+
+        localStorage.setItem(key, JSON.stringify(parsedData));  
+        return parsedData;      
+    } catch(err) {        
+        console.error(err);
+    }
+    return [];
+}
+
+export const removeStoredSearchQuery = (value: string | Profile):(string | Profile)[] => {
+    const key:string = "recentSearches";
+    let queries:(string | Profile)[] = [];
+    try {        
+        queries = getStoredSearchQueries();
+        const filteredQueries = queries.filter((item: string | Profile) => {
+            if (typeof item === 'string') {
+                return item !== value;
+            } else {
+                return item.userId !== (value as Profile).userId;
+            }
+        });
+        localStorage.setItem(key, JSON.stringify(filteredQueries));
+        return filteredQueries;
+    } catch(err) {
+        return queries;
+    }
+}
+
+export const getStoredSearchQueries = ():(string | Profile)[] => {
+    const key:string = "recentSearches";
+    const item = localStorage.getItem(key);
+    
+    if(!item) {
+        return [];    
+    }
+
+    try {
+        const parsedData = JSON.parse(item);
+
+        return parsedData;
+    } catch(err) {
+        return [];
+    }
+}
+
+export const isHashtag = (text: string) => text.startsWith('#');

@@ -16,6 +16,7 @@ import {
     bulkGetProfilesAndFollowing, getFollowersByUserId, getFollowingByUserId, getPostProfileByUserId, getPostProfileByUserName,
     getProfileStatsById, getSingleFollowStatus, putProfilePfp, updateProfileByUserId
 } from "./controllers/profilesController";
+import { getSearch, getSuggestions } from "./controllers/searchController";
 
 
 const router = new Router();
@@ -59,5 +60,9 @@ router.post("/api/v1/profiles/getStatsById", verifyJWT, getProfileStatsById);
 router.post("/api/v1/profiles/bulkGetProfiles", verifyJWT, bulkGetProfilesAndFollowing);
 router.post("/api/v1/profiles/getSingleFollowStatus", verifyJWT, getSingleFollowStatus);
 router.put("/api/v1/profiles/updatePfp", verifyJWT, putProfilePfp);
+
+// Search handlers
+router.get("/api/v1/search/search", getSearch);
+router.get("/api/v1/search/suggest", getSuggestions);
 
 export default router;
