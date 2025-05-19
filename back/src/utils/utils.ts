@@ -179,6 +179,7 @@ export const getPostByPostId = async (postId: string): Promise<| { esId: string;
 
     const data = await RedisConnector.get(esId);
     let entries: PostWithCommentCount[] = [];
+
     if (data) {
         entries[0] = JSON.parse(data);
     } else {
@@ -394,84 +395,6 @@ export const extractHashtags = (text: string): string[] => {
     return matches ? Array.from(new Set(matches.map(tag => tag.toLowerCase()))) : [];
 }
 
-// Define the type for the combined search results
-interface CombinedSearchResults {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    posts: any[];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    profiles: any[];
-    next: {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        postCursor: any[] | null;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        profileCursor: any[] | null;
-    };
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const combinedSearch = async (query: string, isAuto: boolean, searchType: string, searchAfter?: any, resultSize?: number) => {
-    const size: number = resultSize || config.get("es.defaultPaginationSize");
-    const cacheKey = `search:${searchType}:${isAuto ? "auto" : "full"}:${query}:${JSON.stringify(searchAfter || [])}`;
-
-    // Check Redis for cached results
-    const cachedResults = await RedisConnector.get(cacheKey);
-
-    if (cachedResults) {
-        // If cache hit, return cached results
-        return JSON.parse(cachedResults);
-    }
-
-    let postRes = null;
-    let profilesRes = null;
-
-    if(searchType === "both") {
-        // Build the query for posts and profiles
-        const postQuery = ESConnector.getInstance().buildSearchQuery(true, isAuto, query, searchAfter?.post);
-        const profileQuery = ESConnector.getInstance().buildSearchQuery(false, isAuto, query, searchAfter?.profile);
-
-        // Perform the Elasticsearch queries
-        [postRes, profilesRes] = await Promise.all([
-            ESConnector.getInstance()?.getClient()?.search(postQuery),
-            ESConnector.getInstance()?.getClient()?.search(profileQuery)
-        ]);
-    } else if(searchType === "profile") {
-        // Just query by profile
-        const profileQuery = ESConnector.getInstance().buildSearchQuery(false, isAuto, query, searchAfter?.profile);
-        profilesRes = await ESConnector.getInstance()?.getClient()?.search(profileQuery);
-    } else if(searchType === "post") {
-        // Just query by posts
-        const postQuery = ESConnector.getInstance().buildSearchQuery(true, isAuto, query, searchAfter?.post);
-        postRes = await ESConnector.getInstance()?.getClient()?.search(postQuery);
-    } else {
-        // Invalid
-        throw new Error("Invalid search type");
-    }
-
-    const postHits = postRes?.hits?.hits ?? [];
-    const profileHits = profilesRes?.hits?.hits ?? [];
-    
-    const lastPost:Post = postHits.at(-1)?._source as Post;
-    const lastProfile:Profile = profileHits.at(-1)?._source as Profile;
-    const lastProfileId = lastProfile?.userId;
-
-    // Combine posts and profiles results
-    const combinedResults: CombinedSearchResults = {
-        posts: postHits,
-        profiles: profileHits,
-        next: {
-            postCursor: postHits.length >= size && lastPost
-                ? [lastPost.global?.dateTime, lastPost.postId] : null,
-            profileCursor: profileHits.length >= size && lastProfileId
-                ? [lastProfileId] : null
-        }
-    };
-
-    // Cache the result for future use
-    await RedisConnector.getClient()?.setEx(cacheKey, 3600, JSON.stringify(combinedResults));
-
-    return combinedResults;
-}
-
 export const extractTextSuggestionsFlat = (suggestObj: unknown, size:number = Infinity): string[] => {
     const seen = new Set<string>();
     const flat: string[] = [];
@@ -491,3 +414,5 @@ export const extractTextSuggestionsFlat = (suggestObj: unknown, size:number = In
 
     return flat;
 };
+
+export const isHashtag = (text: string) => text.startsWith('#');

@@ -73,6 +73,32 @@ export default class ESConnector {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public buildHashtagQuery = (term: string, searchAfter?: any[]) => {
+        const index: string = config.get("es.mainIndex");
+        const size: number = config.get("es.defaultPaginationSize");
+
+        return {
+            index,
+            size,
+            search_after: searchAfter,
+            sort: [
+                {
+                    "global.dateTime": {
+                        order: "desc",
+                        nested: { path: "global" }
+                    }
+                },
+                { postId: "asc" }
+            ],
+            query: {
+                term: {
+                    "hashtags.raw": term
+                }
+            }
+        }
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public buildSearchQuery = (isPost: boolean, isAuto: boolean, query: string, searchAfter?: any[]) => {
         const index: string = isPost ? config.get("es.mainIndex") : config.get("es.profileIndex");
         const size: number = config.get("es.defaultPaginationSize");
@@ -224,10 +250,10 @@ export default class ESConnector {
 
     public buildSuggestQuery = (input: string, size: number, isHashtag: boolean)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        :{ mainSuggestBody: any; profileSuggestBody: any } => {
-        
+        : { mainSuggestBody: any; profileSuggestBody: any } => {
+
         const normalizedInput = input.trim().toLowerCase();
-    
+
         if (isHashtag) {
             // Return suggest queries targeting hashtag fields only
             return {
@@ -257,7 +283,7 @@ export default class ESConnector {
                 }
             };
         }
-    
+
         // Return suggest queries for the non-hashtag fields we care about
         return {
             mainSuggestBody: {
@@ -311,7 +337,7 @@ export default class ESConnector {
         const fields = isHashtag
             ? ['hashtags^3']
             : ['userName^3', 'lastName^2', 'firstName', 'bio'];
-    
+
         return {
             size,
             query: {
@@ -327,7 +353,7 @@ export default class ESConnector {
                 }
             }
         };
-    };    
+    };
 
     public getAllSuggestions = async (input: string): Promise<SuggestionResponse> => {
         if (!input.trim()) {
@@ -340,17 +366,17 @@ export default class ESConnector {
 
         const size: number = config.get("es.defaultSuggestionResultSize");
         const normalizedInput = input.trim().toLowerCase();
-        const isHashtag: boolean = normalizedInput.startsWith('#');        
+        const isHashtag: boolean = normalizedInput.startsWith('#');
         const cacheKey = `suggestions:${normalizedInput}:${size}`;
 
         // Check if results are in redis cache first
         const cachedResult = await RedisConnector.get(cacheKey);
         if (cachedResult) {
             return JSON.parse(cachedResult);
-        }        
+        }
 
         // Build query bodies for suggesters
-        const {mainSuggestBody, profileSuggestBody } = this.buildSuggestQuery(normalizedInput, size, isHashtag);
+        const { mainSuggestBody, profileSuggestBody } = this.buildSuggestQuery(normalizedInput, size, isHashtag);
 
         // Execute suggest queries in parallel
         const [mainSuggest, profilesSuggest] = await Promise.all([
@@ -373,9 +399,9 @@ export default class ESConnector {
                 index: config.get("es.profileIndex"),
                 body: profileQueryBody
             });
-        
+
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            uniqueProfiles = (profilesQuery?.hits.hits || []).map((hit: any) => ({profileId: hit._id, ...hit._source}));
+            uniqueProfiles = (profilesQuery?.hits.hits || []).map((hit: any) => ({ profileId: hit._id, ...hit._source }));
         }
 
         // Create the result to store in cache
@@ -388,7 +414,7 @@ export default class ESConnector {
         // Cache the result for future use
         try {
             await RedisConnector.set(cacheKey, JSON.stringify(result));
-        } catch(err) {
+        } catch (err) {
             return result;
         }
 
@@ -404,12 +430,14 @@ export default class ESConnector {
             size,
             sort: [
                 {
-                    "post.global.dateTime": {
+                    "global.dateTime": {
+                        "order": "asc",
                         "nested": {
-                            "path": "post.global"
-                        }
+                            "path": "global"
+                        },
+                        "mode": "min"
                     }
-                }
+                },
             ]
         }, { meta: true });
 

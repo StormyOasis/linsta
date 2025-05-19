@@ -10,13 +10,30 @@ import {
 } from './controllers/accountsController';
 import { verifyJWT } from "./auth/Auth";
 import { getLocation } from "./controllers/locationsController";
-import { addPost, getAllLikesByPost, getAllPosts, postGetPostById, postIsPostLikedByUserId, toggleLikePost, getPostsByUserId, deletePost, updatePost } from "./controllers/postsController";
+import { 
+    addPost, 
+    getAllLikesByPost, 
+    postGetPostById, 
+    postIsPostLikedByUserId, 
+    toggleLikePost, 
+    getPostsByUserId, 
+    deletePost, 
+    updatePost, 
+    getAllPostsByFollowing 
+} from "./controllers/postsController";
 import { addComment, deleteComment, getCommentsByPostId, toggleCommentLike } from "./controllers/commentsController";
 import {
-    bulkGetProfilesAndFollowing, getFollowersByUserId, getFollowingByUserId, getPostProfileByUserId, getPostProfileByUserName,
-    getProfileStatsById, getSingleFollowStatus, putProfilePfp, updateProfileByUserId
+    bulkGetProfilesAndFollowing, 
+    getFollowersByUserId, 
+    getFollowingByUserId, 
+    getPostProfileByUserId, 
+    getPostProfileByUserName,
+    getProfileStatsById, 
+    getSingleFollowStatus, 
+    putProfilePfp, 
+    updateProfileByUserId
 } from "./controllers/profilesController";
-import { getSearch, getSuggestions } from "./controllers/searchController";
+import { getPostSearch, getSuggestions } from "./controllers/searchController";
 
 
 const router = new Router();
@@ -37,7 +54,7 @@ router.get("/api/v1/locations/get", verifyJWT, getLocation);
 router.put("/api/v1/posts/addPost", verifyJWT, addPost);
 router.post("/api/v1/posts/updatePost", verifyJWT, updatePost);
 router.post("/api/v1/posts/deletePost", verifyJWT, deletePost);
-router.post("/api/v1/posts/getAll", verifyJWT, getAllPosts);
+router.post("/api/v1/posts/getAllPostsByFollowing", verifyJWT, getAllPostsByFollowing);
 router.post("/api/v1/posts/getPostById", verifyJWT, postGetPostById);
 router.post("/api/v1/posts/likePost", verifyJWT, toggleLikePost);
 router.post("/api/v1/posts/isPostLikedByUser", verifyJWT, postIsPostLikedByUserId);
@@ -62,7 +79,7 @@ router.post("/api/v1/profiles/getSingleFollowStatus", verifyJWT, getSingleFollow
 router.put("/api/v1/profiles/updatePfp", verifyJWT, putProfilePfp);
 
 // Search handlers
-router.get("/api/v1/search/search", getSearch);
+router.post("/api/v1/search/search", getPostSearch);
 router.get("/api/v1/search/suggest", getSuggestions);
 
 export default router;

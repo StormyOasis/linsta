@@ -2,6 +2,14 @@ PUT /main
 {
   "settings": {
     "analysis": {
+      "normalizer": {
+        "lowercase_normalizer": {
+          "type": "custom",
+          "filter": [
+            "lowercase"
+          ]
+        }
+      },
       "filter": {
         "autocomplete_filter": {
           "type": "edge_ngram",
@@ -39,10 +47,10 @@ PUT /main
         "search_analyzer": "hashtag_search",
         "fields": {
           "raw": {
-            "type": "keyword"
+            "type": "keyword",
+            "normalizer": "lowercase_normalizer"
           },
           "suggest": {
-            
             "type": "completion"
           }
         }
@@ -65,7 +73,6 @@ PUT /main
                 "type": "text"
               },
               "suggest": {
-                
                 "type": "completion"
               }
             }
@@ -96,7 +103,6 @@ PUT /main
                 "type": "text"
               },
               "suggest": {
-                
                 "type": "completion"
               }
             }
@@ -110,7 +116,6 @@ PUT /main
                 "type": "text"
               },
               "suggest": {
-                
                 "type": "completion"
               }
             }
@@ -141,7 +146,6 @@ PUT /main
                 "type": "text"
               },
               "suggest": {
-                
                 "type": "completion"
               }
             }
@@ -160,6 +164,14 @@ PUT /profiles
 {
   "settings": {
     "analysis": {
+      "normalizer": {
+        "lowercase_normalizer": {
+          "type": "custom",
+          "filter": [
+            "lowercase"
+          ]
+        }
+      },      
       "filter": {
         "autocomplete_filter": {
           "type": "edge_ngram",
@@ -200,7 +212,6 @@ PUT /profiles
             "type": "text"
           },
           "suggest": {
-            
             "type": "completion"
           }
         }
@@ -214,7 +225,6 @@ PUT /profiles
             "type": "text"
           },
           "suggest": {
-            
             "type": "completion"
           }
         }
@@ -228,7 +238,6 @@ PUT /profiles
             "type": "text"
           },
           "suggest": {
-            
             "type": "completion"
           }
         }
@@ -242,7 +251,6 @@ PUT /profiles
             "type": "text"
           },
           "suggest": {
-            
             "type": "completion"
           }
         }
@@ -256,10 +264,10 @@ PUT /profiles
         "search_analyzer": "hashtag_search",
         "fields": {
           "raw": {
-            "type": "keyword"
+            "type": "keyword",
+            "normalizer": "lowercase_normalizer"
           },
           "suggest": {
-            
             "type": "completion"
           }
         }

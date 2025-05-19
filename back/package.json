@@ -11,7 +11,7 @@
     "build": "tsc -p tsconfig.json --skipLibCheck",
     "lint": "eslint src/ --ext .js,.jsx,.ts,.tsx",
     "templates": "node scripts/createTemplates.mjs",
-    "generateData": "node scripts/generateData.mjs"
+    "generateData": "NODE_EXTRA_CA_CERTS='/usr/share/es/certs/ca.crt' node scripts/generateData.mjs"
   },
   "repository": {
     "type": "git",

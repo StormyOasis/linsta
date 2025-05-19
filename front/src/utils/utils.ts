@@ -12,7 +12,7 @@ export const historyUtils: HistoryType = {
 
 export const validatePassword = (value: string): boolean => {
     const regex: RegExp =
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@.#$!%*?&^])[A-Za-z\d@.#$!%*?&]{8,15}$/;
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@.#$!%*?&^_])[A-Za-z\d@.#$!%*?&_]{8,32}$/;
 
     return regex.test(value);
 };
@@ -338,8 +338,11 @@ export const updatePost = async (post:PostWithCommentCount, fieldsToUpdate: {key
         // update the local returned post adding the fields not returned by ES
         results.data.postId = post.postId
         results.data.user.pfp = post.user.pfp;
-        results.data.global.likes = [...post.global.likes];
         results.data.commentCount = post.commentCount;
+        if(post?.global?.likes != null) {
+            results.data.global.likes = [...post?.global?.likes];
+        }
+
         return results.data as PostWithCommentCount;
     } catch(err) {
         console.error(err)
@@ -358,7 +361,7 @@ export type SearchResponse = {
     hasMore: boolean;
     searchAfter: any[] | null;
 };
-
+/*
 export const search = async (query: string, isAuto: boolean, searchType: 'both' | 'post' | 'profile', searchAfter: any[] | null)
     :Promise<SearchResponse | null> => {
 
@@ -393,7 +396,7 @@ export const search = async (query: string, isAuto: boolean, searchType: 'both' 
         hasMore: !!next,
         searchAfter: next
     };
-}
+}*/
 
 export const storeSearchQueries = (value: string | Profile):(string | Profile)[] => {
     const key:string = "recentSearches";
@@ -406,7 +409,7 @@ export const storeSearchQueries = (value: string | Profile):(string | Profile)[]
             if (typeof item === 'string') {
                 return item === value;
             } else {
-                return item.userId === (value as Profile).userId;
+                return item.profileId === (value as Profile).profileId;
             }
         })
 
@@ -433,7 +436,7 @@ export const removeStoredSearchQuery = (value: string | Profile):(string | Profi
             if (typeof item === 'string') {
                 return item !== value;
             } else {
-                return item.userId !== (value as Profile).userId;
+                return item.profileId !== (value as Profile).profileId;
             }
         });
         localStorage.setItem(key, JSON.stringify(filteredQueries));

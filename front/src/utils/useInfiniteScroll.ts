@@ -1,29 +1,42 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import useThrottle from './useThrottle';
 
-const useInfiniteScroll = (loadMore: () => void, isLoading: boolean, childRef:React.MutableRefObject<HTMLDivElement|null>, hasScrolled: React.MutableRefObject<boolean>) => {
-    const throttledHandleScroll = useThrottle(() => {
+type asyncLoadMoreFuncton = () => Promise<void>;
+
+const useInfiniteScroll = (loadMore: asyncLoadMoreFuncton, isLoading: boolean, childRef: React.MutableRefObject<HTMLDivElement | null>) => {
+    const hasScrolled = useRef<boolean>(false);  // Track if the user has scrolled
+
+    const throttledHandleScroll = useThrottle(async () => {
         if (typeof window !== 'undefined' && childRef.current) {
             const element = childRef.current as HTMLElement;
             const currentScroll = window.innerHeight + element.scrollTop;
 
             if (currentScroll + 256 >= element.scrollHeight && !isLoading && !hasScrolled.current) {
                 hasScrolled.current = true;  // Mark as scrolled at least once
-                loadMore();
+                await loadMore();
             }
         }
     }, 200);
 
     useEffect(() => {
-        if(childRef != null && childRef.current != null) {
-            childRef.current.addEventListener('scroll', throttledHandleScroll);
+        const childElement = childRef.current;
+        if (childElement) {
+            childElement.addEventListener('scroll', throttledHandleScroll);
         }
+
+        // Clean up event listener on unmount
         return () => {
-            if(childRef != null && childRef.current != null) {
-                childRef.current.removeEventListener('scroll', throttledHandleScroll);
+            if (childElement) {
+                childElement.removeEventListener('scroll', throttledHandleScroll);
             }
-        };        
-    }, [throttledHandleScroll]);
+        };
+    }, [throttledHandleScroll, childRef]);
+
+    useEffect(() => {
+        if (!isLoading) {
+            hasScrolled.current = false;
+        }
+    }, [isLoading]);
 }
 
 export default useInfiniteScroll;

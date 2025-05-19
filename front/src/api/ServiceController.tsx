@@ -135,7 +135,7 @@ export const putSubmitPost = async (data: any, authUser:AuthUser): Promise<Servi
 }
 
 export const getPosts = async (data: any): Promise<ServiceResponse> => {
-    const res = await axios.post(`${host}/api/${API_VERSION}/posts/getAll`, data, {headers: authHeader()});
+    const res = await axios.post(`${host}/api/${API_VERSION}/posts/getAllPostsByFollowing`, data, {headers: authHeader()});
     return {
         data: res.data,
         status: res.status,
@@ -314,16 +314,8 @@ export const postGetSingleFollowStatus = async (data: any): Promise<ServiceRespo
     }
 }
 
-export const getSearch = async (query: string, isAuto:boolean, searchType: "both" | "post" | "profile", searchAfter: string|null): Promise<ServiceResponse> => {
-    const res = await axios.get(`${host}/api/${API_VERSION}/search/search`, {
-        params: {
-            q: query,
-            auto: isAuto,
-            searchType,
-            searchAfter
-        },        
-        headers: authHeader()
-    });
+export const getSearch = async (data:any): Promise<ServiceResponse> => {
+    const res = await axios.post(`${host}/api/${API_VERSION}/search/search`, data, {headers: authHeader()});
     return {
         data: res.data,
         status: res.status,

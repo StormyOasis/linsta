@@ -187,6 +187,8 @@ export const attemptCreateUser = async (ctx: Context) => {
                 .property("joinDate", timestamp)
                 .property("password", hashedPassword)
                 .property("pfp", null)
+                .property("firstName", first)        
+                .property("lastName", last)                    
                 .next();                
 
             if(result == null || result.value == null) {
@@ -232,7 +234,7 @@ export const attemptCreateUser = async (ctx: Context) => {
                 throw new Error("Error inserting profile");
             }
 
-            // Now add update the profile id in the user vertex
+            // Now update the profile id in the user vertex
             const graphResult = await DBConnector.getGraph(true).V(userId)
                 .property("profileId", esResult._id)
                 .next();  

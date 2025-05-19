@@ -60,6 +60,7 @@ const FollowersModalContent: React.FC<FollowersModalContentProps> = (props: Foll
             : postGetFollowingByUserId({ userId });
 
         const entry = await fetchProfiles;
+
         setFollowData({ profiles: entry.data });
     }, [props.profile.userId, props.followModalType]);
 
@@ -115,7 +116,7 @@ const FollowersModalContent: React.FC<FollowersModalContentProps> = (props: Foll
                             <FlexColumn $flexGrow="1" $position="relative">
                                 <Div>
                                     <Link href={`/${userName}/`} role="link">
-                                        <Span $fontWeight="700">{userName}</Span>
+                                        <Span $fontWeight="600">{userName}</Span>
                                     </Link>
                                 </Div>
                                 <Div>

@@ -211,10 +211,10 @@ const SideBar: React.FC = () => {
         <>
             <LoadingImage isLoading={isLoading} />
             {!isLoading && suggestions.map((s, i) => (
-                <SearchResultItem key={`suggestion-${i}`} item={s} onClick={() => handleSearchItemClicked(s)} />
+                <SearchResultItem key={`suggestion-${i}`} item={s} onClick={() => {handleSearchItemClicked(s); setIsSearchExpanded(prev => !prev);}} />
             ))}
             {!isLoading && profiles.map((p) => (
-                <SearchResultItem key={`profile-${p.userName}`} item={p} onClick={() => handleSearchItemClicked(p)} />
+                <SearchResultItem key={`profile-${p.userName}`} item={p} onClick={() => {handleSearchItemClicked(p); setIsSearchExpanded(prev => !prev);}} />
             ))}
         </>
     ), [isLoading, suggestions, profiles, handleSearchItemClicked]);        
@@ -231,7 +231,7 @@ const SideBar: React.FC = () => {
                         <SearchResultItem
                             key={`recent-${typeof item === 'string' ? item : item.userName}`}
                             item={item}
-                            onClick={() => handleSearchItemClicked(item)}
+                            onClick={() => {handleSearchItemClicked(item); setIsSearchExpanded(prev => !prev);}}
                             onRemove={() => handleRemoveRecentClicked(item)}
                         />
                     ))}

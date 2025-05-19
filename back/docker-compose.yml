@@ -37,6 +37,16 @@ services:
          # https://docs.janusgraph.org/configs/configuration-reference
          - janusgraph.graph.replace-instance-if-exists=true
 
+  janusgraph-visualizer:
+    image: janusgraph/janusgraph-visualizer
+    container_name: janusgraph-visualizer
+    ports:
+      - "3100:3000"
+      - "3101:3001"
+    environment:
+      - GREMLIN_HOST=host.docker.internal
+      - GREMLIN_PORT=8182
+
   linsta-redis:
     image: redis/redis-stack-server
     container_name: linsta_redis
