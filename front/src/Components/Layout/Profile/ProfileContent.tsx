@@ -13,8 +13,8 @@ import HeartFilledSVG from "/public/images/heart-fill.svg";
 import MessageSVG from "/public/images/message.svg";
 import { AuthUser } from "../../../api/Auth";
 import StyledLink from "../../../Components/Common/StyledLink";
-import useThrottle from '../../../utils/useThrottle';
 import LoadingImage from "../../../Components/Common/LoadingImage";
+import useInfiniteScroll from "../../../utils/useInfiniteScroll";
 
 const ProfilePicWrapper = styled(Div)`
     display: flex;
@@ -83,26 +83,29 @@ const GridContainer = styled(Div)`
     border-top: 1px solid ${props => props.theme['colors'].borderDefaultColor};
     display: flex;
     flex-wrap: wrap;
-    gap: 5px;
+    justify-content: flex-start;
+    gap: 4px;
     height: 100%;
+
+    max-width: calc((256px * 3) + (4px * 2)); /* 3 items + 2 gaps */
 `;
 
-const GridImageContainer = styled(Div) <{ $width: string }>`
-    max-height: 256px;
+const GridImageContainer = styled(Div)`
     position: relative;
-    max-width: 256px;
-    height: auto;
-    width: ${props => props.$width};
+    width: 256px;
+    height: 256px;
+    box-sizing: border-box;
     cursor: pointer;
     overflow: hidden;
+    flex: 0 0 auto;
 
     @media (max-width: ${props => props.theme["breakpoints"].md - 1}px) {
-        width: 50%;
-    }  
+        width: 48%;
+    }
 
     @media (max-width: ${props => props.theme["breakpoints"].sm - 1}px) {
         width: 100%;
-    }        
+    }
 `;
 
 const GridImage = styled.img`
@@ -171,9 +174,9 @@ const ProfileContent: React.FC = () => {
     const authUserProfileState: Profile = useAppSelector((state: any) => state.profile.profile);
     const profileNonce: string = useAppSelector((state: any) => state.profile.nonce);
     const commentModalState = useAppSelector((state: any) => state.modal.openModalStack?.find((modal: ModalState) => modal.modalName === MODAL_TYPES.COMMENT_MODAL));
-    const deletedCommentId:string|null = useAppSelector((state: any) => state.misc.deletedCommentId);
-    const deletedPostId:string|null = useAppSelector((state: any) => state.misc.deletedPostId);
-    const updatedPost:PostWithCommentCount|null = useAppSelector((state: any) => state.misc.updatedPost);
+    const deletedCommentId: string | null = useAppSelector((state: any) => state.misc.deletedCommentId);
+    const deletedPostId: string | null = useAppSelector((state: any) => state.misc.deletedPostId);
+    const updatedPost: PostWithCommentCount | null = useAppSelector((state: any) => state.misc.updatedPost);
     const [profile, setProfile] = useState<Profile | null>(null);
     const [profileStats, setProfileStats] = useState<ProfileStats | null>(null);
     const [paginationResult, setPaginationResult] = useState<PostPaginationResponse | null>(null);
@@ -183,11 +186,11 @@ const ProfileContent: React.FC = () => {
     const [isLoggedInFollowing, setIsLoggedInFollowing] = useState<boolean>(false);
     const { userName } = useParams<{ userName: string }>();
     const childRef = useRef<HTMLDivElement | null>(null);
-    const hasScrolled = useRef(false);  // Track if the user has scrolled
+
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
 
-    useEffect(() => {   
+    useEffect(() => {
         const fetchProfileData = async () => {
             try {
                 // Get the profile by the name passed in the url
@@ -239,29 +242,6 @@ const ProfileContent: React.FC = () => {
 
     }, [userName, authUserProfileState, profileNonce]);
 
-    const throttledHandleScroll = useThrottle(useCallback(() => {
-        if (typeof window !== 'undefined' && childRef.current) {
-            const element = childRef.current as HTMLElement;
-            const currentScroll = window.innerHeight + element.scrollTop;
-
-            if (currentScroll + 256 >= element.scrollHeight && !isLoading && !hasScrolled.current) {
-                hasScrolled.current = true;  // Mark as scrolled at least once
-                loadPosts();
-            }
-        }
-    }, [paginationResult, isLoading]), 200);
-
-    useEffect(() => {
-        if (childRef.current) {
-            (childRef.current as any).addEventListener('scroll', throttledHandleScroll);
-        }
-        return () => {
-            if (childRef && childRef.current) {
-                (childRef.current as any).removeEventListener('scroll', throttledHandleScroll);
-            }
-        };
-    }, []);
-
     useEffect(() => {
         if (posts == null || commentModalState == null) {
             return;
@@ -282,16 +262,10 @@ const ProfileContent: React.FC = () => {
     }, [commentModalState]);
 
     useEffect(() => {
-        if (!isLoading) {
-            hasScrolled.current = false;
-        }
-    }, [isLoading]);
-
-    useEffect(() => {
-        const updatePostCommentCount = async () => {            
+        const updatePostCommentCount = async () => {
             // A comment has been deleted, so we need to force a recount of the comment counts
             // for that specific post 
-            const result = await postGetPostByPostId({postId: commentModalState?.data?.post?.postId});            
+            const result = await postGetPostByPostId({ postId: commentModalState?.data?.post?.postId });
             if (result.data != null) {
                 const response: PostWithCommentCount = result.data.post;
                 setPosts((posts: PostWithCommentCount[]) => {
@@ -304,41 +278,41 @@ const ProfileContent: React.FC = () => {
                 });
             }
         }
-        if(deletedCommentId) {
+        if (deletedCommentId) {
             updatePostCommentCount();
         }
-    }, [deletedCommentId]);   
+    }, [deletedCommentId]);
 
     useEffect(() => {
-        if(deletedPostId) {
+        if (deletedPostId) {
             // A post has been deleted so we need to remove it from the list
             // and update the post counts
-            const newPosts = posts.filter((post:PostWithCommentCount) => post.postId !== deletedPostId);
+            const newPosts = posts.filter((post: PostWithCommentCount) => post.postId !== deletedPostId);
             setPosts(newPosts);
 
             // Get the post, follower, and following stats
             if (profile?.userId != null && profileStats != null) {
-                const newStats:ProfileStats = profileStats;
+                const newStats: ProfileStats = profileStats;
                 newStats.postCount--;
                 setProfileStats(newStats);
             }
         }
-    }, [deletedPostId]); 
+    }, [deletedPostId]);
 
-    useEffect(() => {        
+    useEffect(() => {
         // A post has been updated, so we need to update the post in the list
-        if(updatedPost) {
-            const newPosts = posts.map((post:PostWithCommentCount) => {
-                if(post.postId === updatedPost.postId) {
+        if (updatedPost) {
+            const newPosts = posts.map((post: PostWithCommentCount) => {
+                if (post.postId === updatedPost.postId) {
                     return updatedPost;
                 }
                 return post;
             });
             setPosts(newPosts);
-        }        
+        }
     }, [updatedPost]);
 
-    const loadPosts = useMemo(() => async () => {        
+    const loadPosts = useCallback(async () => {
         if (isLoading || (paginationResult && paginationResult.done)) {
             return;
         }
@@ -363,6 +337,9 @@ const ProfileContent: React.FC = () => {
 
     }, [isLoading, paginationResult, profile?.userId]);
 
+    // Use the custom hook for infinite scroll
+    useInfiniteScroll(loadPosts, isLoading, childRef);       
+
     const handleFollowCountClick = (modalType: number) => {
         dispatch(actions.modalActions.openModal({ modalName: MODAL_TYPES.FOLLOW_MODAL, data: { followModalType: modalType, profile } }));
     };
@@ -380,10 +357,10 @@ const ProfileContent: React.FC = () => {
         if (post == null) {
             return;
         }
-        
+
         const newPost: Post = structuredClone(post);
         newPost.user.pfp = getPfpFromProfile(profile);
-        
+
         // Open the comment dialog by setting the state in redux
         dispatch(actions.modalActions.openModal({ modalName: MODAL_TYPES.COMMENT_MODAL, data: { post: newPost } }));
     }
@@ -403,13 +380,13 @@ const ProfileContent: React.FC = () => {
 
     // Don't display anything until the profile data is populated so that we don't briefly show a
     // bunch of undefineds
-    if(!profile) {
+    if (!profile) {
         return <></>
     }
 
     return (
         <>
-            <ContentWrapper ref={childRef} onScroll={throttledHandleScroll} $overflow="auto" $maxHeight="100vh">
+            <ContentWrapper ref={childRef} $overflow="auto" $maxHeight="100vh">
                 <Section style={{ paddingBottom: "64px" }}>
                     <Div $marginTop="14px">
                         <Main role="main">
@@ -473,30 +450,29 @@ const ProfileContent: React.FC = () => {
                     </Div>
                 </Section>
                 <Section style={{ alignItems: "center" }}>
-                    <Flex $justifyContent="center" $width="50%" style={{ margin: "0 auto" }}>
-                        <GridContainer $width="100%" $justifyContent="center">
+                    <Flex $justifyContent="center" style={{ margin: "0 auto" }}>
+                        <GridContainer $width="100%">
                             {posts.map((post: PostWithCommentCount, index: number) => {
                                 const likeCount = post.global.likes ? post.global.likes.length : 0;
                                 const commentCount = post.global.commentsDisabled ? 0 : post.commentCount;
                                 const isVideo = isVideoFileFromPath(post.media[0].path);
                                 return (
                                     <GridImageContainer
-                                        $width="50%"
                                         key={`${post.media[0].id}-${index}`}
                                         onClick={() => handleGridImageClicked(post)}
                                         onMouseEnter={() => setHoverPost(post)}
                                         onMouseLeave={() => setHoverPost(null)}>
 
-                                        {!isVideo && <GridImage 
+                                        {!isVideo && <GridImage
                                             src={post.media[0].path}
                                             alt={`${post.media[0].altText}`}
                                             aria-label={`${post.media[0].altText}`}
-                                            />
+                                        />
                                         }
                                         {isVideo && <GridVideo
                                             src={post.media[0].path}
                                             aria-label={`${post.media[0].altText}`}
-                                            />
+                                        />
                                         }
 
                                         {(hoverPost && hoverPost === post) &&

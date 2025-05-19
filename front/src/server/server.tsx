@@ -40,12 +40,17 @@ const renderHtml = (title: string, styles: any, html: any, preloadState: any):st
             <script>
                 window.__PRELOADED_STATE__ = ${JSON.stringify(preloadState).replace(/</g, '\\u003c')}
             </script>
-            <script type="application/javascript" src="vendor.bundle.js" async></script>
-            <script type="application/javascript" src="main.bundle.js"></script>            
+            <script type="application/javascript" src="/vendor.bundle.js" async></script>
+            <script type="application/javascript" src="/main.bundle.js"></script>            
             <script crossorigin type="application/javascript" src="/public/Pixels.js" defer></script>                   
         </body>
     </html>`;
 };
+
+router.get("/.well-known/:path*", async (ctx, _next) => {
+    ctx.status = 404;
+    ctx.body = "Not found";
+});
 
 router.get(/.*/, async (ctx) => {
     try {

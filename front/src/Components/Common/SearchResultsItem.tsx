@@ -66,9 +66,7 @@ interface SearchResultItemProps {
 
 const SearchResultItem: React.FC<SearchResultItemProps> = ({ item, onClick, onRemove }) => {
     const isProfile = typeof item !== "string";
-    const url = isProfile ? `/${item.userName}` : isHashtag(item)
-            ? `/explore/tags/${item.substring(1)}`
-            : `/explore/search/${item}`;
+    const url = isProfile ? `/${item.userName}` : `/explore?q=${encodeURIComponent(item)}`;
 
     return (
         <Flex>

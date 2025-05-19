@@ -81,7 +81,8 @@ export interface PostWithCommentCount extends Post {
 export interface PaginationResponse {    
     done: boolean;
     postCursor: any[];
-    profileCursor: any[];    
+    profileCursor: any[];
+    q: string;    
 }
 
 export interface PostPaginationResponse extends PaginationResponse {

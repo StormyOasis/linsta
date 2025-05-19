@@ -208,6 +208,7 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
             <Flex key={commentId} style={{ padding: "15px 10px" }}>
                 <FlexRowFullWidth>
                     <ProfileLink
+                        showLocation={false}
                         showUserName={false}
                         showPfp={true}
                         showFullName={false}
@@ -216,7 +217,7 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                         userName={user.userName}>
                     </ProfileLink>
                     <FlexColumnFullWidth>
-                        <Span $marginLeft="2px" $alignContent="center" dangerouslySetInnerHTML={{ __html: `${profileLink}${sanitizedHtml}` }} />
+                        <Span $alignContent="center" dangerouslySetInnerHTML={{ __html: `${profileLink}${sanitizedHtml}` }} />
                         <Div>
                             <Span $marginRight="10px" $fontSize="13px">{dateDiff(dateTime)}</Span>
                             {!commentsDisabled &&
@@ -430,6 +431,8 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                                     <Div $marginLeft="10px" $paddingTop="10px" $paddingBottom="10px" $paddingRight="10px">
                                         <FlexRow $justifyContent="space-between">
                                             <ProfileLink
+                                                showLocation={true}
+                                                location={props.post.global.locationText}      
                                                 showPfp={true}
                                                 showUserName={true}
                                                 showFullName={false}
@@ -442,13 +445,6 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                                                 </PostOptionsWrapper>
                                             }
                                         </FlexRow>
-                                        {props.post.global.locationText.length > 0 &&
-                                            <Div $marginLeft="39px" $marginTop="-9px" $fontSize="13px">
-                                                <Link href={`${HOST}/explore?text=${encodeURIComponent(props.post.global.locationText)}`}>
-                                                    {props.post.global.locationText}
-                                                </Link>
-                                            </Div>
-                                        }
                                     </Div>
                                 </HeadingWrapper>
                                 <CommentsWrapper>

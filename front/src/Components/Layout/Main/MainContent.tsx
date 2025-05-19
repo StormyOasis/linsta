@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { EmojiClickData } from "emoji-picker-react";
 import styled from "styled-components";
 import * as styles from './Main.module.css';
@@ -10,7 +10,7 @@ import MessageSVG from "/public/images/message.svg";
 import ShareSVG from "/public/images/send.svg";
 import { AuthUser } from "../../../api/Auth";
 import { isOverflowed, getSanitizedText, isPostLiked, getPfpFromPost, togglePostLikedState } from "../../../utils/utils";
-import { ContentWrapper, Div, Flex, FlexColumn, FlexColumnFullWidth, FlexRow, FlexRowFullWidth, LightLink, Link, Main, Section, Span } from "../../../Components/Common/CombinedStyling";
+import { ContentWrapper, Div, Flex, FlexColumn, FlexColumnFullWidth, FlexRow, FlexRowFullWidth, LightLink, Main, Section, Span } from "../../../Components/Common/CombinedStyling";
 import EmojiPickerPopup from "../../../Components/Common/EmojiPickerPopup";
 import StyledLink from "../../../Components/Common/StyledLink";
 import { HOST } from "../../../api/config";
@@ -31,7 +31,7 @@ const FeedContainer = styled(FlexColumn)`
 const PostContainer = styled(FlexColumnFullWidth)`
     min-width: min(${props => props.theme["sizes"].feedPostMinWidth}, 100%);
     padding-bottom: 10px;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
     border-bottom: 1px solid ${props => props.theme["colors"].borderDefaultColor};
 `;
 
@@ -81,8 +81,8 @@ const MainContent: React.FC = () => {
     const [paginationResult, setPaginationResult] = useState<PostPaginationResponse>();
     const [posts, setPosts] = useState<Post[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const childRef = useRef<HTMLDivElement | null>(null);
-    const hasScrolled = useRef<boolean>(false);  // Track if the user has scrolled
+    
+    const childRef = useRef<HTMLDivElement | null>(null);    
     const useEffectStrictModeCheckRef = useRef<boolean>(false); //For Dev only, can be removed
     const authUser: AuthUser = useAppSelector((state: any) => state.auth.user);
     const commentModalState = useAppSelector((state: any) => state.modal.openModalStack?.find((modal: ModalState) => modal.modalName === MODAL_TYPES.COMMENT_MODAL));
@@ -95,12 +95,6 @@ const MainContent: React.FC = () => {
             loadPosts();
         }
     }, []);
-
-    useEffect(() => {
-        if (!isLoading) {
-            hasScrolled.current = false;
-        }
-    }, [isLoading]);    
 
     useEffect(() => {
         if (posts == null || commentModalState == null) {
@@ -137,7 +131,7 @@ const MainContent: React.FC = () => {
     }, [isLoading]);
 
     // Use the custom hook for infinite scroll
-    useInfiniteScroll(loadPosts, isLoading, childRef, hasScrolled);
+    useInfiniteScroll(loadPosts, isLoading, childRef);
 
     const toggleCaptionViewMoreState = useCallback((postId: string) => {
         setViewMoreStates((prevState) => ({ ...prevState, [postId]: true }));
@@ -222,6 +216,8 @@ const MainContent: React.FC = () => {
                             <Div id={`postid_${post.postId}`}>
                                 <Span>
                                     <ProfileLink
+                                        showLocation={false}
+                                        location={post.global.locationText}                                    
                                         showFullName={false}
                                         showUserName={true}
                                         showPfp={false}
@@ -288,22 +284,16 @@ const MainContent: React.FC = () => {
                                     return (
                                         <article key={`${post.media[0].id}-${index}`}>
                                             <PostContainer>
-                                                <Div $paddingBottom="5px">
+                                                <Div $paddingBottom="10px">
                                                     <ProfileLink
                                                         pfp={pfp}
                                                         showUserName={true}
                                                         showPfp={true}
                                                         showFullName={false}
+                                                        showLocation={true}
+                                                        location={post.global.locationText}
                                                         userName={post.user.userName}
                                                         url={`${HOST}/${post.user.userName}`} />
-
-                                                    {post.global.locationText.length > 0 &&
-                                                        <Div $marginLeft="39px" $marginTop="-9px" $fontSize="13px">
-                                                            <Link href={`${HOST}/explore?text=${encodeURIComponent(post.global.locationText)}`}>
-                                                                {post.global.locationText}
-                                                            </Link>
-                                                        </Div>
-                                                    }
                                                 </Div>
                                                 <FlexColumn $justifyContent="center" $overflow="hidden" $position="relative" $width="min(470px, 100vw)">
                                                     <MediaSlider media={post.media} />

@@ -1,17 +1,19 @@
 import React from 'react';
 import styled from 'styled-components';
-import { BoldLink, FlexColumn, Link, Span } from './CombinedStyling';
-import { DEFAULT_PFP } from '../../api/config';
+import { BoldLink, FlexColumn, FlexRow, Link, Span } from './CombinedStyling';
+import { DEFAULT_PFP, HOST } from '../../api/config';
 
 type ProfileLinkProps = {
     url: string;
     userName: string;
     fullName?: string|null;
+    location?: string|null;
     pfp?: string|null;
     pfpWidth?: string;
     showFullName: boolean;
     showPfp: boolean;
     showUserName: boolean;
+    showLocation: boolean;
     children?: any;
 };
 
@@ -41,7 +43,7 @@ const ProfileLink: React.FC<ProfileLinkProps> = (props: ProfileLinkProps) => {
 
     const pfpUrl = props.pfp && props.pfp.length > 0 ? props.pfp : DEFAULT_PFP;
     return (
-        <Span $display="inline-flex">
+        <FlexRow>
             {props.showPfp &&
                 <ProfilePicWrapper>
                     <Link role="link" href={props.url} aria-label={`${props.userName}'s profile picture link`}>
@@ -72,8 +74,18 @@ const ProfileLink: React.FC<ProfileLinkProps> = (props: ProfileLinkProps) => {
                             href={props.url}>{props.fullName}</FullNameLink>
                     </ProfileLinkWrapper>                 
                 }
+                {props.showLocation && 
+                    <ProfileLinkWrapper>
+                        <FullNameLink
+                            aria-label={`Search ${props.location}`}
+                            role="link"
+                            href={`${HOST}/explore?q=${encodeURIComponent(props.location || "")}`}>
+                                {props.location}
+                        </FullNameLink>                        
+                    </ProfileLinkWrapper>                 
+                }
             </FlexColumn>                  
-        </Span>
+        </FlexRow>
     );
 };
 

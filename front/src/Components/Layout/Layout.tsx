@@ -11,6 +11,7 @@ import { FlexColumn } from "../Common/CombinedStyling";
 import ModalManager from "../../Components/Layout/Main/Modals/ModalManager";
 import ProfileLayout from "./Profile/ProfileLayout";
 import NotFoundLayout from "./NotFoundLayout";
+import ExploreLayout from "./Explore/ExploreLayout";
 
 const Layout: React.FC = () => {
     const RedirectToProfilePage = () => {
@@ -34,12 +35,13 @@ const Layout: React.FC = () => {
                     <Route path="/:userName" element={<ProfileLayout edit={false} />} />
                     <Route path="/:userName/" element={<RedirectToProfilePage/>} />
                     <Route path="/edit/*" element={<Private><ProfileLayout edit={true} /></Private>} />
+                    <Route path="/explore/*" element={<Private><ExploreLayout /></Private>} />                    
                     <Route path="/login/*" element={<LoginLayout />} />
                     <Route path="/signup/*" element={<SignupLayout />} />
                     <Route path="/forgot/*" element={<><Header /><ForgotPasswordLayout /></>} />
                     <Route path="/change_password/*" element={<><Header /><ChangePasswordLayout /></>} />
                     <Route path="/404" element={<NotFoundLayout />} />
-                    <Route path="*" element={<Navigate to="/" replace />} />
+                    
                 </Routes>
             </FlexColumn>
         </>

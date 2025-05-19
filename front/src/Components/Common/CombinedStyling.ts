@@ -278,7 +278,6 @@ export const Main = styled.main`
 export const ContentWrapper = styled(Div)`
     overflow-y: auto;
     margin-left: ${props => props.theme["sizes"].sideBarNavWidthDefault};
-    padding-left: 10px;
 
     @media (min-width: ${props => props.theme["breakpoints"].md}px) and 
             (max-width: ${props => props.theme["breakpoints"].lg - 1}px) {
@@ -288,6 +287,5 @@ export const ContentWrapper = styled(Div)`
         
     @media (max-width: ${props => props.theme["breakpoints"].md - 1}px) {
         margin-left: 0;
-        padding-left: 0;
     }
 `;

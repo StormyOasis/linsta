@@ -1,4 +1,5 @@
 import { Context } from "koa";
+import config from 'config';
 import formidable from 'formidable';
 import Metrics from "../metrics/Metrics";
 import logger from "../logger/logger";
@@ -150,18 +151,18 @@ export const deletePost = async (ctx: Context) => {
             .select("post", "user")
             .by(
                 __.project("id", "esId")
-                .by(DBConnector.T().id)
-                .by("esId")
+                    .by(DBConnector.T().id)
+                    .by("esId")
             )
             .by(DBConnector.T().id)
             .toList();
-        
-        if(results ==  null || results.length == 0) {
+
+        if (results == null || results.length == 0) {
             return handleValidationError(ctx, "Error deleting post");
         }
-        
-        let esId: string|null = null;
-        let userId: string|null = null;
+
+        let esId: string | null = null;
+        let userId: string | null = null;
         for (const entry of results) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const map = entry as Map<string, any>;
@@ -170,8 +171,8 @@ export const deletePost = async (ctx: Context) => {
             esId = post?.get("esId");
             userId = map.get("user");
         }
-               
-        if(esId == null || userId == null) {
+
+        if (esId == null || userId == null) {
             return handleValidationError(ctx, "Error deleting post");
         }
 
@@ -208,7 +209,7 @@ export const deletePost = async (ctx: Context) => {
             .bothE()
             .drop()
             .iterate();
-        
+
         // Step 4: Drop the vertices themselves
         await DBConnector.getGraph(true)
             .V(...vertexIdsToDelete)
@@ -263,18 +264,18 @@ export const updatePost = async (ctx: Context) => {
             .select("post", "user")
             .by(
                 __.project("id", "esId")
-                .by(DBConnector.T().id)
-                .by("esId")
+                    .by(DBConnector.T().id)
+                    .by("esId")
             )
             .by(DBConnector.T().id)
             .toList();
-        
-        if(results ==  null || results.length == 0) {
+
+        if (results == null || results.length == 0) {
             return handleValidationError(ctx, "Error updating post");
         }
-        
-        let esId: string|null = null;
-        let userId: string|null = null;
+
+        let esId: string | null = null;
+        let userId: string | null = null;
         for (const entry of results) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const map = entry as Map<string, any>;
@@ -283,18 +284,18 @@ export const updatePost = async (ctx: Context) => {
             esId = post?.get("esId");
             userId = map.get("user");
         }
-               
-        if(esId == null || userId == null) {
+
+        if (esId == null || userId == null) {
             return handleValidationError(ctx, "Error updating post");
         }
-        
+
         const userIdFromJWT = ctx.state.user.id;
         // Check if the logged-in user is trying to access their own data
         if (userIdFromJWT != userId) {
             // 403 - Forbidden
             return handleValidationError(ctx, "You do not have permission to access this data", 403);
         }
-        
+
         // Step 2, update the post in ES with the supplied fields
 
         // Build the params section passed to the script        
@@ -303,8 +304,8 @@ export const updatePost = async (ctx: Context) => {
             likesDisabled: data.fields.likesDisabled != null ? data.fields.likesDisabled : null,
             locationText: data.fields.locationText != null ? sanitizeInput(data.fields.locationText) : null,
             captionText: data.fields.captionText != null ? sanitizeInput(data.fields.captionText) : null,
-            altText: data.fields.altText != null ? data.fields.altText.map((entry:string) => sanitizeInput(entry)) : null
-        };        
+            altText: data.fields.altText != null ? data.fields.altText.map((entry: string) => sanitizeInput(entry)) : null
+        };
 
         const esResult = await ESConnector.getInstance().update(esId, {
             source:
@@ -346,45 +347,45 @@ export const updatePost = async (ctx: Context) => {
             `,
             "params": params,
             "lang": "painless"
-        }, true);  
-        
-        if(esResult == null || esResult?.result != "updated") {
+        }, true);
+
+        if (esResult == null || esResult?.result != "updated") {
             return handleValidationError(ctx, "Error updating post");
         }
 
         // Step 3: Update the value in Redis by simply replacing the entire object
         const post = esResult.get?._source;
-        if(post == null) {
+        if (post == null) {
             return handleValidationError(ctx, "Error updating post");
         }
         await RedisConnector.set(esResult._id, JSON.stringify(post));
 
         ctx.status = 200;
         ctx.body = post;
-    } catch(err) {
+    } catch (err) {
         console.log(err);
         logger.error(err)
         return handleValidationError(ctx, "Error updating posts");
     }
 }
 
-type GetPostsRequest = {
+type GetAllPostsByFollowingRequest = {
     dateTime?: string;
     postId?: string;
     userId: string;
 };
 
-type GetPostsResponse = {
+type GetAllPostsByFollowingResponse = {
     posts: Post[];
     dateTime: string;
     postId: string;
     done: boolean;
 };
 
-export const getAllPosts = async (ctx: Context) => {
-    Metrics.increment("posts.getAll");
+export const getAllPostsByFollowing = async (ctx: Context) => {
+    Metrics.increment("posts.getAllPostsByFollowing");
 
-    const data = <GetPostsRequest>ctx.request.body;
+    const data = <GetAllPostsByFollowingRequest>ctx.request.body;
 
     try {
         if (data.userId == null) {
@@ -402,22 +403,34 @@ export const getAllPosts = async (ctx: Context) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const query: any = {
             query: {
-                terms: {
-                    "user.userId": followingIds
-                }
-            },
-            sort: [
-                {
-                    "postId": "asc"                    
-                },
-                {
-                    "global.dateTime": {
-                      "order": "asc",
-                      "nested": {
-                        "path": "global"
-                      }
+                nested: {
+                  path: "user",
+                  query: {
+                    terms: {
+                      "user.userId": followingIds
                     }
                   }
+                }
+              },            
+            sort: [
+                {
+                    "global.dateTime": {
+                        "order": "asc",
+                        "nested": {
+                            "path": "global"
+                        },
+                        "mode": "min"
+                    }
+                },
+                {
+                    "media.postId": {
+                      "order": "asc",
+                      "nested": {
+                        "path": "media"
+                      },
+                      "mode": "min"
+                    }
+                }             
             ]
         }
 
@@ -425,44 +438,44 @@ export const getAllPosts = async (ctx: Context) => {
             query.search_after = [data.dateTime, data.postId];
         }
 
-        const response: GetPostsResponse = {
+        const response: GetAllPostsByFollowingResponse = {
             posts: [],
             dateTime: "",
             postId: "",
             done: true
         };
 
+        const resultSize:number = config.get("es.defaultPaginationSize");
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const results: any = await ESConnector.getInstance().searchWithPagination(query);
+        const results: any = await ESConnector.getInstance().searchWithPagination(query, resultSize);
+
+        if (results?.body?.hits?.hits?.length === 0) {
+            ctx.status = 200;
+            ctx.body = response;
+            return;
+        }        
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const posts: any = {};
         const postIds: string[] = [];
-        if (results.body.hits.hits.length > 0) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const hits: any = results.body.hits.hits;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any            
-            hits.map(async (entry: any) => {
-                // Use this postId to avoid having to do a esId to postId DB query
-                const postId = entry._source.media[0].postId;
-                posts[postId] = entry._source;
-                posts[postId].postId = postId;
-                posts[postId].user.pfp = await getPfpByUserId(posts[postId].user.userId);
 
-                postIds.push(postId);
-            });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const hits: any = results.body.hits.hits;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any            
+        hits.map(async (entry: any) => {
+            // Use this postId to avoid having to do a esId to postId DB query
+            const postId = entry._source.media[0].postId;
+            posts[postId] = entry._source;
+            posts[postId].postId = postId;
+            posts[postId].user.pfp = await getPfpByUserId(posts[postId].user.userId);
 
-            response.dateTime = hits[hits.length - 1].sort[0];
-            response.postId = hits[hits.length - 1].sort[1];
-            response.done = false;
-        }
+            postIds.push(postId);
+        });
 
-        if (response.done) {
-            // No more results to return, so return here
-            ctx.status = 200;
-            ctx.body = response;
-            return;
-        }
+        response.dateTime = hits[hits.length - 1].sort[0];
+        response.postId = hits[hits.length - 1].sort[1];
+        response.done = hits.length < resultSize;      
+
 
         // Now update the posts' return values by adding all the likes and just the comment counts
 
@@ -703,22 +716,32 @@ export const getPostsByUserId = async (ctx: Context) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const query: any = {
             query: {
-                match: {
-                    "media.userId": data.userId
+                nested: {
+                    path: "media",
+                    query: {
+                        match: {
+                            "media.userId": data.userId
+                        }
+                    }
                 }
             },
             sort: [
                 {
-                    "postId": "asc"                    
+                    "global.dateTime": {
+                        "order": "asc",
+                        "nested": {
+                            "path": "global"
+                        }
+                    }
                 },
                 {
-                    "global.dateTime": {
-                      "order": "asc",
-                      "nested": {
-                        "path": "global"
-                      }
+                    "media.postId": {
+                        "order": "asc",
+                        "nested": {
+                            "path": "media"
+                        }
                     }
-                  }
+                },
             ]
         };
 
