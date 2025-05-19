@@ -1,7 +1,7 @@
 import { Context } from "koa";
 import formidable from 'formidable';
 import Metrics from "../metrics/Metrics";
-import { getFileExtByMimeType, getVertexPropertySafe, handleValidationError, sanitizeInput, updateProfileInRedis } from "../utils/utils";
+import { extractFromMultipleTexts, getFileExtByMimeType, getVertexPropertySafe, handleValidationError, sanitizeInput, updateProfileInRedis } from "../utils/utils";
 import logger from "../logger/logger";
 import ESConnector from "../Connectors/ESConnector";
 import { getProfileByUserName, getProfileByUserId } from "../utils/utils";
@@ -54,6 +54,9 @@ export const updateProfileByUserId = async (ctx: Context) => {
             return handleValidationError(ctx, "Invalid profile for user id");    
         }
 
+        // get the hashtags and mentions from bio text
+        const { hashtags, mentions } = extractFromMultipleTexts([bio]);
+
         // Send updated profile data to ES
         await ESConnector.getInstance().updateProfile(profile.profileId, undefined, {
             doc: {
@@ -63,7 +66,9 @@ export const updateProfileByUserId = async (ctx: Context) => {
                 pronouns,
                 link,
                 firstName,
-                lastName
+                lastName,
+                hashtags,
+                mentions
             }
         });
 
