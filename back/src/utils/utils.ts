@@ -384,17 +384,6 @@ export const convertSingleToDoubleQuotes = (input: string) => {
         .replace(/([{,]\s*)"(.*?)"(?=\s*:)/g, '$1"$2"');  // Ensure property keys are properly quoted
 }
 
-export const extractHashtags = (text: string): string[] => {
-    if (!text) {
-        return [];
-    }
-    
-    const hashtagRegex = /#[\p{L}0-9_]+/gu; // Matches hashtags like #fun
-    const matches = text.match(hashtagRegex);
-
-    return matches ? Array.from(new Set(matches.map(tag => tag.toLowerCase()))) : [];
-}
-
 export const extractTextSuggestionsFlat = (suggestObj: unknown, size:number = Infinity): string[] => {
     const seen = new Set<string>();
     const flat: string[] = [];
@@ -416,3 +405,48 @@ export const extractTextSuggestionsFlat = (suggestObj: unknown, size:number = In
 };
 
 export const isHashtag = (text: string) => text.startsWith('#');
+export const isMention = (text: string) => text.startsWith('@');
+
+export const extractHashtags = (text: string): string[] => {
+    if (!text) {
+        return [];
+    }
+    
+    const hashtagRegex = /#[\p{L}0-9_]+/gu; // Matches hashtags like #fun
+    const matches = text.match(hashtagRegex);
+
+    return matches ? Array.from(new Set(matches.map(tag => tag.toLowerCase()))) : [];
+}
+
+export const extractHashtagsAndMentions = (text: string):{hashtags: string[]; mentions: string[]; } => {
+    if(!text) {
+        return {
+            hashtags: [],
+            mentions: []
+        };
+    }
+    
+    const hashtagRegex = /#(\w+)/g;
+    const mentionRegex = /@(\w+)/g;
+
+    const hashtags = [...text.matchAll(hashtagRegex)].map(match => match[0].toLocaleLowerCase());
+    const mentions = [...text.matchAll(mentionRegex)].map(match => match[0].toLocaleLowerCase());
+  
+    return { hashtags, mentions };
+}
+
+export const extractFromMultipleTexts = (texts: string[]): { hashtags: string[]; mentions: string[] } => {
+    const hashtagSet = new Set<string>();
+    const mentionSet = new Set<string>();
+
+    for (const text of texts) {
+        const { hashtags, mentions } = extractHashtagsAndMentions(text);
+        hashtags.forEach(tag => hashtagSet.add(tag));
+        mentions.forEach(mention => mentionSet.add(mention));
+    }
+
+    return {
+        hashtags: Array.from(hashtagSet),
+        mentions: Array.from(mentionSet),
+    };
+}

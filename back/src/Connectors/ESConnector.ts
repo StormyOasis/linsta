@@ -5,7 +5,7 @@ import config from 'config';
 import { Entry, User, Global, Post, Profile } from '../utils/types';
 import fs from 'fs';
 import { ClusterHealthResponse, DeleteResponse, IndicesStatsResponse } from '@elastic/elasticsearch/lib/api/types';
-import { extractTextSuggestionsFlat } from '../utils/utils';
+import { extractFromMultipleTexts, extractTextSuggestionsFlat } from '../utils/utils';
 import RedisConnector from './RedisConnector';
 
 type SuggestionResponse = {
@@ -556,7 +556,15 @@ export default class ESConnector {
 }
 
 export const buildDataSetForES = (user: User, global: Global, entries: Entry[]): object => {
+    const { hashtags, mentions } = extractFromMultipleTexts([
+        global.captionText,
+        global.locationText,
+        ...entries.map((entry) => entry.alt)
+    ])
+    
     const dataSet = {
+        hashtags,
+        mentions,
         user: {
             userId: user.userId,
             userName: user.userName,
