@@ -3,7 +3,7 @@ import config from 'config';
 import formidable from 'formidable';
 import Metrics from "../metrics/Metrics";
 import logger from "../logger/logger";
-import { getFileExtByMimeType, getFollowingUserIds, getLikesByPost, getPfpByUserId, getPostByPostId, handleValidationError, sanitize, sanitizeInput } from "../utils/utils";
+import { extractFromMultipleTexts, getFileExtByMimeType, getFollowingUserIds, getLikesByPost, getPfpByUserId, getPostByPostId, handleValidationError, sanitize, sanitizeInput } from "../utils/utils";
 import { uploadFile } from "../Connectors/AWSConnector";
 import ESConnector, { buildDataSetForES } from '../Connectors/ESConnector';
 import { User, Global, Entry, Post, PostWithCommentCount, Like } from "../utils/types";
@@ -307,6 +307,7 @@ export const updatePost = async (ctx: Context) => {
             altText: data.fields.altText != null ? data.fields.altText.map((entry: string) => sanitizeInput(entry)) : null
         };
 
+
         const esResult = await ESConnector.getInstance().update(esId, {
             source:
                 `
@@ -343,7 +344,57 @@ export const updatePost = async (ctx: Context) => {
                             ctx._source.media[i].altText = params.altText[i];
                         }
                     }
-                }              
+                }
+                    
+                Set tags = new HashSet();
+                Set mentions = new HashSet();
+                Pattern hashtagPattern = /#\\w+/;
+                Pattern mentionPattern = /@\\w+/;
+
+                if (ctx._source.containsKey('global') && ctx._source.global != null) {
+                    if (ctx._source.global.containsKey('locationText') && ctx._source.global.locationText instanceof String) {
+                        String text = ctx._source.global.locationText;
+                        Matcher tagMatcher = hashtagPattern.matcher(text);
+                        while (tagMatcher.find()) {
+                            tags.add(tagMatcher.group().toLowerCase());
+                        }
+                        Matcher mentionMatcher = mentionPattern.matcher(text);
+                        while (mentionMatcher.find()) {
+                            mentions.add(mentionMatcher.group().toLowerCase());
+                        }
+                    }
+
+                    if (ctx._source.global.containsKey('captionText') && ctx._source.global.captionText instanceof String) {
+                        String text = ctx._source.global.captionText;
+                        Matcher tagMatcher = hashtagPattern.matcher(text);
+                        while (tagMatcher.find()) {
+                            tags.add(tagMatcher.group().toLowerCase());
+                        }
+                        Matcher mentionMatcher = mentionPattern.matcher(text);
+                        while (mentionMatcher.find()) {
+                            mentions.add(mentionMatcher.group().toLowerCase());
+                        }
+                    }
+                }
+
+                if (ctx._source.containsKey("media") && ctx._source.media instanceof List) {
+                    for (item in ctx._source.media) {
+                        if (item.containsKey("altText") && item.altText instanceof String) {
+                            String text = item.altText;
+                            Matcher tagMatcher = hashtagPattern.matcher(text);
+                            while (tagMatcher.find()) {
+                                tags.add(tagMatcher.group().toLowerCase());
+                            }
+                            Matcher mentionMatcher = mentionPattern.matcher(text);
+                            while (mentionMatcher.find()) {
+                                mentions.add(mentionMatcher.group().toLowerCase());
+                            }
+                        }
+                    }
+                }
+
+                ctx._source.hashtags = new ArrayList(tags);
+                ctx._source.mentions = new ArrayList(mentions);   
             `,
             "params": params,
             "lang": "painless"
