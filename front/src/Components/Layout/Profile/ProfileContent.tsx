@@ -15,6 +15,7 @@ import { AuthUser } from "../../../api/Auth";
 import StyledLink from "../../../Components/Common/StyledLink";
 import LoadingImage from "../../../Components/Common/LoadingImage";
 import useInfiniteScroll from "../../../utils/useInfiniteScroll";
+import Linkify from "../../../Components/Common/Linkify";
 
 const ProfilePicWrapper = styled(Div)`
     display: flex;
@@ -441,7 +442,7 @@ const ProfileContent: React.FC = () => {
                                             <FullNameSpan>{`${profile?.firstName} ${profile?.lastName}`}</FullNameSpan>
                                             {profile?.pronouns && <PronounSpan>{`${profile.pronouns}`}</PronounSpan>}
                                         </Div>
-                                        {profile?.bio && <BioText dangerouslySetInnerHTML={{ __html: profile.bio }}></BioText>}
+                                        {profile?.bio && <BioText><Linkify html={profile.bio} /></BioText>}
                                         {profile?.link && <StyledLink styleOverride={{ fontSize: "12px" }} to={`${profile?.link}`}>{profile.link}</StyledLink>}
                                     </FlexColumn>
                                 </Div>

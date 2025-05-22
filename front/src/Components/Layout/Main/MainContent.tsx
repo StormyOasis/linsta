@@ -19,6 +19,7 @@ import { LikeToggler, ViewLikesText } from "../../../Components/Common/Likes";
 import { useAppDispatch, useAppSelector, actions } from "../../../Components/Redux/redux";
 import { MODAL_TYPES, ModalState } from "../../../Components/Redux/slices/modals.slice";
 import useInfiniteScroll from "../../../utils/useInfiniteScroll";
+import Linkify from "../../../Components/Common/Linkify";
 
 const FeedContainer = styled(FlexColumn)`
     max-width: 700px;
@@ -223,7 +224,7 @@ const MainContent: React.FC = () => {
                                         showPfp={false}
                                         url={`${HOST}/${post.user.userName}`}
                                         userName={post.user.userName} />
-                                    <Span dangerouslySetInnerHTML={{ __html: sanitizedHtml }}></Span>
+                                    <Span><Linkify html={sanitizedHtml} /></Span>
                                 </Span>
                             </Div>
                         </CaptionContainer>
