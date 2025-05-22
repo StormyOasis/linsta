@@ -37,16 +37,17 @@ const StyledLinkWrapper = styled(Div)`
 const StyledLink: React.FC<StyledLinkProps> = (props: StyledLinkProps) => {
     const onClick = props.onClick ? props.onClick : () => true;
     const hasTo: boolean = (props.to != null && props.to.length > 0);
+    const styleOverride = props.styleOverride || {};
 
     return (
         <>
             {hasTo && (
-                <StyledLinkWrapperFromLink data-testid={props.datatestid} to={props.to || "#"} onClick={onClick} className={props.className} style={props.styleOverride}>
+                <StyledLinkWrapperFromLink data-testid={props.datatestid} to={props.to || "#"} onClick={onClick} className={props.className} style={styleOverride}>
                     {props.children}
                 </StyledLinkWrapperFromLink>
             )}
             {!hasTo && (
-                <StyledLinkWrapper data-testid={props.datatestid} onClick={onClick} className={props.className} style={props.styleOverride}>
+                <StyledLinkWrapper data-testid={props.datatestid} onClick={onClick} className={props.className} style={styleOverride}>
                     {props.children}
                 </StyledLinkWrapper>
             )}

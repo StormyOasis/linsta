@@ -3,7 +3,7 @@ import { renderToString } from "react-dom/server";
 import styled from "styled-components";
 
 import MultiStepModal from "../../../../Common/MultiStepModal";
-import { Post, PostWithCommentCount, Profile } from "../../../../../api/types";
+import { PostWithCommentCount, Profile } from "../../../../../api/types";
 import { BoldLink, Div, Flex, FlexColumn, FlexColumnFullWidth, FlexRow, FlexRowFullWidth, Link, Span } from "../../../../Common/CombinedStyling";
 import MediaSlider from "../../../../Common/MediaSlider";
 import { DEFAULT_PFP, HOST } from "../../../../../api/config";
@@ -20,6 +20,7 @@ import { CommentUiData, mapCommentsToCommentData, toggleCommentLike, toggleComme
 import { LikeToggler, ViewLikesText } from "../../../../../Components/Common/Likes";
 import { MODAL_TYPES } from "../../../../../Components/Redux/slices/modals.slice";
 import { actions, useAppDispatch, useAppSelector } from "../../../../../Components/Redux/redux";
+import Linkify from "../../../../../Components/Common/Linkify";
 
 const MediaSliderWrapper = styled(Div) <{ $width: number }>`
     align-content: center;
@@ -196,6 +197,7 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
         const profileLink = renderToString(
             <Theme>
                 <ProfileLink
+                    showLocation={false}
                     showUserName={true}
                     showPfp={false}
                     showFullName={false}
@@ -217,7 +219,7 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                         userName={user.userName}>
                     </ProfileLink>
                     <FlexColumnFullWidth>
-                        <Span $alignContent="center" dangerouslySetInnerHTML={{ __html: `${profileLink}${sanitizedHtml}` }} />
+                        <Span $alignContent="center"><Linkify html={`${profileLink}${sanitizedHtml}`} onClick={props.onClose}/></Span>
                         <Div>
                             <Span $marginRight="10px" $fontSize="13px">{dateDiff(dateTime)}</Span>
                             {!commentsDisabled &&
