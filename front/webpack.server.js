@@ -13,7 +13,7 @@ console.log(`Building for ${isDevelopment ? 'development' : 'production'}... ${e
 module.exports = {
   name: "server",
   target: 'node',
-  mode: 'development',
+  mode: isDevelopment ? 'development' : 'production',
   entry: path.resolve(__dirname, "src/server/server.tsx"),
   externals: [nodeExternals()],
   
@@ -68,7 +68,7 @@ module.exports = {
   plugins: [   
     new Dotenv({
       path: `./${envFile}`
-    }),   
+    }) 
   ],
   stats: {
     colors: true,

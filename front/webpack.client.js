@@ -102,7 +102,7 @@ module.exports = {
     }),    
     new Dotenv({
       path: `./${envFile}`
-    }),
+    }), 
     isDevelopment && new ESLintPlugin(),
     isDevelopment && new webpack.HotModuleReplacementPlugin(),
     new CopyWebpackPlugin({

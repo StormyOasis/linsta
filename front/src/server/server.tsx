@@ -28,6 +28,15 @@ const renderHtml = (title: string, styles: any, html: any, preloadState: any):st
             <meta name="viewport" content="width=device-width, initial-scale=1">    
             <meta name="description" content="Linstagram - An instagram clone">    
             <title>${title}</title>
+            <script>
+                window.env = {
+                    REACT_APP_PORT: "${process.env.REACT_APP_PORT}",
+                    REACT_APP_HOST: "${process.env.REACT_APP_HOST}",
+                    REACT_APP_API_HOST: "${process.env.REACT_APP_API_HOST}",
+                    REACT_APP_METRICS_HOST: "${process.env.REACT_APP_METRICS_HOST}",
+                    REACT_APP_METRICS_PORT: "${process.env.REACT_APP_METRICS_PORT}"             
+                };
+            </script>
             <link rel="preconnect" href="https://linsta-public.s3.us-west-2.amazonaws.com">
             <link rel="preconnect" href="${API_HOST}">
             <link rel="stylesheet" href="/public/defaults.css">
