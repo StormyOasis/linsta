@@ -1,11 +1,6 @@
 version: 1.0
 runtime: nodejs22
 
-build:
-  commands:
-    - npm ci
-    - npm run build
-
 run:
   command: node dist/server.js
   network:
