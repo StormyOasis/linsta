@@ -6,7 +6,7 @@ import { withAPIKey } from "@aws/amazon-location-utilities-auth-helper";
 import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 
 import formidable from 'formidable';
-import config from 'config';
+import config from '../config';
 import logger from "../logger/logger";
 import Metrics from "../metrics/Metrics";
 import { readFileSync } from "fs";
@@ -23,7 +23,7 @@ export type SESTemplate = {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const getAWSClient = <T extends { new (...args: any[]): any }>(ClientConstructor: T, clientConfig: object): InstanceType<T> => {
-    const REGION: string = config.get("aws.region");
+    const REGION: string = config.aws.region;
     return new ClientConstructor({ region: REGION, ...clientConfig });
 };
 
@@ -68,10 +68,10 @@ export const sendSMS = async (phoneNumber: string, message: string):Promise<bool
 
 export const getLocationData = async (term: string) => {
     try {
-        const authHelper = await withAPIKey(config.get("aws.location.apiKey"));
+        const authHelper = await withAPIKey(config.aws.location.apiKey);
         const client = getAWSClient(LocationClient, authHelper.getLocationClientConfig());
         const input = {
-            IndexName: `${config.get("aws.location.index")}`,
+            IndexName: `${config.aws.location.index}`,
             Text: term
         }
 
@@ -95,7 +95,7 @@ export const uploadFile = async (file: formidable.File, entryId: string, userId:
 
         const s3Client = getAWSClient(S3Client, {});
         const key = `${userId}/${entryId}${fileExt}`;
-        const bucket = config.get("aws.s3.userMediaBucket") as string;
+        const bucket = config.aws.s3.userMediaBucket as string;
 
         const result = await s3Client.send(new PutObjectCommand({
             Bucket: bucket,
@@ -105,7 +105,7 @@ export const uploadFile = async (file: formidable.File, entryId: string, userId:
 
         return {
             tag: (result.ETag as string),
-            url: `https://${bucket}.s3.${config.get("aws.region")}.amazonaws.com/${key}`
+            url: `https://${bucket}.s3.${config.aws.region}.amazonaws.com/${key}`
         };
 
     } catch (err) {
@@ -122,7 +122,7 @@ export const removeFile = async (fileName: string):Promise<void> => {
     try {
         const s3FileName = new URL(fileName).pathname.substring(1);
         const s3Client = getAWSClient(S3Client, {});
-        const bucket = config.get("aws.s3.userMediaBucket") as string;
+        const bucket = config.aws.s3.userMediaBucket as string;
 
         await s3Client.send(new DeleteObjectCommand({
             Bucket: bucket,

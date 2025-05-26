@@ -7,7 +7,6 @@ import formidable from 'formidable';
 import path from "path";
 
 import * as fs from 'fs';
-import config from 'config';
 import { readFileSync } from "fs";
 
 import logger from '../../logger/logger';

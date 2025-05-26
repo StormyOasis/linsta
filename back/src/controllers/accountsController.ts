@@ -1,6 +1,6 @@
 import { Context } from "koa";
 import bcrypt from 'bcrypt';
-import config from 'config';
+import config from '../config';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import moment, { MomentInput } from "moment";
 import logger from "../logger/logger";
@@ -12,7 +12,6 @@ import { SEND_CONFIRM_TEMPLATE,
          sendEmailByTemplate, sendSMS } from "../Connectors/AWSConnector";
 import ESConnector from "../Connectors/ESConnector";
 import { handleValidationError } from "../utils/utils";
-import { getJWTSecret } from "../auth/Auth";
 
 export const getIsUnqiueUsername = async (ctx: Context) => {
     Metrics.increment("accounts.checkunique");
@@ -311,13 +310,13 @@ export const sendConfirmCode = async (ctx: Context) => {
 
     try {
         if (isEmailAddr) {
-            const replyToAddress:string = config.get("aws.ses.defaultReplyAddress");
+            const replyToAddress:string = config.aws.ses.defaultReplyAddress;
             await sendEmailByTemplate(SEND_CONFIRM_TEMPLATE, {
                 destination: { ToAddresses: [userData] },
                 source: replyToAddress,
                 template: SEND_CONFIRM_TEMPLATE,
                 templateData: {
-                    assetHostname: config.get("aws.ses.imageHostName"),
+                    assetHostname: config.aws.ses.imageHostName,
                     emailAddress: userData,
                     code: token
                 }
@@ -389,11 +388,11 @@ export const loginUser = async (ctx: Context) => {
             // create the JWT token
             const token = jwt.sign(
                 {id: dbData.id},
-                getJWTSecret() as string,
+                config.auth.jwt.secret as string,
                 {
                     algorithm: 'HS256',
                     allowInsecureKeySizes: true,
-                    expiresIn: config.get("auth.jwt.expiration")
+                    expiresIn: config.auth.jwt.expiration
                 } as SignOptions
             );
             ctx.status = 200;
@@ -517,7 +516,7 @@ const sendForgotMessage = async (ctx: Context, email: string, phone: string, use
 
         if (email.length > 0) {
             // Send forgot message as an email to user
-            const replyToAddress: string = config.get("aws.ses.defaultReplyAddress");
+            const replyToAddress: string = config.aws.ses.defaultReplyAddress;
 
             try {
                 const emailResponse = await sendEmailByTemplate(FORGOT_PASSWORD_TEMPLATE, {
@@ -525,8 +524,8 @@ const sendForgotMessage = async (ctx: Context, email: string, phone: string, use
                     source: replyToAddress,
                     template: FORGOT_PASSWORD_TEMPLATE,
                     templateData: {
-                        assetHostname: config.get("aws.ses.imageHostName"),
-                        hostname: config.get("frontHost"),
+                        assetHostname: config.aws.ses.imageHostName,
+                        hostname: config.frontHost,
                         emailAddress: email,
                         token: token,
                         username: userName,

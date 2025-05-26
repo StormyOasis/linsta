@@ -1,7 +1,7 @@
 import { Client } from '@elastic/elasticsearch';
 import logger from "../logger/logger";
 import Metrics from "../metrics/Metrics";
-import config from 'config';
+import config from '../config';
 import { Entry, User, Global, Post, Profile } from '../utils/types';
 import fs from 'fs';
 import { ClusterHealthResponse, DeleteResponse, IndicesStatsResponse } from '@elastic/elasticsearch/lib/api/types';
@@ -22,16 +22,16 @@ export default class ESConnector {
 
     private constructor() {
         this.client = new Client({
-            node: config.get("es.node"),
+            node: config.es.node,
             auth: {
-                apiKey: config.get("es.apiKey")
+                apiKey: config.es.apiKey
             },
             tls: {
                 ca: fs.readFileSync("/usr/share/es/certs/ca.crt"),
             }
         });
 
-        const timeout: number = config.get("es.metricsIntervalMs") as number;
+        const timeout: number = config.es.metricsIntervalMs as number;
 
         this.metricsInterval = setInterval(async (connector: ESConnector) => {
             if (connector === null || connector.getClient() === null) {
@@ -74,8 +74,8 @@ export default class ESConnector {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public buildHashtagQuery = (term: string, searchAfter?: any[]) => {
-        const index: string = config.get("es.mainIndex");
-        const size: number = config.get("es.defaultPaginationSize");
+        const index: string = config.es.mainIndex;
+        const size: number = config.es.defaultPaginationSize;
 
         return {
             index,
@@ -100,8 +100,8 @@ export default class ESConnector {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public buildSearchQuery = (isPost: boolean, isAuto: boolean, query: string, searchAfter?: any[]) => {
-        const index: string = isPost ? config.get("es.mainIndex") : config.get("es.profileIndex");
-        const size: number = config.get("es.defaultPaginationSize");
+        const index: string = isPost ? config.es.mainIndex : config.es.profileIndex;
+        const size: number = config.es.defaultPaginationSize;
 
         // Define post-related should queries (nested fields, etc.)
         const postShouldQueries = [
@@ -364,7 +364,7 @@ export default class ESConnector {
             };
         }
 
-        const size: number = config.get("es.defaultSuggestionResultSize");
+        const size: number = config.es.defaultSuggestionResultSize;
         const normalizedInput = input.trim().toLowerCase();
         const isHashtag: boolean = normalizedInput.startsWith('#');
         const cacheKey = `suggestions:${normalizedInput}:${size}`;
@@ -380,8 +380,8 @@ export default class ESConnector {
 
         // Execute suggest queries in parallel
         const [mainSuggest, profilesSuggest] = await Promise.all([
-            this.client?.search({ index: config.get("es.mainIndex"), _source: false, body: mainSuggestBody }),
-            this.client?.search({ index: config.get("es.profileIndex"), body: profileSuggestBody })
+            this.client?.search({ index: config.es.mainIndex, _source: false, body: mainSuggestBody }),
+            this.client?.search({ index: config.es.profileIndex, body: profileSuggestBody })
         ]);
 
         // Flatten and limit suggestions to global size
@@ -396,7 +396,7 @@ export default class ESConnector {
             // Query profiles index to fetch full Profile docs
             const profileQueryBody = this.buildProfileSearchQuery(uniqueNames, isHashtag, size);
             const profilesQuery = await this.client?.search({
-                index: config.get("es.profileIndex"),
+                index: config.es.profileIndex,
                 body: profileQueryBody
             });
 
@@ -422,10 +422,10 @@ export default class ESConnector {
     }
 
     public search = async (query: object, resultSize: number | null) => {
-        const size: number = resultSize ? resultSize : config.get("es.defaultResultSize");
+        const size: number = resultSize ? resultSize : config.es.defaultResultSize;
 
         const result = await this.client?.search({
-            index: config.get("es.mainIndex"),
+            index: config.es.mainIndex,
             query,
             size,
             sort: [
@@ -446,7 +446,7 @@ export default class ESConnector {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public searchWithPagination = async (query: any, dateTime:string|undefined, postId:string|undefined, resultSize?: number | null) => {
-        const size: number = resultSize ? resultSize : config.get("es.defaultPaginationSize");
+        const size: number = resultSize ? resultSize : config.es.defaultPaginationSize;
 
         // Data needed for pagination in ES
         if (dateTime != null && postId != null) {
@@ -454,7 +454,7 @@ export default class ESConnector {
         }
 
         const result = await this.client?.search({
-            index: config.get("es.mainIndex"),
+            index: config.es.mainIndex,
             body: query,
             size,
         }, { meta: true });
@@ -469,7 +469,7 @@ export default class ESConnector {
 
         try {
             const result = await this.client?.delete({
-                index: config.get("es.mainIndex"),
+                index: config.es.mainIndex,
                 id
             });
 
@@ -486,7 +486,7 @@ export default class ESConnector {
 
     public count = async (query: object) => {
         const result = await this.client?.count({
-            index: config.get("es.mainIndex"),
+            index: config.es.mainIndex,
             query,
         }, { meta: true });
 
@@ -494,10 +494,10 @@ export default class ESConnector {
     }
 
     public searchProfile = async (query: object, resultSize: number | null) => {
-        const size: number = resultSize ? resultSize : config.get("es.defaultResultSize");
+        const size: number = resultSize ? resultSize : config.es.defaultResultSize;
 
         const result = await this.client?.search({
-            index: config.get("es.profileIndex"),
+            index: config.es.profileIndex,
             query,
             size,
         }, { meta: true });
@@ -507,7 +507,7 @@ export default class ESConnector {
 
     public countProfile = async (query: object) => {
         const result = await this.client?.count({
-            index: config.get("es.profileIndex"),
+            index: config.es.profileIndex,
             query,
         }, { meta: true });
 
@@ -516,7 +516,7 @@ export default class ESConnector {
 
     public insert = async (dataSet: object) => {
         const result = await this.client?.index({
-            index: config.get("es.mainIndex"),
+            index: config.es.mainIndex,
             document: dataSet
         });
 
@@ -525,7 +525,7 @@ export default class ESConnector {
 
     public insertProfile = async (dataSet: object) => {
         const result = await this.client?.index({
-            index: config.get("es.profileIndex"),
+            index: config.es.profileIndex,
             document: dataSet
         });
 
@@ -534,7 +534,7 @@ export default class ESConnector {
 
     public update = async (id: string, script?: object, source?: boolean, body?: object) => {
         const result = await this.client?.update({
-            index: config.get("es.mainIndex"),
+            index: config.es.mainIndex,
             id,
             script,
             body,
@@ -545,7 +545,7 @@ export default class ESConnector {
 
     public updateProfile = async (id: string, script?: object, body?: object) => {
         const result = await this.client?.update({
-            index: config.get("es.profileIndex"),
+            index: config.es.profileIndex,
             id,
             script,
             body

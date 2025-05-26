@@ -1,5 +1,5 @@
 import gremlin from 'gremlin';
-import config from 'config';
+import config from '../config';
 import logger from '../logger/logger';
 
 export const EDGE_POST_TO_USER: string = "post_to_user";
@@ -77,10 +77,10 @@ export class DBConnector {
     public connect = async () => {
         logger.info("Creating DB connection...");
 
-        const host: string = config.get("database.host");
-        const port: number = config.get("database.port");
-        const user: string = config.get("database.user");
-        const password: string = config.get("database.password");
+        const host: string = config.database.host;
+        const port: number = config.database.port as number;
+        const user: string = config.database.user;
+        const password: string = config.database.password;
 
         const url = `ws://${host}:${port}/gremlin`;
 

@@ -1,5 +1,5 @@
 import { Context } from "koa";
-import config from 'config';
+import config from '../config';
 import formidable from 'formidable';
 import Metrics from "../metrics/Metrics";
 import logger from "../logger/logger";
@@ -466,7 +466,7 @@ export const getAllPostsByFollowing = async (ctx: Context) => {
             sort: buildPostSortClause()
         };
 
-        const resultSize:number = config.get<number>("es.defaultPaginationSize");
+        const resultSize:number = config.es.defaultPaginationSize;
         const results = await ESConnector.getInstance().searchWithPagination(query, data.dateTime, data.postId, resultSize);
         
         const hits = results?.body?.hits?.hits || [];
@@ -736,7 +736,7 @@ export const getPostsByUserId = async (ctx: Context) => {
 
         response.dateTime = sort[0];
         response.postId = sort[1];
-        response.done = hits.length < (config.get("es.defaultPaginationSize") as number); // End of pagination?
+        response.done = hits.length < (config.es.defaultPaginationSize as number); // End of pagination?
         // Add the posts to the response
         response.posts = Object.values(posts);
 

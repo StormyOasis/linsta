@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
-import config from 'config';
 import { Context } from 'koa';
+import config from '../config';
 
 export type JWTData = {
     id: string;
@@ -23,7 +23,7 @@ export const verifyJWT = async (ctx: Context, next: () => unknown) => {
     let result = null;
     await jwt.verify(
         token as string,
-        getJWTSecret(),
+        config.auth.jwt.secret,
         (err, decoded) => {
             const data = decoded as JWTData;
             if (err || decoded == null) {
@@ -45,8 +45,4 @@ export const verifyJWT = async (ctx: Context, next: () => unknown) => {
     ctx.body = { status: "OK" };
 
     await next();
-}
-
-export const getJWTSecret = ():string => {
-    return process.env.JWTSecret || config.get("auth.jwt.secret");
 }

@@ -3,7 +3,7 @@ import ESConnector, { buildDataSetForES, buildSearchResultSet } from '../ESConne
 
 import path from "path";
 import * as fs from 'fs';
-import config from 'config';
+import config from '../../config';
 import { readFileSync } from "fs";
 
 import logger from '../../logger/logger';
@@ -44,8 +44,8 @@ describe('ESConnector', () => {
             // Ensure that the mock Client constructor is called once when ESConnector is instantiated
             expect(Client).toHaveBeenCalledTimes(1); // Ensure the Client constructor was called exactly once
             expect(Client).toHaveBeenCalledWith({
-                node: config.get('es.node'),
-                auth: { apiKey: config.get('es.apiKey') },
+                node: config.es.node,
+                auth: { apiKey: config.es.apiKey },
                 tls: { ca: fs.readFileSync('/usr/share/es/certs/ca.crt') },
             });
         });
