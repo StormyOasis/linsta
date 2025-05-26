@@ -4,20 +4,14 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN apt-get -y update && apt-get -y install nginx
-
-RUN npm install
+RUN npm ci
 
 COPY . .
 
 RUN npm run build
 
-FROM nginx:alpine
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY nginx.conf /etc/nginx/nginx.conf
-COPY --from=build /app/build /usr/share/nginx/html
-
 EXPOSE 80
 
-CMD ["nginx", "-g", "daemon off;"]
+ENV PORT=80
 
+CMD ["npm", "run", "start"]
