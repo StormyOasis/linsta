@@ -103,8 +103,8 @@ module.exports = {
     new Dotenv({
       path: `./${envFile}`
     }),
-    new ESLintPlugin(),
-    new webpack.HotModuleReplacementPlugin(),
+    isDevelopment && new ESLintPlugin(),
+    isDevelopment && new webpack.HotModuleReplacementPlugin(),
     new CopyWebpackPlugin({
       patterns: [
         {
@@ -114,7 +114,7 @@ module.exports = {
         { from: "robots.txt", to: "robots.txt" },
       ],
     }),
-    isProduction &&
+    isDevelopment &&
     new BundleAnalyzerPlugin({
       analyzerMode: 'disabled',
       generateStatsFile: true,
