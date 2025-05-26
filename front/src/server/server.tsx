@@ -14,8 +14,7 @@ import { StaticRouter } from "react-router-dom/server";
 import App from "../Components/App";
 import { buildStore } from "../Components/Redux/redux";
 import { Provider } from "react-redux";
-
-export const PORT = process.env["PORT"] || 8080;
+import { API_HOST, PORT } from "../api/config";
 
 const router = new Router();
 const app = new Koa();
@@ -30,7 +29,7 @@ const renderHtml = (title: string, styles: any, html: any, preloadState: any):st
             <meta name="description" content="Linstagram - An instagram clone">    
             <title>${title}</title>
             <link rel="preconnect" href="https://linsta-public.s3.us-west-2.amazonaws.com">
-            <link rel="preconnect" href="http://localhost:3001">
+            <link rel="preconnect" href="${API_HOST}">
             <link rel="stylesheet" href="/public/defaults.css">
             <link rel="icon" href="/public/images/logo_small.png">
             ${styles}

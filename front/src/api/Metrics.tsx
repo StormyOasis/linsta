@@ -1,5 +1,7 @@
 //TODO: Client side metrics
 
+import { METRICS_HOST, METRICS_PORT } from "./config";
+
 export class Metrics {
     private static instance:Metrics | null = null;
     private metrics:any = null;
@@ -11,8 +13,8 @@ export class Metrics {
     public static getInstance() : Metrics {
         if(!Metrics.instance) {
             Metrics.instance = new Metrics({
-                host: "localhost",
-                port: 8125,                
+                host: METRICS_HOST,
+                port: METRICS_PORT,                
             });
         }
         return Metrics.instance;

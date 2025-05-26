@@ -5,8 +5,14 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const ESLintPlugin = require("eslint-webpack-plugin");
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const TerserPlugin = require('terser-webpack-plugin');
+const Dotenv = require('dotenv-webpack');
+
 const isDevelopment = process.env.NODE_ENV === "development";
 const isProduction = !isDevelopment;
+
+const envFile = isDevelopment ? '.env' : '.env.production';
+
+console.log(`Building for ${isDevelopment ? 'development' : 'production'}... ${envFile}`);
 
 module.exports = {
   name: "client",
@@ -91,6 +97,12 @@ module.exports = {
 
   },
   plugins: [
+    new webpack.ProvidePlugin({
+      process: 'process',
+    }),    
+    new Dotenv({
+      path: `./${envFile}`
+    }),
     new ESLintPlugin(),
     new webpack.HotModuleReplacementPlugin(),
     new CopyWebpackPlugin({

@@ -1,5 +1,14 @@
+const webpack = require("webpack");
 const path = require('path');
 const nodeExternals = require('webpack-node-externals');
+const Dotenv = require('dotenv-webpack');
+
+const isDevelopment = process.env.NODE_ENV === "development";
+const isProduction = !isDevelopment;
+
+const envFile = isDevelopment ? '.env' : '.env.production';
+
+console.log(`Building for ${isDevelopment ? 'development' : 'production'}... ${envFile}`);
 
 module.exports = {
   name: "server",
@@ -56,7 +65,11 @@ module.exports = {
       },       
     ],
   },
-  plugins: [],
+  plugins: [   
+    new Dotenv({
+      path: `./${envFile}`
+    }),   
+  ],
   stats: {
     colors: true,
     modules: false,
