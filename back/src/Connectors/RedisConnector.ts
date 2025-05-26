@@ -1,5 +1,5 @@
 import { createClient, RedisClientOptions } from "redis";
-import config from 'config';
+import config from '../config';
 import logger from "../logger/logger";
 import Metrics from "../metrics/Metrics";
 
@@ -41,7 +41,7 @@ export class RedisConnector {
     private metricsErrorCount: number = 0
 
     private constructor() {
-        const timeout: number = config.get("redis.metricsIntervalMs") as number;
+        const timeout: number = config.redis.metricsIntervalMs as number;
 
         this.metricsInterval = setInterval(async (connector: RedisConnector) => {
             if (connector === null) {
@@ -93,12 +93,12 @@ export class RedisConnector {
     public connect = async (): Promise<void> => {
         logger.info("Creating redis connection...");
 
-        const redisUserName = config.get("redis.userName");
-        const redisPassword = config.get("redis.password");
-        const redisHost = config.get("redis.host");
-        const redisPort = config.get("redis.port");
-        const maxRetries = config.get("redis.maxRetries") as number;
-        const connectTimeout = config.get("redis.connectTimeout") as number;
+        const redisUserName = config.redis.userName;
+        const redisPassword = config.redis.password;
+        const redisHost = config.redis.host;
+        const redisPort = config.redis.port;
+        const maxRetries = config.redis.maxRetries as number;
+        const connectTimeout = config.redis.connectTimeout as number;
 
         const options: RedisClientOptions = {
             url: `redis://${redisUserName}:${redisPassword}@${redisHost}:${redisPort}`,
@@ -160,7 +160,7 @@ export class RedisConnector {
         if (ttl != null) {
             options = { EX: ttl };
         } else {
-            options = { EX: config.get("redis.defaultTTL") }
+            options = { EX: config.redis.defaultTTL }
         }
 
         try {

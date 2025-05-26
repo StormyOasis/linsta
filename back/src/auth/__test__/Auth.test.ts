@@ -1,6 +1,6 @@
 import { verifyJWT } from '../Auth'
 import jwt from 'jsonwebtoken';
-import config from 'config';
+import config from '../../config';
 import { Context } from 'koa';
 
 // Mocking the modules
@@ -77,7 +77,7 @@ describe('verifyJWT middleware', () => {
         });
 
         // Mock config.get to return a secret
-        (config.get as jest.Mock).mockReturnValue('secretKey');
+        //(config.get as jest.Mock).mockReturnValue('secretKey');
 
         await verifyJWT(ctx, next);
 

@@ -1,6 +1,5 @@
 import RedisConnector from '../RedisConnector'; // Adjust the import path if needed
 import { createClient } from 'redis';
-import config from 'config';
 import logger from '../../logger/logger';
 import Metrics from '../../metrics/Metrics';
 

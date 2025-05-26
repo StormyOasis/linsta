@@ -1,11 +1,11 @@
 import { Context } from "koa";
-import config from 'config';
 import Metrics from "../metrics/Metrics";
 import { addCommentCountsToPosts, addLikesToPosts, addPfpsToPosts, buildPostSortClause, handleValidationError } from "../utils/utils";
 import ESConnector from "../Connectors/ESConnector";
 import { PostWithCommentCount } from "../utils/types";
 import logger from "../logger/logger";
 import { isHashtag } from "../utils/textUtils";
+import config from '../config';
 
 type GetAllPostsBySearchRequest = {
     postId?: string;
@@ -79,7 +79,7 @@ export const getPostSearch = async (ctx: Context) => {
         const term: string | null = data.q?.trim();
         const query = buildPostSearchQuery(term);
 
-        const resultSize = config.get<number>("es.defaultPaginationSize");
+        const resultSize = config.es.defaultPaginationSize;
         const results = await ESConnector.getInstance().searchWithPagination(query, data.dateTime, data.postId, resultSize);
 
         const response: GetAllPostsBySearchResponse = {

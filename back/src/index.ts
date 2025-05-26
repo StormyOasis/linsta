@@ -5,17 +5,11 @@ import { koaBody } from "koa-body";
 import koaJwt from 'koa-jwt';
 import compress from 'koa-compress';
 import zlib from "node:zlib";
-import dotenv from 'dotenv';
+import config from './config';
 import router from "./router";
 import Logger from "./logger/logger";
 import DBConnector from "./Connectors/DBConnector";
 import RedisConnector from "./Connectors/RedisConnector";
-import { getJWTSecret } from "./auth/Auth";
-
-dotenv.config();
-
-const PORT = process.env.PORT || 3001;
-const HOST = process.env.HOST || "http://localhost";
 
 // Constants for the API paths to exclude from JWT authentication
 const EXCLUDED_API_PATHS = [
@@ -31,7 +25,7 @@ const App = new Koa();
 
 App.use(json())
     .use(cors())
-    .use(koaJwt({ secret: getJWTSecret() }).unless({ path: EXCLUDED_API_PATHS }))
+    .use(koaJwt({ secret: config.auth.jwt.secret as string }).unless({ path: EXCLUDED_API_PATHS }))
     .use(compress({
         gzip: {
             flush: zlib.constants.Z_SYNC_FLUSH
@@ -59,8 +53,8 @@ App.use(json())
     .use(koaBody({ multipart: true }))
     .use(router.routes())
     .use(router.allowedMethods())
-    .listen(PORT, async () => {
-        Logger.info(`Server started and listening at ${HOST}:${PORT}/`);
+    .listen(config.port, async () => {
+        Logger.info(`Server started in ${process.env.NODE_ENV || 'development'} mode and listening at ${config.host}:${config.port}/`);
 
         try {
             await DBConnector.connect(); // Make sure DB is connected asynchronously
