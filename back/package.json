@@ -7,6 +7,7 @@
     "test": "NODE_ENV=test jest --coverage --config=jest.unit.config.js --detectOpenHandles",
     "test:integ": "NODE_ENV=integ jest --config=jest.integ.config.js",
     "start": "NODE_EXTRA_CA_CERTS='/usr/share/es/certs/ca.crt' tsc -p tsconfig.json && node build/index.js",
+    "start:prod": "NODE_ENV=production NODE_EXTRA_CA_CERTS='/usr/share/es/certs/ca.crt' tsc -p tsconfig.json && NODE_ENV=production node build/index.js",
     "clean": "rm -rf ./dist/* ./build/* ./package/* ./coverage/* ./app/* ./snapshots/*",
     "build": "tsc -p tsconfig.json --skipLibCheck",
     "lint": "eslint src/ --ext .js,.jsx,.ts,.tsx",
