@@ -1,13 +1,13 @@
 import { Context } from "koa";
 import formidable from 'formidable';
 import Metrics from "../metrics/Metrics";
-import { extractFromMultipleTexts, getFileExtByMimeType, getVertexPropertySafe, handleValidationError, sanitizeInput, updateProfileInRedis } from "../utils/utils";
+import {getProfile, getVertexPropertySafe, handleValidationError, isUserAuthorized, updateProfileInRedis } from "../utils/utils";
 import logger from "../logger/logger";
 import ESConnector from "../Connectors/ESConnector";
-import { getProfileByUserName, getProfileByUserId } from "../utils/utils";
 import { Profile, ProfileWithFollowStatus, ProfileWithFollowStatusInt } from "../utils/types";
 import DBConnector, { EDGE_USER_FOLLOWS, EDGE_USER_TO_POST } from "../Connectors/DBConnector";
 import { removeFile, uploadFile } from "../Connectors/AWSConnector";
+import { extractFromMultipleTexts, getFileExtByMimeType, sanitizeInput } from "../utils/textUtils";
 
 type UpdateProfileRequest = {
     bio?: string | null;
@@ -29,12 +29,10 @@ export const updateProfileByUserId = async (ctx: Context) => {
         return handleValidationError(ctx, "Invalid params passed");         
     }
 
-    const userIdFromJWT = ctx.state.user.id;
-  
     // Check if the logged-in user is trying to access their own data
-    if (userIdFromJWT != data.userId) {
+    if (!isUserAuthorized(ctx, data.userId)) {
         // 403 - Forbidden
-        return handleValidationError(ctx, "You do not have permission to access this data", 403);    
+        return handleValidationError(ctx, "You do not have permission to access this data", 403);
     }    
 
     try {
@@ -48,7 +46,7 @@ export const updateProfileByUserId = async (ctx: Context) => {
         const lastName:string = sanitizeInput(data.lastName);
 
         // Need to get the ES id of the profile
-        const profile: Profile|null = await getProfileByUserId(data.userId);
+        const profile: Profile|null = await getProfile(data.userId, null);
 
         if(profile === null) {
             return handleValidationError(ctx, "Invalid profile for user id");    
@@ -124,7 +122,7 @@ export const getPostProfileByUserId = async (ctx: Context) => {
     }
 
     try {
-        const profile: Profile|null = await getProfileByUserId(data.userId);
+        const profile: Profile|null = await getProfile(data.userId, null);
         if(profile === null) {
             return handleValidationError(ctx, "Invalid profile");
         }
@@ -152,7 +150,7 @@ export const getPostProfileByUserName = async (ctx: Context) => {
     }
 
     try {
-        const profile: Profile|null = await getProfileByUserName(data.userName);
+        const profile: Profile|null = await getProfile(null, data.userName);
         if(profile === null) {
             return handleValidationError(ctx, "Invalid profile");
         }
@@ -249,16 +247,14 @@ export const putProfilePfp = async(ctx: Context) => {
         return handleValidationError(ctx, "Invalid params passed");   
     }
         
-    const userIdFromJWT = ctx.state.user.id;
-  
     // Check if the logged-in user is trying to access their own data
-    if (userIdFromJWT != data.userId) {
+    if (!isUserAuthorized(ctx, data.userId)) {
         // 403 - Forbidden
-        return handleValidationError(ctx, "You do not have permission to access this data", 403);  
-    }        
+        return handleValidationError(ctx, "You do not have permission to access this data", 403);
+    }         
 
     try {
-        const profile:Profile|null = await getProfileByUserId(data.userId);
+        const profile:Profile|null = await getProfile(data.userId, null);
 
         if(profile === null) {
             return handleValidationError(ctx, "Invalid profile");  

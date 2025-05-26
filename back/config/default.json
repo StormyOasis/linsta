@@ -1,5 +1,5 @@
 {   
-    "frontHost": "http://localhost:8080",
+    "frontHost": "http://linsta.lboydstun.com",
 
     "auth": {
         "jwt": {

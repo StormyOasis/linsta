@@ -13,7 +13,7 @@ import CreateSVG from "/public/images/create.svg";
 import MainSVG from "/public/images/main.svg";
 
 import { Div, Flex, FlexColumn, FlexColumnFullWidth, FlexRowFullWidth } from "../../../Components/Common/CombinedStyling";
-import { useAppDispatch, useAppSelector, actions } from "../../../Components/Redux/redux";
+import { useAppDispatch, useAppSelector, actions, RootState } from "../../../Components/Redux/redux";
 import { MODAL_TYPES } from "../../../Components/Redux/slices/modals.slice";
 import { Profile } from "../../../api/types";
 import { AuthUser } from "../../../api/Auth";
@@ -108,8 +108,8 @@ const SideBar: React.FC = () => {
     const matchesLargestBP = useMediaQuery({ minWidth: 1280 });
     const matchesSmallestBP = useMediaQuery({ maxWidth: 767 });
 
-    const authUser: AuthUser = useAppSelector((state: any) => state.auth.user);
-    const profile: Profile = useAppSelector((state: any) => state.profile.profile);
+    const authUser: AuthUser = useAppSelector((state: RootState) => state.auth.user);
+    const profile: Profile = useAppSelector((state: RootState) => state.profile.profile);
 
     const dispatch = useAppDispatch();
 
@@ -151,28 +151,25 @@ const SideBar: React.FC = () => {
 
     const throttledGetSuggestions = useThrottle(async (searchText: string) => {
         setIsLoading(true);
-
+        
         const results = await getSuggestions(searchText);
-        if (!results) {
-            setIsLoading(false);
+        
+        setIsLoading(false);
+        
+        if (!results) {        
             return;
         }
 
         const mergedSuggestions: string[] = [
             ...results.data.postSuggestions,
             ...results.data.profileSuggestions,
-        ];
-
-        mergedSuggestions.sort();
-
-        setIsLoading(false);
+        ].sort();
+        
         setProfiles(results.data.uniqueProfiles);
         setSuggestions([...new Set(mergedSuggestions)].slice(0, 5));
     }, 250);    
 
-    const handleSearchClicked = useCallback(() => {
-        setIsSearchExpanded(prev => !prev);
-    }, []);
+    const toggleSearchPanel = () => setIsSearchExpanded(prev => !prev);
 
     const createPostHandler = () => {
         // Open the create dialog by setting the state in redux
@@ -194,8 +191,10 @@ const SideBar: React.FC = () => {
         );
     }
 
-    const handleSearchItemClicked = useCallback((item: string | Profile) => {
+    const handleSearchSelect = useCallback((item: string | Profile) => {
         setRecentSearches(storeSearchQueries(item));
+        setIsSearchExpanded(false);
+        setSearchText("");
     }, []);
 
     const handleRecentClearAllClicked = useCallback(() => {
@@ -211,13 +210,13 @@ const SideBar: React.FC = () => {
         <>
             <LoadingImage isLoading={isLoading} />
             {!isLoading && suggestions.map((s, i) => (
-                <SearchResultItem key={`suggestion-${i}`} item={s} onClick={() => {handleSearchItemClicked(s); setIsSearchExpanded(prev => !prev);}} />
+                <SearchResultItem key={`suggestion-${i}`} item={s} onClick={() => handleSearchSelect(s)} />
             ))}
             {!isLoading && profiles.map((p) => (
-                <SearchResultItem key={`profile-${p.userName}`} item={p} onClick={() => {handleSearchItemClicked(p); setIsSearchExpanded(prev => !prev);}} />
+                <SearchResultItem key={`profile-${p.userName}`} item={p} onClick={() => handleSearchSelect(p)} />
             ))}
         </>
-    ), [isLoading, suggestions, profiles, handleSearchItemClicked]);        
+    ), [isLoading, suggestions, profiles, handleSearchSelect]);        
 
     const renderRecents = useCallback(() => {
         return (
@@ -231,14 +230,14 @@ const SideBar: React.FC = () => {
                         <SearchResultItem
                             key={`recent-${typeof item === 'string' ? item : item.userName}`}
                             item={item}
-                            onClick={() => {handleSearchItemClicked(item); setIsSearchExpanded(prev => !prev);}}
+                            onClick={() => handleSearchSelect(item)}
                             onRemove={() => handleRemoveRecentClicked(item)}
                         />
                     ))}
                 </FlexColumnFullWidth>
             </>            
         );
-    }, [recentSearches, handleRecentClearAllClicked, handleSearchItemClicked, handleRemoveRecentClicked]);
+    }, [recentSearches, handleRecentClearAllClicked, handleSearchSelect, handleRemoveRecentClicked]);
 
     const profileUrl = (!historyUtils.isServer && authUser) ? authUser.userName : undefined;
     if (historyUtils.isServer) {
@@ -257,7 +256,7 @@ const SideBar: React.FC = () => {
                 }
                 <NavWrapper>
                     {renderMenuItem("Home", "/", <HomeSVG />, undefined, null)}
-                    {!matchesSmallestBP && renderMenuItem("Search", null, <SearchSVG />, undefined, handleSearchClicked)}
+                    {!matchesSmallestBP && renderMenuItem("Search", null, <SearchSVG />, undefined, toggleSearchPanel)}
                     {renderMenuItem("Explore", "/explore", <ExploreSVG />, undefined, null)}
                     {/*renderMenuItem("Reels", "/reels", <ReelsSVG />, undefined, null)*/}
                     {/*renderMenuItem("Messages", "/messages", <MessagesSVG />, undefined, null)*/}
@@ -285,8 +284,7 @@ const SideBar: React.FC = () => {
                 </Div>
                 <ResultsContainer>
                     <FlexColumnFullWidth>
-                        {searchText.length === 0 && renderRecents()}
-                        {searchText.length > 0 && renderResults()}
+                        {searchText.length === 0 ? renderRecents() : renderResults()}
                     </FlexColumnFullWidth>
                 </ResultsContainer>
             </SearchPanel>

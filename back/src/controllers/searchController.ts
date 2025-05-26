@@ -1,11 +1,11 @@
 import { Context } from "koa";
 import config from 'config';
 import Metrics from "../metrics/Metrics";
-import { getPfpByUserId, handleValidationError, isHashtag } from "../utils/utils";
+import { addCommentCountsToPosts, addLikesToPosts, addPfpsToPosts, buildPostSortClause, handleValidationError } from "../utils/utils";
 import ESConnector from "../Connectors/ESConnector";
-import { Like, PostWithCommentCount } from "../utils/types";
+import { PostWithCommentCount } from "../utils/types";
 import logger from "../logger/logger";
-import DBConnector, { EDGE_POST_TO_COMMENT, EDGE_USER_LIKED_POST } from "../Connectors/DBConnector";
+import { isHashtag } from "../utils/textUtils";
 
 type GetAllPostsBySearchRequest = {
     postId?: string;
@@ -20,23 +20,6 @@ type GetAllPostsBySearchResponse = {
     done: boolean;
     q: string;
 };
-
-const buildPostSortClause = () => [
-    {
-        "global.dateTime": {
-            order: "asc",
-            nested: { path: "global" },
-            mode: "min"
-        }
-    },
-    {
-        "media.postId": {
-            order: "asc",
-            nested: { path: "media" },
-            mode: "min"
-        }
-    }
-];
 
 const buildPostSearchQuery = (term: string | null): Record<string, unknown> => {
     if (!term || term.length === 0) {
@@ -96,13 +79,8 @@ export const getPostSearch = async (ctx: Context) => {
         const term: string | null = data.q?.trim();
         const query = buildPostSearchQuery(term);
 
-        // Data needed for pagination in ES
-        if (data.dateTime != null && data.postId != null) {
-            query.search_after = [data.dateTime, data.postId];
-        }
-
         const resultSize = config.get<number>("es.defaultPaginationSize");
-        const results = await ESConnector.getInstance().searchWithPagination(query, resultSize);
+        const results = await ESConnector.getInstance().searchWithPagination(query, data.dateTime, data.postId, resultSize);
 
         const response: GetAllPostsBySearchResponse = {
             posts: [],
@@ -124,86 +102,25 @@ export const getPostSearch = async (ctx: Context) => {
         const postIds: string[] = [];
 
         for (const hit of hits) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const entry = hit._source as any;
+            const entry = hit._source as PostWithCommentCount;
             const postId = entry.media[0].postId;
-            posts[postId] = entry;
-            posts[postId].postId = postId;
-            posts[postId].user.pfp = await getPfpByUserId(posts[postId].user.userId);
+            posts[postId] = {...entry, postId};
 
             postIds.push(postId);
         }
+
+        await Promise.all([
+            addPfpsToPosts(posts),
+            addCommentCountsToPosts(posts, postIds),
+            addLikesToPosts(posts, postIds)
+        ]);
 
         // Get the pagination data
         const sort = hits[hits.length - 1].sort || [];
 
         response.dateTime = sort[0];
         response.postId = sort[1];
-        response.done = hits.length < resultSize; // End of pagination
-
-        // Now update the posts' return values by adding all the likes and just the comment counts
-
-        // Get the per post comment counts first
-        const __ = DBConnector.__();
-        const commentResults = await DBConnector.getGraph().V(postIds)
-            .project("postId", "commentCount")
-            .by(__.id())
-            .by(__.outE(EDGE_POST_TO_COMMENT).count())
-            .toList();
-
-        for (const result of commentResults) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const postMap: Map<string, any> = result as Map<string, any>;
-            const commentCount = postMap.get?.("commentCount");
-            const postId = postMap.get?.("postId");
-            posts[postId].commentCount = commentCount;
-        }
-
-        // Get all posts' likes
-        const likeResults = await DBConnector.getGraph().V(postIds)
-            .filter(__.inE(EDGE_USER_LIKED_POST).count().is(DBConnector.P().gt(0)))
-            .project("postId", "users")
-            .by(__.id())
-            .by(__.inE(EDGE_USER_LIKED_POST)
-                .outV()
-                .project('profileId', 'userName', 'pfp', 'firstName', 'lastName', 'id')
-                .by("profileId")
-                .by("userName")
-                .by("pfp")
-                .by("firstName")
-                .by("lastName")
-                .by(__.id())
-                .fold()
-            ).toList();
-
-        for (const result of likeResults) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const postMap: Map<string, any> = result as Map<string, any>;
-            const postId = postMap.get("postId");
-            const users = postMap.get("users");
-
-            // Make sure that the postId found in DB matches one
-            // from the above ES query. They could be out of sync due to pagination
-            if (posts[postId] == null) {
-                continue;
-            }
-
-            const post: PostWithCommentCount = (posts[postId] as PostWithCommentCount);
-            post.global.likes = post.global.likes || [];
-
-            for (const user of users) {
-                const newLike: Like = {
-                    userName: user.get("userName"),
-                    userId: user.get("id"),
-                    profileId: user.get("profileId"),
-                    firstName: user.get("firstName"),
-                    lastName: user.get("lastName"),
-                    pfp: user.get("pfp")
-                };
-                post.global.likes.push(newLike);
-            }
-        }
-
+        response.done = hits.length < resultSize; // End of pagination?
         // Add the posts to the response
         response.posts = Object.values(posts);
 

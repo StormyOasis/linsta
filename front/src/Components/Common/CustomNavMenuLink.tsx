@@ -69,7 +69,7 @@ const CustomNavMenuLink: React.FC<CustomNavMenuLinkProps> = React.memo((props: C
     }
 
     return (
-        <DivLink onClick={props.onClick} aria-label={props.text}>
+        <DivLink onClick={props.onClick} aria-description={props.text}>
             {LinkContents}
         </DivLink>
     );

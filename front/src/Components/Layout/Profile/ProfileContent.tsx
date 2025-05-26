@@ -1,8 +1,8 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { useNavigate, useParams } from "react-router-dom";
 import { ContentWrapper, Div, Flex, FlexColumn, FlexRow, FlexRowFullWidth, Main, Section, Span } from "../../../Components/Common/CombinedStyling";
-import { useAppDispatch, actions, useAppSelector } from "../../../Components/Redux/redux";
+import { useAppDispatch, actions, useAppSelector, RootState } from "../../../Components/Redux/redux";
 import { Post, PostPaginationResponse, PostWithCommentCount, Profile } from "../../../api/types";
 import { postGetPostByPostId, postGetPostsByUserId, postGetProfileByUserName, postGetProfileStatsById, postGetSingleFollowStatus, ServiceResponse } from "../../../api/ServiceController";
 import { followUser, getPfpFromProfile, isVideoFileFromPath } from "../../../utils/utils";
@@ -171,13 +171,13 @@ type ProfileStats = {
 };
 
 const ProfileContent: React.FC = () => {
-    const authUser: AuthUser = useAppSelector((state: any) => state.auth.user);
-    const authUserProfileState: Profile = useAppSelector((state: any) => state.profile.profile);
-    const profileNonce: string = useAppSelector((state: any) => state.profile.nonce);
-    const commentModalState = useAppSelector((state: any) => state.modal.openModalStack?.find((modal: ModalState) => modal.modalName === MODAL_TYPES.COMMENT_MODAL));
-    const deletedCommentId: string | null = useAppSelector((state: any) => state.misc.deletedCommentId);
-    const deletedPostId: string | null = useAppSelector((state: any) => state.misc.deletedPostId);
-    const updatedPost: PostWithCommentCount | null = useAppSelector((state: any) => state.misc.updatedPost);
+    const authUser: AuthUser = useAppSelector((state: RootState) => state.auth.user);
+    const authUserProfileState: Profile = useAppSelector((state: RootState) => state.profile.profile);
+    const profileNonce: string = useAppSelector((state: RootState) => state.profile.nonce);
+    const commentModalState = useAppSelector((state: RootState) => state.modal.openModalStack?.find((modal: ModalState) => modal.modalName === MODAL_TYPES.COMMENT_MODAL));
+    const deletedCommentId: string | null = useAppSelector((state: RootState) => state.misc.deletedCommentId);
+    const deletedPostId: string | null = useAppSelector((state: RootState) => state.misc.deletedPostId);
+    const updatedPost: PostWithCommentCount | null = useAppSelector((state: RootState) => state.misc.updatedPost);
     const [profile, setProfile] = useState<Profile | null>(null);
     const [profileStats, setProfileStats] = useState<ProfileStats | null>(null);
     const [paginationResult, setPaginationResult] = useState<PostPaginationResponse | null>(null);

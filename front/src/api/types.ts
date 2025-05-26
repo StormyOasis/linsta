@@ -90,7 +90,3 @@ export interface PostPaginationResponse extends PaginationResponse {
     postId: string;    
     posts: PostWithCommentCount[];
 }
-
-export interface ProfilePaginationResponse extends PaginationResponse {
-
-}

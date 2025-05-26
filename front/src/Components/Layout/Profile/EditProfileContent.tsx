@@ -359,8 +359,14 @@ const EditProfileContent: React.FC = () => {
                             </Div>
                             <ProfilePfpContainer>
                                 <Div>
-                                    <ProfileLink pfpWidth="64px" showPfp={true} showUserName={true} showFullName={true}
-                                        pfp={profile.pfp} userName={profile.userName}
+                                    <ProfileLink 
+                                        pfpWidth="64px" 
+                                        showPfp={true} 
+                                        showUserName={true} 
+                                        showFullName={true}
+                                        showLocation={false}
+                                        pfp={profile.pfp} 
+                                        userName={profile.userName}
                                         fullName={`${profile.firstName} ${profile.lastName}`}
                                         url={`${HOST}/${profile.userName}`} />
                                 </Div>

@@ -3,12 +3,13 @@ import config from 'config';
 import formidable from 'formidable';
 import Metrics from "../metrics/Metrics";
 import logger from "../logger/logger";
-import { extractFromMultipleTexts, getFileExtByMimeType, getFollowingUserIds, getLikesByPost, getPfpByUserId, getPostByPostId, handleValidationError, sanitize, sanitizeInput } from "../utils/utils";
+import { addCommentCountsToPosts, addLikesToPosts, addPfpsToPosts, buildPostSortClause, getFollowingUserIds, getLikesByPost, getPostByPostId, handleValidationError, isUserAuthorized } from "../utils/utils";
 import { uploadFile } from "../Connectors/AWSConnector";
 import ESConnector, { buildDataSetForES } from '../Connectors/ESConnector';
-import { User, Global, Entry, Post, PostWithCommentCount, Like } from "../utils/types";
+import { User, Global, Entry, Post, PostWithCommentCount } from "../utils/types";
 import RedisConnector from "../Connectors/RedisConnector";
 import DBConnector, { EDGE_COMMENT_TO_POST, EDGE_POST_LIKED_BY_USER, EDGE_POST_TO_COMMENT, EDGE_POST_TO_USER, EDGE_USER_LIKED_POST, EDGE_USER_TO_POST } from "../Connectors/DBConnector";
+import { getFileExtByMimeType, sanitize, sanitizeInput } from "../utils/textUtils";
 
 export const addPost = async (ctx: Context) => {
     Metrics.increment("posts.addPost");
@@ -24,9 +25,7 @@ export const addPost = async (ctx: Context) => {
     const global: Global = JSON.parse(data.global);
     const entries: Entry[] = JSON.parse(data.entries);
 
-    const userIdFromJWT = ctx.state.user.id;
-    // Check if the logged-in user is trying to access their own data
-    if (userIdFromJWT != user.userId) {
+    if (!isUserAuthorized(ctx, user.userId)) {
         // 403 - Forbidden
         return handleValidationError(ctx, "You do not have permission to access this data", 403);
     }
@@ -176,12 +175,10 @@ export const deletePost = async (ctx: Context) => {
             return handleValidationError(ctx, "Error deleting post");
         }
 
-        const userIdFromJWT = ctx.state.user.id;
-        // Check if the logged-in user is trying to access their own data
-        if (userIdFromJWT != userId) {
+        if (!isUserAuthorized(ctx, userId)) {
             // 403 - Forbidden
             return handleValidationError(ctx, "You do not have permission to access this data", 403);
-        }
+        }        
 
         // Step 2: Get all vertex IDs to delete (post + comments)
         const vertexIdsToDelete = await DBConnector.getGraph()
@@ -289,12 +286,11 @@ export const updatePost = async (ctx: Context) => {
             return handleValidationError(ctx, "Error updating post");
         }
 
-        const userIdFromJWT = ctx.state.user.id;
         // Check if the logged-in user is trying to access their own data
-        if (userIdFromJWT != userId) {
+        if (!isUserAuthorized(ctx, userId)) {
             // 403 - Forbidden
             return handleValidationError(ctx, "You do not have permission to access this data", 403);
-        }
+        }        
 
         // Step 2, update the post in ES with the supplied fields
 
@@ -414,7 +410,6 @@ export const updatePost = async (ctx: Context) => {
         ctx.status = 200;
         ctx.body = post;
     } catch (err) {
-        console.log(err);
         logger.error(err)
         return handleValidationError(ctx, "Error updating posts");
     }
@@ -438,21 +433,26 @@ export const getAllPostsByFollowing = async (ctx: Context) => {
 
     const data = <GetAllPostsByFollowingRequest>ctx.request.body;
 
+    if (!data.userId) {
+        return handleValidationError(ctx, "Invalid params passed");
+    }
+
     try {
-        if (data.userId == null) {
-            return handleValidationError(ctx, "Invalid params passed");
-        }
+        const response: GetAllPostsByFollowingResponse = {
+            posts: [],
+            dateTime: "",
+            postId: "",
+            done: true
+        };
 
         const followingIds: string[] = await getFollowingUserIds(data.userId);
-
         if (followingIds.length === 0) {
             ctx.status = 200;
-            ctx.body = [];
+            ctx.body = response;
             return;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const query: any = {
+        const query: Record<string, unknown> = {
             query: {
                 nested: {
                   path: "user",
@@ -462,130 +462,49 @@ export const getAllPostsByFollowing = async (ctx: Context) => {
                     }
                   }
                 }
-              },            
-            sort: [
-                {
-                    "global.dateTime": {
-                        "order": "asc",
-                        "nested": {
-                            "path": "global"
-                        },
-                        "mode": "min"
-                    }
-                },
-                {
-                    "media.postId": {
-                      "order": "asc",
-                      "nested": {
-                        "path": "media"
-                      },
-                      "mode": "min"
-                    }
-                }             
-            ]
-        }
-
-        if (data.dateTime != null && data.postId != null) {
-            query.search_after = [data.dateTime, data.postId];
-        }
-
-        const response: GetAllPostsByFollowingResponse = {
-            posts: [],
-            dateTime: "",
-            postId: "",
-            done: true
+            },
+            sort: buildPostSortClause()
         };
 
-        const resultSize:number = config.get("es.defaultPaginationSize");
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const results: any = await ESConnector.getInstance().searchWithPagination(query, resultSize);
-
-        if (results?.body?.hits?.hits?.length === 0) {
+        const resultSize:number = config.get<number>("es.defaultPaginationSize");
+        const results = await ESConnector.getInstance().searchWithPagination(query, data.dateTime, data.postId, resultSize);
+        
+        const hits = results?.body?.hits?.hits || [];
+        if (hits.length === 0) {
             ctx.status = 200;
             ctx.body = response;
             return;
         }        
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const posts: any = {};
+        
+        const posts: Record<string, PostWithCommentCount> = {};
         const postIds: string[] = [];
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const hits: any = results.body.hits.hits;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any            
-        hits.map(async (entry: any) => {
-            // Use this postId to avoid having to do a esId to postId DB query
-            const postId = entry._source.media[0].postId;
-            posts[postId] = entry._source;
-            posts[postId].postId = postId;
-            posts[postId].user.pfp = await getPfpByUserId(posts[postId].user.userId);
+        for (const hit of hits) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const entry = hit._source as any;
+            const postId = entry.media[0].postId;
+            posts[postId] = {...entry, postId};
 
             postIds.push(postId);
-        });
-
-        response.dateTime = hits[hits.length - 1].sort[0];
-        response.postId = hits[hits.length - 1].sort[1];
-        response.done = hits.length < resultSize;      
-
-
-        // Now update the posts' return values by adding all the likes and just the comment counts
-
-        // Get all posts' likes
-        const __ = DBConnector.__();
-        const dbResults = await DBConnector.getGraph().V(postIds)
-            .filter(__.inE(EDGE_USER_LIKED_POST).count().is(DBConnector.P().gt(0)))
-            .project("postId", "users")
-            .by(__.id())
-            .by(__.inE(EDGE_USER_LIKED_POST)
-                .outV()
-                .project('profileId', 'userName', 'pfp', 'firstName', 'lastName', 'id')
-                .by("profileId")
-                .by("userName")
-                .by("pfp")
-                .by("firstName")
-                .by("lastName")
-                .by(__.id())
-                .fold()
-            ).toList();
-
-        if (dbResults != null && dbResults.length > 0) {
-            for (const result of dbResults) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const postMap: Map<any, any> = (result as Map<any, any>);
-                const postId = postMap.get("postId");
-                const users = postMap.get("users");
-
-                // Make sure that the postId found in DB matches one
-                // from the above ES query. They could be out of sync due to pagination
-                if (posts[postId] == null) {
-                    continue;
-                }
-
-                const post: Post = (posts[postId] as Post);
-                if (post.global.likes == null) {
-                    post.global.likes = [];
-                }
-
-                for (const user of users) {
-                    const newLike: Like = {
-                        userName: user.get("userName"),
-                        userId: user.get("id"),
-                        profileId: user.get("profileId"),
-                        firstName: user.get("firstName"),
-                        lastName: user.get("lastName"),
-                        pfp: user.get("pfp")
-                    };
-                    post.global.likes.push(newLike);
-                }
-            }
         }
 
-        // Add the posts to the response
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        response.posts = Object.values(posts).map((entry: any) => entry);
+        await Promise.all([
+            addPfpsToPosts(posts),
+            addCommentCountsToPosts(posts, postIds),
+            addLikesToPosts(posts, postIds)
+        ]);
 
-        ctx.body = response;
+        // Get the pagination data
+        const sort = hits[hits.length - 1].sort || [];
+
+        response.dateTime = sort[0];
+        response.postId = sort[1];
+        response.done = hits.length < resultSize; // End of pagination?
+        // Add the posts to the response
+        response.posts = Object.values(posts);
+
         ctx.status = 200;
+        ctx.body = response;        
 
     } catch (err) {
         console.log(err);
@@ -626,10 +545,10 @@ type LikeRequest = {
 export const toggleLikePost = async (ctx: Context) => {
     Metrics.increment("posts.toggleLike");
 
-    const data = <LikeRequest>ctx.request.body;
+    const { postId, userId } = ctx.request.body as LikeRequest;
 
-    if (data.postId == null || data.userId == null) {
-        return handleValidationError(ctx, "Invalid params passed");
+    if (!postId || !userId) {
+        return handleValidationError(ctx, "Missing postId or userId");
     }
 
     let isLiked: boolean | undefined = false;
@@ -640,30 +559,31 @@ export const toggleLikePost = async (ctx: Context) => {
         await DBConnector.beginTransaction();
 
         // Check the graph to see if the user likes the post
-        isLiked = await DBConnector.getGraph(true).V(data.userId)
+        isLiked = await DBConnector.getGraph(true).V(userId)
             .out(EDGE_USER_LIKED_POST)
-            .hasId(data.postId)
+            .hasId(postId)
             .hasNext();
 
         if (isLiked) {
             // User currently likes this post which means we need to unlike
             // Drop both the edges            
-            await DBConnector.getGraph(true).V(data.postId)
-                .outE(EDGE_POST_LIKED_BY_USER)
-                .filter(__.inV().hasId(data.userId))
-                .drop()
-                .next();
-
-            await DBConnector.getGraph(true).V(data.userId)
-                .outE(EDGE_USER_LIKED_POST)
-                .filter(__.inV().hasId(data.postId))
-                .drop()
-                .next();
+            await Promise.all([
+                DBConnector.getGraph(true).V(postId)
+                    .outE(EDGE_POST_LIKED_BY_USER)
+                    .filter(__.inV().hasId(userId))
+                    .drop()
+                    .iterate(),
+                DBConnector.getGraph(true).V(userId)
+                    .outE(EDGE_USER_LIKED_POST)
+                    .filter(__.inV().hasId(postId))
+                    .drop()
+                    .iterate()
+            ]);
         } else {
             // Need to like the post by adding the edges
-            const result = await DBConnector.getGraph(true).V(data.postId)
+            const result = await DBConnector.getGraph(true).V(postId)
                 .as("post")
-                .V(data.userId)
+                .V(userId)
                 .as("user")
                 .addE(EDGE_POST_LIKED_BY_USER)
                 .from_("post")
@@ -673,7 +593,7 @@ export const toggleLikePost = async (ctx: Context) => {
                 .to("post")
                 .next();
 
-            if (result == null || result.value == null) {
+            if (!result?.value) {
                 return handleValidationError(ctx, "Error toggling like state");
             }
         }
@@ -683,8 +603,7 @@ export const toggleLikePost = async (ctx: Context) => {
         ctx.body = { liked: !isLiked };
         ctx.status = 200;
     } catch (err) {
-        console.log(err);
-        logger.error(err);
+        logger.error("Failed to toggle like", { userId, postId, err });
         await DBConnector.rollbackTransaction();
         return handleValidationError(ctx, "Error toggling like state");
     }
@@ -764,8 +683,7 @@ export const getPostsByUserId = async (ctx: Context) => {
 
     try {
         // Return a paginated list of the user's posts
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const query: any = {
+        const query: Record<string, unknown> = {
             query: {
                 nested: {
                     path: "media",
@@ -776,31 +694,10 @@ export const getPostsByUserId = async (ctx: Context) => {
                     }
                 }
             },
-            sort: [
-                {
-                    "global.dateTime": {
-                        "order": "asc",
-                        "nested": {
-                            "path": "global"
-                        }
-                    }
-                },
-                {
-                    "media.postId": {
-                        "order": "asc",
-                        "nested": {
-                            "path": "media"
-                        }
-                    }
-                },
-            ]
+            sort: buildPostSortClause()
         };
 
-        if (data.dateTime != null && data.postId != null) {
-            query.search_after = [data.dateTime, data.postId];
-        }
-
-        const results = await ESConnector.getInstance().searchWithPagination(query);
+        const results = await ESConnector.getInstance().searchWithPagination(query, data.dateTime, data.postId);
 
         const response: GetPostsByUserIdResponse = {
             posts: [],
@@ -809,116 +706,43 @@ export const getPostsByUserId = async (ctx: Context) => {
             done: true
         };
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const posts: any = {};
-        const postIds: string[] = [];
-        if (results && results.body.hits.hits.length > 0) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const hits: any = results.body.hits.hits;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any            
-            hits.map((entry: any) => {
-                // Use this postId to avoid having to do a esId to postId DB query
-                const postId = entry._source.media[0].postId;
-                posts[postId] = entry._source;
-                posts[postId].postId = postId;
+        const hits = results?.body?.hits?.hits || [];
 
-                postIds.push(postId);
-            });
-
-            response.dateTime = hits[hits.length - 1].sort[0];
-            response.postId = hits[hits.length - 1].sort[1];
-            response.done = false;
-        }
-
-        if (response.done) {
-            // No more results to return, so return here
+        if (hits.length === 0) {
             ctx.status = 200;
             ctx.body = response;
             return;
         }
 
-        // Now update the posts' return values by adding all the likes and just the comment counts
+        const posts: Record<string, PostWithCommentCount> = {};
+        const postIds: string[] = [];
 
-        // Get all posts' likes
-        const __ = DBConnector.__();
-        let dbResults = await DBConnector.getGraph().V(postIds)
-            .filter(__.inE(EDGE_USER_LIKED_POST).count().is(DBConnector.P().gt(0)))
-            .project("postId", "users")
-            .by(__.id())
-            .by(__.inE(EDGE_USER_LIKED_POST)
-                .outV()
-                .project('profileId', 'userName', 'pfp', 'firstName', 'lastName', 'id')
-                .by("profileId")
-                .by("userName")
-                .by("pfp")
-                .by("firstName")
-                .by("lastName")
-                .by(__.id())
-                .fold()
-            ).toList();
+        for (const hit of hits) {
+            const entry = hit._source as PostWithCommentCount;
+            const postId = entry.media[0].postId;
+            posts[postId] = {...entry, postId};
 
-        // Get the post likes 
-        if (dbResults != null && dbResults.length > 0) {
-            // At least one of the given post ids has a like
-            for (const result of dbResults) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const postMap: Map<any, any> = (result as Map<any, any>);
-                const postId = postMap.get("postId");
-                const users = postMap.get("users");
-
-                // Make sure that the postId found in DB matches one
-                // from the above ES query. They could be out of sync due to pagination
-                if (posts[postId] == null) {
-                    continue;
-                }
-
-                const post: PostWithCommentCount = (posts[postId] as PostWithCommentCount);
-                if (post.global.likes == null) {
-                    post.global.likes = [];
-                }
-
-                for (const user of users) {
-                    const newLike: Like = {
-                        userName: user.get("userName"),
-                        userId: user.get("id"),
-                        profileId: user.get("profileId"),
-                        firstName: user.get("firstName"),
-                        lastName: user.get("lastName"),
-                        pfp: user.get("pfp")
-                    };
-                    post.global.likes.push(newLike);
-                }
-            }
+            postIds.push(postId);
         }
+        
+        await Promise.all([
+            addPfpsToPosts(posts),
+            addCommentCountsToPosts(posts, postIds),
+            addLikesToPosts(posts, postIds)
+        ]);        
+        
+        // Get the pagination data
+        const sort = hits[hits.length - 1].sort || [];
 
-        // Get the per post comment counts
-        dbResults = await DBConnector.getGraph().V(postIds)
-            .project("postId", "commentCount")
-            .by(__.id())
-            .by(__.outE(EDGE_POST_TO_COMMENT).count())
-            .toList();
-
-        if (dbResults != null && dbResults.length > 0) {
-            // At least one of the given post ids has a like
-            for (const result of dbResults) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const postMap: Map<any, any> = (result as Map<any, any>);
-                const postId = postMap.get("postId");
-                const commentCount = postMap.get("commentCount");
-
-                const post: PostWithCommentCount = (posts[postId] as PostWithCommentCount);
-                post.commentCount = commentCount;
-            }
-        }
-
+        response.dateTime = sort[0];
+        response.postId = sort[1];
+        response.done = hits.length < (config.get("es.defaultPaginationSize") as number); // End of pagination?
         // Add the posts to the response
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        response.posts = Object.values(posts).map((entry: any) => entry);
+        response.posts = Object.values(posts);
 
         ctx.body = response;
         ctx.status = 200;
     } catch (err) {
-        console.log(err);
         logger.error(err);
         return handleValidationError(ctx, "Error getting posts");
     }

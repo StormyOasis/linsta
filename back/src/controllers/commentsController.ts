@@ -1,6 +1,6 @@
 import { Context } from "koa";
 import Metrics from "../metrics/Metrics";
-import { getPostByPostId, getVertexPropertySafe, handleValidationError, sanitize } from "../utils/utils";
+import { getPostByPostId, getVertexPropertySafe, handleValidationError, isUserAuthorized } from "../utils/utils";
 import { Comment, Like, Post, User } from "../utils/types";
 import logger from "../logger/logger";
 import DBConnector, {
@@ -8,6 +8,7 @@ import DBConnector, {
     EDGE_COMMENT_TO_POST, EDGE_COMMENT_TO_USER, EDGE_PARENT_TO_CHILD_COMMENT,
     EDGE_POST_TO_COMMENT, EDGE_USER_LIKED_COMMENT, EDGE_USER_TO_COMMENT
 } from "../Connectors/DBConnector";
+import { sanitize } from "../utils/textUtils";
 
 type AddCommentRequest = {
     text: string;
@@ -126,8 +127,7 @@ export const addComment = async (ctx: Context) => {
         ctx.body = { id: commentId };
     } catch (err) {
         await DBConnector.rollbackTransaction();
-        console.log(err);
-        logger.error(err);
+        logger.error("Error adding comment", err);
         return handleValidationError(ctx, "Error adding comment");
     }
 }
@@ -151,12 +151,11 @@ export const deleteComment = async (ctx: Context) => {
             return handleValidationError(ctx, "Error deleting comment(s)");
         }
         
-        const userIdFromJWT = ctx.state.user.id;    
         // Check if the logged-in user is trying to access their own data
-        if (userIdFromJWT != commentUserResult.value.id) {
+        if (!isUserAuthorized(ctx, commentUserResult.value.id)) {
             // 403 - Forbidden
-            return handleValidationError(ctx, "You do not have permission to access this data", 403);    
-        }     
+            return handleValidationError(ctx, "You do not have permission to access this data", 403);
+        }          
 
         // We want to remove the comment from the graph but also want to recursivly
         // delete any child comments
@@ -417,7 +416,7 @@ export const toggleCommentLike = async (ctx: Context) => {
         ctx.body = { liked: !isLiked };
         ctx.status = 200;
     } catch (err) {
-        console.log(err);
+        logger.error(err);
         return handleValidationError(ctx, "Error changing like status");
     }
 }

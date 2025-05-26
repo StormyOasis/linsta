@@ -1,25 +1,16 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { EmojiClickData } from "emoji-picker-react";
 import styled from "styled-components";
-import * as styles from './Main.module.css';
 import { getPosts, postAddComment, postToggleLike } from "../../../api/ServiceController";
 import { Post, PostPaginationResponse } from "../../../api/types";
-import MediaSlider from "../../../Components/Common/MediaSlider";
 
-import MessageSVG from "/public/images/message.svg";
-import ShareSVG from "/public/images/send.svg";
 import { AuthUser } from "../../../api/Auth";
-import { isOverflowed, getSanitizedText, isPostLiked, getPfpFromPost, togglePostLikedState } from "../../../utils/utils";
-import { ContentWrapper, Div, Flex, FlexColumn, FlexColumnFullWidth, FlexRow, FlexRowFullWidth, LightLink, Main, Section, Span } from "../../../Components/Common/CombinedStyling";
-import EmojiPickerPopup from "../../../Components/Common/EmojiPickerPopup";
-import StyledLink from "../../../Components/Common/StyledLink";
-import { HOST } from "../../../api/config";
-import ProfileLink from "../../../Components/Common/ProfileLink";
-import { LikeToggler, ViewLikesText } from "../../../Components/Common/Likes";
-import { useAppDispatch, useAppSelector, actions } from "../../../Components/Redux/redux";
+import { togglePostLikedState } from "../../../utils/utils";
+import { ContentWrapper, FlexColumn, FlexRowFullWidth, Main, Section } from "../../../Components/Common/CombinedStyling";
+import { useAppDispatch, useAppSelector, actions, RootState } from "../../../Components/Redux/redux";
 import { MODAL_TYPES, ModalState } from "../../../Components/Redux/slices/modals.slice";
 import useInfiniteScroll from "../../../utils/useInfiniteScroll";
-import Linkify from "../../../Components/Common/Linkify";
+import PostItem from "./PostItem";
 
 const FeedContainer = styled(FlexColumn)`
     max-width: 700px;
@@ -27,45 +18,6 @@ const FeedContainer = styled(FlexColumn)`
     overflow: visible;
     align-items: center;
     position: relative;
-`;
-
-const PostContainer = styled(FlexColumnFullWidth)`
-    min-width: min(${props => props.theme["sizes"].feedPostMinWidth}, 100%);
-    padding-bottom: 10px;
-    margin-bottom: 20px;
-    border-bottom: 1px solid ${props => props.theme["colors"].borderDefaultColor};
-`;
-
-const ActionContainer = styled(Div) <{ $isLiked?: boolean }>`
-    width: 28px;
-    height: 28px;
-    margin-left: auto;
-    cursor: pointer;
-    color: ${props => props.$isLiked ? "red" : "black"};
-
-    &:hover {
-        color: ${props => props.theme["colors"].borderDarkColor};
-    }
-`;
-
-const CaptionContainer = styled(Div) <{ $isExpanded?: boolean }>`
-    width: min(470px, 100vw);
-    overflow: hidden;
-    ${props => !props.$isExpanded && `${styles.lineClamp2}`}
-`;
-
-const CommentTextArea = styled.textarea`
-    height: 18px;
-    max-height: 80px;
-    resize: none;
-    display: flex;
-    flex-grow: 1;
-    max-width: 100%;
-    width: 100%;
-    border: none;
-    outline: none;
-    overflow: hidden;
-    color: ${props => props.theme["colors"].defaultTextColor};
 `;
 
 interface CommentTextType {
@@ -82,11 +34,11 @@ const MainContent: React.FC = () => {
     const [paginationResult, setPaginationResult] = useState<PostPaginationResponse>();
     const [posts, setPosts] = useState<Post[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    
-    const childRef = useRef<HTMLDivElement | null>(null);    
+
+    const childRef = useRef<HTMLDivElement | null>(null);
     const useEffectStrictModeCheckRef = useRef<boolean>(false); //For Dev only, can be removed
-    const authUser: AuthUser = useAppSelector((state: any) => state.auth.user);
-    const commentModalState = useAppSelector((state: any) => state.modal.openModalStack?.find((modal: ModalState) => modal.modalName === MODAL_TYPES.COMMENT_MODAL));
+    const authUser: AuthUser = useAppSelector((state: RootState) => state.auth.user);
+    const commentModalState = useAppSelector((state: RootState) => state.modal.openModalStack?.find((modal: ModalState) => modal.modalName === MODAL_TYPES.COMMENT_MODAL));
 
     const dispatch = useAppDispatch();
 
@@ -121,7 +73,7 @@ const MainContent: React.FC = () => {
 
         setIsLoading(true);
 
-        const result = await getPosts({ dateTime: paginationResult?.dateTime, postId: paginationResult?.postId, userId: authUser?.id });        
+        const result = await getPosts({ dateTime: paginationResult?.dateTime, postId: paginationResult?.postId, userId: authUser?.id });
         if (result.data != null && result.data.length !== 0) {
             const response: PostPaginationResponse = result.data;
             setPaginationResult(response);
@@ -146,6 +98,7 @@ const MainContent: React.FC = () => {
                 for (const post of newPosts) {
                     if (post.postId === postId) {
                         togglePostLikedState(userName, userId, post);
+                        break;
                     }
                 }
                 setPosts(newPosts);
@@ -155,7 +108,7 @@ const MainContent: React.FC = () => {
         }
     }
 
-    const handleSubmitComment = async (text: string, post: Post):Promise<void> => {
+    const handleSubmitComment = async (text: string, post: Post): Promise<void> => {
         const data = {
             text,
             postId: `${post.postId}`,
@@ -183,12 +136,6 @@ const MainContent: React.FC = () => {
         setCommentText((prevState) => ({ ...prevState, [postId]: newText }));
     }, [commentText]);
 
-    const handleKeyDown = useCallback(async (e: React.KeyboardEvent<HTMLTextAreaElement>, post: Post) => {
-        if (e.key === "Enter") {
-            e.preventDefault();
-            await handleSubmitComment(commentText[`${post.postId}`], post);
-        }
-    }, [commentText, handleSubmitComment]);
 
     const openCommentModal = (post: Post) => {
         // Open the comment dialog by setting the state in redux        
@@ -204,74 +151,6 @@ const MainContent: React.FC = () => {
         setCommentText((prevState) => { return { ...prevState, [postId]: value }; });
     }, []);
 
-    const renderCommentsSection = useCallback((post: Post) => {
-        const [sanitizedHtml, sanitizedText] = getSanitizedText(post.global.captionText);
-        const overflowed: boolean = isOverflowed(`postid_${post.postId}`);
-        const isExpanded: boolean = viewShowMoreStates[post.postId];
-
-        return (
-            <>
-                {sanitizedText?.length > 0 &&
-                    <>
-                        <CaptionContainer $isExpanded={isExpanded}>
-                            <Div id={`postid_${post.postId}`}>
-                                <Span>
-                                    <ProfileLink
-                                        showLocation={false}
-                                        location={post.global.locationText}                                    
-                                        showFullName={false}
-                                        showUserName={true}
-                                        showPfp={false}
-                                        url={`${HOST}/${post.user.userName}`}
-                                        userName={post.user.userName} />
-                                    <Span><Linkify html={sanitizedHtml} /></Span>
-                                </Span>
-                            </Div>
-                        </CaptionContainer>
-                        {(overflowed && !isExpanded) &&
-                            <LightLink onClick={() => toggleCaptionViewMoreState(post.postId)}>More</LightLink>}
-                    </>}
-                {post.global.commentCount > 0 &&
-                    <Div $marginBottom="4px" $marginTop="4px">
-                        <LightLink onClick={() => openCommentModal(post)}>View all {post.global.commentCount} comments</LightLink>
-                    </Div>
-                }
-                {!post.global?.commentsDisabled &&
-                    <Div>
-                        <FlexRow>
-                            <CommentTextArea
-                                value={commentText[`${post.postId}`]}
-                                placeholder="Add a new comment..."
-                                aria-label="Add a new comment..."
-                                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleCommentChange(post.postId, e.target.value)}
-                                onInput={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-                                    const element = e.currentTarget;
-                                    element.style.height = "";
-                                    element.style.height = element.scrollHeight + "px";
-                                }}
-                                onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => handleKeyDown(e, post)}
-                            />
-                            <Flex $marginTop="auto" $marginBottom="auto">
-                                {(commentText[`${post.postId}`] && commentText[`${post.postId}`].length > 0) &&
-                                    <Div $paddingLeft="5px" $paddingRight="5px">
-                                        <StyledLink onClick={async () => {
-                                            await handleSubmitComment(commentText[`${post.postId}`], post)
-                                        }}>
-                                            Post
-                                        </StyledLink>
-                                    </Div>
-                                }
-                                <EmojiPickerPopup
-                                    noPadding={true}
-                                    onEmojiClick={(emoji) => handleEmojiClick(emoji, post.postId)} />
-                            </Flex>
-                        </FlexRow>
-                    </Div>
-                }
-            </>
-        );
-    }, [viewShowMoreStates, commentText]);
-
     return (
         <>
             <ContentWrapper ref={childRef} $overflow="auto" $maxHeight="100vh">
@@ -279,72 +158,22 @@ const MainContent: React.FC = () => {
                     <Main role="main">
                         <FlexRowFullWidth $justifyContent="center">
                             <FeedContainer>
-                                {posts.map((post, index) => {
-                                    const isLiked = isPostLiked(authUser.userName, post);
-                                    const pfp = getPfpFromPost(post);
-                                    return (
-                                        <article key={`${post.media[0].id}-${index}`}>
-                                            <PostContainer>
-                                                <Div $paddingBottom="10px">
-                                                    <ProfileLink
-                                                        pfp={pfp}
-                                                        showUserName={true}
-                                                        showPfp={true}
-                                                        showFullName={false}
-                                                        showLocation={true}
-                                                        location={post.global.locationText}
-                                                        userName={post.user.userName}
-                                                        url={`${HOST}/${post.user.userName}`} />
-                                                </Div>
-                                                <FlexColumn $justifyContent="center" $overflow="hidden" $position="relative" $width="min(470px, 100vw)">
-                                                    <MediaSlider media={post.media} />
-                                                </FlexColumn>
-                                                <Div $position="relative">
-                                                    <FlexColumn $height="100%" $position="relative">
-                                                        <FlexRow $marginTop="5px" $marginBottom="5px">
-                                                            <Span>
-                                                                <Div $cursor="pointer">
-                                                                    <Flex $paddingRight="8px">
-                                                                        <LikeToggler
-                                                                            aria-label="Toogle post like"
-                                                                            isLiked={isLiked}
-                                                                            handleClick={async () => await toggleLike(post.postId, authUser.userName, authUser.id)} />
-                                                                    </Flex>
-                                                                </Div>
-                                                            </Span>
-                                                            <Span>
-                                                                <Div $cursor="pointer">
-                                                                    <Flex $paddingRight="8px">
-                                                                        <ActionContainer>
-                                                                            <MessageSVG aria-label="Comment" onClick={() => openCommentModal(post)} />
-                                                                        </ActionContainer>
-                                                                    </Flex>
-                                                                </Div>
-                                                            </Span>
-                                                            <Span>
-                                                                <Div $cursor="pointer">
-                                                                    <Flex $paddingRight="8px">
-                                                                        <ActionContainer>
-                                                                            <ShareSVG aria-label="Share" />
-                                                                        </ActionContainer>
-                                                                    </Flex>
-                                                                </Div>
-                                                            </Span>
-                                                        </FlexRow>
-                                                        <Div>
-                                                            <Div $marginTop="5px" $marginBottom="5px">
-                                                                <ViewLikesText post={post} authUserId={authUser?.id} handleClick={() => openLikesModal(post)}></ViewLikesText>
-                                                            </Div>
-                                                        </Div>
-                                                        <Div>
-                                                            {renderCommentsSection(post)}
-                                                        </Div>
-                                                    </FlexColumn>
-                                                </Div>
-                                            </PostContainer>
-                                        </article>
-                                    );
-                                })}
+                                {posts.map((post, index) => (
+                                    <PostItem
+                                        key={`${post.media[0].id}-${index}`}
+                                        post={post}
+                                        authUser={authUser}
+                                        commentText={commentText[post.postId] || ""}
+                                        isExpanded={viewShowMoreStates[post.postId] || false}
+                                        onExpand={() => toggleCaptionViewMoreState(post.postId)}
+                                        onCommentChange={(value) => handleCommentChange(post.postId, value)}
+                                        onSubmitComment={async () => await handleSubmitComment(commentText[post.postId], post)}
+                                        onEmojiClick={(emoji) => handleEmojiClick(emoji, post.postId)}
+                                        onOpenCommentModal={() => openCommentModal(post)}
+                                        onOpenLikesModal={() => openLikesModal(post)}
+                                        onToggleLike={async () => await toggleLike(post.postId, authUser.userName, authUser.id)}
+                                    />
+                                ))}
                             </FeedContainer>
                         </FlexRowFullWidth>
                     </Main>

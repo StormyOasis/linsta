@@ -6,11 +6,13 @@ import moment, { MomentInput } from "moment";
 import logger from "../logger/logger";
 import Metrics from "../metrics/Metrics";
 import DBConnector, { EDGE_TOKEN_TO_USER, EDGE_USER_FOLLOWS, EDGE_USER_TO_TOKEN } from "../Connectors/DBConnector";
-import { handleValidationError, isEmail, isPhone, isValidPassword, obfuscateEmail, obfuscatePhone, stripNonNumericCharacters } from "../utils/utils";
+import { isEmail, isPhone, isValidPassword, obfuscateEmail, obfuscatePhone, stripNonNumericCharacters } from "../utils/textUtils";
 import { SEND_CONFIRM_TEMPLATE, 
          FORGOT_PASSWORD_TEMPLATE, 
          sendEmailByTemplate, sendSMS } from "../Connectors/AWSConnector";
 import ESConnector from "../Connectors/ESConnector";
+import { handleValidationError } from "../utils/utils";
+import { getJWTSecret } from "../auth/Auth";
 
 export const getIsUnqiueUsername = async (ctx: Context) => {
     Metrics.increment("accounts.checkunique");
@@ -387,7 +389,7 @@ export const loginUser = async (ctx: Context) => {
             // create the JWT token
             const token = jwt.sign(
                 {id: dbData.id},
-                config.get("auth.jwt.secret") as string,
+                getJWTSecret() as string,
                 {
                     algorithm: 'HS256',
                     allowInsecureKeySizes: true,

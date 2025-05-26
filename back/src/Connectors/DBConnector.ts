@@ -18,6 +18,11 @@ export const EDGE_USER_TO_COMMENT: string = "user_to_comment";
 export const EDGE_USER_TO_TOKEN: string = "user_to_token";
 export const EDGE_TOKEN_TO_USER: string = "token_to_user";
 
+type TraverserWrapper = {
+    object?: unknown;
+    value?: unknown;
+} & Record<string, unknown>;
+
 export class DBConnector {
     private static instance: DBConnector | null = null;
 
@@ -171,6 +176,62 @@ export class DBConnector {
             await this.connect();
         }
     }
+
+    public parseGraphResult = <T extends Record<string, unknown>>(
+        input: Map<string, unknown> | Record<string, unknown>, fields: (keyof T)[]): T => {
+        
+        const result = {} as T;
+
+        for (const field of fields) {
+            const key = field as string;
+    
+            const value = input instanceof Map
+                ? input.get(key)
+                : (input as Record<string, unknown>)[key];
+    
+            result[field] = value as T[typeof field];
+        }
+    
+        return result;
+    }    
+    
+    public extractMapFromResult = (result: unknown): Map<string, unknown> => {
+        if (result instanceof Map) {
+            return result;
+        }
+    
+        // Gremlin driver may wrap in `object` or `value` fields
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const maybeMap = (result as any)?.object ?? (result as any)?.value ?? result;
+    
+        if (maybeMap instanceof Map) {
+            return maybeMap;
+        }
+    
+        throw new Error("Unexpected result format: not a Map");
+    }    
+    
+    public unwrapResult = (result: unknown): Map<string, unknown> | Record<string, unknown> => {
+        if (result instanceof Map) {
+            return result;
+        }
+    
+        if (typeof result === "object" && result !== null) {
+            const wrapper = result as TraverserWrapper;    
+            if (wrapper.object instanceof Map) {
+                return wrapper.object;
+            }
+
+            if (wrapper.value instanceof Map) {
+                return wrapper.value;
+            }
+
+            // Amazon Neptune often returns a plain object directly
+            return wrapper;
+        }
+    
+        throw new Error("Unexpected result format");
+    }    
 }
 
 export default DBConnector.getInstance();

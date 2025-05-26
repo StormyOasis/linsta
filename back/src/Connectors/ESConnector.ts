@@ -5,7 +5,7 @@ import config from 'config';
 import { Entry, User, Global, Post, Profile } from '../utils/types';
 import fs from 'fs';
 import { ClusterHealthResponse, DeleteResponse, IndicesStatsResponse } from '@elastic/elasticsearch/lib/api/types';
-import { extractFromMultipleTexts, extractTextSuggestionsFlat } from '../utils/utils';
+import { extractFromMultipleTexts, extractTextSuggestionsFlat } from '../utils/textUtils';
 import RedisConnector from './RedisConnector';
 
 type SuggestionResponse = {
@@ -444,8 +444,14 @@ export default class ESConnector {
         return result;
     }
 
-    public searchWithPagination = async (query: object, resultSize?: number | null) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public searchWithPagination = async (query: any, dateTime:string|undefined, postId:string|undefined, resultSize?: number | null) => {
         const size: number = resultSize ? resultSize : config.get("es.defaultPaginationSize");
+
+        // Data needed for pagination in ES
+        if (dateTime != null && postId != null) {
+            query.search_after = [dateTime, postId];
+        }
 
         const result = await this.client?.search({
             index: config.get("es.mainIndex"),

@@ -1,10 +1,10 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { renderToString } from "react-dom/server";
 import styled from "styled-components";
 
 import MultiStepModal from "../../../../Common/MultiStepModal";
 import { PostWithCommentCount, Profile } from "../../../../../api/types";
-import { BoldLink, Div, Flex, FlexColumn, FlexColumnFullWidth, FlexRow, FlexRowFullWidth, Link, Span } from "../../../../Common/CombinedStyling";
+import { BoldLink, Div, Flex, FlexColumn, FlexColumnFullWidth, FlexRow, FlexRowFullWidth, Span } from "../../../../Common/CombinedStyling";
 import MediaSlider from "../../../../Common/MediaSlider";
 import { DEFAULT_PFP, HOST } from "../../../../../api/config";
 import ProfileLink from "../../../../Common/ProfileLink";
@@ -417,7 +417,8 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
     }
 
     const sliderWidth = document.body.clientWidth >= 470 ? 470 : document.body.clientWidth;
-    const isLiked = isPostLiked(authUser.userName, props.post);
+    const isLiked = useMemo(() => isPostLiked(authUser.userName, props.post), [authUser.userName, props.post]);
+
     
     return (
         <>

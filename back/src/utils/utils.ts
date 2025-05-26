@@ -1,97 +1,12 @@
-import sanitizeHtml from 'sanitize-html';
-import { Like, Post, PostWithCommentCount, Profile } from './types';
+import { Like, PostWithCommentCount, Profile } from './types';
 import ESConnector, { buildSearchResultSet } from '../Connectors/ESConnector';
 import RedisConnector from '../Connectors/RedisConnector';
 import DBConnector, { EDGE_USER_FOLLOWS, EDGE_USER_LIKED_POST, EDGE_POST_TO_COMMENT } from '../Connectors/DBConnector';
 import logger from '../logger/logger';
 import { Context } from 'koa';
-import config from 'config';
 
-export const stripNonNumericCharacters = (str: string): string => {
-    return str.replace(/\D/g, '');
-}
-
-export const isEmail = (str: string): boolean => {
-    const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
-    return emailRegex.test(str);
-}
-
-export const isPhone = (str: string): boolean => {
-    const phone = stripNonNumericCharacters(str);
-    const phoneRegex = /^\d{7,15}$/;
-    return phoneRegex.test(phone);
-}
-
-export const isValidPassword = (str: string): boolean => {
-    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@.#$!%*?&^])[A-Za-z\d@.#$!%*?&]{8,15}$/;
-
-    return regex.test(str);
-}
-
-export const obfuscateEmail = (email: string | null): string => {
-    if (email == null) {
-        return "";
-    }
-
-    const indexOfAt = email.indexOf("@");
-    const starCount = indexOfAt - 2;
-    return `${email.at(0)}${"*".repeat(starCount)}${email.at(indexOfAt - 1)}@${email.substring(indexOfAt + 1)}`;
-}
-
-export const obfuscatePhone = (phone: string | null): string => {
-    if (phone == null) {
-        return "";
-    }
-
-    return `${phone.slice(0, 2)}${"*".repeat(phone.length - 4)}${phone.slice(-2)}`;
-}
-
-export const sanitize = (html: string): string => {
-    return sanitizeHtml(html, {
-        allowedTags: ['b', 'i', 'em', 'strong', 'a', 'br', 'sub', 'sup'],
-        allowedAttributes: {
-            'a': ['href']
-        },
-    }).trim();
-}
-
-export const sanitizeInput = (input?: string | null): string => sanitize(input || "");
-
-export const getFileExtByMimeType = (mimeType: string | null): string => {
-    switch (mimeType) {
-        case "image/jpeg": {
-            return ".jpg";
-        }
-        case "image/png": {
-            return ".png";
-        }
-        case "video/mp4": {
-            return ".mp4";
-        }
-        default: {
-            throw new Error("Unknown mime type");
-        }
-    }
-}
-
-export const getPostIdFromEsId = async (esId: string): Promise<string | null> => {
-    // Get a list of all users that like the given post id
-    const result = await DBConnector.getGraph().V()
-        .hasLabel("Post")
-        .has("esId", esId)
-        .project("id")
-        .by(DBConnector.__().id())
-        .next();
-
-    if (result == null) {
-        throw new Error("Error getting post likes");
-    }
-
-    if (result.value === null) {
-        return null;
-    }
-
-    return result.value.get("id");
+export const isUserAuthorized = (ctx: Context, userId: string): boolean => {
+    return ctx.state.user?.id === userId;
 }
 
 export const getLikesByPost = async (postId: string | null): Promise<Like[]> => {
@@ -99,10 +14,8 @@ export const getLikesByPost = async (postId: string | null): Promise<Like[]> => 
         return [];
     }
 
-    const output: Like[] = [];
-
     // Get a list of all users that like the given post id
-    const result = await DBConnector.getGraph().V(postId)
+    const results = await DBConnector.getGraph().V(postId)
         .inE(EDGE_USER_LIKED_POST)
         .outV()
         .project("userId", "userName", "profileId")
@@ -111,159 +24,125 @@ export const getLikesByPost = async (postId: string | null): Promise<Like[]> => 
         .by("profileId")
         .toList();
 
-    if (result == null) {
+    if (results == null) {
         throw new Error("Error getting post likes");
     }
 
-    for (const vertex of result) {
-        // Store the returned vertex info to return to user
-        // There HAS to be a less hacky feeling way to do this but I'm not sure
-        const props = [];
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const propertyIter = (vertex as Map<any, any>).entries();
-        let property = propertyIter.next();
-
-        while (!property.done) {
-            props.push(property.value[1]);
-            property = propertyIter.next();
-        }
-
-        output.push({
-            userId: props[0],
-            userName: props[1],
-            profileId: props[2]
-        })
-    }
-
-    return output;
+    return results.map(result => {
+        const data = DBConnector.unwrapResult(result);
+        return DBConnector.parseGraphResult<Like>(data, ["userId", "userName", "profileId"]);
+    });
 }
 
 export const getPostByPostId = async (postId: string): Promise<| { esId: string; post: PostWithCommentCount } | null> => {
-    let esId: string = "";
+    if (!postId?.trim()) {
+        return null;
+    }
 
     // Try to pull the postId to ES id mapping from Redis
-    const postIdToESIdMapping: string | null = await RedisConnector.get(postId);
-    if (!postIdToESIdMapping) {
+    let esId: string | null = await RedisConnector.get(postId);
+    if (!esId) {
         // If mapping not found in Redis then pull from the graph and set in redis
-        const result = await DBConnector.getGraph().V(postId).project("esId").by("esId").toList();
+        const results = await DBConnector.getGraph().V(postId).project("esId").by("esId").toList();
 
-        if (result == null) {
+        if (!results || results.length === 0) {
             throw new Error("Error getting post");
         }
 
         // Store the returned vertex info to return to user
-        // There HAS to be a less hacky feeling way to do this but I'm not sure            
-        for (const vertex of result) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const propertyIter = (vertex as Map<any, any>).entries();
-            let property = propertyIter.next();
+        const vertex = DBConnector.unwrapResult(results[0]);
+        const parsed = DBConnector.parseGraphResult<{ esId: string }>(vertex, ["esId"]);
 
-            while (!property.done) {
-                esId = (property.value[1]);
-                property = propertyIter.next();
-            }
+        esId = parsed.esId;
+
+        if (!esId?.trim()) {
+            throw new Error("Invalid post id");
         }
-    } else {
-        esId = postIdToESIdMapping;
-    }
 
-    if (esId == null || esId.length === 0) {
-        throw new Error("Invalid post id");
+        // Add to / update to Redis
+        await RedisConnector.set(postId, esId);        
     }
-
-    // Add to / update to Redis
-    await RedisConnector.set(postId, esId);
 
     // esId should now contain the ES id for the given postId
     // Now attempt to pull the full Post object from Redis
-
-    const data = await RedisConnector.get(esId);
-    let entries: PostWithCommentCount[] = [];
-
-    if (data) {
-        entries[0] = JSON.parse(data);
+    let post: PostWithCommentCount | null = null;
+    const cachedData = await RedisConnector.get(esId);
+    if (cachedData) {
+        post = JSON.parse(cachedData);
     } else {
-        // Pull Post data from ES
+        // Pull from Elasticsearch if not cached
+        const esResults = await ESConnector.getInstance().search(
+            {
+                bool: {
+                    must: [{ match: { _id: esId } }],
+                },
+            },
+            1
+        );
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const results: any = await ESConnector.getInstance().search({
-            bool: {
-                must: [{
-                    match: { _id: esId }
-                }]
-            }
-        }, 1);
-
-        entries = buildSearchResultSet(results.body.hits.hits) as PostWithCommentCount[];
-        if (entries.length === 0) {
+        const hits = esResults?.body?.hits?.hits;
+        if (!hits || hits.length === 0) {
             throw new Error("Invalid post");
         }
+        
+        const entries = buildSearchResultSet(hits) as PostWithCommentCount[];
+        post = entries[0];
     }
 
-    // Get the per post comment counts
+    if (!post) {
+        throw new Error("Post not found");
+    }
+
+    // Update post with comment count from graph
     const __ = DBConnector.__();
-    const dbResults = await DBConnector.getGraph().V(postId)
-        .project("postId", "commentCount")
-        .by(__.id())
+    const commentResults = await DBConnector.getGraph()
+        .V(postId)
+        .project("commentCount")
         .by(__.outE(EDGE_POST_TO_COMMENT).count())
         .toList();
 
-    if (dbResults != null && dbResults.length > 0) {
-        for (const result of dbResults) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const postMap: Map<any, any> = (result as Map<any, any>);
-            const commentCount = postMap.get("commentCount");
-            entries[0].commentCount = commentCount;
-        }
+    if (commentResults?.length > 0) {
+        const vertex = DBConnector.unwrapResult(commentResults[0]);
+        const parsed = DBConnector.parseGraphResult<{ commentCount: number }>(vertex, ["commentCount"]);
+        post.commentCount = parsed.commentCount;
     }
 
-    // Get post likes
-    entries[0].global.likes = await getLikesByPost(postId);
-    entries[0].postId = postId;
-    entries[0].user.pfp = await getPfpByUserId(entries[0].user.userId);
+    // Fetch likes and user pfp
+    post.global.likes = await getLikesByPost(postId);
+    post.postId = postId;
+    post.user.pfp = await getPfpByUserId(post.user.userId);
 
-    // Add to Redis
-    await RedisConnector.set(esId, JSON.stringify(entries[0]));
+    // Cache full post back into Redis
+    await RedisConnector.set(esId, JSON.stringify(post));
 
-    return { esId, post: entries[0] };
+    return { esId, post };
 }
 
 export const getFollowingUserIds = async (userId: string): Promise<string[]> => {
-    const followingIds: string[] = [];
-
     try {
-        const results = await DBConnector.getGraph().V(userId)
+        const results = await DBConnector.getGraph()
+            .V(userId)
             .out(EDGE_USER_FOLLOWS)
             .toList();
 
-        if (results == null || results.values == null) {
-            return [];
-        }
-
-        for (const result of results) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const vertex: any = result;
-            followingIds.push(vertex.id);
-        }
+        return results.map(result => {
+            const vertex = DBConnector.unwrapResult(result);
+            if (vertex instanceof Map) {
+                return String(vertex.get("id"));
+            } else if (typeof vertex === "object" && vertex !== null && "id" in vertex) {
+                return String((vertex as { id: unknown }).id);
+            }
+            throw new Error("Unexpected vertex format");
+        });
 
     } catch (err) {
-        console.log(err);
-        logger.error(err);
+        logger.error("Failed to get following user IDs", { userId, error: err });
+        return [];
     }
-
-    return followingIds;
 }
 
-export const getProfileByUserId = async (userId: string): Promise<Profile | null> => {
-    return await getProfileEx(userId, null);
-}
-
-export const getProfileByUserName = async (userName: string): Promise<Profile | null> => {
-    return await getProfileEx(null, userName);
-}
-
-const getProfileEx = async (userId: string | null, userName: string | null): Promise<Profile | null> => {
-    if (userId == null && userName == null) {
+export const getProfile = async (userId: string | null, userName: string | null): Promise<Profile | null> => {
+    if (!userId && !userName) {
         return null;
     }
 
@@ -271,12 +150,11 @@ const getProfileEx = async (userId: string | null, userName: string | null): Pro
     const key = `profile:${userId != null ? 'id' : 'name'}:${userId != null ? userId : userName}`;
 
     try {
-
         // Attempt to pull from redis first
-        const res = await RedisConnector.get(key);
-        if (res !== null) {
+        const cached = await RedisConnector.get(key);
+        if (cached) {
             // Found in redis
-            return JSON.parse(res) as Profile;
+            return JSON.parse(cached) as Profile;
         }
 
         // Not found in redis. Need to query DB and ES 
@@ -298,21 +176,15 @@ const getProfileEx = async (userId: string | null, userName: string | null): Pro
         const profileId: string = getVertexPropertySafe(vertexProperties, 'profileId');
 
         // Now get profile from ES
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        results = await ESConnector.getInstance().searchProfile({
-            "term": {
-                "_id": profileId
-            }
-        }, null);
+        results = await ESConnector.getInstance().searchProfile({term: { _id: profileId }}, null);
 
         const hits = results?.body?.hits?.hits;
         if (!results || results.statusCode !== 200 || hits == null || hits.length === 0) {
-            throw new Error("Error querying ES");
+            throw new Error("Profile not found");
         }
 
         // Should only be at most 1 results since we are querying by id
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const source: any = hits[0]._source;
+        const source = hits[0]._source as Partial<Profile>;
 
         const profile: Profile = {
             userId: userIdFromResult,
@@ -337,16 +209,15 @@ const getProfileEx = async (userId: string | null, userName: string | null): Pro
 
         return profile;
     } catch (err) {
-        console.log(err);
-        logger.error(err);
+        logger.error("Failed to get profile", { userId, userName, error: err });
     }
 
     return null;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const getVertexPropertySafe = (vertexProperties: any, propertyName: string, defaultValue: string = ""): string => {
-    return vertexProperties[propertyName]?.[0]?.value ?? defaultValue;
+export const getVertexPropertySafe = (vertexProperties: Record<string, Array<{ value: string }>> | undefined, 
+    propertyName: string, defaultValue: string = ""): string => {
+        return vertexProperties?.[propertyName]?.[0]?.value ?? defaultValue;
 };
 
 export const updateProfileInRedis = async (profile: Profile) => {
@@ -363,6 +234,16 @@ export const updateProfileInRedis = async (profile: Profile) => {
 }
 
 export const getPfpByUserId = async (userId: string): Promise<string> => {
+    // Try to pull the pfp from redis first
+    const key = `profile:id:${userId}`;
+    const cachedData = await RedisConnector.get(key);
+    if(cachedData) {
+        const profile:Profile = JSON.parse(cachedData);
+        if(profile && profile.pfp) {
+            return profile.pfp;
+        }
+    }
+
     const results = await DBConnector.getGraph().V(userId).next();
 
     if (results == null || results.value == null || results.value.properties.pfp == null) {
@@ -372,81 +253,106 @@ export const getPfpByUserId = async (userId: string): Promise<string> => {
     return results.value.properties.pfp[0]['value'];
 }
 
+export const addPfpsToPosts = async (posts: Record<string, PostWithCommentCount>) => {
+    await Promise.all(Object.values(posts).map(async post => {
+        post.user.pfp = await getPfpByUserId(post.user.userId);
+    }));
+}
+
+export const addCommentCountsToPosts = async (posts: Record<string, PostWithCommentCount>, postIds: string[]) => {
+    const __ = DBConnector.__();
+    const commentResults = await DBConnector.getGraph().V(postIds)
+        .project("postId", "commentCount")
+        .by(__.id())
+        .by(__.outE(EDGE_POST_TO_COMMENT).count())
+        .toList();
+
+    for (const result of commentResults) {
+        const data = DBConnector.unwrapResult(result);    
+        const parsed = DBConnector.parseGraphResult<{ postId: string; commentCount: number }>(
+            data,
+            ["postId", "commentCount"]
+        );
+
+        if (parsed.postId in posts) {
+            posts[parsed.postId].commentCount = parsed.commentCount;
+        }
+    } 
+};
+
+export const addLikesToPosts = async (posts: Record<string, PostWithCommentCount>, postIds: string[]) => {
+    const __ = DBConnector.__();
+    const likeResults = await DBConnector.getGraph().V(postIds)
+        .filter(__.inE(EDGE_USER_LIKED_POST).count().is(DBConnector.P().gt(0)))
+        .project("postId", "users")
+        .by(__.id())
+        .by(__.inE(EDGE_USER_LIKED_POST)
+            .outV()
+            .project('profileId', 'userName', 'pfp', 'firstName', 'lastName', 'userId')
+            .by("profileId")
+            .by("userName")
+            .by("pfp")
+            .by("firstName")
+            .by("lastName")
+            .by(__.id())
+            .fold())
+        .toList();
+
+    for (const result of likeResults) {
+        const data = DBConnector.unwrapResult(result);
+        const parsed = DBConnector.parseGraphResult<{ postId: string; users: unknown[] }>(data, ["postId", "users"]);
+
+        const { postId, users } = parsed;
+
+        if (!posts[postId]) {
+            continue;
+        }
+
+        const post = posts[postId];
+        post.global.likes = [];
+
+        for (const user of users ?? []) {
+            const userData = DBConnector.unwrapResult(user);
+            const userParsed = DBConnector.parseGraphResult<Like>(userData, [
+                "userName",
+                "userId",
+                "profileId",
+                "firstName",
+                "lastName",
+                "pfp"
+            ]);
+
+            post.global.likes.push({
+                userName: userParsed.userName,
+                userId: userParsed.userId,
+                profileId: userParsed.profileId,
+                firstName: userParsed.firstName,
+                lastName: userParsed.lastName,
+                pfp: userParsed.pfp
+            });
+        }
+    }
+};
+
 // Helper function to validate and return errors
 export const handleValidationError = (ctx: Context, message: string, statusCode: number = 400) => {
     ctx.status = statusCode;
     ctx.body = { status: message };
 };
 
-export const convertSingleToDoubleQuotes = (input: string) => {
-    return input
-        .replace(/'/g, '"')                               // Replace all single quotes with double quotes
-        .replace(/([{,]\s*)"(.*?)"(?=\s*:)/g, '$1"$2"');  // Ensure property keys are properly quoted
-}
-
-export const extractTextSuggestionsFlat = (suggestObj: unknown, size:number = Infinity): string[] => {
-    const seen = new Set<string>();
-    const flat: string[] = [];
-
-    const suggestEntries = suggestObj as Record<string, Array<{ options: Array<{ text: string }> }>>;
-    for (const entries of Object.values(suggestEntries || {})) {
-        for (const opt of entries?.[0]?.options || []) {
-            if (!seen.has(opt.text)) {
-                seen.add(opt.text);
-                flat.push(opt.text);
-                if (flat.length >= size) {
-                    return flat;
-                }
-            }
+export const buildPostSortClause = () => [
+    {
+        "global.dateTime": {
+            order: "asc",
+            nested: { path: "global" },
+            mode: "min"
+        }
+    },
+    {
+        "media.postId": {
+            order: "asc",
+            nested: { path: "media" },
+            mode: "min"
         }
     }
-
-    return flat;
-};
-
-export const isHashtag = (text: string) => text.startsWith('#');
-export const isMention = (text: string) => text.startsWith('@');
-
-export const extractHashtags = (text: string): string[] => {
-    if (!text) {
-        return [];
-    }
-    
-    const hashtagRegex = /#[\p{L}0-9_]+/gu; // Matches hashtags like #fun
-    const matches = text.match(hashtagRegex);
-
-    return matches ? Array.from(new Set(matches.map(tag => tag.toLowerCase()))) : [];
-}
-
-export const extractHashtagsAndMentions = (text: string):{hashtags: string[]; mentions: string[]; } => {
-    if(!text) {
-        return {
-            hashtags: [],
-            mentions: []
-        };
-    }
-    
-    const hashtagRegex = /#(\w+)/g;
-    const mentionRegex = /@(\w+)/g;
-
-    const hashtags = [...text.matchAll(hashtagRegex)].map(match => match[0].toLocaleLowerCase());
-    const mentions = [...text.matchAll(mentionRegex)].map(match => match[0].toLocaleLowerCase());
-  
-    return { hashtags, mentions };
-}
-
-export const extractFromMultipleTexts = (texts: string[]): { hashtags: string[]; mentions: string[] } => {
-    const hashtagSet = new Set<string>();
-    const mentionSet = new Set<string>();
-
-    for (const text of texts) {
-        const { hashtags, mentions } = extractHashtagsAndMentions(text);
-        hashtags.forEach(tag => hashtagSet.add(tag));
-        mentions.forEach(mention => mentionSet.add(mention));
-    }
-
-    return {
-        hashtags: Array.from(hashtagSet),
-        mentions: Array.from(mentionSet),
-    };
-}
+];

@@ -1,19 +1,34 @@
-// __mocks__/redis.ts
-import { RedisClientType } from 'redis';
+const mockConnect = jest.fn().mockResolvedValue({});
+const mockDisconnect = jest.fn().mockResolvedValue(undefined);
+const mockGet = jest.fn().mockResolvedValue('mocked-value');
+const mockSet = jest.fn().mockResolvedValue(undefined);
+const mockDel = jest.fn().mockResolvedValue(undefined);
+const mockDbSize = jest.fn().mockResolvedValue(42);
+const mockInfo = jest.fn().mockResolvedValue(
+    "instantaneous_ops_per_sec:100\r\nconnected_clients:5\r\nused_memory:102400\r\nused_memory_peak:204800\r\nmem_fragmentation_ratio:1.5\r\nused_cpu_user:2.5\r\n"
+);
 
-// Mocking createClient to return a mock Redis client
-export const createClient = jest.fn(() => {
-  // Create a mock client with the necessary methods mocked as Jest mock functions
-  const mockClient = {
-    connect: jest.fn().mockResolvedValue(undefined), // Simulate successful connection
-    disconnect: jest.fn(),
-    get: jest.fn(),
-    set: jest.fn(),
-    dbSize: jest.fn(),
-    info: jest.fn(),
-    on: jest.fn(),
-    // Mock additional methods if needed
-  };
+const mockOn = jest.fn();
 
-  return mockClient; // Ensure the return type is RedisClientType<any>
-});
+export const createClient = jest.fn(() => ({
+    connect: mockConnect,
+    disconnect: mockDisconnect,
+    get: mockGet,
+    set: mockSet,
+    del: mockDel,
+    dbSize: mockDbSize,
+    info: mockInfo,
+    on: mockOn
+}));
+
+export const __redisMocks = {
+    mockConnect,
+    mockDisconnect,
+    mockGet,
+    mockSet,
+    mockDel,
+    mockDbSize,
+    mockInfo,
+    mockOn,
+    createClient
+};

@@ -1,7 +1,7 @@
 import sanitizeHtml from 'sanitize-html';
 
 import { HistoryType, Post, PostWithCommentCount, Profile } from "../api/types";
-import { postSetFollowStatus, postUpdatePost, getSearch } from '../api/ServiceController';
+import { postSetFollowStatus, postUpdatePost } from '../api/ServiceController';
 import { DEFAULT_PFP } from '../api/config';
 
 export const historyUtils: HistoryType = {
@@ -9,6 +9,9 @@ export const historyUtils: HistoryType = {
     location: null,
     isServer: true
 }
+
+export const isHashtag = (text: string) => text.startsWith('#');
+export const isMention = (text: string) => text.startsWith('@');
 
 export const validatePassword = (value: string): boolean => {
     const regex: RegExp =
@@ -45,12 +48,12 @@ export const validateUrl = (text: string|undefined): boolean => {
     }
 }
 
+const validVideoExtentions: string[] = ["avif", "ogm", "wmv", "mpg", "webm", "ogv", "mov", "asx", "mpeg", "mp4", "m4v", "avi"];
 export const isVideoFileFromPath = (path: string): boolean => {
     if (path == null || path.trim().length < 4) {
         throw new Error("Invalid path");
     }
-
-    const validVideoExtentions: string[] = ["avif", "ogm", "wmv", "mpg", "webm", "ogv", "mov", "asx", "mpeg", "mp4", "m4v", "avi"];
+    
     const ext = path.toLowerCase().substring(path.lastIndexOf(".") + 1);
 
     return validVideoExtentions.includes(ext);
@@ -207,9 +210,9 @@ export const isPostLiked = (userName: string, post: Post):boolean => {
     return result.length > 0;    
 }
 
-export const togglePostLikedState = (userName: string, userId: string, post: Post):(Post|null) => {    
+export const togglePostLikedState = (userName: string, userId: string, post: Post):Post => {    
     if(post == null || userName == null || userId == null) {
-        return null;
+        return post;
     }
     
     if(post.global.likes == null) {
@@ -361,42 +364,6 @@ export type SearchResponse = {
     hasMore: boolean;
     searchAfter: any[] | null;
 };
-/*
-export const search = async (query: string, isAuto: boolean, searchType: 'both' | 'post' | 'profile', searchAfter: any[] | null)
-    :Promise<SearchResponse | null> => {
-
-    const trimmedQuery = query.trim();
-    if (!trimmedQuery) {
-        return {
-            results: null,
-            loading: false,
-            hasMore: true,
-            searchAfter: null
-        };
-    }
-
-    if(trimmedQuery.length === 1 && trimmedQuery.charAt(0) === '#') {
-        return null;
-    }
-
-    const delay = isAuto ? 150 : 300;
-    await new Promise(res => setTimeout(res, delay)); // debounce
-    
-    const result = await getSearch(query, isAuto, searchType, JSON.stringify(searchAfter));
-    const { posts, profiles, next } = result.data;
-
-    const searchResults:SearchResults = {
-        posts,
-        profiles
-    };
-
-    return {
-        results: searchResults,
-        loading: false,
-        hasMore: !!next,
-        searchAfter: next
-    };
-}*/
 
 export const storeSearchQueries = (value: string | Profile):(string | Profile)[] => {
     const key:string = "recentSearches";
@@ -455,12 +422,8 @@ export const getStoredSearchQueries = ():(string | Profile)[] => {
     }
 
     try {
-        const parsedData = JSON.parse(item);
-
-        return parsedData;
+        return JSON.parse(item);
     } catch(err) {
         return [];
     }
 }
-
-export const isHashtag = (text: string) => text.startsWith('#');
