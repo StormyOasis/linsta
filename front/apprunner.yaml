@@ -1,7 +1,0 @@
-version: 1.0
-runtime: nodejs22
-
-run:
-  command: node dist/server.js
-  network:
-    port: 80
