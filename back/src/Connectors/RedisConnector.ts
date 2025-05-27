@@ -93,7 +93,7 @@ export class RedisConnector {
     public connect = async (): Promise<void> => {
         logger.info("Creating redis connection...");
 
-        const redisUserName = config.redis.userName;
+        const redisUserName = "default";//config.redis.userName;
         const redisPassword = config.redis.password;
         const redisHost = config.redis.host;
         const redisPort = config.redis.port;
