@@ -1,0 +1,241 @@
+service: linsta-api
+
+provider:
+  name: aws
+  runtime: nodejs22.x
+  region: us-west-2
+
+package:
+  patterns:
+    - '!node_modules/mock-aws-s3/**'
+    - '!**/*.html'
+
+plugins:
+  - serverless-offline
+
+custom:
+  serverless-offline:
+    watch:
+      ignore:
+        - '**/*.ts'          
+        - 'node_modules/**'   
+        - '.serverless/**'
+        - 'dist/**'         
+        - 'app/**'
+        - 'build/**'
+        - 'coverage/**'
+        - 'logs/**'
+    httpPort: 3001
+    noPrependStageInUrl: true
+
+functions:
+  accountsCheck:
+    handler: build/controllers/accounts/checkUserName.handler
+    events:
+      - http:
+          path: /api/v1/accounts/check/{userName}
+          method: get
+  accountsAttempt:
+    handler: build/controllers/accounts/accountsAttempt.handler
+    events:
+      - http:
+          path: /api/v1/accounts/attempt
+          method: post
+  accountsSendConfirmCode:
+    handler: build/controllers/accounts/sendConfirmCode.handler
+    events:
+      - http:
+          path: /api/v1/accounts/sendConfirmCode
+          method: get
+  accountsForgotPassword:
+    handler: build/controllers/accounts/forgotPassword.handler
+    events:
+      - http:
+          path: /api/v1/accounts/forgot
+          method: post
+  accountsChangePassword:
+    handler: build/controllers/accounts/changePassword.handler
+    events:
+      - http:
+          path: /api/v1/accounts/changePassword
+          method: post
+  accountsToggleFollowing:
+    handler: build/controllers/accounts/toggleFollowing.handler
+    events:
+      - http:
+          path: /api/v1/accounts/follow
+          method: post
+  accountsLogin:
+    handler: build/controllers/accounts/loginUser.handler
+    events:
+      - http:
+          path: /api/v1/accounts/login
+          method: post          
+  getLocation:
+    handler: build/controllers/locations/getLocation.handler
+    events:
+      - http:
+          path: /api/v1/locations/get
+          method: get
+  addPost:
+    handler: build/controllers/posts/addPost.handler
+    events:
+      - http:
+          path: /api/v1/posts/addPost
+          method: post
+      - http:
+          path: /api/v1/posts/addPost
+          method: put          
+  deletePost:
+    handler: build/controllers/posts/deletePost.handler
+    events:
+      - http:
+          path: /api/v1/posts/deletePost
+          method: post
+      - http:
+          path: /api/v1/posts/deletePost
+          method: delete
+  updatePost:
+    handler: build/controllers/posts/updatePost.handler
+    events:
+      - http:
+          path: /api/v1/posts/updatePost
+          method: post
+      - http:
+          path: /api/v1/posts/updatePost
+          method: patch
+  getAllPostsByFollowing:
+    handler: build/controllers/posts/getAllPostsByFollowing.handler
+    events:
+      - http:
+          path: /api/v1/posts/getAllPostsByFollowing
+          method: post
+  postGetPostById:
+    handler: build/controllers/posts/postGetPostById.handler
+    events:
+      - http:
+          path: /api/v1/posts/getPostById
+          method: post
+  toggleLikePost:
+    handler: build/controllers/posts/toggleLikePost.handler
+    events:
+      - http:
+          path: /api/v1/posts/likePost
+          method: post
+  postIsPostLikedByUserId:
+    handler: build/controllers/posts/postIsPostLikedByUserId.handler
+    events:
+      - http:
+          path: /api/v1/posts/isPostLikedByUserId
+          method: post
+  getAllLikesByPost:
+    handler: build/controllers/posts/getAllLikesByPost.handler
+    events:
+      - http:
+          path: /api/v1/posts/getAllLikesByPost
+          method: get
+  getPostsByUserId:
+    handler: build/controllers/posts/getPostsByUserId.handler
+    events:
+      - http:
+          path: /api/v1/posts/getByUserId
+          method: post
+  addComment:
+    handler: build/controllers/comments/addComment.handler
+    events:
+      - http:
+          path: /api/v1/comment/add
+          method: post
+  deleteComment:
+    handler: build/controllers/comments/deleteComment.handler
+    events:
+      - http:
+          path: /api/v1/comment/delete
+          method: post
+      - http:
+          path: /api/v1/comment/delete
+          method: delete
+  getCommentsByPostId:
+    handler: build/controllers/comments/getCommentsByPostId.handler
+    events:
+      - http:
+          path: /api/v1/comment/getByPostId
+          method: post
+  toggleCommentLike:
+    handler: build/controllers/comments/toggleCommentLike.handler
+    events:
+      - http:
+          path: /api/v1/comment/toggleLike
+          method: post
+  getPostSearch:
+    handler: build/controllers/search/getPostSearch.handler
+    events:
+      - http:
+          path: /api/v1/search/getPostSearch
+          method: post
+  getSuggestions:
+    handler: build/controllers/search/getSuggestions.handler
+    events:
+      - http:
+          path: /api/v1/search/getSuggestions
+          method: get
+  updateProfileByUserId:
+    handler: build/controllers/profiles/updateProfileByUserId.handler
+    events:
+      - http:
+          path: /api/v1/profiles/updateProfileByUserId
+          method: post
+      - http:
+          path: /api/v1/profiles/updateProfileByUserId
+          method: patch
+  getPostProfileByUserId:
+    handler: build/controllers/profiles/getPostProfileByUserId.handler
+    events:
+      - http:
+          path: /api/v1/profiles/getByUserId
+          method: post
+  getPostProfileByUserName:
+    handler: build/controllers/profiles/getPostProfileByUserName.handler
+    events:
+      - http:
+          path: /api/v1/profiles/getByUserName
+          method: post
+  getProfileStatsById:
+    handler: build/controllers/profiles/getProfileStatsById.handler
+    events:
+      - http:
+          path: /api/v1/profiles/getStatsById
+          method: post
+  putProfilePfp:
+    handler: build/controllers/profiles/putProfilePfp.handler
+    events:
+      - http:
+          path: /api/v1/profiles/updatePfp
+          method: post
+      - http:
+          path: /api/v1/profiles/updatePfp
+          method: put         
+  getFollowingByUserId:
+    handler: build/controllers/profiles/getFollowingByUserId.handler
+    events:
+      - http:
+          path: /api/v1/profiles/getFollowingByUserId
+          method: post
+  getFollowersByUserId:
+    handler: build/controllers/profiles/getFollowersByUserId.handler
+    events:
+      - http:
+          path: /api/v1/profiles/getFollowersByUserId
+          method: post
+  getSingleFollowStatus:
+    handler: build/controllers/profiles/getSingleFollowStatus.handler
+    events:
+      - http:
+          path: /api/v1/profiles/getSingleFollowStatus
+          method: post
+  bulkGetProfilesAndFollowing:
+    handler: build/controllers/profiles/bulkGetProfilesAndFollowing.handler
+    events:
+      - http:
+          path: /api/v1/profiles/bulkGetProfilesAndFollowing
+          method: post                                                                                                                                  

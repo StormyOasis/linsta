@@ -114,8 +114,8 @@ const PfpModalContent: React.FC<PfpModalContentProps> = (props: PfpModalContentP
             const result = await putSubmitPfp(newPfpUrl?.file, props.profile.userId);
 
             if(result.status === 200) {                    
-                setNewPfpUrl(result.data);
-                dispatch(actions.profileActions.updateProfilePic(result.data));
+                setNewPfpUrl(result.data.url);
+                dispatch(actions.profileActions.updateProfilePic(result.data.url));
                 
                 props.onClose();
             }

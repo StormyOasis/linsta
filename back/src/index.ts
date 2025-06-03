@@ -1,4 +1,4 @@
-import Koa, { Context } from "koa";
+/*import Koa, { Context } from "koa";
 import cors from "@koa/cors";
 import json from 'koa-json';
 import { koaBody } from "koa-body";
@@ -8,9 +8,9 @@ import zlib from "node:zlib";
 import config from './config';
 import router from "./router";
 import Logger from "./logger/logger";
-import DBConnector from "./Connectors/DBConnector";
-import RedisConnector from "./Connectors/RedisConnector";
-
+import DBConnector from "./connectors/DBConnector";
+import RedisConnector from "./connectors/RedisConnector";*/
+/*
 // Constants for the API paths to exclude from JWT authentication
 const EXCLUDED_API_PATHS = [
     /^\/api\/v1\/accounts\/check\/[^/]+$/, // Matches /api/v1/accounts/check/:userName
@@ -64,3 +64,4 @@ App.use(json())
             process.exit(1);
         }
     });
+    */

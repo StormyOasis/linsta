@@ -1,14 +1,14 @@
-import { Context } from "koa";
+/*import { Context } from "koa";
 import config from '../config';
 import formidable from 'formidable';
 import Metrics from "../metrics/Metrics";
 import logger from "../logger/logger";
 import { addCommentCountsToPosts, addLikesToPosts, addPfpsToPosts, buildPostSortClause, getFollowingUserIds, getLikesByPost, getPostByPostId, handleValidationError, isUserAuthorized } from "../utils/utils";
-import { uploadFile } from "../Connectors/AWSConnector";
-import ESConnector, { buildDataSetForES } from '../Connectors/ESConnector';
+import { uploadFile } from "../connectors/AWSConnector";
+import ESConnector, { buildDataSetForES } from '../connectors/ESConnector';
 import { User, Global, Entry, Post, PostWithCommentCount } from "../utils/types";
-import RedisConnector from "../Connectors/RedisConnector";
-import DBConnector, { EDGE_COMMENT_TO_POST, EDGE_POST_LIKED_BY_USER, EDGE_POST_TO_COMMENT, EDGE_POST_TO_USER, EDGE_USER_LIKED_POST, EDGE_USER_TO_POST } from "../Connectors/DBConnector";
+import RedisConnector from "../connectors/RedisConnector";
+import DBConnector, { EDGE_COMMENT_TO_POST, EDGE_POST_LIKED_BY_USER, EDGE_POST_TO_COMMENT, EDGE_POST_TO_USER, EDGE_USER_LIKED_POST, EDGE_USER_TO_POST } from "../connectors/DBConnector";
 import { getFileExtByMimeType, sanitize, sanitizeInput } from "../utils/textUtils";
 
 export const addPost = async (ctx: Context) => {
@@ -60,7 +60,7 @@ export const addPost = async (ctx: Context) => {
         await DBConnector.beginTransaction();
 
         // Now add a post vertex to the graph
-        let graphResult = await DBConnector.getGraph(true)
+        let graphResult = await(await DBConnector.getGraph(true))
             .addV("Post")
             .property("esId", esResult._id)
             .next();
@@ -72,7 +72,7 @@ export const addPost = async (ctx: Context) => {
         const postId: string = graphResult.value.id;
 
         // Now add the edges between the post and user verticies            
-        graphResult = await DBConnector.getGraph(true).V(postId)
+        graphResult = await(await DBConnector.getGraph(true)).V(postId)
             .as('post')
             .V(user.userId)
             .as('user')
@@ -118,7 +118,7 @@ export const addPost = async (ctx: Context) => {
 
     } catch (err) {
         await DBConnector.rollbackTransaction();
-        logger.error(err);
+        logger.error((err as Error).message);
         return handleValidationError(ctx, "Error adding post");
     }
 
@@ -142,7 +142,7 @@ export const deletePost = async (ctx: Context) => {
         const __ = DBConnector.__();
 
         // Step 1: Get the esId of the post
-        const results = await DBConnector.getGraph()
+        const results = await(await DBConnector.getGraph())
             .V(data.postId)
             .as("post")
             .out(EDGE_POST_TO_USER)
@@ -181,7 +181,7 @@ export const deletePost = async (ctx: Context) => {
         }        
 
         // Step 2: Get all vertex IDs to delete (post + comments)
-        const vertexIdsToDelete = await DBConnector.getGraph()
+        const vertexIdsToDelete = await(await DBConnector.getGraph())
             .V(data.postId)
             .union(
                 __.identity(),
@@ -201,14 +201,14 @@ export const deletePost = async (ctx: Context) => {
         await DBConnector.beginTransaction();
 
         // Step 3: Drop all edges connected to those vertices
-        await DBConnector.getGraph(true)
+        await(await DBConnector.getGraph(true))
             .V(...vertexIdsToDelete)
             .bothE()
             .drop()
             .iterate();
 
         // Step 4: Drop the vertices themselves
-        await DBConnector.getGraph(true)
+        await(await DBConnector.getGraph(true))
             .V(...vertexIdsToDelete)
             .drop()
             .iterate();
@@ -228,7 +228,7 @@ export const deletePost = async (ctx: Context) => {
         ctx.status = 200;
     } catch (err) {
         console.log(err);
-        logger.error(err);
+        logger.error((err as Error).message);
         await DBConnector.rollbackTransaction();
         return handleValidationError(ctx, "Error deleting post");
     }
@@ -253,7 +253,7 @@ export const updatePost = async (ctx: Context) => {
         const __ = DBConnector.__();
 
         // Step 1: Get the userId and esId of the post
-        const results = await DBConnector.getGraph()
+        const results = await(await DBConnector.getGraph())
             .V(data.postId)
             .as("post")
             .out(EDGE_POST_TO_USER)
@@ -410,7 +410,7 @@ export const updatePost = async (ctx: Context) => {
         ctx.status = 200;
         ctx.body = post;
     } catch (err) {
-        logger.error(err)
+        logger.error((err as Error).message);
         return handleValidationError(ctx, "Error updating posts");
     }
 }
@@ -508,7 +508,7 @@ export const getAllPostsByFollowing = async (ctx: Context) => {
 
     } catch (err) {
         console.log(err);
-        logger.error(err);
+        logger.error((err as Error).message);
         return handleValidationError(ctx, "Error getting posts");
     }
 }
@@ -532,7 +532,7 @@ export const postGetPostById = async (ctx: Context) => {
         ctx.status = 200;
     } catch (err) {
         console.log(err);
-        logger.error(err);
+        logger.error((err as Error).message);
         return handleValidationError(ctx, "Error getting post");
     }
 }
@@ -559,7 +559,7 @@ export const toggleLikePost = async (ctx: Context) => {
         await DBConnector.beginTransaction();
 
         // Check the graph to see if the user likes the post
-        isLiked = await DBConnector.getGraph(true).V(userId)
+        isLiked = await(await DBConnector.getGraph(true)).V(userId)
             .out(EDGE_USER_LIKED_POST)
             .hasId(postId)
             .hasNext();
@@ -581,7 +581,7 @@ export const toggleLikePost = async (ctx: Context) => {
             ]);
         } else {
             // Need to like the post by adding the edges
-            const result = await DBConnector.getGraph(true).V(postId)
+            const result = await(await DBConnector.getGraph(true)).V(postId)
                 .as("post")
                 .V(userId)
                 .as("user")
@@ -622,7 +622,7 @@ export const postIsPostLikedByUserId = async (ctx: Context) => {
 
     try {
         // Check the graph to see if the user likes the post
-        isLiked = await DBConnector.getGraph().V(data.userId)
+        isLiked = await(await DBConnector.getGraph()).V(data.userId)
             .out(EDGE_USER_LIKED_POST)
             .hasId(data.postId)
             .hasNext();
@@ -630,7 +630,7 @@ export const postIsPostLikedByUserId = async (ctx: Context) => {
         ctx.body = { liked: isLiked };
         ctx.status = 200;
     } catch (err) {
-        logger.error(err);
+        logger.error((err as Error).message);
         return handleValidationError(ctx, "Error getting like state");
     }
 }
@@ -654,7 +654,7 @@ export const getAllLikesByPost = async (ctx: Context) => {
         ctx.status = 200;
     } catch (err) {
         console.log(err);
-        logger.error(err);
+        logger.error((err as Error).message);
         return handleValidationError(ctx, "Error getting all likes");
     }
 }
@@ -743,7 +743,8 @@ export const getPostsByUserId = async (ctx: Context) => {
         ctx.body = response;
         ctx.status = 200;
     } catch (err) {
-        logger.error(err);
+        logger.error((err as Error).message);
         return handleValidationError(ctx, "Error getting posts");
     }
 }
+*/

@@ -1,7 +1,7 @@
-import { Context } from "koa";
+/*import { Context } from "koa";
 import Metrics from "../metrics/Metrics";
 
-import { getLocationData } from "../Connectors/AWSConnector";
+import { getLocationData } from "../connectors/AWSConnector";
 
 type GetLocationsRequest = {
     term: string
@@ -22,4 +22,4 @@ export const getLocation = async (ctx: Context): Promise<void> => {
 
     ctx.body = response.Results;
     ctx.status = 200;
-}
+}*/

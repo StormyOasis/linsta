@@ -1,16 +1,16 @@
-import { Context } from "koa";
+/*import { Context } from "koa";
 import bcrypt from 'bcrypt';
 import config from '../config';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import moment, { MomentInput } from "moment";
 import logger from "../logger/logger";
 import Metrics from "../metrics/Metrics";
-import DBConnector, { EDGE_TOKEN_TO_USER, EDGE_USER_FOLLOWS, EDGE_USER_TO_TOKEN } from "../Connectors/DBConnector";
+import DBConnector, { EDGE_TOKEN_TO_USER, EDGE_USER_FOLLOWS, EDGE_USER_TO_TOKEN } from "../connectors/DBConnector";
 import { isEmail, isPhone, isValidPassword, obfuscateEmail, obfuscatePhone, stripNonNumericCharacters } from "../utils/textUtils";
 import { SEND_CONFIRM_TEMPLATE, 
          FORGOT_PASSWORD_TEMPLATE, 
-         sendEmailByTemplate, sendSMS } from "../Connectors/AWSConnector";
-import ESConnector from "../Connectors/ESConnector";
+         sendEmailByTemplate, sendSMS } from "../connectors/AWSConnector";
+import ESConnector from "../connectors/ESConnector";
 import { handleValidationError } from "../utils/utils";
 
 export const getIsUnqiueUsername = async (ctx: Context) => {
@@ -31,7 +31,7 @@ export const getIsUnqiueUsername = async (ctx: Context) => {
 
     // Check against the db for username existence
     try {
-        const uniquePropertyMatcher = await DBConnector.getGraph().V()
+        const uniquePropertyMatcher = await(await DBConnector.getGraph()).V()
             .hasLabel("User")
             .has("userName", userName)
             .valueMap(true)
@@ -43,7 +43,7 @@ export const getIsUnqiueUsername = async (ctx: Context) => {
         ctx.status = 200;
     } catch (err) {
         console.log(err);
-        logger.error(err);
+        logger.error((err as Error).message);
         return handleValidationError(ctx, "Error checking username uniqueness");
     }
 }
@@ -105,7 +105,7 @@ export const attemptCreateUser = async (ctx: Context) => {
 
         try {
             // Check if confirmation code + email/phone entry exists
-            res = await DBConnector.getGraph().V()
+            res = await(await DBConnector.getGraph()).V()
                 .hasLabel("ConfirmCode")
                 .has("userData", emailOrPhone.trim())
                 .has("token", data.confirmCode.trim())
@@ -116,7 +116,7 @@ export const attemptCreateUser = async (ctx: Context) => {
                 return handleValidationError(ctx, "Invalid confirmation code");
             }
         } catch (err) {       
-            logger.error(err);
+            logger.error((err as Error).message);
             return handleValidationError(ctx, "Error checking confirmation code");
         }
     }
@@ -156,7 +156,7 @@ export const attemptCreateUser = async (ctx: Context) => {
         // Note: Potential race condition here, but I'm not sure how to resolve it in gremlin so
         // if we end up with duplicate values this is probably the cause    
         const __ = DBConnector.__();
-        const uniquePropertyMatcher = await DBConnector.getGraph(true).V()
+        const uniquePropertyMatcher = await(await DBConnector.getGraph(true)).V()
             .hasLabel("User")    
             .and(                
                 __.has("userName", data.userName),
@@ -179,7 +179,7 @@ export const attemptCreateUser = async (ctx: Context) => {
             failureOccured = true;            
         } else {
             // Attempt to insert a user vertex
-            const result = await DBConnector.getGraph(true)
+            const result = await(await DBConnector.getGraph(true))
                 .addV("User")
                 .property("email", email)
                 .property("phone", phone)
@@ -201,7 +201,7 @@ export const attemptCreateUser = async (ctx: Context) => {
                 if (!data.dryRun && data.confirmCode) {
                     // The confirmation code was checked above and succeeded
                     // We now want to delete it from the DB
-                    res = await DBConnector.getGraph(true).V()
+                    res = await(await DBConnector.getGraph(true)).V()
                         .hasLabel("ConfirmCode")
                         .has("userData", emailOrPhone.trim())
                         .drop().toList();
@@ -209,7 +209,7 @@ export const attemptCreateUser = async (ctx: Context) => {
             }
         }
     } catch (err) {
-        logger.error(err);
+        logger.error((err as Error).message);
         ctx.status = 400;
         failureOccured = true;
     }
@@ -236,7 +236,7 @@ export const attemptCreateUser = async (ctx: Context) => {
             }
 
             // Now update the profile id in the user vertex
-            const graphResult = await DBConnector.getGraph(true).V(userId)
+            const graphResult = await(await DBConnector.getGraph(true)).V(userId)
                 .property("profileId", esResult._id)
                 .next();  
 
@@ -285,7 +285,7 @@ export const sendConfirmCode = async (ctx: Context) => {
 
     try {
         // Upsert into DB
-        const res = await DBConnector.getGraph()
+        const res = await(await DBConnector.getGraph())
             .mergeV(new Map([["userData", userData]]))
             .option(DBConnector.Merge().onCreate, new Map([
                 [DBConnector.T().label, "ConfirmCode"],
@@ -304,7 +304,7 @@ export const sendConfirmCode = async (ctx: Context) => {
         }
 
     } catch (err) {
-        logger.error(err);
+        logger.error((err as Error).message);
         return handleValidationError(ctx, "Error processing confirmation data");
     }
 
@@ -327,7 +327,7 @@ export const sendConfirmCode = async (ctx: Context) => {
             ctx.body = "OK";
         }
     } catch (err) {
-        logger.error(err);
+        logger.error((err as Error).message);
         return handleValidationError(ctx, "Error Sending confirmation code");
     }
 
@@ -342,7 +342,7 @@ type LoginRequest = {
 export const loginUser = async (ctx: Context) => {
     Metrics.increment("accounts.userlogin");
 
-    const { userName, password }: LoginRequest = ctx.request.body;
+    const { userName, password }: LoginRequest = {userName: "old", password: "nonserverless"}//ctx.request.body;
 
     if (!userName || !password) {
         return handleValidationError(ctx, "Invalid username or password");
@@ -350,7 +350,7 @@ export const loginUser = async (ctx: Context) => {
     
     try {
         // Check against the db for username existence
-        const result = await DBConnector.getGraph().V()
+        const result = await(await DBConnector.getGraph()).V()
             .hasLabel("User")
             .has("userName", userName)
             .project('id', 'userName', 'password')
@@ -400,7 +400,7 @@ export const loginUser = async (ctx: Context) => {
         }
     } catch (err) {
         console.log(err);
-        logger.error(err);
+        logger.error((err as Error).message);
         return handleValidationError(ctx, "Invalid username or password");
     }
 }
@@ -427,7 +427,7 @@ export const forgotPassword = async (ctx: Context) => {
         }
 
         const __ = DBConnector.__();
-        const result = await DBConnector.getGraph().V()
+        const result = await(await DBConnector.getGraph()).V()
             .hasLabel("User")           
             .or(
                 __.has("email", data.user), 
@@ -459,7 +459,7 @@ export const forgotPassword = async (ctx: Context) => {
         ctx.status = 200;        
         ctx.body = { status: "OK" };
     } catch (err) {
-        logger.error(err);
+        logger.error((err as Error).message);
         return handleValidationError(ctx, "Error handling forgot password");
     }
 }
@@ -476,7 +476,7 @@ const sendForgotMessage = async (ctx: Context, email: string, phone: string, use
 
     try {
         // Do an upsert so if user clicks resend it updates the existing token
-        let res = await DBConnector.getGraph()
+        let res = await(await DBConnector.getGraph())
             .mergeV(new Map([["userId", `${userId}`]]))
             .option(DBConnector.Merge().onCreate, new Map([[
                 DBConnector.T().label, "ForgotToken"], 
@@ -492,7 +492,7 @@ const sendForgotMessage = async (ctx: Context, email: string, phone: string, use
         }
 
         // Add edges between the User and ForgotToken verticies
-        res = await DBConnector.getGraph().V()
+        res = await(await DBConnector.getGraph()).V()
             .hasLabel("User")
             .has(DBConnector.T().id, userId)
             .as("user_id")
@@ -607,7 +607,7 @@ export const changePassword = async (ctx: Context) => {
                 return handleValidationError(ctx, "Invalid parameters or missing token");
             }
 
-            let result = await DBConnector.getGraph().V()
+            let result = await(await DBConnector.getGraph()).V()
                 .hasLabel("User")
                 .has("userName", data.userName)
                 .project('id', 'userName', 'password')
@@ -642,7 +642,7 @@ export const changePassword = async (ctx: Context) => {
             }                
             
             // Use the username and password to change password   
-            result = await DBConnector.getGraph().V()
+            result = await(await DBConnector.getGraph()).V()
                 .hasLabel("User")
                 .has('userName', data.userName)
                 .property('password', hashedPassword)
@@ -658,7 +658,7 @@ export const changePassword = async (ctx: Context) => {
             const token: string = data.token ? data.token : "";
 
             // Get the token from the db if it exists
-            let result = await DBConnector.getGraph(true).V()
+            let result = await(await DBConnector.getGraph(true)).V()
                 .hasLabel("ForgotToken")
                 .has('token', token)
                 .out(EDGE_TOKEN_TO_USER)
@@ -670,7 +670,7 @@ export const changePassword = async (ctx: Context) => {
             }            
 
             // Update the password in the User vertex            
-            result = await DBConnector.getGraph(true).V(value.id)
+            result = await(await DBConnector.getGraph(true)).V(value.id)
                 .property('password', hashedPassword)
                 .next();            
                 
@@ -680,7 +680,7 @@ export const changePassword = async (ctx: Context) => {
             }
 
             // Now delete the forgot token vertex
-            result = await DBConnector.getGraph(true)
+            result = await(await DBConnector.getGraph(true))
                 .V(value.id)
                 .out(EDGE_USER_TO_TOKEN)
                 .drop()
@@ -691,7 +691,7 @@ export const changePassword = async (ctx: Context) => {
         }
     } catch (err) {
         console.log(err);
-        logger.error(err);
+        logger.error((err as Error).message);
         await DBConnector.rollbackTransaction();
 
         return handleValidationError(ctx, "Error with token");        
@@ -717,7 +717,7 @@ export const toggleFollowing = async (ctx: Context) => {
 
         if(data.follow) {
             //Adding a new follower
-            const result = await DBConnector.getGraph(true).V(data.userId)
+            const result = await(await DBConnector.getGraph(true)).V(data.userId)
                 .as("user_id")
                 .V(data.followId)
                 .as("follow_id")
@@ -731,7 +731,7 @@ export const toggleFollowing = async (ctx: Context) => {
             }   
         } else {
             // unfollow the given follower
-            await DBConnector.getGraph(true).V(data.userId)
+            await(await DBConnector.getGraph(true)).V(data.userId)
                 .outE(EDGE_USER_FOLLOWS)
                 .where(DBConnector.__().inV().hasId(data.followId))
                 .drop()
@@ -742,11 +742,11 @@ export const toggleFollowing = async (ctx: Context) => {
 
     } catch(err) {
         console.log(err);
-        logger.error(err);
+        logger.error((err as Error).message);
         await DBConnector.rollbackTransaction();
         return handleValidationError(ctx, "Error changing following status");         
     }
 
     ctx.status = 200;
     ctx.body = { status: "OK" };   
-}
+}*/

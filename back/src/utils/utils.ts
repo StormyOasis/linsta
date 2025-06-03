@@ -1,9 +1,34 @@
-import { Like, PostWithCommentCount, Profile } from './types';
-import ESConnector, { buildSearchResultSet } from '../Connectors/ESConnector';
-import RedisConnector from '../Connectors/RedisConnector';
-import DBConnector, { EDGE_USER_FOLLOWS, EDGE_USER_LIKED_POST, EDGE_POST_TO_COMMENT } from '../Connectors/DBConnector';
+import { Like, PostWithCommentCount, Profile, ProfileWithFollowStatus } from './types';
+import { buildSearchResultSet, getESConnector } from '../connectors/ESConnector';
+import RedisConnector from '../connectors/RedisConnector';
+import DBConnector, { EDGE_USER_FOLLOWS, EDGE_USER_LIKED_POST, EDGE_POST_TO_COMMENT } from '../connectors/DBConnector';
 import logger from '../logger/logger';
 import { Context } from 'koa';
+import jwt, { JwtPayload } from 'jsonwebtoken';
+import config from '../config';
+import { APIGatewayProxyEvent } from 'aws-lambda';
+
+export const verifyJWT = (event: APIGatewayProxyEvent, userId: string):JwtPayload|string|null => {
+    if (!event || !userId) {
+        return null;
+    }
+
+    const authHeader = event.headers?.Authorization || event.headers?.authorization;
+    if(!authHeader) {
+        return null;
+    }
+    const token = authHeader.replace(/^Bearer /, '');
+    try {
+        const jwtPayload:JwtPayload|string = jwt.verify(token, config.auth.jwt.secret);
+
+        if (!jwtPayload || (typeof jwtPayload === "object" && jwtPayload.id != userId)) {
+            return null
+        }
+        return jwtPayload; 
+    } catch {
+        return null;
+    }
+}
 
 export const isUserAuthorized = (ctx: Context, userId: string): boolean => {
     return ctx.state.user?.id === userId;
@@ -15,7 +40,7 @@ export const getLikesByPost = async (postId: string | null): Promise<Like[]> => 
     }
 
     // Get a list of all users that like the given post id
-    const results = await DBConnector.getGraph().V(postId)
+    const results = await(await DBConnector.getGraph()).V(postId)
         .inE(EDGE_USER_LIKED_POST)
         .outV()
         .project("userId", "userName", "profileId")
@@ -43,7 +68,7 @@ export const getPostByPostId = async (postId: string): Promise<| { esId: string;
     let esId: string | null = await RedisConnector.get(postId);
     if (!esId) {
         // If mapping not found in Redis then pull from the graph and set in redis
-        const results = await DBConnector.getGraph().V(postId).project("esId").by("esId").toList();
+        const results = await(await DBConnector.getGraph()).V(postId).project("esId").by("esId").toList();
 
         if (!results || results.length === 0) {
             throw new Error("Error getting post");
@@ -71,14 +96,15 @@ export const getPostByPostId = async (postId: string): Promise<| { esId: string;
         post = JSON.parse(cachedData);
     } else {
         // Pull from Elasticsearch if not cached
-        const esResults = await ESConnector.getInstance().search(
+        const esResults = await getESConnector().search(
             {
                 bool: {
                     must: [{ match: { _id: esId } }],
                 },
             },
             1
-        );
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ) as any;
 
         const hits = esResults?.body?.hits?.hits;
         if (!hits || hits.length === 0) {
@@ -95,7 +121,7 @@ export const getPostByPostId = async (postId: string): Promise<| { esId: string;
 
     // Update post with comment count from graph
     const __ = DBConnector.__();
-    const commentResults = await DBConnector.getGraph()
+    const commentResults = await(await DBConnector.getGraph())
         .V(postId)
         .project("commentCount")
         .by(__.outE(EDGE_POST_TO_COMMENT).count())
@@ -120,7 +146,7 @@ export const getPostByPostId = async (postId: string): Promise<| { esId: string;
 
 export const getFollowingUserIds = async (userId: string): Promise<string[]> => {
     try {
-        const results = await DBConnector.getGraph()
+        const results = await(await DBConnector.getGraph())
             .V(userId)
             .out(EDGE_USER_FOLLOWS)
             .toList();
@@ -141,7 +167,7 @@ export const getFollowingUserIds = async (userId: string): Promise<string[]> => 
     }
 }
 
-export const getProfile = async (userId: string | null, userName: string | null): Promise<Profile | null> => {
+export const getProfile = async (userId: string | null, userName: string | null): Promise<ProfileWithFollowStatus | null> => {
     if (!userId && !userName) {
         return null;
     }
@@ -154,7 +180,7 @@ export const getProfile = async (userId: string | null, userName: string | null)
         const cached = await RedisConnector.get(key);
         if (cached) {
             // Found in redis
-            return JSON.parse(cached) as Profile;
+            return JSON.parse(cached) as ProfileWithFollowStatus;
         }
 
         // Not found in redis. Need to query DB and ES 
@@ -162,9 +188,9 @@ export const getProfile = async (userId: string | null, userName: string | null)
 
         // DB first
         if (userName !== null) {
-            results = await DBConnector.getGraph().V().has("userName", userName).next();
+            results = await(await DBConnector.getGraph()).V().has("userName", userName).next();
         } else {
-            results = await DBConnector.getGraph().V(userId).next();
+            results = await(await DBConnector.getGraph()).V(userId).next();
         }
 
         if (results == null || results.value == null) {
@@ -176,17 +202,17 @@ export const getProfile = async (userId: string | null, userName: string | null)
         const profileId: string = getVertexPropertySafe(vertexProperties, 'profileId');
 
         // Now get profile from ES
-        results = await ESConnector.getInstance().searchProfile({term: { _id: profileId }}, null);
+        results = await getESConnector().searchProfile({term: { _id: profileId }}, null);
 
-        const hits = results?.body?.hits?.hits;
-        if (!results || results.statusCode !== 200 || hits == null || hits.length === 0) {
+        const hits = results?.hits?.hits;
+        if (!results || hits == null || hits.length === 0) {
             throw new Error("Profile not found");
         }
 
         // Should only be at most 1 results since we are querying by id
         const source = hits[0]._source as Partial<Profile>;
 
-        const profile: Profile = {
+        const profile: ProfileWithFollowStatus = {
             userId: userIdFromResult,
             profileId: profileId,
             userName: getVertexPropertySafe(vertexProperties, 'userName'),
@@ -196,11 +222,12 @@ export const getProfile = async (userId: string | null, userName: string | null)
             gender: getVertexPropertySafe(vertexProperties, 'gender'),
             firstName: getVertexPropertySafe(vertexProperties, 'firstName', source.firstName),
             lastName: getVertexPropertySafe(vertexProperties, 'lastName', source.lastName),
-            link: getVertexPropertySafe(vertexProperties, 'link')
+            link: getVertexPropertySafe(vertexProperties, 'link'),
+            isFollowed: false
         };
 
         // Inverse key used to update the other copy of profile stored in redis
-        const inverseKey = `profile:${userName != null ? 'id' : 'name'}:${userName != null ? profile.userId : profile.userName}`;
+        const inverseKey = `profile:${userName != null ? 'id' : 'name'}:${userName != null ? userIdFromResult: profile.userName}`;
 
         // Add to redis. Store the profile under both the userId and userName(hence inverseKey var)    
         const profileString = JSON.stringify(profile);
@@ -220,9 +247,9 @@ export const getVertexPropertySafe = (vertexProperties: Record<string, Array<{ v
         return vertexProperties?.[propertyName]?.[0]?.value ?? defaultValue;
 };
 
-export const updateProfileInRedis = async (profile: Profile) => {
+export const updateProfileInRedis = async (profile: Profile, userId:string) => {
     // Build the redis key based on if searching by user name or by user id
-    const key = `profile:id:${profile.userId}`;
+    const key = `profile:id:${userId}`;
 
     // Inverse key used to update the other copy of profile stored in redis
     const inverseKey = `profile:name:${profile.userName}`;
@@ -244,7 +271,7 @@ export const getPfpByUserId = async (userId: string): Promise<string> => {
         }
     }
 
-    const results = await DBConnector.getGraph().V(userId).next();
+    const results = await(await DBConnector.getGraph()).V(userId).next();
 
     if (results == null || results.value == null || results.value.properties.pfp == null) {
         return "";
@@ -261,7 +288,7 @@ export const addPfpsToPosts = async (posts: Record<string, PostWithCommentCount>
 
 export const addCommentCountsToPosts = async (posts: Record<string, PostWithCommentCount>, postIds: string[]) => {
     const __ = DBConnector.__();
-    const commentResults = await DBConnector.getGraph().V(postIds)
+    const commentResults = await(await DBConnector.getGraph()).V(postIds)
         .project("postId", "commentCount")
         .by(__.id())
         .by(__.outE(EDGE_POST_TO_COMMENT).count())
@@ -282,7 +309,7 @@ export const addCommentCountsToPosts = async (posts: Record<string, PostWithComm
 
 export const addLikesToPosts = async (posts: Record<string, PostWithCommentCount>, postIds: string[]) => {
     const __ = DBConnector.__();
-    const likeResults = await DBConnector.getGraph().V(postIds)
+    const likeResults = await(await DBConnector.getGraph()).V(postIds)
         .filter(__.inE(EDGE_USER_LIKED_POST).count().is(DBConnector.P().gt(0)))
         .project("postId", "users")
         .by(__.id())
@@ -335,10 +362,19 @@ export const addLikesToPosts = async (posts: Record<string, PostWithCommentCount
 };
 
 // Helper function to validate and return errors
-export const handleValidationError = (ctx: Context, message: string, statusCode: number = 400) => {
-    ctx.status = statusCode;
-    ctx.body = { status: message };
+export const handleValidationError = (error: string, statusCode: number = 400) => {
+    return {
+        statusCode,
+        body: JSON.stringify({error})
+    }
 };
+
+export const handleSuccess = (result: unknown) => {
+    return {
+        statusCode: 200,
+        body: JSON.stringify(result)
+    }    
+}
 
 export const buildPostSortClause = () => [
     {
@@ -356,3 +392,27 @@ export const buildPostSortClause = () => [
         }
     }
 ];
+
+export const mapToObjectDeep = (value: unknown): unknown => {
+    if (value instanceof Map) {
+        const obj: Record<string, unknown> = {};
+        for (const [key, val] of value.entries()) {
+            obj[key] = mapToObjectDeep(val);
+        }
+        return obj;
+    }
+
+    if (Array.isArray(value)) {
+        return value.map(mapToObjectDeep);
+    }
+
+    if (typeof value === 'object' && value !== null) {
+        const obj: Record<string, unknown> = {};
+        for (const [key, val] of Object.entries(value)) {
+            obj[key] = mapToObjectDeep(val);
+        }
+        return obj;
+    }
+
+    return value;
+}

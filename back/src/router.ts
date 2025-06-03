@@ -1,5 +1,5 @@
 import Router from "koa-router";
-import {
+/*import {
     getIsUnqiueUsername,
     attemptCreateUser,
     sendConfirmCode,
@@ -8,7 +8,6 @@ import {
     changePassword,
     toggleFollowing
 } from './controllers/accountsController';
-import { verifyJWT } from "./auth/Auth";
 import { getLocation } from "./controllers/locationsController";
 import { 
     addPost, 
@@ -34,10 +33,11 @@ import {
     updateProfileByUserId
 } from "./controllers/profilesController";
 import { getPostSearch, getSuggestions } from "./controllers/searchController";
-
+import { verifyJWT } from "./utils/utils";
+*/
 
 const router = new Router();
-
+/*
 // Account creation handlers
 router.get("/api/v1/accounts/check/:userName", getIsUnqiueUsername);
 router.get("/api/v1/accounts/send_confirm_code", sendConfirmCode);
@@ -81,5 +81,5 @@ router.put("/api/v1/profiles/updatePfp", verifyJWT, putProfilePfp);
 // Search handlers
 router.post("/api/v1/search/search", getPostSearch);
 router.get("/api/v1/search/suggest", getSuggestions);
-
+*/
 export default router;

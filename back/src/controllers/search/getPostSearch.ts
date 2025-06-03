@@ -1,11 +1,11 @@
-/*import { Context } from "koa";
-import Metrics from "../metrics/Metrics";
-import { addCommentCountsToPosts, addLikesToPosts, addPfpsToPosts, buildPostSortClause, handleValidationError } from "../utils/utils";
-import ESConnector from "../connectors/ESConnector";
-import { PostWithCommentCount } from "../utils/types";
-import logger from "../logger/logger";
-import { isHashtag } from "../utils/textUtils";
-import config from '../config';
+import { APIGatewayProxyEvent, APIGatewayProxyHandler } from 'aws-lambda';
+import Metrics from '../../metrics/Metrics';
+import { addCommentCountsToPosts, addLikesToPosts, addPfpsToPosts, buildPostSortClause, handleSuccess, handleValidationError } from '../../utils/utils';
+import { getESConnector } from '../../connectors/ESConnector';
+import { PostWithCommentCount } from '../../utils/types';
+import logger from '../../logger/logger';
+import { isHashtag } from '../../utils/textUtils';
+import config from '../../config';
 
 type GetAllPostsBySearchRequest = {
     postId?: string;
@@ -18,7 +18,7 @@ type GetAllPostsBySearchResponse = {
     dateTime: string;
     postId: string;
     done: boolean;
-    q: string;
+    q: string | null;
 };
 
 const buildPostSearchQuery = (term: string | null): Record<string, unknown> => {
@@ -66,21 +66,26 @@ const buildPostSearchQuery = (term: string | null): Record<string, unknown> => {
     };
 };
 
-export const getPostSearch = async (ctx: Context) => {
+export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
     Metrics.increment("search.getPostSearch");
 
-    const data = ctx.request.body as GetAllPostsBySearchRequest;
+    let data: GetAllPostsBySearchRequest;
+    try {
+        data = JSON.parse(event.body || '{}');
+    } catch {
+        return handleValidationError("Missing required search params");
+    }
+
+    if (data.postId?.trim() === "") {
+        return handleValidationError("Missing required search params");
+    }
+
+    const term: string | null = data.q?.trim();
+    const query = buildPostSearchQuery(term);
 
     try {
-        if (data.postId?.trim() === "") {
-            return handleValidationError(ctx, "Missing required search params");
-        }
-
-        const term: string | null = data.q?.trim();
-        const query = buildPostSearchQuery(term);
-
         const resultSize = config.es.defaultPaginationSize;
-        const results = await ESConnector.getInstance().searchWithPagination(query, data.dateTime, data.postId, resultSize);
+        const results = await getESConnector().searchWithPagination(query, data.dateTime, data.postId, resultSize);
 
         const response: GetAllPostsBySearchResponse = {
             posts: [],
@@ -88,14 +93,12 @@ export const getPostSearch = async (ctx: Context) => {
             postId: "",
             done: true,
             q: term
-        }
+        };
 
-        const hits = results?.body?.hits?.hits || [];
+        const hits = results?.hits?.hits || [];
 
         if (hits.length === 0) {
-            ctx.status = 200;
-            ctx.body = response;
-            return;
+            return handleSuccess(response);
         }
 
         const posts: Record<string, PostWithCommentCount> = {};
@@ -104,8 +107,7 @@ export const getPostSearch = async (ctx: Context) => {
         for (const hit of hits) {
             const entry = hit._source as PostWithCommentCount;
             const postId = entry.media[0].postId;
-            posts[postId] = {...entry, postId};
-
+            posts[postId] = { ...entry, postId };
             postIds.push(postId);
         }
 
@@ -120,35 +122,12 @@ export const getPostSearch = async (ctx: Context) => {
 
         response.dateTime = sort[0];
         response.postId = sort[1];
-        response.done = hits.length < resultSize; // End of pagination?
-        // Add the posts to the response
+        response.done = hits.length < resultSize;
         response.posts = Object.values(posts);
 
-        ctx.status = 200;
-        ctx.body = response;
-
+        return handleSuccess(response);
     } catch (err) {
         logger.error("Search error", err);
-        return handleValidationError(ctx, "Error getting posts");
+        return handleValidationError("Error getting posts");
     }
-}
-
-export const getSuggestions = async (ctx: Context) => {
-    Metrics.increment("search.getSuggestions");
-
-    const q = ctx.query.q?.toString();
-
-    if (!q) {
-        return handleValidationError(ctx, "Missing required search params");
-    }
-
-    try {
-        const result = await ESConnector.getInstance().getAllSuggestions(q);
-        ctx.body = result;
-        ctx.status = 200;
-    } catch (err) {
-        logger.error("Suggest error", err);
-        ctx.status = 500;
-        ctx.body = { error: 'An error occurred while performing the search.' };
-    }
-}*/
+};

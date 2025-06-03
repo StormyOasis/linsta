@@ -1,4 +1,4 @@
-import { Context } from "koa";
+/*import { Context } from "koa";
 import Metrics from "../metrics/Metrics";
 import { getPostByPostId, getVertexPropertySafe, handleValidationError, isUserAuthorized } from "../utils/utils";
 import { Comment, Like, Post, User } from "../utils/types";
@@ -7,7 +7,7 @@ import DBConnector, {
     EDGE_CHILD_TO_PARENT_COMMENT, EDGE_COMMENT_LIKED_BY_USER,
     EDGE_COMMENT_TO_POST, EDGE_COMMENT_TO_USER, EDGE_PARENT_TO_CHILD_COMMENT,
     EDGE_POST_TO_COMMENT, EDGE_USER_LIKED_COMMENT, EDGE_USER_TO_COMMENT
-} from "../Connectors/DBConnector";
+} from "../connectors/DBConnector";
 import { sanitize } from "../utils/textUtils";
 
 type AddCommentRequest = {
@@ -46,7 +46,7 @@ export const addComment = async (ctx: Context) => {
         // Add the comment data to the db only(Comments won't be searchable)
         await DBConnector.beginTransaction();
 
-        let result = await DBConnector.getGraph(true)
+        let result = await(await DBConnector.getGraph(true))
             .addV("Comment")
             .property("dateTime", new Date())
             .property("text", sanitize(data.text))
@@ -65,7 +65,7 @@ export const addComment = async (ctx: Context) => {
         // 3. Edges between comment and another parent comment
 
         // Edges between User and comment
-        result = await DBConnector.getGraph(true).V(commentId)
+        result = await(await DBConnector.getGraph(true)).V(commentId)
             .as("comment")
             .V(data.userId)
             .as("user")
@@ -83,7 +83,7 @@ export const addComment = async (ctx: Context) => {
         }
 
         // Edges between comment and post
-        result = await DBConnector.getGraph(true).V(commentId)
+        result = await(await DBConnector.getGraph(true)).V(commentId)
             .as("comment")
             .V(data.postId)
             .as("post")
@@ -103,7 +103,7 @@ export const addComment = async (ctx: Context) => {
         // Edges between comment and another parent comment (if applicable)  
         const parentCommentId: string = `${data.parentCommentId || ""}`;
         if (parentCommentId.length > 0) {
-            result = await DBConnector.getGraph(true).V(commentId)
+            result = await(await DBConnector.getGraph(true)).V(commentId)
                 .as("comment")
                 .V(parentCommentId)
                 .as("parent")
@@ -146,7 +146,7 @@ export const deleteComment = async (ctx: Context) => {
     }  
 
     try {
-        const commentUserResult = await DBConnector.getGraph().V(data.commentId).out(EDGE_COMMENT_TO_USER).next()
+        const commentUserResult = await(await DBConnector.getGraph()).V(data.commentId).out(EDGE_COMMENT_TO_USER).next()
         if (commentUserResult == null || commentUserResult.value == null) {
             return handleValidationError(ctx, "Error deleting comment(s)");
         }
@@ -164,7 +164,7 @@ export const deleteComment = async (ctx: Context) => {
 
         // Gremlin query to recursively delete a comment and its child comments
         const __ = DBConnector.__()
-        const results = await DBConnector.getGraph(true)
+        const results = await(await DBConnector.getGraph(true))
             .V(data.commentId) // Start with the given comment id
             .emit()
             .repeat(__.out(EDGE_PARENT_TO_CHILD_COMMENT)) // Traverse to child comments recursively
@@ -181,7 +181,7 @@ export const deleteComment = async (ctx: Context) => {
     } catch (err) {
         await DBConnector.rollbackTransaction();
         console.log(err);
-        logger.error(err);
+        logger.error((err as Error).message);
         return handleValidationError(ctx, "Error deleting comment(s)");
     }
 }
@@ -202,7 +202,7 @@ export const getCommentsByPostId = async (ctx: Context) => {
     try {
         const __ = DBConnector.__();
 
-        const results = await DBConnector.getGraph().V(data.postId)
+        const results = await(await DBConnector.getGraph()).V(data.postId)
             .as("post")
             .out(EDGE_POST_TO_COMMENT)
             .as("comment")
@@ -294,7 +294,7 @@ export const getCommentsByPostId = async (ctx: Context) => {
                 parentCommentId: parentId,
                 likes: await (async (): Promise<Like[]> => {
                     // Get the likes for this comment from the db
-                    const results = await DBConnector.getGraph().V(commentId)
+                    const results = await(await DBConnector.getGraph()).V(commentId)
                         .out(EDGE_COMMENT_LIKED_BY_USER)
                         .project("user")
                         .by()
@@ -333,7 +333,7 @@ export const getCommentsByPostId = async (ctx: Context) => {
         ctx.status = 200;
     } catch (err) {
         console.log(err);
-        logger.error(err);
+        logger.error((err as Error).message);
         return handleValidationError(ctx, "Error getting comment");
     }
 }
@@ -358,7 +358,7 @@ export const toggleCommentLike = async (ctx: Context) => {
         const __ = DBConnector.__();
 
         // Check if user currently likes this comment
-        const isLikedResults = await DBConnector.getGraph().V(data.commentId)
+        const isLikedResults = await(await DBConnector.getGraph()).V(data.commentId)
             .as("comment")
             .outE(EDGE_COMMENT_LIKED_BY_USER)
             .filter(__.inV().hasId(data.userId))
@@ -373,7 +373,7 @@ export const toggleCommentLike = async (ctx: Context) => {
         // Update the graph adding or removing edges as necessary
         if (isLiked) {
             // drop the edges
-            let results = await DBConnector.getGraph().V(data.commentId)
+            let results = await(await DBConnector.getGraph()).V(data.commentId)
                 .as("comment")
                 .outE(EDGE_COMMENT_LIKED_BY_USER)
                 .filter(__.inV().hasId(data.userId))
@@ -384,7 +384,7 @@ export const toggleCommentLike = async (ctx: Context) => {
                 return handleValidationError(ctx, "Error changing like status");
             }
 
-            results = await DBConnector.getGraph().V(data.userId)
+            results = await(await DBConnector.getGraph()).V(data.userId)
                 .as("user")
                 .outE(EDGE_USER_LIKED_COMMENT)
                 .filter(__.inV().hasId(data.commentId))
@@ -396,7 +396,7 @@ export const toggleCommentLike = async (ctx: Context) => {
             }
         } else {
             // add the edges
-            const results = await DBConnector.getGraph().V(data.commentId)
+            const results = await(await DBConnector.getGraph()).V(data.commentId)
                 .as("comment")
                 .V(data.userId)
                 .as("user")
@@ -416,7 +416,7 @@ export const toggleCommentLike = async (ctx: Context) => {
         ctx.body = { liked: !isLiked };
         ctx.status = 200;
     } catch (err) {
-        logger.error(err);
+        logger.error((err as Error).message);
         return handleValidationError(ctx, "Error changing like status");
     }
-}
+}*/

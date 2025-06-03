@@ -1,12 +1,12 @@
-import { Context } from "koa";
+/*import { Context } from "koa";
 import formidable from 'formidable';
 import Metrics from "../metrics/Metrics";
 import {getProfile, getVertexPropertySafe, handleValidationError, isUserAuthorized, updateProfileInRedis } from "../utils/utils";
 import logger from "../logger/logger";
-import ESConnector from "../Connectors/ESConnector";
+import ESConnector from "../connectors/ESConnector";
 import { Profile, ProfileWithFollowStatus, ProfileWithFollowStatusInt } from "../utils/types";
-import DBConnector, { EDGE_USER_FOLLOWS, EDGE_USER_TO_POST } from "../Connectors/DBConnector";
-import { removeFile, uploadFile } from "../Connectors/AWSConnector";
+import DBConnector, { EDGE_USER_FOLLOWS, EDGE_USER_TO_POST } from "../connectors/DBConnector";
+import { removeFile, uploadFile } from "../connectors/AWSConnector";
 import { extractFromMultipleTexts, getFileExtByMimeType, sanitizeInput } from "../utils/textUtils";
 
 type UpdateProfileRequest = {
@@ -72,7 +72,7 @@ export const updateProfileByUserId = async (ctx: Context) => {
 
         // Update the profile in the DB
         await DBConnector.beginTransaction();
-        const results = await DBConnector.getGraph(true).V(data.userId)
+        const results = await(await DBConnector.getGraph(true)).V(data.userId)
             .property("bio", bio)
             .property("pronouns", pronouns)
             .property("link", link)
@@ -103,7 +103,7 @@ export const updateProfileByUserId = async (ctx: Context) => {
         ctx.status = 200;
     } catch(err) {
         DBConnector.rollbackTransaction();
-        logger.error(err);
+        logger.error((err as Error).message);
         return handleValidationError(ctx, "Error updating profile");   
     }        
 }
@@ -131,7 +131,7 @@ export const getPostProfileByUserId = async (ctx: Context) => {
         ctx.status = 200;
     } catch(err) {
         console.log(err);
-        logger.error(err);
+        logger.error((err as Error).message);
         return handleValidationError(ctx, "Invalid profile");
     }        
 }
@@ -159,7 +159,7 @@ export const getPostProfileByUserName = async (ctx: Context) => {
         ctx.status = 200;
     } catch(err) {
         console.log(err);
-        logger.error(err);
+        logger.error((err as Error).message);
         return handleValidationError(ctx, "Invalid profile");      
     }        
 }
@@ -191,7 +191,7 @@ export const getProfileStatsById = async(ctx: Context) => {
         };
 
         // First: Get the number of posts by the user
-        const postResult = await DBConnector.getGraph().V(data.userId)
+        const postResult = await(await DBConnector.getGraph()).V(data.userId)
             .outE(EDGE_USER_TO_POST)
             .count()
             .next();
@@ -202,7 +202,7 @@ export const getProfileStatsById = async(ctx: Context) => {
         stats.postCount = postResult.value;
 
         // Second: Get the number of users this profile is following
-        const followerResult = await DBConnector.getGraph().V(data.userId)
+        const followerResult = await(await DBConnector.getGraph()).V(data.userId)
             .outE(EDGE_USER_FOLLOWS)
             .count()
             .next();
@@ -214,7 +214,7 @@ export const getProfileStatsById = async(ctx: Context) => {
         stats.followingCount = followerResult.value;
 
         // Third: Get the number of users following this user
-        const followingResult = await DBConnector.getGraph().V(data.userId)
+        const followingResult = await(await DBConnector.getGraph()).V(data.userId)
             .inE(EDGE_USER_FOLLOWS)
             .count()
             .next();
@@ -228,7 +228,7 @@ export const getProfileStatsById = async(ctx: Context) => {
         ctx.body = stats;
         ctx.status = 200;
     } catch(err) {
-        logger.error(err);
+        logger.error((err as Error).message);
         return handleValidationError(ctx, "Error getting stats");        
     }            
 }
@@ -283,7 +283,7 @@ export const putProfilePfp = async(ctx: Context) => {
         });                
 
         // Update the entry in the DB
-        const result = await DBConnector.getGraph().V(profile.userId).property("pfp", url).next();
+        const result = await(await DBConnector.getGraph()).V(profile.userId).property("pfp", url).next();
         if(result == null || result.value == null) {
             return handleValidationError(ctx, "Error updating profile");  
         }
@@ -295,9 +295,9 @@ export const putProfilePfp = async(ctx: Context) => {
         ctx.status = 200;
     } catch(err) {
         console.log(err);
-        logger.error(err);
+        logger.error((err as Error).message);
         return handleValidationError(ctx, "Error updating profile");       
-    }    
+    }   
 }
 
 type GetFollowingByUserIdRequest = {
@@ -317,7 +317,7 @@ export const getFollowingByUserId = async (ctx: Context) => {
         // Find the following profiles from the specified user id
         // Now get the follow data
         const __ = DBConnector.__();
-        const results = await DBConnector.getGraph().V(data.userId)
+        const results = await(await DBConnector.getGraph()).V(data.userId)
             .hasLabel('User')
             .group()
             .by("userName")
@@ -373,7 +373,7 @@ export const getFollowingByUserId = async (ctx: Context) => {
         ctx.status = 200;
     } catch(err) {
         console.log(err);
-        logger.error(err);
+        logger.error((err as Error).message);
         return handleValidationError(ctx, "Error getting following users");     
     }
 }
@@ -394,7 +394,7 @@ export const getFollowersByUserId = async(ctx: Context) => {
     try {
         // Find the follower profiles from the specified user id
         const __ = DBConnector.__();
-        let results = await DBConnector.getGraph().V(data.userId)
+        let results = await(await DBConnector.getGraph()).V(data.userId)
             .inE(EDGE_USER_FOLLOWS)  // Get all incoming 'user_follows' edges pointing to User1
             .outV()  // Get the vertices (users) who follow User1
             .where(__.not(__.hasId(data.userId)))  // Exclude User1 from the results            
@@ -435,7 +435,7 @@ export const getFollowersByUserId = async(ctx: Context) => {
         // Ideally we could handle this and the previous query together in a single query
         // but couldn't get it to work and ChatGPT let me down too
 
-        results = await DBConnector.getGraph().V(data.userId)                              
+        results = await(await DBConnector.getGraph()).V(data.userId)                              
             .out(EDGE_USER_FOLLOWS)           
             .filter(__.id().is(DBConnector.P().within(followerIds)))
             .dedup()
@@ -463,7 +463,7 @@ export const getFollowersByUserId = async(ctx: Context) => {
         ctx.status = 200;
     } catch(err) {
         console.log(err);
-        logger.error(err);
+        logger.error((err as Error).message);
         return handleValidationError(ctx, "Error getting followers");    
     }
 }    
@@ -484,7 +484,7 @@ export const getSingleFollowStatus = async(ctx: Context) => {
 
     try {
         // Find the profile data of the given user ids
-        const results = await DBConnector.getGraph()?.V(data.userId)
+        const results = await(await DBConnector.getGraph())?.V(data.userId)
             .outE(EDGE_USER_FOLLOWS)
             .inV()
             .hasId(data.checkUserId)
@@ -499,7 +499,7 @@ export const getSingleFollowStatus = async(ctx: Context) => {
         ctx.status = 200;
     } catch(err) {
         console.log(err);
-        logger.error(err);
+        logger.error((err as Error).message);
         return handleValidationError(ctx, "Error getting followers");    
     }
 }
@@ -520,7 +520,7 @@ export const bulkGetProfilesAndFollowing = async(ctx: Context) => {
 
     try {
         // Find the profile data of the given user ids
-        const results = await DBConnector.getGraph().V(data.userIds).project("User").toList();
+        const results = await(await DBConnector.getGraph()).V(data.userIds).project("User").toList();
         if(results == null) {
             return handleValidationError(ctx, "Error getting profiles"); 
         }
@@ -554,7 +554,7 @@ export const bulkGetProfilesAndFollowing = async(ctx: Context) => {
 
         // Now get the follow data
         const __ = DBConnector.__();
-        const results2 = await DBConnector.getGraph().V(data.userIds)
+        const results2 = await(await DBConnector.getGraph()).V(data.userIds)
             .hasLabel('User')
             .group()
             .by("userName")
@@ -640,7 +640,7 @@ export const bulkGetProfilesAndFollowing = async(ctx: Context) => {
         ctx.status = 200;
     } catch(err) {
         console.log(err);
-        logger.error(err);
+        logger.error((err as Error).message);
         return handleValidationError(ctx, "Error getting profiles");    
     }
-}
+}*/

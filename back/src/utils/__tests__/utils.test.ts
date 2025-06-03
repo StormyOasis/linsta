@@ -8,15 +8,15 @@ import {
     handleValidationError,
 } from '../utils';
 
-import RedisConnector from '../../Connectors/RedisConnector';
-import ESConnector from '../../Connectors/ESConnector';
+import RedisConnector from '../../connectors/RedisConnector';
+import ESConnector from '../../connectors/ESConnector';
 import { Context } from 'koa';
 
 jest.mock('../../Connectors/RedisConnector');
 jest.mock('../../Connectors/ESConnector');
 
-import * as dbConnectorModule from '../../Connectors/DBConnector'; // adjust this path
-import DBConnector from '../../Connectors/DBConnector'; // same as above
+import * as dbConnectorModule from '../../connectors/DBConnector'; // adjust this path
+import DBConnector from '../../connectors/DBConnector'; // same as above
 
 // Get original methods to preserve
 const { parseGraphResult, extractMapFromResult, unwrapResult, __ } = DBConnector;
@@ -195,7 +195,7 @@ describe('utils.ts', () => {
     describe('handleValidationError', () => {
         it('should set the correct status and body on the context', () => {
             const ctx = {} as Context;
-            handleValidationError(ctx, 'Invalid input', 400);
+            //handleValidationError(ctx, 'Invalid input', 400);
 
             expect(ctx.status).toBe(400);
             expect(ctx.body).toEqual({ status: 'Invalid input' });

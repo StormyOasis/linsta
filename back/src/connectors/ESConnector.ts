@@ -1,12 +1,13 @@
 import { Client } from '@elastic/elasticsearch';
 import logger from "../logger/logger";
-import Metrics from "../metrics/Metrics";
 import config from '../config';
 import { Entry, User, Global, Post, Profile } from '../utils/types';
 import fs from 'fs';
-import { ClusterHealthResponse, DeleteResponse, IndicesStatsResponse } from '@elastic/elasticsearch/lib/api/types';
+import { DeleteResponse, IndexResponse, SearchResponse, UpdateResponse } from '@elastic/elasticsearch/lib/api/types';
 import { extractFromMultipleTexts, extractTextSuggestionsFlat } from '../utils/textUtils';
 import RedisConnector from './RedisConnector';
+import path from 'path';
+import pRetry, { FailedAttemptError } from 'p-retry';
 
 type SuggestionResponse = {
     postSuggestions: string[];
@@ -14,63 +15,41 @@ type SuggestionResponse = {
     uniqueProfiles: Profile[];
 };
 
+type AsyncFunction<T> = () => Promise<T>;
+
 export default class ESConnector {
-    private static instance: ESConnector | null = null;
+    private client: Client;
 
-    private client: Client | null = null;
-    private metricsInterval: NodeJS.Timeout | null;
-
-    private constructor() {
+    constructor() {
         this.client = new Client({
             node: config.es.node,
             auth: {
                 apiKey: config.es.apiKey
             },
             tls: {
-                ca: fs.readFileSync("/usr/share/es/certs/ca.crt"),
+                ca: fs.readFileSync(path.resolve('/usr/share/es/certs/ca.crt')),
             }
         });
-
-        const timeout: number = config.es.metricsIntervalMs as number;
-
-        this.metricsInterval = setInterval(async (connector: ESConnector) => {
-            if (connector === null || connector.getClient() === null) {
-                return;
-            }
-
-            try {
-                const health: ClusterHealthResponse | undefined = await connector.client?.cluster.health();
-                const stats: IndicesStatsResponse | undefined = await connector.client?.indices.stats();
-                if (health && stats) {
-                    Metrics.gauge('es.cluster_status', Metrics.mapEsStatus(health.status));
-                    Metrics.gauge('es.number_of_nodes', health.number_of_nodes);
-                    Metrics.gauge('es.active_primary_shards', health.active_primary_shards);
-                    Metrics.gauge('es.active_shards', health.active_shards);
-                    Metrics.gauge('es.task_max_waiting_in_queue_millis', health.task_max_waiting_in_queue_millis);
-                    Metrics.gauge('es.number_of_pending_tasks', health.number_of_pending_tasks);
-                    Metrics.gauge('es.total_docs_count', stats._all.total?.docs?.count || -1);
-                    Metrics.gauge('es.unassigned_shards', health?.unassigned_shards || 0);
-                }
-            } catch (err) {
-                logger.error("Error getting ES Metrics", err);
-                Metrics.gauge('es.cluster_status', Metrics.mapEsStatus("red"));
-                Metrics.gauge('es.number_of_nodes', 0);
-            }
-
-        }, timeout, this);
     }
 
-    public static getInstance(): ESConnector {
-        if (!ESConnector.instance) {
-            ESConnector.instance = new ESConnector();
-        }
-
-        return ESConnector.instance;
-    }
-
-    public getClient = (): (Client | null) => {
+    public getClient = ():Client => {
         return this.client;
     }
+
+    private async withRetries<T>(fn: AsyncFunction<T>): Promise<T> {
+        return await pRetry(fn, {
+            retries: config.database.maxRetries,                  // number of retry attempts
+            minTimeout: config.database.minTimeout,              // initial wait time (ms)
+            maxTimeout: config.database.maxTimeout,             // max wait time (ms)
+            factor: config.database.backoffFactor,             // exponential backoff factor
+            onFailedAttempt: (error: FailedAttemptError) => {
+                logger.warn(
+                    `Attempt ${error.attemptNumber} failed. There are ${error.retriesLeft} retries left. Error:`,
+                    error
+                );
+            }
+        }) as Promise<T>;
+    }   
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public buildHashtagQuery = (term: string, searchAfter?: any[]) => {
@@ -380,13 +359,24 @@ export default class ESConnector {
 
         // Execute suggest queries in parallel
         const [mainSuggest, profilesSuggest] = await Promise.all([
-            this.client?.search({ index: config.es.mainIndex, _source: false, body: mainSuggestBody }),
-            this.client?.search({ index: config.es.profileIndex, body: profileSuggestBody })
+            this.withRetries<SearchResponse<Post>>(() =>
+                this.client?.search<Post>({
+                    index: config.es.mainIndex,
+                    _source: false,
+                    body: mainSuggestBody,
+                })
+            ),
+            this.withRetries<SearchResponse<Profile>>(() =>
+                this.client?.search<Profile>({
+                    index: config.es.profileIndex,
+                    body: profileSuggestBody,
+                })
+            )
         ]);
 
         // Flatten and limit suggestions to global size
-        const postSuggestions = extractTextSuggestionsFlat(mainSuggest?.suggest, size);
-        const profileSuggestions = extractTextSuggestionsFlat(profilesSuggest?.suggest, size);
+        const postSuggestions = extractTextSuggestionsFlat(mainSuggest.suggest, size);
+        const profileSuggestions = extractTextSuggestionsFlat(profilesSuggest.suggest, size);
         // Remove duplicates and limit to size
         const uniqueNames = [...new Set(profileSuggestions)].slice(0, size);
         let uniqueProfiles: Profile[] = [];
@@ -395,13 +385,26 @@ export default class ESConnector {
         if (uniqueNames.length > 0) {
             // Query profiles index to fetch full Profile docs
             const profileQueryBody = this.buildProfileSearchQuery(uniqueNames, isHashtag, size);
-            const profilesQuery = await this.client?.search({
-                index: config.es.profileIndex,
-                body: profileQueryBody
-            });
+            const profilesQuery:SearchResponse<Profile> = await this.withRetries(() =>
+                this.client?.search<Profile>({
+                    index: config.es.profileIndex,
+                    body: profileQueryBody
+                })
+            );  
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            uniqueProfiles = (profilesQuery?.hits.hits || []).map((hit: any) => ({ profileId: hit._id, ...hit._source }));
+            uniqueProfiles = (profilesQuery?.hits.hits || [])            
+                .filter(hit => !!hit._id && !!hit._source?.userName)
+                .map(hit => ({
+                    profileId: hit._id as string,
+                    userName: hit._source!.userName,
+                    bio: hit._source!.bio,
+                    pfp: hit._source!.pfp,
+                    firstName: hit._source!.firstName,
+                    lastName: hit._source!.lastName,
+                    gender: hit._source!.gender,
+                    pronouns: hit._source!.pronouns,
+                    link: hit._source!.link,
+                }));
         }
 
         // Create the result to store in cache
@@ -424,28 +427,31 @@ export default class ESConnector {
     public search = async (query: object, resultSize: number | null) => {
         const size: number = resultSize ? resultSize : config.es.defaultResultSize;
 
-        const result = await this.client?.search({
-            index: config.es.mainIndex,
-            query,
-            size,
-            sort: [
-                {
-                    "global.dateTime": {
-                        "order": "asc",
-                        "nested": {
-                            "path": "global"
-                        },
-                        "mode": "min"
-                    }
-                },
-            ]
-        }, { meta: true });
+        const result = await this.withRetries(() => 
+            this.client?.search({
+                index: config.es.mainIndex,
+                query,
+                size,
+                sort: [
+                    {
+                        "global.dateTime": {
+                            "order": "asc",
+                            "nested": {
+                                "path": "global"
+                            },
+                            "mode": "min"
+                        }
+                    },
+                ]
+            }, { meta: true }));
 
         return result;
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public searchWithPagination = async (query: any, dateTime:string|undefined, postId:string|undefined, resultSize?: number | null) => {
+    public searchWithPagination = async (query: any, dateTime: string | undefined, postId: string | undefined, resultSize?: number | null)
+        :Promise<SearchResponse> => {
+
         const size: number = resultSize ? resultSize : config.es.defaultPaginationSize;
 
         // Data needed for pagination in ES
@@ -453,14 +459,26 @@ export default class ESConnector {
             query.search_after = [dateTime, postId];
         }
 
-        const result = await this.client?.search({
-            index: config.es.mainIndex,
-            body: query,
-            size,
-        }, { meta: true });
-
-        return result;
+        return await this.withRetries(() =>
+            this.client?.search({
+                index: config.es.mainIndex,
+                body: query,
+                size,
+            })
+        );
     }
+
+    public searchProfile = async (query: object, resultSize: number | null):Promise<SearchResponse> => {
+        const size: number = resultSize ? resultSize : config.es.defaultResultSize;
+
+        return await this.withRetries(() => 
+            this.client?.search({
+                index: config.es.profileIndex,
+                query,
+                size,
+            })
+        );
+    }    
 
     public delete = async (id: string): Promise<DeleteResponse> => {
         if (!this.client) {
@@ -468,12 +486,13 @@ export default class ESConnector {
         }
 
         try {
-            const result = await this.client?.delete({
-                index: config.es.mainIndex,
-                id
-            });
+            return await this.withRetries(() =>
+                this.client?.delete({
+                    index: config.es.mainIndex,
+                    id
+                })
+            );
 
-            return result;
         } catch (err) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if ((err as any).statusCode === 404) {
@@ -485,79 +504,66 @@ export default class ESConnector {
     }
 
     public count = async (query: object) => {
-        const result = await this.client?.count({
-            index: config.es.mainIndex,
-            query,
-        }, { meta: true });
-
-        return result;
-    }
-
-    public searchProfile = async (query: object, resultSize: number | null) => {
-        const size: number = resultSize ? resultSize : config.es.defaultResultSize;
-
-        const result = await this.client?.search({
-            index: config.es.profileIndex,
-            query,
-            size,
-        }, { meta: true });
-
-        return result;
+        return this.withRetries(() =>
+            this.client.count({
+                index: config.es.mainIndex,
+                query,
+            }, { meta: true })
+        );
     }
 
     public countProfile = async (query: object) => {
-        const result = await this.client?.count({
-            index: config.es.profileIndex,
-            query,
-        }, { meta: true });
-
-        return result;
+        return this.withRetries(() =>
+            this.client.count({
+                index: config.es.profileIndex,
+                query,
+            }, { meta: true })
+        );
     }
 
-    public insert = async (dataSet: object) => {
-        const result = await this.client?.index({
-            index: config.es.mainIndex,
-            document: dataSet
-        });
-
-        return result;
+    public insert = async (dataSet: object): Promise<IndexResponse>  => {
+        return this.withRetries(() =>
+            this.client.index({
+                index: config.es.mainIndex,
+                document: dataSet
+            })
+        );
     }
 
-    public insertProfile = async (dataSet: object) => {
-        const result = await this.client?.index({
-            index: config.es.profileIndex,
-            document: dataSet
-        });
-
-        return result;
+    public insertProfile = async (dataSet: object): Promise<IndexResponse> => {
+        return this.withRetries(() =>
+            this.client.index({
+                index: config.es.profileIndex,
+                document: dataSet
+            })
+        );
     }
 
-    public update = async (id: string, script?: object, source?: boolean, body?: object) => {
-        const result = await this.client?.update({
-            index: config.es.mainIndex,
-            id,
-            script,
-            body,
-            _source: source || false
-        });
-        return result;
+    public update = async (id: string, script?: object, source?: boolean, body?: object):Promise<UpdateResponse> => {
+        return this.withRetries(() =>
+            this.client.update({
+                index: config.es.mainIndex,
+                id,
+                script,
+                body,
+                _source: source || false
+            })
+        );
     }
 
-    public updateProfile = async (id: string, script?: object, body?: object) => {
-        const result = await this.client?.update({
-            index: config.es.profileIndex,
-            id,
-            script,
-            body
-        });
-        return result;
+    public updateProfile = async (id: string, script?: object, body?: object):Promise<UpdateResponse> => {
+        return this.withRetries(() =>
+            this.client.update({
+                index: config.es.profileIndex,
+                id,
+                script,
+                body
+            })
+        );
     }
 
     public close = async () => {
-        this.metricsInterval && clearInterval(this.metricsInterval);
         await this.client?.close();
-        ESConnector.instance = null;
-        this.client = null;
     }
 }
 
@@ -635,4 +641,22 @@ export const buildSearchResultSet = (hits: any[]): Post[] => {
     });
 
     return results;
+}
+
+// Memoized factory for ESConnector instance
+let esConnectorInstance: ESConnector | null = null;
+
+export const getESConnector = (): ESConnector => {
+    if (!esConnectorInstance) {
+        esConnectorInstance = new ESConnector();
+    }
+    return esConnectorInstance;
+}
+
+// Optional reset function for cleanup or testing
+export async function resetESConnector(): Promise<void> {
+    if (esConnectorInstance) {
+        await esConnectorInstance.close();
+        esConnectorInstance = null;
+    }
 }

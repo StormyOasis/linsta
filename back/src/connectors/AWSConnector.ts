@@ -5,11 +5,9 @@ import { LocationClient, SearchPlaceIndexForTextCommand } from "@aws-sdk/client-
 import { withAPIKey } from "@aws/amazon-location-utilities-auth-helper";
 import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 
-import formidable from 'formidable';
 import config from '../config';
 import logger from "../logger/logger";
 import Metrics from "../metrics/Metrics";
-import { readFileSync } from "fs";
 
 export const SEND_CONFIRM_TEMPLATE = `sendconfirmemail`;
 export const FORGOT_PASSWORD_TEMPLATE = `forgotpasswordemail`;
@@ -20,6 +18,14 @@ export type SESTemplate = {
     template: string;
     templateData: object;
 }
+
+export type LambdaMultipartFile = {
+    filename: string;
+    content: Buffer;
+    contentType: string;
+    encoding: string;
+    fieldname: string;
+};
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const getAWSClient = <T extends { new (...args: any[]): any }>(ClientConstructor: T, clientConfig: object): InstanceType<T> => {
@@ -85,12 +91,15 @@ export const getLocationData = async (term: string) => {
     }
 }
 
-export const uploadFile = async (file: formidable.File, entryId: string, userId: string, fileExt?: string)
-    :Promise<{ tag: string, url: string }> => {
-
+export const uploadFile = async (
+    file: LambdaMultipartFile,
+    entryId: string,
+    userId: string,
+    fileExt?: string
+): Promise<{ tag: string, url: string }> => {
     try {
-        if (file === null) {
-            throw new Error("Invalid filename");
+        if (!file || !file.content) {
+            throw new Error("Invalid file");
         }
 
         const s3Client = getAWSClient(S3Client, {});
@@ -100,7 +109,8 @@ export const uploadFile = async (file: formidable.File, entryId: string, userId:
         const result = await s3Client.send(new PutObjectCommand({
             Bucket: bucket,
             Key: key,
-            Body: readFileSync(file.filepath)
+            Body: file.content,
+            ContentType: file.contentType,
         }));
 
         return {

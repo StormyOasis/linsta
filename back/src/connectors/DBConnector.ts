@@ -1,6 +1,8 @@
 import gremlin from 'gremlin';
 import config from '../config';
 import logger from '../logger/logger';
+import pRetry from 'p-retry';
+import { mapToObjectDeep } from '../utils/utils';
 
 export const EDGE_POST_TO_USER: string = "post_to_user";
 export const EDGE_USER_TO_POST: string = "user_to_post";
@@ -54,10 +56,10 @@ export class DBConnector {
         return this.transactionG;
     }    
 
-    public getGraph = (isTransaction: boolean = false)
-        : gremlin.process.GraphTraversalSource<gremlin.process.GraphTraversal> => {
+    public getGraph = async (isTransaction: boolean = false)
+        : Promise<gremlin.process.GraphTraversalSource<gremlin.process.GraphTraversal>> => {
 
-        //await this.reconnectIfNeeded();
+        await this.reconnectIfNeeded();
 
         if (!this.g) {
             throw new Error("Invalid connection");
@@ -74,28 +76,40 @@ export class DBConnector {
         return this.transactionG;
     }
 
-    public connect = async () => {
-        logger.info("Creating DB connection...");
+    public connect = async ():Promise<void> => {
+        await pRetry(async () => {
+            logger.info("Creating DB connection...");
 
-        const host: string = config.database.host;
-        const port: number = config.database.port as number;
-        const user: string = config.database.user;
-        const password: string = config.database.password;
+            const host: string = config.database.host;
+            const port: number = config.database.port as number;
+            const user: string = config.database.user;
+            const password: string = config.database.password;
 
-        const url = `ws://${host}:${port}/gremlin`;
+            const url = `ws://${host}:${port}/gremlin`;
 
-        const authenticator = new gremlin.driver.auth.PlainTextSaslAuthenticator(user, password);
+            const authenticator = new gremlin.driver.auth.PlainTextSaslAuthenticator(user, password);
 
-        this.connection = new gremlin.driver.DriverRemoteConnection(url, {
-            authenticator,
-            traversalsource: 'g',
-            rejectUnauthorized: true,
-            mimeType: 'application/vnd.gremlin-v3.0+json'
+            this.connection = new gremlin.driver.DriverRemoteConnection(url, {
+                authenticator,
+                traversalsource: 'g',
+                rejectUnauthorized: true,
+                mimeType: 'application/vnd.gremlin-v3.0+json'
+            });
+
+            // Try opening a test traversal to ensure connection works
+            this.g = gremlin.process.AnonymousTraversalSource.traversal().withRemote(this.connection);
+            await this.g.V().limit(1).toList(); // simple query to verify            
+
+            logger.info("Connection created");
+        }, {
+            retries: config.database.maxRetries,                  // number of retry attempts
+            minTimeout: config.database.minTimeout,              // initial wait time (ms)
+            maxTimeout: config.database.maxTimeout,             // max wait time (ms)
+            factor: config.database.backoffFactor,             // exponential backoff factor
+            onFailedAttempt: error => {
+                logger.warn(`Gremlin connection attempt ${error.attemptNumber} failed. ${error.retriesLeft} retries left.`, error);
+            }
         });
-
-        this.g = gremlin.process.AnonymousTraversalSource.traversal().withRemote(this.connection);
-
-        logger.info("Connection created");
     }
 
     public close = async (): Promise<void> => {
@@ -184,12 +198,11 @@ export class DBConnector {
 
         for (const field of fields) {
             const key = field as string;
-    
             const value = input instanceof Map
                 ? input.get(key)
                 : (input as Record<string, unknown>)[key];
-    
-            result[field] = value as T[typeof field];
+            
+            result[field] = mapToObjectDeep(value) as T[typeof field];
         }
     
         return result;
