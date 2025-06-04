@@ -61,6 +61,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
         for (const result of results) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const map: Map<any, any> = (result as Map<any, any>);
+
             if (map.has("comment")) {
                 const vertex = map.get("comment");
                 const vertexProperties = vertex['properties'];
@@ -87,7 +88,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
                     pfp: getVertexPropertySafe(vertexProperties, 'pfp')
                 };
                 userMap.set(newUser.userId, newUser);
-            } else if (map.has(EDGE_COMMENT_TO_USER)) {
+            } else if (map.has(EDGE_COMMENT_TO_USER)) {   
                 const edge = map.get(EDGE_COMMENT_TO_USER);
                 userFromCommentMap.set(edge.outV.id, edge.inV.id);
             } else if (map.has(EDGE_CHILD_TO_PARENT_COMMENT)) {
@@ -99,7 +100,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
         // Merge the 4 maps into one comment list object
         const comments: Comment[] = [];
 
-        for (const [commentId, tmpComment] of commentMap.entries()) {
+        for (const [commentId, tmpComment] of commentMap.entries()) {            
             // Get the user data for the comment
             const userId = userFromCommentMap.get(commentId);
             if (userId == null) {

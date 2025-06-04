@@ -121,6 +121,11 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
                 .drop()
                 .next();
 
+            if (!result || result?.value == null) {
+                await DBConnector.rollbackTransaction();
+                return handleValidationError("Error changing password");
+            }
+
             await DBConnector.commitTransaction();
         }
     } catch (err) {

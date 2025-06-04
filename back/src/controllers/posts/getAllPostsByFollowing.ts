@@ -78,9 +78,11 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
         for (const hit of hits) {
             const entry = hit._source as PostWithCommentCount;
-            const postId = entry.media[0].postId;
-            posts[postId] = { ...entry, postId };
-            postIds.push(postId);
+            if(entry.media?.length > 0) {
+                const postId = entry.media[0].postId;
+                posts[postId] = { ...entry, postId };
+                postIds.push(postId);
+            }
         }
 
         await Promise.all([

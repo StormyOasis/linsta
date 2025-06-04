@@ -25,7 +25,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
         return handleValidationError("Invalid params passed");
     }
 
-    if (!verifyJWT(event, data.requestorUserId)) {
+    if (!verifyJWT(event, data.requestorUserId)) {        
         // 403 - Forbidden
         return handleValidationError("You do not have permission to access this data", 403);
     }    

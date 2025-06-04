@@ -46,7 +46,6 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
         if (!value || value.size === 0) {
             return handleValidationError("No matching user found");
         }
-
         const email = value.get('email') as string;
         const phone = value.get('phone') as string;
         const userName = value.get('userName') as string;

@@ -2,23 +2,16 @@ import { createClient, RedisClientOptions } from "redis";
 import config from '../config';
 import logger from "../logger/logger";
 
-export interface RedisInfo {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [key: string]: any;
+export const parseRedisInfo = (info: string): Record<string, string> => {
+    const result: Record<string, string> = {};
+    info.split('\r\n').forEach(line => {
+        if (!line || !line.includes(':')) return;
+        const [key, ...rest] = line.split(':');
+        if (!key) return; // skip empty keys
+        result[key] = rest.join(':');
+    });
+    return result;
 }
-
-export const parseRedisInfo = (infoString: string): RedisInfo => {
-    const info: RedisInfo = {};
-
-    const lines = infoString.split('\r\n');
-    for (let i = 0; i < lines.length; ++i) {
-        const parts = lines[i].split(':');
-        if (parts[1]) {
-            info[parts[0]] = parts[1];
-        }
-    }
-    return info;
-};
 
 // Minor annoyance. see: https://github.com/redis/node-redis/issues/1673
 export type RedisClientType = ReturnType<typeof createClient>;
@@ -54,11 +47,6 @@ export class RedisConnector {
     public connect = async (): Promise<void> => {
         logger.info("Creating redis connection...");
 
-        if (this.client != null) {
-            await this.client.disconnect();
-            this.client = null;
-        }
-
         const redisUserName = config.redis.userName;
         const redisPassword = config.redis.password;
         const redisHost = config.redis.host;
@@ -82,6 +70,11 @@ export class RedisConnector {
         }
 
         try {
+            if (this.client != null) {
+                await this.client.disconnect();
+                this.client = null;
+            }
+
             this.client = createClient({ ...options });
             
             this.client.on("error", (err) => {
@@ -191,15 +184,26 @@ export class RedisConnector {
                 throw new Error("Redis connection not found");
             }         
             const statsString = await this.client.info();
-            const stats: RedisInfo = parseRedisInfo(statsString);
+            const stats: Record<string, string> = parseRedisInfo(statsString);
+
+            const convertToNumber = (value: string|null):number => {
+                if(!value) {
+                    return 0;
+                }
+                const num = Number(value);
+                if(isNaN(num)) {
+                    return 0;
+                }
+                return num;
+            }
 
             result = {
-                instantaneous_ops_per_sec: parseInt(stats['instantaneous_ops_per_sec']),
-                connected_clients: parseInt(stats['connected_clients']),
-                used_memory: stats['used_memory'] / 1024,
-                used_memory_peak: stats['used_memory_peak'] / 1024,
-                mem_fragmentation_ratio: parseFloat(stats['mem_fragmentation_ratio']),
-                used_cpu_user: parseFloat(stats['used_cpu_user'])
+                instantaneous_ops_per_sec: convertToNumber(stats['instantaneous_ops_per_sec']),
+                connected_clients: convertToNumber(stats['connected_clients']),
+                used_memory: convertToNumber(stats['used_memory']) / 1024,
+                used_memory_peak: convertToNumber(stats['used_memory_peak']) / 1024,
+                mem_fragmentation_ratio: convertToNumber(stats['mem_fragmentation_ratio']),
+                used_cpu_user: convertToNumber(stats['used_cpu_user'])
             };
 
             return result;

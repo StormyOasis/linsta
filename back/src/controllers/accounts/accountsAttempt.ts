@@ -64,7 +64,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
     //strip out full name into component parts
     const names: string[] = data.fullName.trim().split(' ');
-    if (names.length == 0) {
+    if (names.length == 0 || names[0] === '') {
         return handleValidationError("Invalid full name");
     }
 
@@ -186,7 +186,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
         await DBConnector.rollbackTransaction();
         if(failureOccured) {
             return handleValidationError("Error creating user")
-        } else {            
+        } else {                     
             return handleSuccess({status: "OK"});
         }
     } else {

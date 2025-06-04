@@ -3,7 +3,6 @@ import { buildSearchResultSet, getESConnector } from '../connectors/ESConnector'
 import RedisConnector from '../connectors/RedisConnector';
 import DBConnector, { EDGE_USER_FOLLOWS, EDGE_USER_LIKED_POST, EDGE_POST_TO_COMMENT } from '../connectors/DBConnector';
 import logger from '../logger/logger';
-import { Context } from 'koa';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import config from '../config';
 import { APIGatewayProxyEvent } from 'aws-lambda';
@@ -28,10 +27,6 @@ export const verifyJWT = (event: APIGatewayProxyEvent, userId: string):JwtPayloa
     } catch {
         return null;
     }
-}
-
-export const isUserAuthorized = (ctx: Context, userId: string): boolean => {
-    return ctx.state.user?.id === userId;
 }
 
 export const getLikesByPost = async (postId: string | null): Promise<Like[]> => {
@@ -60,7 +55,7 @@ export const getLikesByPost = async (postId: string | null): Promise<Like[]> => 
 }
 
 export const getPostByPostId = async (postId: string): Promise<| { esId: string; post: PostWithCommentCount } | null> => {
-    if (!postId?.trim()) {
+    if (postId.trim().length === 0) {
         return null;
     }
 
@@ -80,7 +75,7 @@ export const getPostByPostId = async (postId: string): Promise<| { esId: string;
 
         esId = parsed.esId;
 
-        if (!esId?.trim()) {
+        if (!esId || esId.trim().length === 0) {
             throw new Error("Invalid post id");
         }
 

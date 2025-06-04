@@ -12,8 +12,11 @@ package:
 
 plugins:
   - serverless-offline
+  - serverless-jest-plugin
 
 custom:
+  jest:
+    collectCove
   serverless-offline:
     watch:
       ignore:

@@ -58,13 +58,17 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
         }
 
         profile.pfp = url;
-
+        
         // Now update the profile data in ES with the new pfp 
-        await getESConnector().updateProfile(profile.profileId, undefined, {
+        const esResult = await getESConnector().updateProfile(profile.profileId, undefined, {
             doc: {
                 pfp: url,
             }
         });
+
+        if(esResult.result != 'updated') {
+            return handleValidationError("Error updating profile");
+        }
 
         // Update the entry in the DB
         const result = await(await DBConnector.getGraph()).V(parsed.userId).property("pfp", url).next();

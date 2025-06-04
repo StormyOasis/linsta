@@ -72,11 +72,12 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
     let data: GetAllPostsBySearchRequest;
     try {
         data = JSON.parse(event.body || '{}');
+        
     } catch {
         return handleValidationError("Missing required search params");
     }
 
-    if (data.postId?.trim() === "") {
+    if (!data.postId) {
         return handleValidationError("Missing required search params");
     }
 
