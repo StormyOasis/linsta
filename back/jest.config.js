@@ -18,9 +18,19 @@ module.exports = {
         '!**/app/**',
         '!/front/*',
         '!**/coverage/**',
+        "!**/.serverless/",
         '!/node_modules/',
         '!**webpack**',
         '!**jest**'
+    ],
+    coveragePathIgnorePatterns: [
+        "/node_modules/",
+        "/dist/",
+        "/build/",
+        "/test/",
+        "/app/",
+        "/.serverless/",
+        "/__mocks__/",
     ],
     collectCoverage: true,
     coverageThreshold: {

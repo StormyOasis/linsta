@@ -53,8 +53,7 @@ export type Comment = {
 export interface Profile {
     profileId: string;
     bio?: string;
-    pfp?: string;
-    userId: string;
+    pfp?: string;    
     userName: string;
     firstName?: string;
     lastName?: string;
@@ -64,6 +63,7 @@ export interface Profile {
 }
 
 export interface ProfileWithFollowStatus extends Profile {
+    userId: string;
     isFollowed: boolean;
     followers?: ProfileWithFollowStatus[];   
 }
@@ -74,4 +74,8 @@ export interface ProfileWithFollowStatusInt {
 
 export interface PostWithCommentCount extends Post {
     commentCount: number;
+}
+
+export interface RequestWithRequestorId {
+    requestorUserId: string;
 }

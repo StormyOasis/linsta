@@ -10,10 +10,7 @@ export class Metrics extends StatsDClient {
     }
 
     public static getInstance() : Metrics {
-        if(!Metrics.instance) {
-            console.log(`metrics://${config.metrics.statsd.host}:${ config.metrics.statsd.port}`);
-            logger.info(`redis://${config.metrics.statsd.host}:${ config.metrics.statsd.port}`);
-            
+        if(!Metrics.instance) {            
             Metrics.instance = new Metrics({
                 host: config.metrics.statsd.host,
                 port: config.metrics.statsd.port

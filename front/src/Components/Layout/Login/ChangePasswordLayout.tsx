@@ -67,8 +67,6 @@ const onSubmit = async (setIsFinished:any, password1: string, password2: string,
         const result = await postChangePassword({oldPassword: currentPassword, token, password1, password2});
         
         if(result.status == 200 && result.data.status === "OK") {
-            //we should be logged in and the JWT token set into localstorage
-            //navigate to root route
             setIsFinished(true);
         }        
         else {

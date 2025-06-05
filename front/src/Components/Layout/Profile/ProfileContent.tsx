@@ -235,7 +235,7 @@ const ProfileContent: React.FC = () => {
         }
 
         //profile nonce is changed when the followers dialog is closed        
-        if (profile?.userId != null) {
+        if (profile?.userId != null) {            
             postGetProfileStatsById({ userId: profile?.userId }).then((statsResult: ServiceResponse) => {
                 setProfileStats(statsResult.data as ProfileStats);
             })

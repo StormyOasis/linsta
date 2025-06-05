@@ -97,10 +97,6 @@ export const isHashtag = (text: string) => text.startsWith('#');
 export const isMention = (text: string) => text.startsWith('@');
 
 export const extractHashtags = (text: string): string[] => {
-    if (!text) {
-        return [];
-    }
-    
     const hashtagRegex = /#[\p{L}0-9_]+/gu; // Matches hashtags like #fun
     const matches = text.match(hashtagRegex);
 
@@ -108,13 +104,6 @@ export const extractHashtags = (text: string): string[] => {
 }
 
 export const extractHashtagsAndMentions = (text: string):{hashtags: string[]; mentions: string[]; } => {
-    if(!text) {
-        return {
-            hashtags: [],
-            mentions: []
-        };
-    }
-    
     const hashtagRegex = /#(\w+)/g;
     const mentionRegex = /@(\w+)/g;
 

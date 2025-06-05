@@ -16,7 +16,6 @@ export const authHeader = () => {
     }
 
     if (user && user.token) {
-        headers['x-access-token'] = user.token;
         headers['Authorization'] = `Bearer ${user.token}`;
     }
 

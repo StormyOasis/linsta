@@ -16,7 +16,11 @@
         "user": "laurenb",
         "password": "password",
         "database": "linsta",
-        "connectionLimit": 10
+        "connectionLimit": 10,
+        "backoffFactor": 2,
+        "maxRetries": 5,
+        "minTimeout": 500,
+        "maxTimeout": 5000
     },    
 
     "redis": {
@@ -64,6 +68,9 @@
         "defaultResultSize": 10000,
         "defaultPaginationSize": 15,
         "defaultSuggestionResultSize" : 5,
-        "metricsIntervalMs": 5000
+        "backoffFactor": 2,
+        "maxRetries": 5,
+        "minTimeout": 500,
+        "maxTimeout": 5000
     }
 }

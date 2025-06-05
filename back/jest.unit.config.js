@@ -11,16 +11,13 @@ module.exports = {
     testMatch: ['**/?(*.)+(spec|test).ts?(x)'],
     coverageDirectory: 'coverage',
     coverageReporters: ['html'],
-    collectCoverageFrom: [
-        '**/*.{js,jsx,ts,tsx}',
-        '!**/*stories.tsx',
-        '!**/build/**',
-        '!**/app/**',
-        '!/front/*',
-        '!**/coverage/**',
-        '!/node_modules/',
-        '!**webpack**',
-        '!**jest**'
+    coveragePathIgnorePatterns: [
+        "/node_modules/",
+        "/build/",
+        "/dist/",
+        "/app/",
+        "/coverage/",
+        "/.serverless/"
     ],
     collectCoverage: true,
     coverageThreshold: {

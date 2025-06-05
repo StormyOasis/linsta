@@ -35,10 +35,17 @@ interface ESConfig {
     defaultResultSize: number;
     defaultPaginationSize: number;
     defaultSuggestionResultSize: number;
-    metricsIntervalMs: number;
+    backoffFactor: number;
+    maxTimeout: number;
+    minTimeout: number;
+    maxRetries: number;
 }
 
 interface DBConfig {
+    backoffFactor: number;
+    maxTimeout: number;
+    minTimeout: number;
+    maxRetries: number;
     host: string;
     port: string | number;
     user: string;
@@ -88,6 +95,10 @@ const appConfig: AppConfig = {
         password: config.get<string>('database.password'),
         database: config.get<string>('database.database'),
         connectionLimit: config.get<number>('database.connectionLimit'),
+        backoffFactor: config.get<number>('database.backoffFactor'),
+        maxTimeout: config.get<number>('database.maxTimeout'),
+        minTimeout: config.get<number>('database.minTimeout'),
+        maxRetries: config.get<number>('database.maxRetries')
     },    
     logging: {
         logLevel: config.get<string>('logging.logLevel')
@@ -101,7 +112,7 @@ const appConfig: AppConfig = {
     auth: {
         jwt: {
             secret: config.get<string>('auth.jwt.secret'),
-            expiration: config.get<string>('auth.jwt.expiration'),
+            expiration: config.get<string>('auth.jwt.expiration')
         }
     },
     es: {
@@ -112,7 +123,10 @@ const appConfig: AppConfig = {
         defaultResultSize: config.get<number>('es.defaultResultSize'),
         defaultPaginationSize: config.get<number>('es.defaultPaginationSize'),
         defaultSuggestionResultSize: config.get<number>('es.defaultSuggestionResultSize'),
-        metricsIntervalMs: config.get<number>('es.metricsIntervalMs')
+        backoffFactor: config.get<number>('es.backoffFactor'),
+        maxTimeout: config.get<number>('es.maxTimeout'),
+        minTimeout: config.get<number>('es.minTimeout'),
+        maxRetries: config.get<number>('es.maxRetries')
     },
     redis: {
         host: config.get<string>('redis.host'),
@@ -154,6 +168,10 @@ if (process.env.NODE_ENV === 'production') {
     appConfig.database.password = process.env.DB_PASSWORD ?? appConfig.database.password;
     appConfig.database.database = process.env.DB_NAME ?? appConfig.database.database;
     appConfig.database.connectionLimit = Number(process.env.DB_CONN_LIMIT ?? appConfig.database.connectionLimit);
+    appConfig.database.backoffFactor = Number(process.env.DB_BACKOFF_FACTOR ?? appConfig.database.backoffFactor);
+    appConfig.database.maxRetries = Number(process.env.DB_MAX_RETRIES ?? appConfig.database.maxRetries);
+    appConfig.database.minTimeout = Number(process.env.DB_MIN_TIMEOUT ?? appConfig.database.minTimeout);
+    appConfig.database.maxTimeout = Number(process.env.DB_MAX_TIMEOUT ?? appConfig.database.maxTimeout);
   
     appConfig.logging.logLevel = process.env.LOG_LEVEL ?? appConfig.logging.logLevel;
   
@@ -170,8 +188,11 @@ if (process.env.NODE_ENV === 'production') {
     appConfig.es.defaultResultSize = Number(process.env.ES_DEFAULT_RESULT_SIZE ?? appConfig.es.defaultResultSize);
     appConfig.es.defaultPaginationSize = Number(process.env.ES_DEFAULT_PAGINATION_SIZE ?? appConfig.es.defaultPaginationSize);
     appConfig.es.defaultSuggestionResultSize = Number(process.env.ES_DEFAULT_SUGGESTION_RESULT_SIZE ?? appConfig.es.defaultSuggestionResultSize);
-    appConfig.es.metricsIntervalMs = Number(process.env.ES_METRICS_INTERVAL_MS ?? appConfig.es.metricsIntervalMs);
-  
+    appConfig.es.backoffFactor = Number(process.env.ES_BACKOFF_FACTOR ?? appConfig.es.backoffFactor);
+    appConfig.es.maxRetries = Number(process.env.ES_MAX_RETRIES ?? appConfig.es.maxRetries);
+    appConfig.es.minTimeout = Number(process.env.ES_MIN_TIMEOUT ?? appConfig.es.minTimeout);
+    appConfig.es.maxTimeout = Number(process.env.ES_MAX_TIMEOUT ?? appConfig.es.maxTimeout);
+
     appConfig.redis.host = process.env.REDIS_HOST ?? appConfig.redis.host;
     appConfig.redis.port = process.env.REDIS_PORT ?? appConfig.redis.port;
     appConfig.redis.userName = process.env.REDIS_USERNAME ?? appConfig.redis.userName;
