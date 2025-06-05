@@ -4,7 +4,7 @@ import Metrics from '../../metrics/Metrics';
 import logger from '../../logger/logger';
 import { getESConnector } from '../../connectors/ESConnector';
 import { addCommentCountsToPosts, addLikesToPosts, addPfpsToPosts, buildPostSortClause, handleSuccess, handleValidationError, verifyJWT } from '../../utils/utils';
-import { PostWithCommentCount, RequestWithRequestorId } from '../../utils/types';
+import { Post, RequestWithRequestorId } from '../../utils/types';
 
 interface GetPostsByUserIdRequest extends RequestWithRequestorId {
     userId: string;
@@ -13,7 +13,7 @@ interface GetPostsByUserIdRequest extends RequestWithRequestorId {
 }
 
 type GetPostsByUserIdResponse = {
-    posts: PostWithCommentCount[];
+    posts: Post[];
     dateTime: string;
     postId: string;
     done: boolean;
@@ -72,11 +72,11 @@ export const handler: APIGatewayProxyHandler = async (event) => {
             };
         }
 
-        const posts: Record<string, PostWithCommentCount> = {};
+        const posts: Record<string, Post> = {};
         const postIds: string[] = [];
 
         for (const hit of hits) {
-            const entry = hit._source as PostWithCommentCount;
+            const entry = hit._source as Post;
             const postId = entry.media[0].postId;
             posts[postId] = { ...entry, postId };
             postIds.push(postId);

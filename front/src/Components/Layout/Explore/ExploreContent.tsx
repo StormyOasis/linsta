@@ -4,7 +4,7 @@ import styled from "styled-components";
 import { ContentWrapper, Div, Flex, FlexColumnFullWidth, FlexRow, FlexRowFullWidth, Section, Span } from "../../../Components/Common/CombinedStyling";
 import LoadingImage from "../../../Components/Common/LoadingImage";
 import { MODAL_TYPES } from "../../../Components/Redux/slices/modals.slice";
-import { PostPaginationResponse, PostWithCommentCount } from "../../../api/types";
+import { PostPaginationResponse, Post } from "../../../api/types";
 import { isVideoFileFromPath } from "../../../utils/utils";
 import HeartFilledSVG from "/public/images/heart-fill.svg";
 import MessageSVG from "/public/images/message.svg";
@@ -93,8 +93,8 @@ const ImageOverlayText = styled(Div)`
 const ExploreContent: React.FC = () => {
     const authUser: AuthUser = useAppSelector((state: any) => state.auth.user);
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [posts, setPosts] = useState<PostWithCommentCount[]>([]);
-    const [hoverPost, setHoverPost] = useState<PostWithCommentCount | null>(null);
+    const [posts, setPosts] = useState<Post[]>([]);
+    const [hoverPost, setHoverPost] = useState<Post | null>(null);
     const [q, setQ] = useState<string>("");
 
     const dispatch = useAppDispatch();
@@ -156,7 +156,7 @@ const ExploreContent: React.FC = () => {
 
                 paginationRef.current = response;
 
-                setPosts((posts: PostWithCommentCount[]) => [...posts, ...response.posts]);
+                setPosts((posts: Post[]) => [...posts, ...response.posts]);
             }
         } finally {
             setIsLoading(false);
@@ -168,21 +168,21 @@ const ExploreContent: React.FC = () => {
     // Use the custom hook for infinite scroll
     useInfiniteScroll(loadPosts, isLoading, childRef);
 
-    const handleGridImageClicked = (post: PostWithCommentCount) => {
+    const handleGridImageClicked = (post: Post) => {
         // Open the comment dialog by setting the state in redux
         dispatch(actions.modalActions.openModal({ modalName: MODAL_TYPES.COMMENT_MODAL, data: { post } }));
     }
 
-    const renderMedia = (post: PostWithCommentCount) => {
+    const renderMedia = (post: Post) => {
         const media = post.media[0];
         return isVideoFileFromPath(media.path) ?
             <GridVideo src={media.path} aria-label={media.altText} /> :
             <GridImage src={media.path} alt={media.altText} aria-label={media.altText} />
     };
 
-    const renderOverlay = (post: PostWithCommentCount) => {
+    const renderOverlay = (post: Post) => {
         const likeCount = post.global.likes?.length || 0;
-        const commentCount = post.global.commentsDisabled ? 0 : post.commentCount;
+        const commentCount = post.global.commentsDisabled ? 0 : post.global.commentCount;
         const isOwner = authUser?.id === post.user?.userId;
 
         return (
@@ -214,7 +214,7 @@ const ExploreContent: React.FC = () => {
                                     }
                                     <Span $fontWeight="600" $fontSize="18px" $lineHeight="25px">{q}</Span>
                                 </FlexRowFullWidth>
-                                {posts.map((post: PostWithCommentCount, index: number) => (
+                                {posts.map((post: Post, index: number) => (
                                     <GridImageContainer
                                         key={`${post.media[0].id}-${index}`}
                                         onClick={() => handleGridImageClicked(post)}

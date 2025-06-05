@@ -74,10 +74,6 @@ export interface ProfileWithFollowStatusInt {
     [key: string]: ProfileWithFollowStatus;
 } 
 
-export interface PostWithCommentCount extends Post {
-    commentCount: number;
-}
-
 export interface PaginationResponse {    
     done: boolean;
     postCursor: any[];
@@ -88,5 +84,5 @@ export interface PaginationResponse {
 export interface PostPaginationResponse extends PaginationResponse {
     dateTime: string;
     postId: string;    
-    posts: PostWithCommentCount[];
+    posts: Post[];
 }

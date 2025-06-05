@@ -18,6 +18,7 @@ export type Global = {
     dateTime: string;
     captionText: string;
     commentsDisabled: boolean;
+    commentCount: number;
     likesDisabled: boolean;
     locationText: string;
     likes: Like[];
@@ -72,9 +73,6 @@ export interface ProfileWithFollowStatusInt {
     [key: string]: ProfileWithFollowStatus;
 }        
 
-export interface PostWithCommentCount extends Post {
-    commentCount: number;
-}
 
 export interface RequestWithRequestorId {
     requestorUserId: string;

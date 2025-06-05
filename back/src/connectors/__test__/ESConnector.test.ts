@@ -144,7 +144,7 @@ describe('ESConnector', () => {
 
     it('should build a dataset for ES', () => {
         const user = { userId: '1', userName: 'test', pfp: 'pfp' };
-        const global = { captionText: 'caption', commentsDisabled: false, likesDisabled: false, locationText: 'loc', id: '', dateTime: '', likes: [] };
+        const global = { captionText: 'caption', commentCount: 0, commentsDisabled: false, likesDisabled: false, locationText: 'loc', id: '', dateTime: '', likes: [] };
         const entries = [{ alt: 'alt', entityTag: 'tag', id: '1', mimeType: 'image/jpeg', url: 'url', postId: 'p1', userId: '1' }];
         const result = buildDataSetForES(user, global, entries);
         expect(result).toHaveProperty('user');

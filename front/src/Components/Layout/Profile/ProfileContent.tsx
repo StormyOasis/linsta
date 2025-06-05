@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { useNavigate, useParams } from "react-router-dom";
 import { ContentWrapper, Div, Flex, FlexColumn, FlexRow, FlexRowFullWidth, Main, Section, Span } from "../../../Components/Common/CombinedStyling";
 import { useAppDispatch, actions, useAppSelector, RootState } from "../../../Components/Redux/redux";
-import { Post, PostPaginationResponse, PostWithCommentCount, Profile } from "../../../api/types";
+import { Post, PostPaginationResponse, Profile } from "../../../api/types";
 import { postGetPostByPostId, postGetPostsByUserId, postGetProfileByUserName, postGetProfileStatsById, postGetSingleFollowStatus, ServiceResponse } from "../../../api/ServiceController";
 import { followUser, getPfpFromProfile, isVideoFileFromPath } from "../../../utils/utils";
 import StyledButton from "../../../Components/Common/StyledButton";
@@ -177,13 +177,13 @@ const ProfileContent: React.FC = () => {
     const commentModalState = useAppSelector((state: RootState) => state.modal.openModalStack?.find((modal: ModalState) => modal.modalName === MODAL_TYPES.COMMENT_MODAL));
     const deletedCommentId: string | null = useAppSelector((state: RootState) => state.misc.deletedCommentId);
     const deletedPostId: string | null = useAppSelector((state: RootState) => state.misc.deletedPostId);
-    const updatedPost: PostWithCommentCount | null = useAppSelector((state: RootState) => state.misc.updatedPost);
+    const updatedPost: Post | null = useAppSelector((state: RootState) => state.misc.updatedPost);
     const [profile, setProfile] = useState<Profile | null>(null);
     const [profileStats, setProfileStats] = useState<ProfileStats | null>(null);
     const [paginationResult, setPaginationResult] = useState<PostPaginationResponse | null>(null);
-    const [posts, setPosts] = useState<PostWithCommentCount[]>([]);
+    const [posts, setPosts] = useState<Post[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [hoverPost, setHoverPost] = useState<PostWithCommentCount | null>(null);
+    const [hoverPost, setHoverPost] = useState<Post | null>(null);
     const [isLoggedInFollowing, setIsLoggedInFollowing] = useState<boolean>(false);
     const { userName } = useParams<{ userName: string }>();
     const childRef = useRef<HTMLDivElement | null>(null);
@@ -249,11 +249,11 @@ const ProfileContent: React.FC = () => {
         }
 
         // Update the likes and comment count
-        const newPostState: PostWithCommentCount[] = structuredClone(posts);
+        const newPostState: Post[] = structuredClone(posts);
         for (const post of newPostState) {
             if (post.postId == commentModalState?.data?.post?.postId) {
                 post.global.likes = commentModalState?.data?.post.global.likes;
-                post.commentCount = commentModalState?.data?.post.commentCount;
+                post.global.commentCount = commentModalState?.data?.post.global.commentCount;
                 break;
             }
         }
@@ -268,10 +268,10 @@ const ProfileContent: React.FC = () => {
             // for that specific post 
             const result = await postGetPostByPostId({ postId: commentModalState?.data?.post?.postId });
             if (result.data != null) {
-                const response: PostWithCommentCount = result.data.post;
-                setPosts((posts: PostWithCommentCount[]) => {
+                const response: Post = result.data.post;
+                setPosts((posts: Post[]) => {
                     const newPosts = [...posts];
-                    const index = newPosts.findIndex((post: PostWithCommentCount) => post.postId === response.postId);
+                    const index = newPosts.findIndex((post: Post) => post.postId === response.postId);
                     if (index !== -1) {
                         newPosts[index].commentCount = response.commentCount;
                     }
@@ -288,7 +288,7 @@ const ProfileContent: React.FC = () => {
         if (deletedPostId) {
             // A post has been deleted so we need to remove it from the list
             // and update the post counts
-            const newPosts = posts.filter((post: PostWithCommentCount) => post.postId !== deletedPostId);
+            const newPosts = posts.filter((post: Post) => post.postId !== deletedPostId);
             setPosts(newPosts);
 
             // Get the post, follower, and following stats
@@ -303,7 +303,7 @@ const ProfileContent: React.FC = () => {
     useEffect(() => {
         // A post has been updated, so we need to update the post in the list
         if (updatedPost) {
-            const newPosts = posts.map((post: PostWithCommentCount) => {
+            const newPosts = posts.map((post: Post) => {
                 if (post.postId === updatedPost.postId) {
                     return updatedPost;
                 }
@@ -330,7 +330,7 @@ const ProfileContent: React.FC = () => {
             if (result.data != null) {
                 const response: PostPaginationResponse = result.data;
                 setPaginationResult(response);
-                setPosts((posts: PostWithCommentCount[]) => [...posts, ...response.posts]);
+                setPosts((posts: Post[]) => [...posts, ...response.posts]);
             }
         } finally {
             setIsLoading(false);
@@ -354,7 +354,7 @@ const ProfileContent: React.FC = () => {
         dispatch(actions.modalActions.openModal({ modalName: MODAL_TYPES.PROFILE_PIC_MODAL, data: { profile } }));
     }
 
-    const handleGridImageClicked = (post: PostWithCommentCount | null) => {
+    const handleGridImageClicked = (post: Post | null) => {
         if (post == null) {
             return;
         }
@@ -453,9 +453,9 @@ const ProfileContent: React.FC = () => {
                 <Section style={{ alignItems: "center" }}>
                     <Flex $justifyContent="center" style={{ margin: "0 auto" }}>
                         <GridContainer $width="100%">
-                            {posts.map((post: PostWithCommentCount, index: number) => {
+                            {posts.map((post: Post, index: number) => {
                                 const likeCount = post.global.likes ? post.global.likes.length : 0;
-                                const commentCount = post.global.commentsDisabled ? 0 : post.commentCount;
+                                const commentCount = post.global.commentsDisabled ? 0 : post.global.commentCount;
                                 const isVideo = isVideoFileFromPath(post.media[0].path);
                                 return (
                                     <GridImageContainer

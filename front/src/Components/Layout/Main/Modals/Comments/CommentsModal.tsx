@@ -3,7 +3,7 @@ import { renderToString } from "react-dom/server";
 import styled from "styled-components";
 
 import MultiStepModal from "../../../../Common/MultiStepModal";
-import { PostWithCommentCount, Profile } from "../../../../../api/types";
+import { Post, Profile } from "../../../../../api/types";
 import { BoldLink, Div, Flex, FlexColumn, FlexColumnFullWidth, FlexRow, FlexRowFullWidth, Span } from "../../../../Common/CombinedStyling";
 import MediaSlider from "../../../../Common/MediaSlider";
 import { DEFAULT_PFP, HOST } from "../../../../../api/config";
@@ -131,13 +131,13 @@ const DotMenuButton = styled.button`
 
 type CommentModalProps = {
     onClose: () => void;
-    post: PostWithCommentCount;
+    post: Post;
     zIndex: number;
 }
 
 type CommentModalContentProps = {
     onClose: () => void;
-    post: PostWithCommentCount;
+    post: Post;
 }
 
 const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentModalContentProps) => {
@@ -344,8 +344,8 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
         // just merge the comment into the local list
 
         // first update the commentCount
-        let post: PostWithCommentCount | null = structuredClone(props.post);
-        post.commentCount++;
+        let post: Post | null = structuredClone(props.post);
+        post.global.commentCount++;
         dispatch(actions.modalActions.updateModalData({ modalName: MODAL_TYPES.COMMENT_MODAL, data: { post } }));
 
         const newComment: CommentUiData = {
@@ -384,7 +384,7 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
         setParentCommentId(null);
     }
 
-    const openLikesModal = (post: PostWithCommentCount) => {
+    const openLikesModal = (post: Post) => {
         if (post === null) {
             return;
         }
@@ -393,7 +393,7 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
         dispatch(actions.modalActions.openModal({ modalName: MODAL_TYPES.LIKES_MODAL, data: { post } }));
     }
 
-    const openPostMenuModal = (post: PostWithCommentCount) => {
+    const openPostMenuModal = (post: Post) => {
         if(post === null) {
             return;
         }
@@ -404,8 +404,8 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
 
     const toggleLike = async (userName: string, userId: string) => {
         // Greedily update only the local UI regardless of server response
-        let post: PostWithCommentCount | null = structuredClone(props.post);
-        post = togglePostLikedState(userName, userId, post) as PostWithCommentCount;
+        let post: Post | null = structuredClone(props.post);
+        post = togglePostLikedState(userName, userId, post) as Post;
         dispatch(actions.modalActions.updateModalData({ modalName: MODAL_TYPES.COMMENT_MODAL, data: { post } }));
 
         // Send the actual command to the server
@@ -452,7 +452,7 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                                 </HeadingWrapper>
                                 <CommentsWrapper>
                                     {!props.post.global.commentsDisabled && renderComments()}
-                                    {(props.post.global.commentsDisabled || props.post.commentCount === 0) && 
+                                    {(props.post.global.commentsDisabled || props.post.global.commentCount === 0) && 
                                         <FlexColumnFullWidth $height="100%" $justifyContent="center">
                                             <Div $alignSelf="center" $fontSize="1.3em" $fontWeight="500">No Comments Yet</Div>
                                         </FlexColumnFullWidth>

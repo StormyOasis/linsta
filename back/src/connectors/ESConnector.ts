@@ -624,6 +624,7 @@ export const buildSearchResultSet = (hits: any[]): Post[] => {
                 commentsDisabled: source.global.commentsDisabled,
                 likesDisabled: source.global.likesDisabled,
                 locationText: source.global.locationText,
+                commentCount: 0,
                 likes: []
             },
             // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -1,6 +1,6 @@
 import sanitizeHtml from 'sanitize-html';
 
-import { HistoryType, Post, PostWithCommentCount, Profile } from "../api/types";
+import { HistoryType, Post, Profile } from "../api/types";
 import { postSetFollowStatus, postUpdatePost } from '../api/ServiceController';
 import { DEFAULT_PFP } from '../api/config';
 
@@ -303,7 +303,7 @@ export const splitFullName = (fullName:string):{ firstName: string, middleNames:
     return { firstName, middleNames, lastName };
 }
 
-export const updatePostFields = async (post:PostWithCommentCount, fieldsToUpdate: {key:string, value:any}[], onClose:(data:any) => void) => {
+export const updatePostFields = async (post:Post, fieldsToUpdate: {key:string, value:any}[], onClose:(data:any) => void) => {
     if(fieldsToUpdate == null || fieldsToUpdate.length === 0) {
         return;
     }
@@ -317,7 +317,7 @@ export const updatePostFields = async (post:PostWithCommentCount, fieldsToUpdate
     }        
 }
 
-export const updatePost = async (post:PostWithCommentCount, fieldsToUpdate: {key:string, value:any}[]):Promise<PostWithCommentCount> => {
+export const updatePost = async (post:Post, fieldsToUpdate: {key:string, value:any}[]):Promise<Post> => {
     if(fieldsToUpdate == null || fieldsToUpdate.length === 0) {
         return post;
     }
@@ -341,12 +341,12 @@ export const updatePost = async (post:PostWithCommentCount, fieldsToUpdate: {key
         // update the local returned post adding the fields not returned by ES
         results.data.postId = post.postId
         results.data.user.pfp = post.user.pfp;
-        results.data.commentCount = post.commentCount;
+        results.data.commentCount = post.global.commentCount;
         if(post?.global?.likes != null) {
             results.data.global.likes = [...post?.global?.likes];
         }
 
-        return results.data as PostWithCommentCount;
+        return results.data as Post;
     } catch(err) {
         console.error(err)
     }
