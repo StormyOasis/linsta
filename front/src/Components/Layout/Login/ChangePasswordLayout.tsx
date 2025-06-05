@@ -7,6 +7,7 @@ import StyledInput from "../../../Components/Common/StyledInput";
 import { validatePassword } from "../../../utils/utils";
 import StyledButton from "../../../Components/Common/StyledButton";
 import { postChangePassword } from "../../../api/ServiceController";
+import { getCurrentUser } from "../../../api/Auth";
 
 type ChangeProps = {
 
@@ -64,7 +65,7 @@ const isFormValid = (password1: string, password2: string, token?: string|null, 
 
 const onSubmit = async (setIsFinished:any, password1: string, password2: string, token?: string|null, currentPassword?: string) => {
     try {
-        const result = await postChangePassword({oldPassword: currentPassword, token, password1, password2});
+        const result = await postChangePassword({userName: getCurrentUser()?.userName, oldPassword: currentPassword, token, password1, password2});
         
         if(result.status == 200 && result.data.status === "OK") {
             setIsFinished(true);
@@ -133,7 +134,7 @@ const renderChangeForm = () => {
     );
 }
 
-const ChangePasswordLayout: React.FC<ChangeProps> = (props: ChangeProps) => {
+const ChangePasswordLayout: React.FC<ChangeProps> = (_props: ChangeProps) => {
     return (
         <Theme>
             <ChangeLayoutWrapper role="main">

@@ -88,9 +88,12 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
             }
         } else {
             // use the token to change password and then delete the token from the db
-            await DBConnector.beginTransaction();
+            const token:string|undefined = data.token?.trim();
+            if(!token || token.length === 0) {
+                return handleValidationError("Invalid token");
+            }
 
-            const token: string = data.token ? data.token : "";
+            await DBConnector.beginTransaction();            
 
             // Get the token from the db if it exists
             let result = await(await DBConnector.getGraph(true)).V()
@@ -101,6 +104,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
             let value = result?.value;
             if (value == null || value.id == null) {
+                await DBConnector.rollbackTransaction();
                 return handleValidationError("Invalid token");
             }
 
@@ -111,17 +115,18 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
             value = result?.value;
             if (value == null || value.id == null) {
+                await DBConnector.rollbackTransaction();
                 return handleValidationError("Error changing password");
             }
 
             // Now delete the forgot token vertex
-            result = await(await DBConnector.getGraph(true))
+            const dropResult = await(await DBConnector.getGraph(true))
                 .V(value.id)
                 .out(EDGE_USER_TO_TOKEN)
                 .drop()
-                .next();
+                .toList();
 
-            if (!result || result?.value == null) {
+            if (!dropResult) {
                 await DBConnector.rollbackTransaction();
                 return handleValidationError("Error changing password");
             }
