@@ -219,7 +219,7 @@ describe('changePassword handler', () => {
         (DBConnector.getGraph as jest.Mock)
             .mockResolvedValueOnce(makeGremlinChainMock(tokenResult))
             .mockResolvedValueOnce(makeGremlinChainMock(updateResult))
-            .mockResolvedValueOnce(makeGremlinChainMock({ value: null }));
+            .mockResolvedValueOnce(makeGremlinChainMock(null));
 
         const event = mockEvent({
             token: 'sometoken',
