@@ -51,7 +51,7 @@ const StyledInput: React.FC<StyledInputProps> = (props: StyledInputProps) => {
         validationClass = props.isValid ? styles.validationPass : styles.validationFail;
     }
 
-    const top = props.validationYpos ? props.validationYpos : "6px";
+    const top = props.validationYpos ? props.validationYpos : "7px";
 
     return (
         <StyledInputWrapper $noMargin={props.noMargin}>
