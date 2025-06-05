@@ -31,6 +31,8 @@ export type SignupMainFormProps = {
 };
 
 export default class SignupMainForm extends React.Component<SignupMainFormProps> {
+    debounceTimer?: ReturnType<typeof setTimeout>;
+
     loginWithFacebookClicked = (event: React.MouseEventHandler<HTMLButtonElement>) => {
         window.alert("todo");
     };
@@ -72,25 +74,39 @@ export default class SignupMainForm extends React.Component<SignupMainFormProps>
         );
     };
 
-    handleUsernameFormChange = async (
-        event: React.ChangeEvent<HTMLInputElement>
-    ) => {        
+    handleUsernameFormChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const value = event.target.value;
         const name = event.target.name;
 
-        if(value.trim().length === 0) {
-            this.props.handleFormChange(name, value, false);
+        // Always update the value immediately (validity will be updated after debounce)
+        this.props.handleFormChange(name, value, false);        
+
+        // Clear any existing debounce timer
+        if (this.debounceTimer) {
+            clearTimeout(this.debounceTimer);
+        }
+
+        // If input is empty, immediately mark as invalid and return
+        if (value.trim().length === 0) {
             return;
         }
 
-        await this.validateUserName(value)
-            .then((res) => {
-                this.props.handleFormChange(name, value, !res);
-            })
-            .catch(() => {
-                this.props.handleFormChange(name, value, false);
-            });
-    };
+        // Debounce the username validation
+        this.debounceTimer = setTimeout(() => {
+            this.validateUserName(value)
+                .then((isNotUnique) => {
+                    // Only update if the value hasn't changed since debounce started
+                    if (this.props.userName === value) {
+                        this.props.handleFormChange(name, value, !isNotUnique);
+                    }
+                })
+                .catch(() => {
+                    if (this.props.userName === value) {
+                        this.props.handleFormChange(name, value, false);
+                    }
+                });
+        }, 300);
+    }
 
     isFormValid = (): boolean => {
         return (
