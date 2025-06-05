@@ -24,9 +24,10 @@ export const Div = styled.div.attrs<{
     $overflow?: string|null, $justifyContent?: string|null, $justifySelf?: string|null, $verticalAlign?: string|null,
     $minWidth?: string|null, $width?: string|null, $maxWidth?:string|null, $textAlign?: string|null,
     $minHeight?: string|null, $height?: string|null, $maxHeight?:string|null, $fontWeight?: string|null,
-    $fontSize?: string|null, $alignItems?: string|null, $alignSelf?: string|null,
+    $fontSize?: string|null, $alignItems?: string|null, $alignSelf?: string|null, $textWrap?: string|null,
     $alignContent?: string|null, $zIndex?: string|null, $flexDirection?: string|null, $color?: string|null,
-    $top?: string|null, $bottom?: string|null, $left?: string|null, $right?: string|null}>
+    $top?: string|null, $bottom?: string|null, $left?: string|null, $right?: string|null,
+    $backgroundImage?: string|null}>
     (props => ({
         $flexBasis: props.$flexBasis || null,
         $flexGrow: props.$flexGrow || null,
@@ -34,6 +35,8 @@ export const Div = styled.div.attrs<{
         $flexWrap: props.$flexWrap || null,
         $flexDirection: props.$flexDirection || null,
         
+        $textWrap: props.$textWrap || null,
+        $backgroundImage: props.$backgroundImage || null,
         $color: props.$color || null,
         $cursor: props.$cursor || null,
         $display: props.$display || null,
@@ -80,6 +83,7 @@ export const Div = styled.div.attrs<{
     flex-shrink: ${(props) => props.$flexShrink};
     flex-wrap: ${(props) => props.$flexWrap};
 
+    background-image: ${(props) => props.$backgroundImage};
     color: ${(props) => props.$color};
     cursor: ${(props) => props.$cursor};
     display: ${(props) => props.$display};
@@ -88,7 +92,8 @@ export const Div = styled.div.attrs<{
     line-height: ${(props) => props.$lineHeight}; 
     overflow: ${(props) => props.$overflow};       
     position: ${(props) => props.$position};
-    text-align: ${(props) => props.$textAlign};     
+    text-align: ${(props) => props.$textAlign};  
+    text-wrap:  ${(props) => props.$textWrap};     
     z-index: ${(props) => props.$zIndex};
 
     align-content: ${(props) => props.$alignContent};
@@ -131,8 +136,8 @@ export const Span = styled.span.attrs<{
     $overflow?: string|null, $justifyContent?: string|null, $justifySelf?: string|null, $verticalAlign?: string|null,
     $minWidth?: string|null, $width?: string|null, $maxWidth?:string|null, $textAlign?: string|null,
     $minHeight?: string|null, $height?: string|null, $maxHeight?:string|null, $fontWeight?: string|null,
-    $fontSize?: string|null, $alignItems?: string|null, $alignSelf?: string|null,
-    $alignContent?: string|null, $zIndex?: string|null, $flexDirection?: string|null,
+    $fontSize?: string|null, $alignItems?: string|null, $alignSelf?: string|null, $backgroundImage?: string|null,
+    $alignContent?: string|null, $zIndex?: string|null, $flexDirection?: string|null, $textWrap?: string|null,
     $top?: string|null, $bottom?: string|null, $left?: string|null, $right?: string|null}>
     (props => ({
         $flexBasis: props.$flexBasis || null,
@@ -141,6 +146,7 @@ export const Span = styled.span.attrs<{
         $flexWrap: props.$flexWrap || null,
         $flexDirection: props.$flexDirection || null,
         
+        $backgroundImage: props.$backgroundImage || null,
         $color: props.$color || null,
         $cursor: props.$cursor || null,
         $display: props.$display || null,
@@ -150,6 +156,7 @@ export const Span = styled.span.attrs<{
         $overflow: props.$overflow || null,     
         $position: props.$position || null,
         $textAlign: props.$textAlign || null,
+        $textWrap: props.$textWrap || null,
         $verticalAlign: props.$verticalAlign || null,
         $zIndex: props.$zIndex || null,
         
@@ -187,6 +194,7 @@ export const Span = styled.span.attrs<{
     flex-shrink: ${(props) => props.$flexShrink};
     flex-wrap: ${(props) => props.$flexWrap};
 
+    background-image: ${(props) => props.$backgroundImage};
     position: ${(props) => props.$position};
     color: ${(props) => props.$color};
     cursor: ${(props) => props.$cursor};
@@ -196,6 +204,7 @@ export const Span = styled.span.attrs<{
     line-height: ${(props) => props.$lineHeight}; 
     overflow: ${(props) => props.$overflow};   
     text-align: ${(props) => props.$textAlign};  
+    text-wrap:  ${(props) => props.$textWrap};     
     z-index: ${(props) => props.$zIndex};
 
     align-content: ${(props) => props.$alignContent};

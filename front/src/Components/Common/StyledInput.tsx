@@ -14,8 +14,9 @@ const StyledInputInput = styled.input`
     border: 2px solid ${props => props.theme['colors'].borderDefaultColor};
     background-color: ${props => props.theme['colors'].inputBackgroundColor};
     display: block;
-    width: 100%;
+    width: 97%;
     height: 24px;
+    border-radius: 5px;
 `;
 
 const StyledInputLabel = styled.label<{ $top: string }>`
@@ -28,7 +29,7 @@ const StyledInputLabel = styled.label<{ $top: string }>`
 `;
 
 type StyledInputProps = {
-    name: string;
+    name?: string;
     value?: string | Number | undefined;
     placeholder?: string | undefined;
     isValid?: boolean;

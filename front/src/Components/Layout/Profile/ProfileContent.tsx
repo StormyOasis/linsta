@@ -273,7 +273,7 @@ const ProfileContent: React.FC = () => {
                     const newPosts = [...posts];
                     const index = newPosts.findIndex((post: Post) => post.postId === response.postId);
                     if (index !== -1) {
-                        newPosts[index].commentCount = response.commentCount;
+                        newPosts[index].global.commentCount = response.global.commentCount;
                     }
                     return newPosts;
                 });

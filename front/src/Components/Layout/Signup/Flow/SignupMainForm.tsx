@@ -74,9 +74,14 @@ export default class SignupMainForm extends React.Component<SignupMainFormProps>
 
     handleUsernameFormChange = async (
         event: React.ChangeEvent<HTMLInputElement>
-    ) => {
+    ) => {        
         const value = event.target.value;
         const name = event.target.name;
+
+        if(value.trim().length === 0) {
+            this.props.handleFormChange(name, value, false);
+            return;
+        }
 
         await this.validateUserName(value)
             .then((res) => {

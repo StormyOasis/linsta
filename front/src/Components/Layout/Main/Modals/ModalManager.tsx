@@ -10,8 +10,9 @@ import PfpModal from "./Profile/ProfilePicModal";
 import FollowersModal from "./Profile/FollowersModal";
 import DeleteCommentModal from "./Comments/DeleteCommentModal";
 import EditPostMenuModal from "./Comments/EditPostMenuModal";
-import { Post } from "../../../../api/types";
 import EditPostModal from "./Comments/EditPostModal";
+import { ForgotPasswordModal } from "../../Login/ForgotPasswordLayout";
+import { SignupBirthdayModal } from "../../Signup/Flow/SignupBirthdayModal";
 
 const MODAL_ZINDEX_BASE: number = 9990;
 
@@ -29,7 +30,6 @@ const ModalOverlayBackground = styled(Flex) <{ $isOverlayEnabled: boolean, $zInd
 
 const ModalManager: React.FC<{}> = () => {
     const { isOverlayEnabled, openModalStack } = useAppSelector((state) => state.modal);
-    const updatedPost:Post|null = useAppSelector((state: any) => state.misc.updatedPost);
 
     const dispatch = useAppDispatch();
 
@@ -54,12 +54,28 @@ const ModalManager: React.FC<{}> = () => {
             const { modalName, data } = modalState;
 
             switch (modalName) {
+                case MODAL_TYPES.FORGOT_PASSWORD_MODAL: {
+                    return <ForgotPasswordModal
+                        key={MODAL_TYPES.FORGOT_PASSWORD_MODAL}
+                        zIndex={zIndex++}
+                        queryResponseTitle={data.queryResponseTitle} 
+                        queryResponseText={data.queryResponseText}
+                        onClose={() => {
+                            closeModal(modalName, {})
+                        }} />;
+                }                
                 case MODAL_TYPES.NEW_POST_MODAL: {
                     return <CreatePostModal
                         key={MODAL_TYPES.NEW_POST_MODAL}
                         zIndex={zIndex++}
                         onClose={() => closeModal(modalName, data)} />;
                 }
+                case MODAL_TYPES.SIGNUP_BIRTHDAY_MODAL: {
+                    return <SignupBirthdayModal
+                        key={MODAL_TYPES.SIGNUP_BIRTHDAY_MODAL}
+                        zIndex={zIndex++}
+                        onClose={() => closeModal(modalName, data)} />;
+                }                                
                 case MODAL_TYPES.COMMENT_MODAL: {
                     return <CommentModal
                         key={MODAL_TYPES.COMMENT_MODAL}
