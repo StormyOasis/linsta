@@ -5,7 +5,7 @@ import DBConnector from '../../../connectors/DBConnector';
 import { APIGatewayProxyResult } from 'aws-lambda';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import config from '../../../config';
-import { handler } from '../forgotPassword';
+import { handlerActions as handler } from '../forgotPassword';
 import * as textUtils from '../../../utils/textUtils';
 import * as utils from '../../../utils/utils';
 import * as AWSConnector from '../../../connectors/AWSConnector';
@@ -27,7 +27,14 @@ const mockEvent = (body: any) => ({
 describe('forgotPassword handler', () => {
     beforeEach(() => {
         jest.clearAllMocks();
-        (Metrics.increment as jest.Mock).mockImplementation(() => {});
+        (Metrics.getInstance as jest.Mock).mockReturnValue({
+            increment: jest.fn(),
+            flush: jest.fn(),
+            timing: jest.fn(),
+            gauge: jest.fn(),
+            histogram: jest.fn(),
+        });
+        (Metrics.getInstance().increment as jest.Mock).mockImplementation(() => {});
         (utils.handleValidationError as jest.Mock).mockImplementation((msg) => ({ statusCode: 400, body: msg }));
         (utils.handleSuccess as jest.Mock).mockImplementation((msg) => ({ statusCode: 200, body: msg }));
         (textUtils.obfuscateEmail as jest.Mock).mockImplementation((email) => `obf:${email}`);
@@ -40,14 +47,14 @@ describe('forgotPassword handler', () => {
 
     it('returns validation error if body is invalid JSON', async () => {
         const event = { body: '{invalid' } as any;
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(utils.handleValidationError).toHaveBeenCalledWith("User info is missing or invalid");
         expect(result.statusCode).toBe(400);
     });
 
     it('returns validation error if user is missing', async () => {
         const event = mockEvent({});
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
         expect(utils.handleValidationError).toHaveBeenCalledWith("User info is missing or invalid");
     });
 
@@ -56,7 +63,7 @@ describe('forgotPassword handler', () => {
         (DBConnector.getGraph as jest.Mock).mockResolvedValueOnce(chain);
 
         const event = mockEvent({ user: 'nouser' });
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
         expect(utils.handleValidationError).toHaveBeenCalledWith("No matching user found");
     });
 
@@ -80,7 +87,7 @@ describe('forgotPassword handler', () => {
         (AWSConnector.sendEmailByTemplate as jest.Mock).mockResolvedValue(true);
 
         const event = mockEvent({ user: 'user@example.com' });
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
 
         expect(AWSConnector.sendEmailByTemplate).toHaveBeenCalled();
         expect(utils.handleSuccess).toHaveBeenCalledWith(expect.objectContaining({
@@ -108,7 +115,7 @@ describe('forgotPassword handler', () => {
         (AWSConnector.sendSMS as jest.Mock).mockResolvedValue(true);
 
         const event = mockEvent({ user: '1234567890' });
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
 
         expect(AWSConnector.sendSMS).toHaveBeenCalled();
         expect(utils.handleSuccess).toHaveBeenCalledWith(expect.objectContaining({
@@ -132,7 +139,7 @@ describe('forgotPassword handler', () => {
             .mockResolvedValueOnce(makeGremlinChainMock({ value: null }));
 
         const event = mockEvent({ user: 'user@example.com' });
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
 
         expect(utils.handleValidationError).toHaveBeenCalledWith("Failed to create or update token");
     });
@@ -153,7 +160,7 @@ describe('forgotPassword handler', () => {
             .mockResolvedValueOnce(makeGremlinChainMock({ value: null }));
 
         const event = mockEvent({ user: 'user@example.com' });
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
 
         expect(utils.handleValidationError).toHaveBeenCalledWith("Failure creating token");
     });
@@ -176,7 +183,7 @@ describe('forgotPassword handler', () => {
         (AWSConnector.sendEmailByTemplate as jest.Mock).mockResolvedValue(false);
 
         const event = mockEvent({ user: 'user@example.com' });
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
 
         expect(utils.handleValidationError).toHaveBeenCalledWith("Failed to send message");
     });
@@ -199,7 +206,7 @@ describe('forgotPassword handler', () => {
         (AWSConnector.sendSMS as jest.Mock).mockResolvedValue(false);
 
         const event = mockEvent({ user: '1234567890' });
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
 
         expect(utils.handleValidationError).toHaveBeenCalledWith("Failed to send message");
     });
@@ -222,7 +229,7 @@ describe('forgotPassword handler', () => {
         (AWSConnector.sendEmailByTemplate as jest.Mock).mockRejectedValue(new Error('fail'));
 
         const event = mockEvent({ user: 'user@example.com' });
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
 
         expect(logger.error).toHaveBeenCalled();
         expect(utils.handleValidationError).toHaveBeenCalledWith("Failed to send message");
@@ -242,7 +249,7 @@ describe('forgotPassword handler', () => {
             .mockRejectedValueOnce(new Error('fail'));
 
         const event = mockEvent({ user: 'user@example.com' });
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
 
         expect(logger.error).toHaveBeenCalled();
         expect(utils.handleValidationError).toHaveBeenCalledWith("Error handling forgot message");

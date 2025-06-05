@@ -1,12 +1,15 @@
-import { APIGatewayProxyEvent, APIGatewayProxyHandler } from 'aws-lambda';
+import { APIGatewayProxyEvent } from 'aws-lambda';
 import DBConnector from '../../connectors/DBConnector';
 import { handleSuccess, handleValidationError } from '../../utils/utils';
 import logger from '../../logger/logger';
-import Metrics from '../../metrics/Metrics';
+import Metrics, { withMetrics } from '../../metrics/Metrics';
 
-export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
-    Metrics.increment("accounts.checkunique");
+export const handler = async (event: APIGatewayProxyEvent) => {
+    const baseMetricsKey = "accounts.checkunique";
+    return await withMetrics(baseMetricsKey, async () => await handlerActions(baseMetricsKey, event))
+}
 
+export const handlerActions = async (baseMetricsKey: string, event: APIGatewayProxyEvent) => {
     // Get userName from path parameters
     const userName = event.pathParameters?.userName;
 
@@ -21,7 +24,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
     }
 
     try {
-        const uniquePropertyMatcher = await(await DBConnector.getGraph()).V()
+        const uniquePropertyMatcher = await (await DBConnector.getGraph()).V()
             .hasLabel("User")
             .has("userName", userName)
             .valueMap(true)
@@ -32,7 +35,8 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
         return handleSuccess(isUnique);
 
     } catch (err) {
+        Metrics.getInstance().increment(`${baseMetricsKey}.errorCount`);
         logger.error((err as Error).message);
         return handleValidationError("Error checking username uniqueness", 500);
     }
-};
+}

@@ -1,4 +1,4 @@
-import { APIGatewayProxyEvent, APIGatewayProxyHandler } from 'aws-lambda';
+import { APIGatewayProxyEvent } from 'aws-lambda';
 import bcrypt from 'bcrypt';
 import moment, { MomentInput } from "moment";
 import DBConnector from '../../connectors/DBConnector';
@@ -10,7 +10,7 @@ import {
     stripNonNumericCharacters
 } from '../../utils/textUtils';
 import logger from '../../logger/logger';
-import Metrics from '../../metrics/Metrics';
+import Metrics, { withMetrics } from '../../metrics/Metrics';
 import { handleValidationError, handleSuccess } from '../../utils/utils';
 
 type AttemptRequest = {
@@ -25,9 +25,12 @@ type AttemptRequest = {
     year?: number;
 };
 
-export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
-    Metrics.increment("accounts.attempt");
+export const handler = async (event: APIGatewayProxyEvent) => {    
+    const baseMetricsKey = "accounts.attempt";
+    return await withMetrics(baseMetricsKey, async () => await handlerActions(baseMetricsKey, event))
+}
 
+export const handlerActions = async (baseMetricsKey: string, event: APIGatewayProxyEvent) => {
     let data: AttemptRequest;
     try {
         data = JSON.parse(event.body || '{}');
@@ -77,7 +80,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
         try {
             // Check if confirmation code + email/phone entry exists
-            res = await(await DBConnector.getGraph()).V()
+            res = await (await DBConnector.getGraph()).V()
                 .hasLabel("ConfirmCode")
                 .has("userData", emailOrPhone.trim())
                 .has("token", data.confirmCode.trim())
@@ -87,7 +90,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
                 // no matching code found so respond as invalid
                 return handleValidationError("Invalid confirmation code");
             }
-        } catch (err) {       
+        } catch (err) {
             logger.error((err as Error).message);
             return handleValidationError("Error checking confirmation code");
         }
@@ -97,17 +100,17 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
         // Password does not pass rules check
         return handleValidationError("Invalid password");
     }
-    
+
     const first: string = names[0];
-    const last: string = names.length > 1 ? names[names.length - 1] : "";    
-    let userId: string|undefined = undefined;
+    const last: string = names.length > 1 ? names[names.length - 1] : "";
+    let userId: string | undefined = undefined;
     let failureOccured: boolean = false;
 
     try {
         const hashedPassword = await bcrypt.hash(data.password, 10);
         const currentTime = moment();
         const timestamp = currentTime.format("YYYY-MM-DD HH:mm:ss.000");
-        const momentData:MomentInput = {
+        const momentData: MomentInput = {
             year: data.year,
             month: data.month,
             day: data.day,
@@ -116,39 +119,39 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
             second: currentTime.second(),
             millisecond: currentTime.millisecond()
         } as MomentInput;
-        
-        const birthDate:moment.Moment = data.dryRun ? currentTime : moment(momentData);
-        const email:string = isEmailAddr ? emailOrPhone : "";
-        const phone:string = isPhoneNum ? emailOrPhone : "";
-        
+
+        const birthDate: moment.Moment = data.dryRun ? currentTime : moment(momentData);
+        const email: string = isEmailAddr ? emailOrPhone : "";
+        const phone: string = isPhoneNum ? emailOrPhone : "";
+
         await DBConnector.beginTransaction();
-        
+
         // Email, phone, and userName properties must all be unique. 
         // Check for any existing users that have the given values
         const __ = DBConnector.__();
-        const uniquePropertyMatcher = await(await DBConnector.getGraph(true)).V()
-            .hasLabel("User")    
-            .and(                
+        const uniquePropertyMatcher = await (await DBConnector.getGraph(true)).V()
+            .hasLabel("User")
+            .and(
                 __.has("userName", data.userName),
                 __.or(
                     __.and(
-                        __.has("email", email), 
-                        __.has("email",  DBConnector.P().neq(""))), 
+                        __.has("email", email),
+                        __.has("email", DBConnector.P().neq(""))),
                     __.and(
-                        __.has("phone", phone), 
-                        __.has("phone",  DBConnector.P().neq(""))))
-    
-            )    
+                        __.has("phone", phone),
+                        __.has("phone", DBConnector.P().neq(""))))
+
+            )
             .valueMap(true)
-            .next(); 
+            .next();
 
         const isUnique = uniquePropertyMatcher?.value === null;
-        if(!isUnique) {
+        if (!isUnique) {
             // An existing entry has been found, we need to error out and eventually rollback
-            failureOccured = true;            
+            failureOccured = true;
         } else {
             // Attempt to insert a user vertex
-            const result = await(await DBConnector.getGraph(true))
+            const result = await (await DBConnector.getGraph(true))
                 .addV("User")
                 .property("email", email)
                 .property("phone", phone)
@@ -157,11 +160,11 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
                 .property("joinDate", timestamp)
                 .property("password", hashedPassword)
                 .property("pfp", null)
-                .property("firstName", first)        
-                .property("lastName", last)                    
-                .next();                
+                .property("firstName", first)
+                .property("lastName", last)
+                .next();
 
-            if(result == null || result.value == null) {
+            if (result == null || result.value == null) {
                 failureOccured = true;
             } else {
                 userId = result.value.id;
@@ -169,7 +172,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
                 if (!data.dryRun && data.confirmCode) {
                     // The confirmation code was checked above and succeeded
                     // We now want to delete it from the DB
-                    res = await(await DBConnector.getGraph(true)).V()
+                    res = await (await DBConnector.getGraph(true)).V()
                         .hasLabel("ConfirmCode")
                         .has("userData", emailOrPhone.trim())
                         .drop().toList();
@@ -184,10 +187,10 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
     if (data.dryRun || failureOccured) {
         await DBConnector.rollbackTransaction();
-        if(failureOccured) {
+        if (failureOccured) {
             return handleValidationError("Error creating user")
-        } else {                     
-            return handleSuccess({status: "OK"});
+        } else {
+            return handleSuccess({ status: "OK" });
         }
     } else {
         try {
@@ -203,26 +206,27 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
             // Insert into ES
             const esResult = await getESConnector().insertProfile(profileData);
 
-            if(!esResult) {
+            if (!esResult) {
                 throw new Error("Error inserting profile");
             }
 
             // Now update the profile id in the user vertex
-            const graphResult = await(await DBConnector.getGraph(true)).V(userId)
+            const graphResult = await (await DBConnector.getGraph(true)).V(userId)
                 .property("profileId", esResult._id)
-                .next();  
+                .next();
 
-            if(graphResult == null || graphResult.value == null) {
+            if (graphResult == null || graphResult.value == null) {
                 throw new Error("Error creating profile");
             }
 
             await DBConnector.commitTransaction();
 
-            return handleSuccess({status: "OK"});
-        } catch (err) {            
+            return handleSuccess({ status: "OK" });
+        } catch (err) {
             await DBConnector.rollbackTransaction();
-            logger.error(`Error Commiting transaction: ${err}`);          
+            logger.error(`Error Commiting transaction: ${err}`);
+            Metrics.getInstance().increment(`${baseMetricsKey}.errorCount`);
             return handleValidationError("Error creating user");
         }
     }
-};
+}

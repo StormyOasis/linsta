@@ -1,5 +1,5 @@
-import { APIGatewayProxyEvent, APIGatewayProxyHandler } from 'aws-lambda';
-import Metrics from '../../metrics/Metrics';
+import { APIGatewayProxyEvent } from 'aws-lambda';
+import Metrics, { withMetrics } from '../../metrics/Metrics';
 import logger from '../../logger/logger';
 import DBConnector, { EDGE_USER_FOLLOWS } from '../../connectors/DBConnector';
 import { getVertexPropertySafe, handleSuccess, handleValidationError, verifyJWT } from '../../utils/utils';
@@ -10,9 +10,12 @@ interface BulkGetProfilesRequest extends RequestWithRequestorId {
     userIds: string[];
 }
 
-export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
-    Metrics.increment("profiles.bulkGetProfilesAndFollowing");
+export const handler = async (event: APIGatewayProxyEvent) => {
+    const baseMetricsKey = "profiles.bulkgetwithfollowing";
+    return await withMetrics(baseMetricsKey, async () => await handlerActions(baseMetricsKey, event))
+}
 
+export const handlerActions = async (baseMetricsKey: string, event: APIGatewayProxyEvent) => {
     let data: BulkGetProfilesRequest;
     try {
         data = JSON.parse(event.body || '{}');
@@ -27,11 +30,11 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
     if (!verifyJWT(event, data.requestorUserId)) {
         // 403 - Forbidden
         return handleValidationError("You do not have permission to access this data", 403);
-    }    
+    }
 
     try {
         // Get profile data for the given userIds
-        const results = await(await DBConnector.getGraph()).V(data.userIds).project("User").toList();
+        const results = await (await DBConnector.getGraph()).V(data.userIds).project("User").toList();
         if (!results) {
             return handleValidationError("Error getting profiles");
         }
@@ -62,7 +65,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
         // Get followers for each userId
         const __ = DBConnector.__();
-        const results2 = await(await DBConnector.getGraph()).V(data.userIds)
+        const results2 = await (await DBConnector.getGraph()).V(data.userIds)
             .hasLabel('User')
             .group()
             .by("userName")
@@ -129,6 +132,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
         return handleSuccess(returnData);
     } catch (err) {
+        Metrics.getInstance().increment(`${baseMetricsKey}.errorCount`);
         logger.error((err as Error).message);
         return handleValidationError("Error getting profiles");
     }

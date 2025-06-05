@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt';
 import DBConnector, { EDGE_TOKEN_TO_USER, EDGE_USER_TO_TOKEN } from '../../connectors/DBConnector';
 import { isValidPassword } from '../../utils/textUtils';
 import logger from '../../logger/logger';
-import Metrics from '../../metrics/Metrics';
+import Metrics, { withMetrics } from '../../metrics/Metrics';
 import { handleSuccess, handleValidationError } from '../../utils/utils';
 
 type ChangePasswordType = {
@@ -15,8 +15,11 @@ type ChangePasswordType = {
 };
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
-    Metrics.increment("accounts.changePassword");
+    const baseMetricsKey = "accounts.changepassword";
+    return await withMetrics(baseMetricsKey, async () => await handlerActions(baseMetricsKey, event))
+}
 
+export const handlerActions = async (baseMetricsKey: string, event: APIGatewayProxyEvent) => {
     let data: ChangePasswordType;
     try {
         data = JSON.parse(event.body || '{}');
@@ -44,7 +47,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
                 return handleValidationError("Invalid parameters or missing token");
             }
 
-            let result = await(await DBConnector.getGraph()).V()
+            let result = await (await DBConnector.getGraph()).V()
                 .hasLabel("User")
                 .has("userName", data.userName)
                 .project('id', 'userName', 'password')
@@ -77,7 +80,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
             }
 
             // Use the username and password to change password
-            result = await(await DBConnector.getGraph()).V()
+            result = await (await DBConnector.getGraph()).V()
                 .hasLabel("User")
                 .has('userName', data.userName)
                 .property('password', hashedPassword)
@@ -88,15 +91,15 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
             }
         } else {
             // use the token to change password and then delete the token from the db
-            const token:string|undefined = data.token?.trim();
-            if(!token || token.length === 0) {
+            const token: string | undefined = data.token?.trim();
+            if (!token || token.length === 0) {
                 return handleValidationError("Invalid token");
             }
 
-            await DBConnector.beginTransaction();            
+            await DBConnector.beginTransaction();
 
             // Get the token from the db if it exists
-            let result = await(await DBConnector.getGraph(true)).V()
+            let result = await (await DBConnector.getGraph(true)).V()
                 .hasLabel("ForgotToken")
                 .has('token', token)
                 .out(EDGE_TOKEN_TO_USER)
@@ -109,7 +112,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
             }
 
             // Update the password in the User vertex
-            result = await(await DBConnector.getGraph(true)).V(value.id)
+            result = await (await DBConnector.getGraph(true)).V(value.id)
                 .property('password', hashedPassword)
                 .next();
 
@@ -120,7 +123,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
             }
 
             // Now delete the forgot token vertex
-            const dropResult = await(await DBConnector.getGraph(true))
+            const dropResult = await (await DBConnector.getGraph(true))
                 .V(value.id)
                 .out(EDGE_USER_TO_TOKEN)
                 .drop()
@@ -134,10 +137,11 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
             await DBConnector.commitTransaction();
         }
     } catch (err) {
+        Metrics.getInstance().increment(`${baseMetricsKey}.errorCount`);
         logger.error((err as Error).message);
         await DBConnector.rollbackTransaction();
         return handleValidationError("Error with token");
     }
 
     return handleSuccess({ status: "OK" });
-};
+}

@@ -1,5 +1,5 @@
-import { APIGatewayProxyEvent, APIGatewayProxyHandler } from 'aws-lambda';
-import Metrics from '../../metrics/Metrics';
+import { APIGatewayProxyEvent } from 'aws-lambda';
+import Metrics, { withMetrics } from '../../metrics/Metrics';
 import { getProfile, handleSuccess, handleValidationError } from '../../utils/utils';
 import logger from '../../logger/logger';
 import { Profile } from '../../utils/types';
@@ -8,9 +8,12 @@ type GetProfileByUserIdRequest = {
     userId: string;
 };
 
-export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
-    Metrics.increment("profiles.getPostProfileByUserId");
+export const handler = async (event: APIGatewayProxyEvent) => {
+    const baseMetricsKey = "profiles.getprofilebyid";
+    return await withMetrics(baseMetricsKey, async () => await handlerActions(baseMetricsKey, event))
+}
 
+export const handlerActions = async (baseMetricsKey: string, event: APIGatewayProxyEvent) => {
     let data: GetProfileByUserIdRequest;
     try {
         data = JSON.parse(event.body || '{}');
@@ -30,6 +33,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
         return handleSuccess(profile);
     } catch (err) {
+        Metrics.getInstance().increment(`${baseMetricsKey}.errorCount`);
         logger.error((err as Error).message);
         return handleValidationError("Invalid profile");
     }

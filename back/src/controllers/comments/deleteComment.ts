@@ -1,5 +1,5 @@
-import { APIGatewayProxyEvent, APIGatewayProxyHandler } from 'aws-lambda';
-import Metrics from '../../metrics/Metrics';
+import { APIGatewayProxyEvent } from 'aws-lambda';
+import Metrics, { withMetrics } from '../../metrics/Metrics';
 import logger from '../../logger/logger';
 import DBConnector, { EDGE_PARENT_TO_CHILD_COMMENT, EDGE_COMMENT_TO_USER } from '../../connectors/DBConnector';
 import { handleSuccess, handleValidationError, verifyJWT } from '../../utils/utils';
@@ -8,9 +8,12 @@ type DeleteCommentByIdRequest = {
     commentId: string;
 };
 
-export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
-    Metrics.increment("comments.deleteComment");
+export const handler = async (event: APIGatewayProxyEvent) => {
+    const baseMetricsKey = "comments.deletecomment";
+    return await withMetrics(baseMetricsKey, async () => await handlerActions(baseMetricsKey, event))
+}
 
+export const handlerActions = async (baseMetricsKey: string, event: APIGatewayProxyEvent) => {
     let data: DeleteCommentByIdRequest;
     try {
         data = JSON.parse(event.body || '{}');
@@ -24,7 +27,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
     try {
         // Find the user who owns the comment
-        const commentUserResult = await(await DBConnector.getGraph()).V(data.commentId).out(EDGE_COMMENT_TO_USER).next();
+        const commentUserResult = await (await DBConnector.getGraph()).V(data.commentId).out(EDGE_COMMENT_TO_USER).next();
         if (!commentUserResult?.value) {
             return handleValidationError("Error deleting comment(s)");
         }
@@ -41,7 +44,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
         // Recursively delete the comment and its child comments
         const __ = DBConnector.__();
-        const results = await(await DBConnector.getGraph(true))
+        const results = await (await DBConnector.getGraph(true))
             .V(data.commentId)
             .emit()
             .repeat(__.out(EDGE_PARENT_TO_CHILD_COMMENT))
@@ -57,6 +60,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
         return handleSuccess({ status: "OK" });
     } catch (err) {
+        Metrics.getInstance().increment(`${baseMetricsKey}.errorCount`);
         await DBConnector.rollbackTransaction();
         logger.error((err as Error).message);
         return handleValidationError("Error deleting comment(s)");

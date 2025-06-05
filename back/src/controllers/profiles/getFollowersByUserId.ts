@@ -1,5 +1,5 @@
-import { APIGatewayProxyEvent, APIGatewayProxyHandler } from 'aws-lambda';
-import Metrics from '../../metrics/Metrics';
+import { APIGatewayProxyEvent } from 'aws-lambda';
+import Metrics, { withMetrics } from '../../metrics/Metrics';
 import logger from '../../logger/logger';
 import DBConnector, { EDGE_USER_FOLLOWS } from '../../connectors/DBConnector';
 import { getVertexPropertySafe, handleSuccess, handleValidationError, verifyJWT } from '../../utils/utils';
@@ -10,9 +10,12 @@ type GetFollowersByUserIdRequest = {
     requestorUserId: string;
 };
 
-export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
-    Metrics.increment("profiles.getFollowersByUserId");
+export const handler = async (event: APIGatewayProxyEvent) => {
+    const baseMetricsKey = "profiles.getfollowersbyid";
+    return await withMetrics(baseMetricsKey, async () => await handlerActions(baseMetricsKey, event))
+}
 
+export const handlerActions = async (baseMetricsKey: string, event: APIGatewayProxyEvent) => {
     let data: GetFollowersByUserIdRequest;
     try {
         data = JSON.parse(event.body || '{}');
@@ -27,12 +30,12 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
     if (!verifyJWT(event, data.requestorUserId)) {
         // 403 - Forbidden
         return handleValidationError("You do not have permission to access this data", 403);
-    }    
+    }
 
     try {
         // Find the follower profiles from the specified user id
         const __ = DBConnector.__();
-        let results = await(await DBConnector.getGraph()).V(data.userId)
+        let results = await (await DBConnector.getGraph()).V(data.userId)
             .inE(EDGE_USER_FOLLOWS)  // Get all incoming 'user_follows' edges pointing to User1
             .outV()  // Get the vertices (users) who follow User1
             .where(__.not(__.hasId(data.userId)))  // Exclude User1 from the results            
@@ -68,7 +71,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
         }
 
         // Now check which of those users userId is following back (mutuals)
-        results = await(await DBConnector.getGraph()).V(data.userId)
+        results = await (await DBConnector.getGraph()).V(data.userId)
             .out(EDGE_USER_FOLLOWS)
             .filter(__.id().is(DBConnector.P().within(followerIds)))
             .dedup()
@@ -90,6 +93,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
         const returnData: ProfileWithFollowStatus[] = Array.from(profileMap.values());
         return handleSuccess(returnData);
     } catch (err) {
+        Metrics.getInstance().increment(`${baseMetricsKey}.errorCount`);
         logger.error((err as Error).message);
         return handleValidationError("Error getting followers");
     }

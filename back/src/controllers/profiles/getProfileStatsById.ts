@@ -1,5 +1,5 @@
-import { APIGatewayProxyEvent, APIGatewayProxyHandler } from 'aws-lambda';
-import Metrics from '../../metrics/Metrics';
+import { APIGatewayProxyEvent } from 'aws-lambda';
+import Metrics, { withMetrics } from '../../metrics/Metrics';
 import logger from '../../logger/logger';
 import DBConnector, { EDGE_USER_FOLLOWS, EDGE_USER_TO_POST } from '../../connectors/DBConnector';
 import { handleSuccess, handleValidationError } from '../../utils/utils';
@@ -14,9 +14,12 @@ type ProfileStats = {
     followingCount: number;
 };
 
-export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
-    Metrics.increment("profiles.getProfileStatsById");
+export const handler = async (event: APIGatewayProxyEvent) => {
+    const baseMetricsKey = "profiles.getprofilestatsbyid";
+    return await withMetrics(baseMetricsKey, async () => await handlerActions(baseMetricsKey, event))
+}
 
+export const handlerActions = async (baseMetricsKey: string, event: APIGatewayProxyEvent) => {
     let data: GetProfileStatsByIdRequest;
     try {
         data = JSON.parse(event.body || '{}');
@@ -36,7 +39,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
         };
 
         // Get the number of posts by the user
-        const postResult = await(await DBConnector.getGraph()).V(data.userId)
+        const postResult = await (await DBConnector.getGraph()).V(data.userId)
             .outE(EDGE_USER_TO_POST)
             .count()
             .next();
@@ -47,7 +50,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
         stats.postCount = postResult.value;
 
         // Get the number of users this profile is following
-        const followerResult = await(await DBConnector.getGraph()).V(data.userId)
+        const followerResult = await (await DBConnector.getGraph()).V(data.userId)
             .outE(EDGE_USER_FOLLOWS)
             .count()
             .next();
@@ -58,7 +61,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
         stats.followingCount = followerResult.value;
 
         // Get the number of users following this user
-        const followingResult = await(await DBConnector.getGraph()).V(data.userId)
+        const followingResult = await (await DBConnector.getGraph()).V(data.userId)
             .inE(EDGE_USER_FOLLOWS)
             .count()
             .next();
@@ -70,6 +73,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
         return handleSuccess(stats);
     } catch (err) {
+        Metrics.getInstance().increment(`${baseMetricsKey}.errorCount`);
         logger.error((err as Error).message);
         return handleValidationError("Error getting stats");
     }

@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { handler } from '../getPostSearch';
+import { handlerActions as handler } from '../getPostSearch';
 import * as ESConnectorModule from '../../../connectors/ESConnector';
 import * as utils from '../../../utils/utils';
 import * as textUtils from '../../../utils/textUtils';
 import Metrics from '../../../metrics/Metrics';
 import logger from '../../../logger/logger';
-import config from '../../../config';
 import { APIGatewayProxyResult } from 'aws-lambda';
 
 jest.mock('../../../connectors/ESConnector');
@@ -22,7 +21,14 @@ const mockEvent = (body: any) => ({
 describe('getPostSearch handler', () => {
     beforeEach(() => {
         jest.resetAllMocks();
-        (Metrics.increment as jest.Mock).mockImplementation(() => { });
+        (Metrics.getInstance as jest.Mock).mockReturnValue({
+            increment: jest.fn(),
+            flush: jest.fn(),
+            timing: jest.fn(),
+            gauge: jest.fn(),
+            histogram: jest.fn(),
+        });
+        (Metrics.getInstance().increment as jest.Mock).mockImplementation(() => { });
         (utils.handleSuccess as jest.Mock).mockImplementation((x) => ({
             statusCode: 200,
             body: JSON.stringify(x),
@@ -36,7 +42,7 @@ describe('getPostSearch handler', () => {
 
     it('returns validation error if body is invalid JSON', async () => {
         const event = { body: '{invalid' } as any;
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(utils.handleValidationError).toHaveBeenCalledWith('Missing required search params');
         expect(result.statusCode).toBe(400);
         expect(JSON.parse(result.body)).toBe('Missing required search params');
@@ -47,7 +53,7 @@ describe('getPostSearch handler', () => {
             searchWithPagination: jest.fn().mockResolvedValue({ hits: { hits: [] } })
         });
         const event = mockEvent({ postId: 'p1', q: 'foo' });
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(utils.handleSuccess).toHaveBeenCalledWith({
             posts: [],
             dateTime: "",
@@ -59,7 +65,7 @@ describe('getPostSearch handler', () => {
         expect(parsed.posts).toEqual([]);
     });
 
-    it('returns posts with correct pagination and calls enrichment utils', async () => {
+    it('returns posts with correct pagination and calls utils', async () => {
         (ESConnectorModule.getESConnector as jest.Mock).mockReturnValue({
             searchWithPagination: jest.fn().mockResolvedValue({
                 hits: {
@@ -84,7 +90,7 @@ describe('getPostSearch handler', () => {
         (utils.addLikesToPosts as jest.Mock).mockResolvedValue(undefined);
 
         const event = mockEvent({ postId: 'p1', q: 'foo' });
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
 
         expect(utils.addPfpsToPosts).toHaveBeenCalled();
         expect(utils.addCommentCountsToPosts).toHaveBeenCalled();
@@ -102,7 +108,7 @@ describe('getPostSearch handler', () => {
             searchWithPagination: jest.fn().mockResolvedValue({ hits: { hits: [] } })
         });
         const event = mockEvent({ postId: 'p1', q: '' });
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(utils.handleSuccess).toHaveBeenCalled();
         expect(result.statusCode).toBe(200);
     });
@@ -113,7 +119,7 @@ describe('getPostSearch handler', () => {
             searchWithPagination: jest.fn().mockResolvedValue({ hits: { hits: [] } })
         });
         const event = mockEvent({ postId: 'p1', q: '#tag' });
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(textUtils.isHashtag).toHaveBeenCalledWith('#tag');
         expect(utils.handleSuccess).toHaveBeenCalled();
         expect(result.statusCode).toBe(200);
@@ -124,7 +130,7 @@ describe('getPostSearch handler', () => {
             searchWithPagination: jest.fn().mockRejectedValue(new Error('fail'))
         });
         const event = mockEvent({ postId: 'p1', q: 'foo' });
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(logger.error).toHaveBeenCalled();
         expect(utils.handleValidationError).toHaveBeenCalledWith('Error getting posts');
         expect(result.statusCode).toBe(400);
@@ -133,7 +139,7 @@ describe('getPostSearch handler', () => {
 
     it('returns validation error if event.body is undefined', async () => {
         const event = { body: undefined } as any;
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(utils.handleValidationError).not.toHaveBeenCalledWith('Missing required search params', 500);
         expect(result.statusCode).toBe(400);
         expect(JSON.parse(result.body)).toBe('Missing required search params');
@@ -144,7 +150,7 @@ describe('getPostSearch handler', () => {
             searchWithPagination: jest.fn().mockResolvedValue(undefined)
         });
         const event = mockEvent({ postId: 'p1', q: 'foo' });
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         const parsed = JSON.parse(result.body);
         expect(parsed.posts).toEqual([]);
     });
@@ -174,7 +180,7 @@ describe('getPostSearch handler', () => {
         (utils.addLikesToPosts as jest.Mock).mockResolvedValue(undefined);
 
         const event = mockEvent({ postId: 'p1', q: 'foo' });
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         const parsed = JSON.parse(result.body);
         expect(parsed.posts.length).toBe(1);
         expect(parsed.dateTime).toBeUndefined();
@@ -206,7 +212,7 @@ describe('getPostSearch handler', () => {
         (utils.addLikesToPosts as jest.Mock).mockResolvedValue(undefined);
 
         const event = mockEvent({ postId: 'p1', q: 'foo' });
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         const parsed = JSON.parse(result.body);
         expect(parsed).toEqual("Error getting posts");        
     });
@@ -236,7 +242,7 @@ describe('getPostSearch handler', () => {
         (utils.addLikesToPosts as jest.Mock).mockResolvedValue(undefined);
 
         const event = mockEvent({ postId: 'p1', q: 'foo' });
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(logger.error).toHaveBeenCalled();
         expect(utils.handleValidationError).toHaveBeenCalledWith('Error getting posts');
         expect(result.statusCode).toBe(400);

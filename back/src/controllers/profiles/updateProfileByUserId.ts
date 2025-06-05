@@ -1,5 +1,5 @@
-import { APIGatewayProxyEvent, APIGatewayProxyHandler } from 'aws-lambda';
-import Metrics from '../../metrics/Metrics';
+import { APIGatewayProxyEvent } from 'aws-lambda';
+import Metrics, { withMetrics } from '../../metrics/Metrics';
 import { getProfile, handleSuccess, handleValidationError, updateProfileInRedis, verifyJWT } from '../../utils/utils';
 import logger from '../../logger/logger';
 import { getESConnector } from '../../connectors/ESConnector';
@@ -18,9 +18,12 @@ type UpdateProfileRequest = {
     userId: string;
 };
 
-export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
-    Metrics.increment("profiles.updateProfileByUserId");
+export const handler = async (event: APIGatewayProxyEvent) => {
+    const baseMetricsKey = "profiles.updateProfileByUserId";
+    return await withMetrics(baseMetricsKey, async () => await handlerActions(baseMetricsKey, event))
+}
 
+export const handlerActions = async (baseMetricsKey: string, event: APIGatewayProxyEvent) => {
     let data: UpdateProfileRequest;
     try {
         data = JSON.parse(event.body || '{}');
@@ -75,7 +78,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
         // Update the profile in the DB
         await DBConnector.beginTransaction();
-        const results = await(await DBConnector.getGraph(true)).V(data.userId)
+        const results = await (await DBConnector.getGraph(true)).V(data.userId)
             .property("bio", bio)
             .property("pronouns", pronouns)
             .property("link", link)
@@ -106,6 +109,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
         return handleSuccess({ status: "OK" });
     } catch (err) {
+        Metrics.getInstance().increment(`${baseMetricsKey}.errorCount`);
         await DBConnector.rollbackTransaction();
         logger.error((err as Error).message);
         return handleValidationError("Error updating profile");

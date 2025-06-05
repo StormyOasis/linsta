@@ -6,7 +6,7 @@ import { APIGatewayProxyResult } from 'aws-lambda';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import config from '../../../config';
 
-import { handler } from '../toggleLikePost';
+import { handlerActions as handler } from '../toggleLikePost';
 import * as utils from '../../../utils/utils';
 import logger from '../../../logger/logger';
 import Metrics from '../../../metrics/Metrics';
@@ -34,7 +34,14 @@ const validData = {
 describe('toggleLikePost handler', () => {
     beforeEach(() => {
         jest.clearAllMocks();
-        (Metrics.increment as jest.Mock).mockImplementation(() => {});
+        (Metrics.getInstance as jest.Mock).mockReturnValue({
+            increment: jest.fn(),
+            flush: jest.fn(),
+            timing: jest.fn(),
+            gauge: jest.fn(),
+            histogram: jest.fn(),
+        });
+        (Metrics.getInstance().increment as jest.Mock).mockImplementation(() => {});
         (utils.handleValidationError as jest.Mock).mockImplementation((msg, code?) => ({ statusCode: code || 400, body: msg }));
         (utils.handleSuccess as jest.Mock).mockImplementation((msg) => ({ statusCode: 200, body: msg }));
         (utils.verifyJWT as jest.Mock).mockReturnValue(true);
@@ -47,21 +54,21 @@ describe('toggleLikePost handler', () => {
 
     it('returns error if body is invalid JSON', async () => {
         const event = { body: '{invalid' } as any;
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(utils.handleValidationError).toHaveBeenCalledWith("Missing postId or userId");
         expect(result.statusCode).toBe(400);
     });
 
     it('returns error if postId is missing', async () => {
         const event = mockEvent({ userId: validUserId, requestorUserId: validRequestorUserId });
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(utils.handleValidationError).toHaveBeenCalledWith("Missing postId or userId");
         expect(result.statusCode).toBe(400);
     });
 
     it('returns error if userId is missing', async () => {
         const event = mockEvent({ postId: validPostId, requestorUserId: validRequestorUserId });
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(utils.handleValidationError).toHaveBeenCalledWith("Missing postId or userId");
         expect(result.statusCode).toBe(400);
     });
@@ -69,7 +76,7 @@ describe('toggleLikePost handler', () => {
     it('returns 403 if verifyJWT fails', async () => {
         (utils.verifyJWT as jest.Mock).mockReturnValue(false);
         const event = mockEvent(validData);
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(utils.handleValidationError).toHaveBeenCalledWith("You do not have permission to access this data", 403);
         expect(result.statusCode).toBe(403);
     });
@@ -93,7 +100,7 @@ describe('toggleLikePost handler', () => {
             .mockResolvedValue(chain);    // for unlike edges
 
         const event = mockEvent(validData);
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
 
         expect(DBConnector.beginTransaction).toHaveBeenCalled();
         expect(chain.V).toHaveBeenCalledWith(validUserId);
@@ -128,7 +135,7 @@ describe('toggleLikePost handler', () => {
             .mockResolvedValue(chain);    // for like edges
 
         const event = mockEvent(validData);
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
 
         expect(DBConnector.beginTransaction).toHaveBeenCalled();
         expect(chain.V).toHaveBeenCalledWith(validUserId);
@@ -166,7 +173,7 @@ describe('toggleLikePost handler', () => {
             .mockResolvedValue(chain);    // for like edges
 
         const event = mockEvent(validData);
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
 
         expect(DBConnector.rollbackTransaction).toHaveBeenCalled();
         expect(utils.handleValidationError).toHaveBeenCalledWith("Error toggling like state");
@@ -176,7 +183,7 @@ describe('toggleLikePost handler', () => {
     it('rolls back and returns error if an exception is thrown', async () => {
         (DBConnector.getGraph as jest.Mock).mockRejectedValueOnce(new Error('fail'));
         const event = mockEvent(validData);
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
 
         expect(logger.error).toHaveBeenCalledWith("Failed to toggle like", { userId: validUserId, postId: validPostId, err: expect.any(Error) });
         expect(DBConnector.rollbackTransaction).toHaveBeenCalled();

@@ -1,6 +1,7 @@
 import { createClient, RedisClientOptions } from "redis";
 import config from '../config';
 import logger from "../logger/logger";
+import Metrics from "../metrics/Metrics";
 
 export const parseRedisInfo = (info: string): Record<string, string> => {
     const result: Record<string, string> = {};
@@ -76,15 +77,29 @@ export class RedisConnector {
             }
 
             this.client = createClient({ ...options });
-            
+
             this.client.on("error", (err) => {
                 logger.error("Redis connection error:", err);
             });
 
-            this.client.on("connect", () => {
+            this.client.on("connect", async () => {
                 logger.info("Redis connection created");
-            }); 
-            
+
+                // Each time Redis connects, send the stats to statsd
+                const keyCount: number = await this.getKeyCount();
+                Metrics.getInstance().gauge("redis.keyCount", keyCount);
+
+                const serverInfo: (RedisServerStats | null) = await this.getServerStatus();
+                if (serverInfo) {
+                    Metrics.getInstance().gauge("redis.connectedClients", serverInfo.connected_clients);
+                    Metrics.getInstance().gauge("redis.qps", serverInfo.instantaneous_ops_per_sec);
+                    Metrics.getInstance().gauge("redis.usedMemory", serverInfo.used_memory);
+                    Metrics.getInstance().gauge("redis.usedMemoryPeak", serverInfo.used_memory_peak);
+                    Metrics.getInstance().gauge("redis.memFragmentationRatio", serverInfo.mem_fragmentation_ratio);
+                    Metrics.getInstance().gauge("redis.used_cpu_user", serverInfo.used_cpu_user);
+                }
+            });
+
             await this.client.connect();
         } catch (err) {
             logger.error("Failed to connect to Redis:", err);
@@ -95,14 +110,14 @@ export class RedisConnector {
         if (!this.client) {
             await this.connect();
         }
-    }    
+    }
 
     public get = async (key: string): Promise<string | null> => {
         try {
             await this.ensureConnected();
             if (this.client == null) {
                 throw new Error("Redis connection not found");
-            }            
+            }
             return await this.client.get(key);
         } catch (err) {
             logger.error("Error getting key from Redis:", err);
@@ -124,7 +139,7 @@ export class RedisConnector {
             await this.ensureConnected();
             if (this.client == null) {
                 throw new Error("Redis connection not found");
-            }           
+            }
             await this.client.set(key, value, options);
         } catch (err) {
             // Note: It's ok if we fail to add to redis, so don't rethrow exception, just log it
@@ -137,16 +152,16 @@ export class RedisConnector {
             await this.ensureConnected();
             if (this.client == null) {
                 throw new Error("Redis connection not found");
-            }           
-            
+            }
+
             await this.client.del(key);
 
         } catch (err) {
             logger.error("Error deleting key from Redis:", err);
         }
-    }    
+    }
 
-    public close = async (): Promise<void> => {        
+    public close = async (): Promise<void> => {
         if (this.client != null) {
             await this.client.disconnect();
             this.client = null;
@@ -155,25 +170,24 @@ export class RedisConnector {
 
     public static resetInstance(): void {
         if (RedisConnector.instance) {
-          RedisConnector.instance.close();
-          RedisConnector.instance = null;
+            RedisConnector.instance.close();
+            RedisConnector.instance = null;
         }
-    }    
+    }
 
-    public getKeyCount = async (): Promise<number|null> => {
+    public getKeyCount = async (): Promise<number> => {
         let result = 0;
         try {
             await this.ensureConnected();
             if (this.client == null) {
                 throw new Error("Redis connection not found");
-            } 
-            result = await this.client.dbSize();
-            return result;
+            }
+            result = await this.client.dbSize();            
         } catch (err) {
             logger.error("Error getting Redis key count:", err);
         }
 
-        return null;
+        return result;
     }
 
     public getServerStatus = async (): Promise<RedisServerStats | null> => {
@@ -182,16 +196,16 @@ export class RedisConnector {
             await this.ensureConnected();
             if (this.client == null) {
                 throw new Error("Redis connection not found");
-            }         
+            }
             const statsString = await this.client.info();
             const stats: Record<string, string> = parseRedisInfo(statsString);
 
-            const convertToNumber = (value: string|null):number => {
-                if(!value) {
+            const convertToNumber = (value: string | null): number => {
+                if (!value) {
                     return 0;
                 }
                 const num = Number(value);
-                if(isNaN(num)) {
+                if (isNaN(num)) {
                     return 0;
                 }
                 return num;

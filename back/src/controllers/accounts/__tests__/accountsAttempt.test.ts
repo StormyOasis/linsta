@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { makeGremlinChainMock } = require('../../../connectors/DBConnector');
-import { handler } from '../accountsAttempt';
+import { handlerActions as handler } from '../accountsAttempt';
 import DBConnector from '../../../connectors/DBConnector';
 import * as ESConnectorModule from '../../../connectors/ESConnector';
 import * as textUtils from '../../../utils/textUtils';
@@ -29,7 +29,13 @@ const mockEvent = (body: any) => ({
 describe('accountsAttempt handler', () => {
     beforeEach(() => {
         jest.clearAllMocks();
-        (Metrics.increment as jest.Mock).mockImplementation(() => {});
+        (Metrics.getInstance as jest.Mock).mockReturnValue({
+            increment: jest.fn(),
+            flush: jest.fn(),
+            timing: jest.fn(),
+            gauge: jest.fn(),
+            histogram: jest.fn(),
+        });
         (utils.handleValidationError as jest.Mock).mockImplementation((msg) => ({ statusCode: 400, body: msg }));
         (utils.handleSuccess as jest.Mock).mockImplementation((msg) => ({ statusCode: 200, body: msg }));
         (bcrypt.hash as jest.Mock).mockResolvedValue('hashed');
@@ -56,18 +62,25 @@ describe('accountsAttempt handler', () => {
 
     afterEach(() => {
         jest.resetAllMocks();
+        (Metrics.getInstance as jest.Mock).mockReturnValue({
+            increment: jest.fn(),
+            flush: jest.fn(),
+            timing: jest.fn(),
+            gauge: jest.fn(),
+            histogram: jest.fn(),
+        });
     });
 
     it('returns validation error if body is invalid JSON', async () => {
         const event = { body: '{invalid' } as any;
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(utils.handleValidationError).toHaveBeenCalledWith('Invalid input');
         expect(result.statusCode).toBe(400);
     });
 
     it('returns validation error if required fields are missing', async () => {
         const event = mockEvent({ emailOrPhone: '', fullName: '', userName: '', password: '' });
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
         expect(utils.handleValidationError).toHaveBeenCalledWith('Invalid input');
     });
 
@@ -81,7 +94,7 @@ describe('accountsAttempt handler', () => {
             userName: 'testuser',
             password: 'password'
         });
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
         expect(utils.handleValidationError).toHaveBeenCalledWith('Invalid email or phone');
     });
 
@@ -94,7 +107,7 @@ describe('accountsAttempt handler', () => {
             userName: 'testuser',
             password: 'password'
         });
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
         expect(utils.handleValidationError).toHaveBeenCalledWith('Invalid full name');
     });
 
@@ -109,7 +122,7 @@ describe('accountsAttempt handler', () => {
             confirmCode: '123', // invalid length
             day: 1, month: 1, year: 2000
         });
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
         expect(utils.handleValidationError).toHaveBeenCalledWith('Invalid confirmation code');
     });
 
@@ -123,7 +136,7 @@ describe('accountsAttempt handler', () => {
             userName: 'testuser',
             password: 'bad'
         });
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
         expect(utils.handleValidationError).toHaveBeenCalledWith('Invalid password');
     });
 
@@ -147,7 +160,7 @@ describe('accountsAttempt handler', () => {
             password: 'password'
         });
 
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
 
         expect(DBConnector.rollbackTransaction).toHaveBeenCalled();
         expect(utils.handleSuccess).toHaveBeenCalledWith({ status: "OK" });
@@ -169,7 +182,7 @@ describe('accountsAttempt handler', () => {
             password: 'password'
         });
 
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
 
         expect(DBConnector.rollbackTransaction).toHaveBeenCalled();
         expect(utils.handleValidationError).toHaveBeenCalledWith('Error creating user');
@@ -193,7 +206,7 @@ describe('accountsAttempt handler', () => {
             password: 'password'
         });
 
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
 
         expect(DBConnector.rollbackTransaction).toHaveBeenCalled();
         expect(utils.handleValidationError).toHaveBeenCalledWith('Error creating user');
@@ -217,7 +230,7 @@ describe('accountsAttempt handler', () => {
             day: 1, month: 1, year: 2000
         });
 
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
 
         expect(utils.handleValidationError).toHaveBeenCalledWith('Invalid confirmation code');
     });
@@ -237,7 +250,7 @@ describe('accountsAttempt handler', () => {
             day: 1, month: 1, year: 2000
         });
 
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
 
         expect(logger.error).toHaveBeenCalled();
         expect(utils.handleValidationError).toHaveBeenCalledWith('Error checking confirmation code');
@@ -276,7 +289,7 @@ describe('accountsAttempt handler', () => {
             day: 1, month: 1, year: 2000
         });
 
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
 
         expect(DBConnector.rollbackTransaction).toHaveBeenCalled();
         expect(utils.handleValidationError).toHaveBeenCalledWith('Error creating user');
@@ -313,7 +326,7 @@ describe('accountsAttempt handler', () => {
             day: 1, month: 1, year: 2000
         });
 
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
 
         expect(DBConnector.rollbackTransaction).toHaveBeenCalled();
         expect(utils.handleValidationError).toHaveBeenCalledWith('Error creating user');
@@ -352,7 +365,7 @@ describe('accountsAttempt handler', () => {
             day: 1, month: 1, year: 2000
         });
 
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
 
         expect(DBConnector.rollbackTransaction).toHaveBeenCalled();
         expect(utils.handleValidationError).toHaveBeenCalledWith('Error creating user');
@@ -391,7 +404,7 @@ describe('accountsAttempt handler', () => {
             day: 1, month: 1, year: 2000
         });
 
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
 
         expect(DBConnector.commitTransaction).toHaveBeenCalled();
         expect(utils.handleSuccess).toHaveBeenCalledWith({ status: "OK" });

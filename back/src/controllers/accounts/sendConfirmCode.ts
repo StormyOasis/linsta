@@ -1,4 +1,4 @@
-import { APIGatewayProxyEvent, APIGatewayProxyHandler } from 'aws-lambda';
+import { APIGatewayProxyEvent } from 'aws-lambda';
 import moment from "moment";
 import crypto from "crypto";
 import DBConnector from '../../connectors/DBConnector';
@@ -6,16 +6,19 @@ import { isEmail, isPhone } from '../../utils/textUtils';
 import config from '../../config';
 import { SEND_CONFIRM_TEMPLATE, sendEmailByTemplate, sendSMS } from '../../connectors/AWSConnector';
 import logger from "../../logger/logger";
-import Metrics from "../../metrics/Metrics";
+import Metrics, { withMetrics } from "../../metrics/Metrics";
 import { handleSuccess, handleValidationError } from '../../utils/utils';
 
 type SendCodeRequest = {
     user: string
 }
 
-export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
-    Metrics.increment("accounts.sendcode");
+export const handler = async (event: APIGatewayProxyEvent) => {
+    const baseMetricsKey = "accounts.sendconfirmcode";
+    return await withMetrics(baseMetricsKey, async () => await handlerActions(baseMetricsKey, event))
+}
 
+export const handlerActions = async (baseMetricsKey: string, event: APIGatewayProxyEvent) => {
     const userData = (event.queryStringParameters as SendCodeRequest)?.user;
 
     if (!userData || userData.length < 3) {
@@ -38,7 +41,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
     try {
         // Upsert into DB
-        const res = await(await DBConnector.getGraph())
+        const res = await (await DBConnector.getGraph())
             .mergeV(new Map([["userData", userData]]))
             .option(DBConnector.Merge().onCreate, new Map([
                 [DBConnector.T().label, "ConfirmCode"],
@@ -52,8 +55,8 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
             ]))
             .next();
 
-        if(res == null || res?.value == null) {
-            return handleValidationError("Failed to generate confirmation code");        
+        if (res == null || res?.value == null) {
+            return handleValidationError("Failed to generate confirmation code");
         }
 
     } catch (err) {
@@ -63,7 +66,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
     // Now send the email or text notification of the code
     try {
-        if (isEmailAddr) {            
+        if (isEmailAddr) {
             await sendEmailByTemplate(SEND_CONFIRM_TEMPLATE, {
                 destination: { ToAddresses: [userData] },
                 source: config.aws.ses.defaultReplyAddress,
@@ -80,7 +83,8 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
         return handleSuccess("OK");
     } catch (err) {
+        Metrics.getInstance().increment(`${baseMetricsKey}.errorCount`);
         logger.error((err as Error).message);
         return handleValidationError("Error Sending confirmation code");
     }
-};
+}

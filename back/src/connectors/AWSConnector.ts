@@ -47,7 +47,7 @@ export const sendEmailByTemplate = async (templateName: string, params: SESTempl
         return await sesClient.send(command);
     } catch (error) {
         logger.error("Failure sending email", error);
-        Metrics.increment("aws.sesfailurecount");
+        Metrics.getInstance().increment("aws.sesfailurecount");
         throw new Error("Failed to send email via SES.");
     }
 }
@@ -66,7 +66,7 @@ export const sendSMS = async (phoneNumber: string, message: string):Promise<bool
         return true;
     } catch (error) {
         logger.error("Failure sending sms", error);
-        Metrics.increment("aws.smsfailurecount");
+        Metrics.getInstance().increment("aws.smsfailurecount");
 
         return false;
     }

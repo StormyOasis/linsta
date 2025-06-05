@@ -5,7 +5,7 @@ import DBConnector from '../../../connectors/DBConnector';
 import { APIGatewayProxyResult } from 'aws-lambda';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import config from '../../../config';
-import { handler } from '../loginUser';
+import { handlerActions as handler } from '../loginUser';
 import * as utils from '../../../utils/utils';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
@@ -27,7 +27,14 @@ const mockEvent = (body: any) => ({
 describe('loginUser handler', () => {
     beforeEach(() => {
         jest.clearAllMocks();
-        (Metrics.increment as jest.Mock).mockImplementation(() => {});
+        (Metrics.getInstance as jest.Mock).mockReturnValue({
+            increment: jest.fn(),
+            flush: jest.fn(),
+            timing: jest.fn(),
+            gauge: jest.fn(),
+            histogram: jest.fn(),
+        });
+        (Metrics.getInstance().increment as jest.Mock).mockImplementation(() => {});
         (utils.handleValidationError as jest.Mock).mockImplementation((msg, code?) => ({ statusCode: code || 400, body: msg }));
         (utils.handleSuccess as jest.Mock).mockImplementation((msg) => ({ statusCode: 200, body: msg }));
         (DBConnector.__ as jest.Mock).mockReturnValue(makeGremlinChainMock());
@@ -38,14 +45,14 @@ describe('loginUser handler', () => {
 
     it('returns validation error if body is invalid JSON', async () => {
         const event = { body: '{invalid' } as any;
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(utils.handleValidationError).toHaveBeenCalledWith("Invalid input");
         expect(result.statusCode).toBe(400);
     });
 
     it('returns validation error if username or password is missing', async () => {
         const event = mockEvent({ userName: '', password: '' });
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
         expect(utils.handleValidationError).toHaveBeenCalledWith("Invalid username or password");
     });
 
@@ -54,7 +61,7 @@ describe('loginUser handler', () => {
         (DBConnector.getGraph as jest.Mock).mockResolvedValueOnce(chain);
 
         const event = mockEvent({ userName: 'nouser', password: 'pass' });
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
         expect(utils.handleValidationError).toHaveBeenCalledWith("Invalid username or password");
     });
 
@@ -70,7 +77,7 @@ describe('loginUser handler', () => {
         (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
         const event = mockEvent({ userName: 'user', password: 'wrongpass' });
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
         expect(utils.handleValidationError).toHaveBeenCalledWith("Invalid username or password");
     });
 
@@ -78,7 +85,7 @@ describe('loginUser handler', () => {
         (DBConnector.getGraph as jest.Mock).mockRejectedValueOnce(new Error('fail'));
 
         const event = mockEvent({ userName: 'user', password: 'pass' });
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
         expect(logger.error).toHaveBeenCalled();
         expect(utils.handleValidationError).toHaveBeenCalledWith("Error logging in", 500);
     });
@@ -96,7 +103,7 @@ describe('loginUser handler', () => {
         (jwt.sign as jest.Mock).mockReturnValue('jwt-token');
 
         const event = mockEvent({ userName: 'user', password: 'pass' });
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
 
         expect(jwt.sign).toHaveBeenCalled();
         expect(utils.handleSuccess).toHaveBeenCalledWith({ token: 'jwt-token', userName: 'user', id: 1 });

@@ -3,7 +3,7 @@ import { APIGatewayProxyResult } from 'aws-lambda';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import config from '../../../config';
 
-import { handler } from '../getAllPostsByFollowing';
+import { handlerActions as handler } from '../getAllPostsByFollowing';
 import * as utils from '../../../utils/utils';
 import logger from '../../../logger/logger';
 import Metrics from '../../../metrics/Metrics';
@@ -48,7 +48,14 @@ const validHit = {
 describe('getAllPostsByFollowing handler', () => {
     beforeEach(() => {
         jest.clearAllMocks();
-        (Metrics.increment as jest.Mock).mockImplementation(() => { });
+        (Metrics.getInstance as jest.Mock).mockReturnValue({
+            increment: jest.fn(),
+            flush: jest.fn(),
+            timing: jest.fn(),
+            gauge: jest.fn(),
+            histogram: jest.fn(),
+        });
+        (Metrics.getInstance().increment as jest.Mock).mockImplementation(() => { });
         (utils.handleValidationError as jest.Mock).mockImplementation((msg, code?) => ({ statusCode: code || 400, body: msg }));
         (utils.handleSuccess as jest.Mock).mockImplementation((msg) => ({ statusCode: 200, body: msg }));
         (utils.verifyJWT as jest.Mock).mockReturnValue(true);
@@ -67,14 +74,14 @@ describe('getAllPostsByFollowing handler', () => {
 
     it('returns error if body is invalid JSON', async () => {
         const event = { body: '{invalid' } as any;
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(utils.handleValidationError).toHaveBeenCalledWith("Invalid params passed");
         expect(result.statusCode).toBe(400);
     });
 
     it('returns error if userId is missing', async () => {
         const event = mockEvent({ requestorUserId: validRequestorUserId });
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(utils.handleValidationError).toHaveBeenCalledWith("Invalid params passed");
         expect(result.statusCode).toBe(400);
     });
@@ -82,7 +89,7 @@ describe('getAllPostsByFollowing handler', () => {
     it('returns 403 if verifyJWT fails', async () => {
         (utils.verifyJWT as jest.Mock).mockReturnValue(false);
         const event = mockEvent(validData);
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(utils.handleValidationError).toHaveBeenCalledWith("You do not have permission to access this data", 403);
         expect(result.statusCode).toBe(403);
     });
@@ -90,7 +97,7 @@ describe('getAllPostsByFollowing handler', () => {
     it('returns empty posts if followingIds is empty', async () => {
         (utils.getFollowingUserIds as jest.Mock).mockResolvedValueOnce([]);
         const event = mockEvent(validData);
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(utils.handleSuccess).toHaveBeenCalledWith({
             posts: [],
             dateTime: "",
@@ -105,7 +112,7 @@ describe('getAllPostsByFollowing handler', () => {
             searchWithPagination: jest.fn().mockResolvedValue({ hits: { hits: [] } })
         });
         const event = mockEvent(validData);
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(utils.handleSuccess).toHaveBeenCalledWith({
             posts: [],
             dateTime: "",
@@ -117,7 +124,7 @@ describe('getAllPostsByFollowing handler', () => {
 
     it('returns posts with pagination data if found', async () => {
         const event = mockEvent(validData);
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(utils.addPfpsToPosts).toHaveBeenCalled();
         expect(utils.addCommentCountsToPosts).toHaveBeenCalled();
         expect(utils.addLikesToPosts).toHaveBeenCalled();
@@ -133,7 +140,7 @@ describe('getAllPostsByFollowing handler', () => {
     it('returns error if an exception is thrown', async () => {
         (utils.getFollowingUserIds as jest.Mock).mockRejectedValueOnce(new Error('fail'));
         const event = mockEvent(validData);
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(logger.error).toHaveBeenCalledWith('fail');
         expect(utils.handleValidationError).toHaveBeenCalledWith("Error getting posts");
         expect(result.statusCode).toBe(400);
@@ -144,7 +151,7 @@ describe('getAllPostsByFollowing handler', () => {
             searchWithPagination: jest.fn().mockRejectedValue(new Error('esfail'))
         });
         const event = mockEvent(validData);
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(logger.error).toHaveBeenCalledWith('esfail');
         expect(utils.handleValidationError).toHaveBeenCalledWith("Error getting posts");
         expect(result.statusCode).toBe(400);
@@ -153,7 +160,7 @@ describe('getAllPostsByFollowing handler', () => {
     it('returns error if addPfpsToPosts throws', async () => {
         (utils.addPfpsToPosts as jest.Mock).mockRejectedValueOnce(new Error('pfpfail'));
         const event = mockEvent(validData);
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(logger.error).toHaveBeenCalledWith('pfpfail');
         expect(utils.handleValidationError).toHaveBeenCalledWith("Error getting posts");
         expect(result.statusCode).toBe(400);
@@ -162,7 +169,7 @@ describe('getAllPostsByFollowing handler', () => {
     it('returns error if addCommentCountsToPosts throws', async () => {
         (utils.addCommentCountsToPosts as jest.Mock).mockRejectedValueOnce(new Error('commentfail'));
         const event = mockEvent(validData);
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(logger.error).toHaveBeenCalledWith('commentfail');
         expect(utils.handleValidationError).toHaveBeenCalledWith("Error getting posts");
         expect(result.statusCode).toBe(400);
@@ -171,7 +178,7 @@ describe('getAllPostsByFollowing handler', () => {
     it('returns error if addLikesToPosts throws', async () => {
         (utils.addLikesToPosts as jest.Mock).mockRejectedValueOnce(new Error('likesfail'));
         const event = mockEvent(validData);
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(logger.error).toHaveBeenCalledWith('likesfail');
         expect(utils.handleValidationError).toHaveBeenCalledWith("Error getting posts");
         expect(result.statusCode).toBe(400);
@@ -196,7 +203,7 @@ describe('getAllPostsByFollowing handler', () => {
             searchWithPagination: jest.fn().mockResolvedValue({ hits: { hits: [hitWithNoMedia] } })
         });
         const event = mockEvent(validData);
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
 
         expect(utils.handleSuccess).toHaveBeenCalled();
         expect(result.statusCode).toBe(200);

@@ -1,5 +1,5 @@
-import { APIGatewayProxyEvent, APIGatewayProxyHandler } from 'aws-lambda';
-import Metrics from '../../metrics/Metrics';
+import { APIGatewayProxyEvent } from 'aws-lambda';
+import Metrics, { withMetrics } from '../../metrics/Metrics';
 import logger from '../../logger/logger';
 import DBConnector, { EDGE_COMMENT_LIKED_BY_USER, EDGE_USER_LIKED_COMMENT } from '../../connectors/DBConnector';
 import { handleSuccess, handleValidationError, verifyJWT } from '../../utils/utils';
@@ -10,9 +10,12 @@ interface LikeRequest extends RequestWithRequestorId {
     userId: string;
 }
 
-export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
-    Metrics.increment("comments.toggleCommentLike");
+export const handler = async (event: APIGatewayProxyEvent) => {
+    const baseMetricsKey = "comments.togglelike";
+    return await withMetrics(baseMetricsKey, async () => await handlerActions(baseMetricsKey, event))
+}
 
+export const handlerActions = async (baseMetricsKey: string, event: APIGatewayProxyEvent) => {
     let data: LikeRequest;
     try {
         data = JSON.parse(event.body || '{}');
@@ -27,7 +30,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
     if (!verifyJWT(event, data.requestorUserId)) {
         // 403 - Forbidden
         return handleValidationError("You do not have permission to access this data", 403);
-    }  
+    }
 
     let isLiked = false;
 
@@ -35,7 +38,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
         const __ = DBConnector.__();
 
         // Check if user currently likes this comment
-        const isLikedResults = await(await DBConnector.getGraph()).V(data.commentId)
+        const isLikedResults = await (await DBConnector.getGraph()).V(data.commentId)
             .as("comment")
             .outE(EDGE_COMMENT_LIKED_BY_USER)
             .filter(__.inV().hasId(data.userId))
@@ -50,7 +53,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
         // Update the graph adding or removing edges as necessary
         if (isLiked) {
             // drop the edges
-            let results = await(await DBConnector.getGraph()).V(data.commentId)
+            let results = await (await DBConnector.getGraph()).V(data.commentId)
                 .as("comment")
                 .outE(EDGE_COMMENT_LIKED_BY_USER)
                 .filter(__.inV().hasId(data.userId))
@@ -61,7 +64,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
                 return handleValidationError("Error changing like status");
             }
 
-            results = await(await DBConnector.getGraph()).V(data.userId)
+            results = await (await DBConnector.getGraph()).V(data.userId)
                 .as("user")
                 .outE(EDGE_USER_LIKED_COMMENT)
                 .filter(__.inV().hasId(data.commentId))
@@ -73,7 +76,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
             }
         } else {
             // add the edges
-            const results = await(await DBConnector.getGraph()).V(data.commentId)
+            const results = await (await DBConnector.getGraph()).V(data.commentId)
                 .as("comment")
                 .V(data.userId)
                 .as("user")
@@ -92,6 +95,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
         return handleSuccess({ liked: !isLiked });
     } catch (err) {
+        Metrics.getInstance().increment(`${baseMetricsKey}.errorCount`);
         logger.error((err as Error).message);
         return handleValidationError("Error changing like status");
     }

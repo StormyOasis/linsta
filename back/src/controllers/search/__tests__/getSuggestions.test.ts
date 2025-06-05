@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { handler } from '../getSuggestions';
+import { handlerActions as handler } from '../getSuggestions';
 import * as ESConnectorModule from '../../../connectors/ESConnector';
 import * as utils from '../../../utils/utils';
 import Metrics from '../../../metrics/Metrics';
@@ -19,7 +19,14 @@ const mockEvent = (q?: string) => ({
 describe('getSuggestions handler', () => {
     beforeEach(() => {
         jest.clearAllMocks();
-        (Metrics.increment as jest.Mock).mockImplementation(() => {});
+        (Metrics.getInstance as jest.Mock).mockReturnValue({
+            increment: jest.fn(),
+            flush: jest.fn(),
+            timing: jest.fn(),
+            gauge: jest.fn(),
+            histogram: jest.fn(),
+        });
+        (Metrics.getInstance().increment as jest.Mock).mockImplementation(() => {});
         (utils.handleSuccess as jest.Mock).mockImplementation((x) => ({
             statusCode: 200,
             body: JSON.stringify(x),
@@ -33,7 +40,7 @@ describe('getSuggestions handler', () => {
 
     it('returns validation error if q is missing', async () => {
         const event = mockEvent(undefined);
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(utils.handleValidationError).toHaveBeenCalledWith('Missing required search params');
         expect(result.statusCode).toBe(400);
         expect(JSON.parse(result.body)).toBe('Missing required search params');
@@ -45,7 +52,7 @@ describe('getSuggestions handler', () => {
             getAllSuggestions: jest.fn().mockResolvedValue(mockSuggestions)
         });
         const event = mockEvent('test');
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(ESConnectorModule.getESConnector).toHaveBeenCalled();
         expect(utils.handleSuccess).toHaveBeenCalledWith(mockSuggestions);
         expect(result.statusCode).toBe(200);
@@ -57,19 +64,10 @@ describe('getSuggestions handler', () => {
             getAllSuggestions: jest.fn().mockRejectedValue(new Error('fail'))
         });
         const event = mockEvent('test');
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(logger.error).toHaveBeenCalledWith('Suggest error', expect.any(Error));
         expect(utils.handleValidationError).toHaveBeenCalledWith('An error occurred while performing the search');
         expect(result.statusCode).toBe(400);
         expect(JSON.parse(result.body)).toBe('An error occurred while performing the search');
-    });
-
-    it('increments the correct metric', async () => {
-        (ESConnectorModule.getESConnector as jest.Mock).mockReturnValue({
-            getAllSuggestions: jest.fn().mockResolvedValue({ postSuggestions: [], profileSuggestions: [], uniqueProfiles: [] })
-        });
-        const event = mockEvent('test');
-        await handler(event, {} as any, undefined as any);
-        expect(Metrics.increment).toHaveBeenCalledWith('search.getSuggestions');
     });
 });

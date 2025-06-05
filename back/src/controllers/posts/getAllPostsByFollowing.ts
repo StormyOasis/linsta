@@ -1,6 +1,6 @@
-import { APIGatewayProxyEvent, APIGatewayProxyHandler } from 'aws-lambda';
+import { APIGatewayProxyEvent } from 'aws-lambda';
 import config from '../../config';
-import Metrics from '../../metrics/Metrics';
+import Metrics, { withMetrics } from '../../metrics/Metrics';
 import logger from '../../logger/logger';
 import { getESConnector } from '../../connectors/ESConnector';
 import { addCommentCountsToPosts, addLikesToPosts, addPfpsToPosts, buildPostSortClause, getFollowingUserIds, handleSuccess, handleValidationError, verifyJWT } from '../../utils/utils';
@@ -19,9 +19,12 @@ type GetAllPostsByFollowingResponse = {
     done: boolean;
 };
 
-export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
-    Metrics.increment("posts.getAllPostsByFollowing");
+export const handler = async (event: APIGatewayProxyEvent) => {
+    const baseMetricsKey = "posts.getallbyfollowing";
+    return await withMetrics(baseMetricsKey, async () => await handlerActions(baseMetricsKey, event))
+}
 
+export const handlerActions = async (baseMetricsKey: string, event: APIGatewayProxyEvent) => {
     let data: GetAllPostsByFollowingRequest;
     try {
         data = JSON.parse(event.body || '{}');
@@ -36,7 +39,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
     if (!verifyJWT(event, data.requestorUserId)) {
         // 403 - Forbidden
         return handleValidationError("You do not have permission to access this data", 403);
-    }    
+    }
 
     try {
         const response: GetAllPostsByFollowingResponse = {
@@ -54,12 +57,12 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
         const query: Record<string, unknown> = {
             query: {
                 nested: {
-                  path: "user",
-                  query: {
-                    terms: {
-                      "user.userId": followingIds
+                    path: "user",
+                    query: {
+                        terms: {
+                            "user.userId": followingIds
+                        }
                     }
-                  }
                 }
             },
             sort: buildPostSortClause()
@@ -78,7 +81,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
         for (const hit of hits) {
             const entry = hit._source as Post;
-            if(entry.media?.length > 0) {
+            if (entry.media?.length > 0) {
                 const postId = entry.media[0].postId;
                 posts[postId] = { ...entry, postId };
                 postIds.push(postId);
@@ -101,6 +104,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
         return handleSuccess(response);
     } catch (err) {
+        Metrics.getInstance().increment(`${baseMetricsKey}.errorCount`);
         logger.error((err as Error).message);
         return handleValidationError("Error getting posts");
     }

@@ -1,10 +1,10 @@
-import { APIGatewayProxyEvent, APIGatewayProxyHandler } from 'aws-lambda';
+import { APIGatewayProxyEvent } from 'aws-lambda';
 import bcrypt from 'bcrypt';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import DBConnector from '../../connectors/DBConnector';
 import config from '../../config';
 import logger from '../../logger/logger';
-import Metrics from '../../metrics/Metrics';
+import Metrics, { withMetrics } from '../../metrics/Metrics';
 import { handleSuccess, handleValidationError } from '../../utils/utils';
 
 type LoginRequest = {
@@ -12,9 +12,12 @@ type LoginRequest = {
     password: string;
 };
 
-export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
-    Metrics.increment("accounts.userlogin");
+export const handler = async (event: APIGatewayProxyEvent) => {
+    const baseMetricsKey = "accounts.userlogin";
+    return await withMetrics(baseMetricsKey, async () => await handlerActions(baseMetricsKey, event))
+}
 
+export const handlerActions = async (baseMetricsKey: string, event: APIGatewayProxyEvent) => {
     let data: LoginRequest;
     try {
         data = JSON.parse(event.body || '{}');
@@ -32,7 +35,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
     try {
         // Find user by email or phone
         // Check against the db for username existence
-        const userResult = await(await DBConnector.getGraph()).V()
+        const userResult = await (await DBConnector.getGraph()).V()
             .hasLabel("User")
             .has("userName", userName)
             .project('id', 'userName', 'password')
@@ -46,10 +49,10 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
         }
 
         const dbData = {
-            password: userResult.value.get('password') as string,                
+            password: userResult.value.get('password') as string,
             userName: userResult.value.get('userName') as string,
             id: userResult.value.get('id') as number
-        }                
+        }
 
         const passwordMatch: boolean = await bcrypt.compare(password, dbData.password);
         if (!passwordMatch) {
@@ -58,7 +61,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
         // create the JWT token
         const token = jwt.sign(
-            {id: dbData.id},
+            { id: dbData.id },
             config.auth.jwt.secret as string,
             {
                 algorithm: 'HS256',
@@ -69,7 +72,9 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
         return handleSuccess({ token, userName, id: dbData.id });
     } catch (err) {
+        Metrics.getInstance().increment(`${baseMetricsKey}.errorCount`);
         logger.error("Login error", err);
         return handleValidationError("Error logging in", 500);
     }
+
 };

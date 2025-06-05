@@ -1,5 +1,5 @@
-import { APIGatewayProxyEvent, APIGatewayProxyHandler } from 'aws-lambda';
-import Metrics from '../../metrics/Metrics';
+import { APIGatewayProxyEvent } from 'aws-lambda';
+import Metrics, { withMetrics } from '../../metrics/Metrics';
 import { getProfile, handleSuccess, handleValidationError, updateProfileInRedis, verifyJWT } from '../../utils/utils';
 import logger from '../../logger/logger';
 import { getESConnector } from '../../connectors/ESConnector';
@@ -8,9 +8,12 @@ import { removeFile, uploadFile } from '../../connectors/AWSConnector';
 import { getFileExtByMimeType } from '../../utils/textUtils';
 import * as multipart from 'lambda-multipart-parser';
 
-export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
-    Metrics.increment("profiles.putProfilePfp");    
+export const handler = async (event: APIGatewayProxyEvent) => {
+    const baseMetricsKey = "profiles.putprofilepfp";
+    return await withMetrics(baseMetricsKey, async () => await handlerActions(baseMetricsKey, event))
+}
 
+export const handlerActions = async (baseMetricsKey: string, event: APIGatewayProxyEvent) => {
     let parsed;
     try {
         parsed = await multipart.parse(event);
@@ -58,7 +61,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
         }
 
         profile.pfp = url;
-        
+
         // Now update the profile data in ES with the new pfp 
         const esResult = await getESConnector().updateProfile(profile.profileId, undefined, {
             doc: {
@@ -66,12 +69,12 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
             }
         });
 
-        if(esResult.result != 'updated') {
+        if (esResult.result != 'updated') {
             return handleValidationError("Error updating profile");
         }
 
         // Update the entry in the DB
-        const result = await(await DBConnector.getGraph()).V(parsed.userId).property("pfp", url).next();
+        const result = await (await DBConnector.getGraph()).V(parsed.userId).property("pfp", url).next();
         if (!result || !result.value) {
             return handleValidationError("Error updating profile");
         }
@@ -81,6 +84,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
         return handleSuccess({ url });
     } catch (err) {
+        Metrics.getInstance().increment(`${baseMetricsKey}.errorCount`);
         logger.error((err as Error).message);
         return handleValidationError("Error updating profile");
     }

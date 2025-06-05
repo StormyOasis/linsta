@@ -6,6 +6,7 @@ import logger from '../../logger/logger';
 jest.mock('gremlin');
 jest.mock('../../logger/logger');
 jest.mock('../../config');
+jest.mock('../../metrics/Metrics');
 
 describe('DBConnector Singleton', () => {
     it('should return the same instance for multiple getInstance calls', () => {

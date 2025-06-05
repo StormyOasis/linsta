@@ -1,8 +1,8 @@
-import { APIGatewayProxyEvent, APIGatewayProxyHandler } from 'aws-lambda';
+import { APIGatewayProxyEvent } from 'aws-lambda';
 import DBConnector, { EDGE_USER_FOLLOWS } from '../../connectors/DBConnector';
 import { handleSuccess, handleValidationError, verifyJWT } from '../../utils/utils';
 import logger from '../../logger/logger';
-import Metrics from '../../metrics/Metrics';
+import Metrics, { withMetrics } from '../../metrics/Metrics';
 import { RequestWithRequestorId } from '../../utils/types';
 
 interface FollowingType extends RequestWithRequestorId {
@@ -11,8 +11,12 @@ interface FollowingType extends RequestWithRequestorId {
     follow: boolean;
 }
 
-export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
-    Metrics.increment("accounts.toggleFollowing");
+export const handler = async (event: APIGatewayProxyEvent) => {
+    const baseMetricsKey = "accounts.togglefollowing";
+    return await withMetrics(baseMetricsKey, async () => await handlerActions(baseMetricsKey, event))
+}
+
+export const handlerActions = async (baseMetricsKey: string, event: APIGatewayProxyEvent) => {
 
     let data: FollowingType;
     try {
@@ -28,14 +32,14 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
     if (!verifyJWT(event, data.requestorUserId)) {
         // 403 - Forbidden
         return handleValidationError("You do not have permission to access this data", 403);
-    }    
+    }
 
     try {
         await DBConnector.beginTransaction();
 
         if (data.follow) {
             // Adding a new follower
-            const result = await(await DBConnector.getGraph(true)).V(data.userId)
+            const result = await (await DBConnector.getGraph(true)).V(data.userId)
                 .as("user_id")
                 .V(data.followId)
                 .as("follow_id")
@@ -50,7 +54,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
             }
         } else {
             // Unfollow the given follower
-            await(await DBConnector.getGraph(true)).V(data.userId)
+            await (await DBConnector.getGraph(true)).V(data.userId)
                 .outE(EDGE_USER_FOLLOWS)
                 .where(DBConnector.__().inV().hasId(data.followId))
                 .drop()
@@ -59,6 +63,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
         await DBConnector.commitTransaction();
     } catch (err) {
+        Metrics.getInstance().increment(`${baseMetricsKey}.errorCount`);
         logger.error((err as Error).message);
         await DBConnector.rollbackTransaction();
         return handleValidationError("Error changing following status");

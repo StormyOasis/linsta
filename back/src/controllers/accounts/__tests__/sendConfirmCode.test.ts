@@ -6,7 +6,7 @@ import { APIGatewayProxyResult } from 'aws-lambda';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import config from '../../../config';
 
-import { handler } from '../sendConfirmCode';
+import { handlerActions as handler } from '../sendConfirmCode';
 import * as textUtils from '../../../utils/textUtils';
 import * as utils from '../../../utils/utils';
 import * as AWSConnector from '../../../connectors/AWSConnector';
@@ -34,7 +34,14 @@ const mockEvent = (qs: any) => ({
 describe('sendConfirmCode handler', () => {
     beforeEach(() => {
         jest.clearAllMocks();
-        (Metrics.increment as jest.Mock).mockImplementation(() => {});
+        (Metrics.getInstance as jest.Mock).mockReturnValue({
+            increment: jest.fn(),
+            flush: jest.fn(),
+            timing: jest.fn(),
+            gauge: jest.fn(),
+            histogram: jest.fn(),
+        });
+        (Metrics.getInstance().increment as jest.Mock).mockImplementation(() => {});
         (utils.handleValidationError as jest.Mock).mockImplementation((msg) => ({ statusCode: 400, body: msg }));
         (utils.handleSuccess as jest.Mock).mockImplementation((msg) => ({ statusCode: 200, body: msg }));
         (DBConnector.__ as jest.Mock).mockReturnValue(makeGremlinChainMock());
@@ -46,13 +53,13 @@ describe('sendConfirmCode handler', () => {
 
     it('returns validation error if user is missing', async () => {
         const event = mockEvent({});
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
         expect(utils.handleValidationError).toHaveBeenCalledWith("Invalid confirmation input");
     });
 
     it('returns validation error if user is too short', async () => {
         const event = mockEvent({ user: 'ab' });
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
         expect(utils.handleValidationError).toHaveBeenCalledWith("Invalid confirmation input");
     });
 
@@ -60,7 +67,7 @@ describe('sendConfirmCode handler', () => {
         (textUtils.isEmail as jest.Mock).mockReturnValue(false);
         (textUtils.isPhone as jest.Mock).mockReturnValue(false);
         const event = mockEvent({ user: 'notanemail' });
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
         expect(utils.handleValidationError).toHaveBeenCalledWith("Can't parse confirmation data");
     });
 
@@ -70,7 +77,7 @@ describe('sendConfirmCode handler', () => {
         (DBConnector.getGraph as jest.Mock).mockResolvedValueOnce(makeGremlinChainMock({ value: null }));
 
         const event = mockEvent({ user: 'test@email.com' });
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
         expect(utils.handleValidationError).toHaveBeenCalledWith("Failed to generate confirmation code");
     });
 
@@ -80,7 +87,7 @@ describe('sendConfirmCode handler', () => {
         (DBConnector.getGraph as jest.Mock).mockRejectedValueOnce(new Error('fail'));
 
         const event = mockEvent({ user: 'test@email.com' });
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
         expect(logger.error).toHaveBeenCalled();
         expect(utils.handleValidationError).toHaveBeenCalledWith("Error processing confirmation data");
     });
@@ -93,7 +100,7 @@ describe('sendConfirmCode handler', () => {
         (AWSConnector.sendEmailByTemplate as jest.Mock).mockResolvedValue(true);
 
         const event = mockEvent({ user: 'test@email.com' });
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
 
         expect(AWSConnector.sendEmailByTemplate).toHaveBeenCalledWith(
             AWSConnector.SEND_CONFIRM_TEMPLATE,
@@ -119,7 +126,7 @@ describe('sendConfirmCode handler', () => {
         (AWSConnector.sendSMS as jest.Mock).mockResolvedValue(true);
 
         const event = mockEvent({ user: '1234567890' });
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
 
         expect(AWSConnector.sendSMS).toHaveBeenCalledWith('1234567890', 'abcd');
         expect(utils.handleSuccess).toHaveBeenCalledWith("OK");
@@ -134,7 +141,7 @@ describe('sendConfirmCode handler', () => {
         (AWSConnector.sendEmailByTemplate as jest.Mock).mockRejectedValue(new Error('fail'));
 
         const event = mockEvent({ user: 'test@email.com' });
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
 
         expect(logger.error).toHaveBeenCalled();
         expect(utils.handleValidationError).toHaveBeenCalledWith("Error Sending confirmation code");
@@ -148,7 +155,7 @@ describe('sendConfirmCode handler', () => {
         (AWSConnector.sendSMS as jest.Mock).mockRejectedValue(new Error('fail'));
 
         const event = mockEvent({ user: '1234567890' });
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
 
         expect(logger.error).toHaveBeenCalled();
         expect(utils.handleValidationError).toHaveBeenCalledWith("Error Sending confirmation code");

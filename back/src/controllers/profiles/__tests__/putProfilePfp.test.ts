@@ -5,7 +5,7 @@ import DBConnector from '../../../connectors/DBConnector';
 import { APIGatewayProxyResult } from 'aws-lambda';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import config from '../../../config';
-import { handler } from '../putProfilePfp';
+import { handlerActions as handler } from '../putProfilePfp';
 import * as utils from '../../../utils/utils';
 import logger from '../../../logger/logger';
 import Metrics from '../../../metrics/Metrics';
@@ -45,7 +45,14 @@ const validProfile = {
 describe('putProfilePfp handler', () => {
     beforeEach(() => {
         jest.resetAllMocks();
-        (Metrics.increment as jest.Mock).mockImplementation(() => {});
+        (Metrics.getInstance as jest.Mock).mockReturnValue({
+            increment: jest.fn(),
+            flush: jest.fn(),
+            timing: jest.fn(),
+            gauge: jest.fn(),
+            histogram: jest.fn(),
+        });
+        (Metrics.getInstance().increment as jest.Mock).mockImplementation(() => {});
         (utils.handleValidationError as jest.Mock).mockImplementation((msg, code?) => ({ statusCode: code || 400, body: msg }));
         (utils.handleSuccess as jest.Mock).mockImplementation((msg) => ({ statusCode: 200, body: msg }));
         (utils.verifyJWT as jest.Mock).mockReturnValue(true);
@@ -70,7 +77,7 @@ describe('putProfilePfp handler', () => {
     it('returns error if multipart parse fails', async () => {
         (multipart.parse as jest.Mock).mockRejectedValueOnce(new Error('fail'));
         const event = {} as any;
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(logger.error).toHaveBeenCalledWith("Error parsing multipart data", expect.any(Error));
         expect(utils.handleValidationError).toHaveBeenCalledWith("Invalid form data");
         expect(result.statusCode).toBe(400);
@@ -79,7 +86,7 @@ describe('putProfilePfp handler', () => {
     it('returns error if userId or requestorUserId missing', async () => {
         (multipart.parse as jest.Mock).mockResolvedValueOnce({ userId: '', requestorUserId: '', files: [] });
         const event = {} as any;
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(utils.handleValidationError).toHaveBeenCalledWith("Missing required params");
         expect(result.statusCode).toBe(400);
     });
@@ -87,7 +94,7 @@ describe('putProfilePfp handler', () => {
     it('returns 403 if verifyJWT fails', async () => {
         (utils.verifyJWT as jest.Mock).mockReturnValueOnce(false);
         const event = {} as any;
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(utils.handleValidationError).toHaveBeenCalledWith("You do not have permission to access this data", 403);
         expect(result.statusCode).toBe(403);
     });
@@ -95,14 +102,14 @@ describe('putProfilePfp handler', () => {
     it('returns error if profile is null', async () => {
         (utils.getProfile as jest.Mock).mockResolvedValueOnce(null);
         const event = {} as any;
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(utils.handleValidationError).toHaveBeenCalledWith("Invalid profile");
         expect(result.statusCode).toBe(400);
     });
 
     it('uploads file and updates profile if file is present', async () => {
         const event = {} as any;
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(AWSConnector.uploadFile).toHaveBeenCalled();
         expect(ESConnectorModule.getESConnector().updateProfile).toHaveBeenCalledWith(
             validProfileId,
@@ -123,7 +130,7 @@ describe('putProfilePfp handler', () => {
         });
         (utils.getProfile as jest.Mock).mockResolvedValueOnce({ ...validProfile, pfp: 'oldurl' });
         const event = {} as any;
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(AWSConnector.removeFile).toHaveBeenCalledWith('oldurl');
         expect(ESConnectorModule.getESConnector().updateProfile).toHaveBeenCalled();
         expect(utils.handleSuccess).toHaveBeenCalled();
@@ -135,7 +142,7 @@ describe('putProfilePfp handler', () => {
             updateProfile: jest.fn().mockResolvedValue({ result: 'error' })
         });
         const event = {} as any;
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(utils.handleValidationError).toHaveBeenCalledWith("Error updating profile");
         expect(result.statusCode).toBe(400);
     });
@@ -143,7 +150,7 @@ describe('putProfilePfp handler', () => {
     it('returns error if DB update fails', async () => {
         (DBConnector.getGraph as jest.Mock).mockResolvedValueOnce(makeGremlinChainMock({ value: null }));
         const event = {} as any;
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(utils.handleValidationError).toHaveBeenCalledWith("Error updating profile");
         expect(result.statusCode).toBe(400);
     });
@@ -151,7 +158,7 @@ describe('putProfilePfp handler', () => {
     it('returns error if an exception is thrown', async () => {
         (utils.getProfile as jest.Mock).mockRejectedValueOnce(new Error('fail'));
         const event = {} as any;
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(logger.error).toHaveBeenCalledWith('fail');
         expect(utils.handleValidationError).toHaveBeenCalledWith("Error updating profile");
         expect(result.statusCode).toBe(400);

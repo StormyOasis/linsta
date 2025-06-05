@@ -6,7 +6,7 @@ import { APIGatewayProxyResult } from 'aws-lambda';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import config from '../../../config';
 
-import { handler } from '../addPost';
+import { handlerActions as handler } from '../addPost';
 import RedisConnector from '../../../connectors/RedisConnector';
 import * as AWSConnector from '../../../connectors/AWSConnector';
 import * as ESConnectorModule from '../../../connectors/ESConnector';
@@ -47,7 +47,14 @@ const validParsed = {
 describe('addPost handler', () => {
     beforeEach(() => {
         jest.clearAllMocks();
-        (Metrics.increment as jest.Mock).mockImplementation(() => {});
+        (Metrics.getInstance as jest.Mock).mockReturnValue({
+            increment: jest.fn(),
+            flush: jest.fn(),
+            timing: jest.fn(),
+            gauge: jest.fn(),
+            histogram: jest.fn(),
+        });
+        (Metrics.getInstance().increment as jest.Mock).mockImplementation(() => {});
         (utils.handleValidationError as jest.Mock).mockImplementation((msg, code?) => ({ statusCode: code || 400, body: msg }));
         (utils.handleSuccess as jest.Mock).mockImplementation((msg) => ({ statusCode: 200, body: msg }));
         (utils.verifyJWT as jest.Mock).mockReturnValue(true);
@@ -68,7 +75,7 @@ describe('addPost handler', () => {
 
     it('returns error if multipart parsing fails', async () => {
         (multipart.parse as jest.Mock).mockRejectedValueOnce(new Error('fail'));
-        const result = await handler(mockEvent(), {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", mockEvent()) as APIGatewayProxyResult;
         expect(logger.error).toHaveBeenCalledWith("Error parsing multipart data", expect.any(Error));
         expect(utils.handleValidationError).toHaveBeenCalledWith("Invalid form data");
         expect(result.statusCode).toBe(400);
@@ -76,7 +83,7 @@ describe('addPost handler', () => {
 
     it('returns error if required fields are missing', async () => {
         (multipart.parse as jest.Mock).mockResolvedValueOnce({});
-        const result = await handler(mockEvent(), {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", mockEvent()) as APIGatewayProxyResult;
         expect(utils.handleValidationError).toHaveBeenCalledWith("Invalid params passed");
         expect(result.statusCode).toBe(400);
     });
@@ -86,7 +93,7 @@ describe('addPost handler', () => {
             ...validParsed,
             entries: undefined
         });
-        const result = await handler(mockEvent(), {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", mockEvent()) as APIGatewayProxyResult;
         expect(utils.handleValidationError).toHaveBeenCalledWith("Invalid params passed");
         expect(result.statusCode).toBe(400);
     });
@@ -94,7 +101,7 @@ describe('addPost handler', () => {
     it('returns error if graphResult for post vertex is null', async () => {
         (DBConnector.getGraph as jest.Mock)
             .mockResolvedValueOnce(makeGremlinChainMock({ value: null }));
-        const result = await handler(mockEvent(), {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", mockEvent()) as APIGatewayProxyResult;
         expect(utils.handleValidationError).toHaveBeenCalledWith("Error adding post");
         expect(result.statusCode).toBe(400);
     });    
@@ -104,14 +111,14 @@ describe('addPost handler', () => {
             ...validParsed,
             user: '{badjson'
         });
-        const result = await handler(mockEvent(), {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", mockEvent()) as APIGatewayProxyResult;
         expect(utils.handleValidationError).toHaveBeenCalledWith("Invalid JSON in fields");
         expect(result.statusCode).toBe(400);
     });
 
     it('returns 403 if verifyJWT fails', async () => {
         (utils.verifyJWT as jest.Mock).mockReturnValue(false);
-        const result = await handler(mockEvent(), {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", mockEvent()) as APIGatewayProxyResult;
         expect(utils.handleValidationError).toHaveBeenCalledWith("You do not have permission to access this data", 403);
         expect(result.statusCode).toBe(403);
     });
@@ -121,14 +128,14 @@ describe('addPost handler', () => {
             ...validParsed,
             files: []
         });
-        const result = await handler(mockEvent(), {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", mockEvent()) as APIGatewayProxyResult;
         expect(utils.handleValidationError).toHaveBeenCalledWith("Missing file for entry e1");
         expect(result.statusCode).toBe(400);
     });
 
     it('returns error if uploadFile throws', async () => {
         (AWSConnector.uploadFile as jest.Mock).mockRejectedValueOnce(new Error('fail'));
-        const result = await handler(mockEvent(), {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", mockEvent()) as APIGatewayProxyResult;
         expect(utils.handleValidationError).toHaveBeenCalledWith("Error adding post");
         expect(DBConnector.rollbackTransaction).toHaveBeenCalled();
         expect(result.statusCode).toBe(400);
@@ -138,7 +145,7 @@ describe('addPost handler', () => {
         (ESConnectorModule.getESConnector as jest.Mock).mockReturnValueOnce({
             insert: jest.fn().mockResolvedValue({ result: 'error' }),
         });
-        const result = await handler(mockEvent(), {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", mockEvent()) as APIGatewayProxyResult;
         expect(utils.handleValidationError).toHaveBeenCalledWith("Error adding post");
         expect(result.statusCode).toBe(400);
     });
@@ -147,7 +154,7 @@ describe('addPost handler', () => {
         (DBConnector.getGraph as jest.Mock)
             .mockResolvedValueOnce(makeGremlinChainMock({ value: { id: 'postid' } }))
             .mockResolvedValueOnce(makeGremlinChainMock({ value: null }));
-        const result = await handler(mockEvent(), {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", mockEvent()) as APIGatewayProxyResult;
         expect(utils.handleValidationError).toHaveBeenCalledWith("Error creating profile links");
         expect(result.statusCode).toBe(400);
     });
@@ -156,7 +163,7 @@ describe('addPost handler', () => {
         (DBConnector.getGraph as jest.Mock)
             .mockResolvedValueOnce(makeGremlinChainMock({ value: { id: 'postid' } }))
             .mockResolvedValueOnce(makeGremlinChainMock({ value: null }));
-        const result = await handler(mockEvent(), {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", mockEvent()) as APIGatewayProxyResult;
         expect(utils.handleValidationError).toHaveBeenCalledWith("Error creating profile links");
         expect(result.statusCode).toBe(400);
     });
@@ -167,7 +174,7 @@ describe('addPost handler', () => {
             insert: jest.fn().mockResolvedValue({ result: 'created', _id: 'esid' }),
             update: updateMock
         });
-        const result = await handler(mockEvent(), {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", mockEvent()) as APIGatewayProxyResult;
         expect(updateMock).toHaveBeenCalled();
         expect(utils.handleValidationError).toHaveBeenCalledWith("Error adding post");
         expect(DBConnector.rollbackTransaction).toHaveBeenCalled();
@@ -176,14 +183,14 @@ describe('addPost handler', () => {
 
     it('returns error if Redis set fails', async () => {
         (RedisConnector.set as jest.Mock).mockRejectedValueOnce(new Error('fail'));
-        const result = await handler(mockEvent(), {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", mockEvent()) as APIGatewayProxyResult;
         expect(utils.handleValidationError).toHaveBeenCalledWith("Error adding post");
         expect(DBConnector.rollbackTransaction).toHaveBeenCalled();
         expect(result.statusCode).toBe(400);
     });
 
     it('returns success if post is added', async () => {
-        const result = await handler(mockEvent(), {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", mockEvent()) as APIGatewayProxyResult;
         expect(utils.handleSuccess).toHaveBeenCalledWith({ status: "OK", postId: "postid" });
         expect(result.statusCode).toBe(200);
     });

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { makeGremlinChainMock } = require('../../../connectors/DBConnector');
-import { handler } from '../changePassword';
+import { handlerActions as handler } from '../changePassword';
 import DBConnector from '../../../connectors/DBConnector';
 import * as textUtils from '../../../utils/textUtils';
 import * as utils from '../../../utils/utils';
@@ -25,7 +25,14 @@ const mockEvent = (body: any) => ({
 describe('changePassword handler', () => {
     beforeEach(() => {
         jest.clearAllMocks();
-        (Metrics.increment as jest.Mock).mockImplementation(() => {});
+        (Metrics.getInstance as jest.Mock).mockReturnValue({
+            increment: jest.fn(),
+            flush: jest.fn(),
+            timing: jest.fn(),
+            gauge: jest.fn(),
+            histogram: jest.fn(),
+        });
+        (Metrics.getInstance().increment as jest.Mock).mockImplementation(() => {});
         (utils.handleValidationError as jest.Mock).mockImplementation((msg) => ({ statusCode: 400, body: msg }));
         (utils.handleSuccess as jest.Mock).mockImplementation((msg) => ({ statusCode: 200, body: msg }));
         (bcrypt.hash as jest.Mock).mockResolvedValue('hashed');
@@ -42,27 +49,27 @@ describe('changePassword handler', () => {
 
     it('returns validation error if body is invalid JSON', async () => {
         const event = { body: '{invalid' } as any;
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(utils.handleValidationError).toHaveBeenCalledWith('Invalid parameters or missing token');
         expect(result.statusCode).toBe(400);
     });
 
     it('returns validation error if required fields are missing', async () => {
         const event = mockEvent({ password1: 'a', password2: 'a' });
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
         expect(utils.handleValidationError).toHaveBeenCalledWith('Invalid parameters or missing token');
     });
 
     it('returns validation error if passwords do not match', async () => {
         const event = mockEvent({ userName: 'user', oldPassword: 'old', password1: 'a', password2: 'b' });
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
         expect(utils.handleValidationError).toHaveBeenCalledWith("Passwords don't match");
     });
 
     it('returns validation error if password format is invalid', async () => {
         (textUtils.isValidPassword as jest.Mock).mockReturnValue(false);
         const event = mockEvent({ userName: 'user', oldPassword: 'old', password1: 'a', password2: 'a' });
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
         expect(utils.handleValidationError).toHaveBeenCalledWith("Invalid password format");
     });
 
@@ -89,7 +96,7 @@ describe('changePassword handler', () => {
             password2: 'newpass'
         });
 
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(utils.handleSuccess).toHaveBeenCalledWith({ status: "OK" });
         expect(result.statusCode).toBe(200);
     });
@@ -105,7 +112,7 @@ describe('changePassword handler', () => {
             password2: 'newpass'
         });
 
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
         expect(utils.handleValidationError).toHaveBeenCalledWith("Invalid username or password");
     });
 
@@ -129,7 +136,7 @@ describe('changePassword handler', () => {
             password2: 'newpass'
         });
 
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
         expect(utils.handleValidationError).toHaveBeenCalledWith("Invalid username or password");
     });
 
@@ -154,7 +161,7 @@ describe('changePassword handler', () => {
             password2: 'newpass'
         });
 
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
         expect(utils.handleValidationError).toHaveBeenCalledWith("Invalid username or password");
     });
 
@@ -175,7 +182,7 @@ describe('changePassword handler', () => {
             password2: 'newpass'
         });
 
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(DBConnector.commitTransaction).toHaveBeenCalled();
         expect(utils.handleSuccess).toHaveBeenCalledWith({ status: "OK" });
         expect(result.statusCode).toBe(200);
@@ -191,7 +198,7 @@ describe('changePassword handler', () => {
             password2: 'newpass'
         });
 
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
         expect(utils.handleValidationError).toHaveBeenCalledWith("Invalid token");
     });
 
@@ -208,7 +215,7 @@ describe('changePassword handler', () => {
             password2: 'newpass'
         });
 
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
         expect(utils.handleValidationError).toHaveBeenCalledWith("Error changing password");
     });
 
@@ -227,7 +234,7 @@ describe('changePassword handler', () => {
             password2: 'newpass'
         });
 
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
         expect(utils.handleValidationError).toHaveBeenCalledWith("Error changing password");
     });
 
@@ -240,7 +247,7 @@ describe('changePassword handler', () => {
             password2: 'newpass'
         });
 
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
         expect(logger.error).toHaveBeenCalled();
         expect(DBConnector.rollbackTransaction).toHaveBeenCalled();
         expect(utils.handleValidationError).toHaveBeenCalledWith("Error with token");

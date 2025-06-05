@@ -1,5 +1,5 @@
-import { APIGatewayProxyEvent, APIGatewayProxyHandler } from 'aws-lambda';
-import Metrics from '../../metrics/Metrics';
+import { APIGatewayProxyEvent } from 'aws-lambda';
+import Metrics, { withMetrics } from '../../metrics/Metrics';
 import logger from '../../logger/logger';
 import { getPostByPostId, handleSuccess, handleValidationError, verifyJWT } from '../../utils/utils';
 import DBConnector, {
@@ -17,9 +17,12 @@ interface AddCommentRequest extends RequestWithRequestorId {
     parentCommentId: string | null;
 }
 
-export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
-    Metrics.increment("comments.addComment");
+export const handler = async (event: APIGatewayProxyEvent) => {
+    const baseMetricsKey = "comments.addcomment";
+    return await withMetrics(baseMetricsKey, async () => await handlerActions(baseMetricsKey, event))
+}
 
+export const handlerActions = async (baseMetricsKey: string, event: APIGatewayProxyEvent) => {
     let data: AddCommentRequest;
     try {
         data = JSON.parse(event.body || '{}');
@@ -34,7 +37,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
     if (!verifyJWT(event, data.requestorUserId)) {
         // 403 - Forbidden
         return handleValidationError("You do not have permission to access this data", 403);
-    }   
+    }
 
     try {
         // First grab the post data from redis / DB so we can check the comments disabled flag
@@ -53,7 +56,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
         // Add the comment data to the db only (Comments won't be searchable)
         await DBConnector.beginTransaction();
 
-        let result = await(await DBConnector.getGraph(true))
+        let result = await (await DBConnector.getGraph(true))
             .addV("Comment")
             .property("dateTime", new Date())
             .property("text", sanitize(data.text))
@@ -67,7 +70,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
         const commentId = result.value.id;
 
         // Edges between User and comment
-        result = await(await DBConnector.getGraph(true)).V(commentId)
+        result = await (await DBConnector.getGraph(true)).V(commentId)
             .as("comment")
             .V(data.userId)
             .as("user")
@@ -85,7 +88,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
         }
 
         // Edges between comment and post
-        result = await(await DBConnector.getGraph(true)).V(commentId)
+        result = await (await DBConnector.getGraph(true)).V(commentId)
             .as("comment")
             .V(data.postId)
             .as("post")
@@ -105,7 +108,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
         // Edges between comment and another parent comment (if applicable)
         const parentCommentId: string = `${data.parentCommentId || ""}`;
         if (parentCommentId.length > 0) {
-            result = await(await DBConnector.getGraph(true)).V(commentId)
+            result = await (await DBConnector.getGraph(true)).V(commentId)
                 .as("comment")
                 .V(parentCommentId)
                 .as("parent")
@@ -127,8 +130,10 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
         return handleSuccess({ id: commentId });
     } catch (err) {
+        Metrics.getInstance().increment(`${baseMetricsKey}.errorCount`);
         await DBConnector.rollbackTransaction();
         logger.error("Error adding comment", err);
         return handleValidationError("Error adding comment");
     }
+
 };

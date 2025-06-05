@@ -5,7 +5,7 @@ import DBConnector from '../../../connectors/DBConnector';
 import { APIGatewayProxyResult } from 'aws-lambda';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import config from '../../../config';
-import { handler } from '../getCommentsByPostId';
+import { handlerActions as handler } from '../getCommentsByPostId';
 import * as utils from '../../../utils/utils';
 import logger from '../../../logger/logger';
 import Metrics from '../../../metrics/Metrics';
@@ -24,8 +24,15 @@ const mockEvent = (body: any) => ({
 describe('getCommentsByPostId handler', () => {
     beforeEach(() => {
         jest.resetAllMocks();
+        (Metrics.getInstance as jest.Mock).mockReturnValue({
+            increment: jest.fn(),
+            flush: jest.fn(),
+            timing: jest.fn(),
+            gauge: jest.fn(),
+            histogram: jest.fn(),
+        });
         (logger.error as jest.Mock).mockImplementation(() => { });
-        (Metrics.increment as jest.Mock).mockImplementation(() => { });
+        (Metrics.getInstance().increment as jest.Mock).mockImplementation(() => { });
         (utils.handleValidationError as jest.Mock).mockImplementation((msg, code?) => ({ statusCode: code || 400, body: msg }));
         (utils.handleSuccess as jest.Mock).mockImplementation((msg) => ({ statusCode: 200, body: msg }));
         (DBConnector.__ as jest.Mock).mockReturnValue(makeGremlinChainMock());
@@ -35,7 +42,7 @@ describe('getCommentsByPostId handler', () => {
 
     it('returns validation error if postId is missing', async () => {
         const event = mockEvent({});
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
         expect(utils.handleValidationError).toHaveBeenCalledWith("Invalid params");
     });
 
@@ -43,7 +50,7 @@ describe('getCommentsByPostId handler', () => {
         (DBConnector.getGraph as jest.Mock).mockRejectedValueOnce(new Error('fail'));
         const event = mockEvent({ postId: 'p1', requestorUserId: 'user123' });
         (utils.verifyJWT as jest.Mock).mockReturnValue({ id: 'user123' });
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
         expect(logger.error).toHaveBeenCalledWith(expect.any(String));
         expect(utils.handleValidationError).toHaveBeenCalledWith("Error getting comment");
     });
@@ -73,7 +80,7 @@ describe('getCommentsByPostId handler', () => {
         // Simulate DB returns comments array
         (utils.verifyJWT as jest.Mock).mockReturnValue({ id: 'user123' });
         const event = mockEvent({ postId: 'p1', requestorUserId: 'user123' });
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
 
         expect(utils.handleSuccess).toHaveBeenCalled();
         expect(result.statusCode).toBe(200);
@@ -95,7 +102,7 @@ describe('getCommentsByPostId handler', () => {
 
         const event = mockEvent({ postId: 'p1', requestorUserId: 'user123' });
         (utils.verifyJWT as jest.Mock).mockReturnValue({ id: 'user123' });
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
 
         expect(utils.handleSuccess).toHaveBeenCalledWith([]);
         expect(result.statusCode).toBe(200);
@@ -103,14 +110,14 @@ describe('getCommentsByPostId handler', () => {
 
     it('returns validation error if body is invalid JSON', async () => {
         const event = { body: '{invalid' } as any;
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
         expect(utils.handleValidationError).toHaveBeenCalledWith("Invalid params");
     });
 
     it('returns 403 if verifyJWT fails', async () => {
         (utils.verifyJWT as jest.Mock).mockReturnValue(false);
         const event = mockEvent({ postId: 'p1', requestorUserId: 'user123' });
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
         expect(utils.handleValidationError).toHaveBeenCalledWith("You do not have permission to access this data", 403);
     });
 
@@ -118,7 +125,7 @@ describe('getCommentsByPostId handler', () => {
         (DBConnector.getGraph as jest.Mock).mockResolvedValueOnce(makeGremlinChainMock(null));
         (utils.verifyJWT as jest.Mock).mockReturnValue({ id: 'user123' });
         const event = mockEvent({ postId: 'p1', requestorUserId: 'user123' });
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
         expect(utils.handleValidationError).toHaveBeenCalledWith("Error getting comment");
     });
 
@@ -135,7 +142,7 @@ describe('getCommentsByPostId handler', () => {
         (DBConnector.getGraph as jest.Mock).mockResolvedValueOnce(makeGremlinChainMock(gremlinResults));
         (utils.verifyJWT as jest.Mock).mockReturnValue({ id: 'user123' });
         const event = mockEvent({ postId: 'p1', requestorUserId: 'user123' });
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
         expect(utils.handleValidationError).toHaveBeenCalledWith("Invalid comment data");
     });
 
@@ -175,7 +182,7 @@ describe('getCommentsByPostId handler', () => {
             .mockResolvedValueOnce(makeGremlinChainMock(likeResults));
         (utils.verifyJWT as jest.Mock).mockReturnValue({ id: 'user123' });
         const event = mockEvent({ postId: 'p1', requestorUserId: 'user123' });
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
 
         expect(utils.handleSuccess).toHaveBeenCalled();
         expect(result.statusCode).toBe(200);

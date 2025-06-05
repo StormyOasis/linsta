@@ -1,20 +1,23 @@
-import { APIGatewayProxyEvent, APIGatewayProxyHandler } from 'aws-lambda';
+import { APIGatewayProxyEvent } from 'aws-lambda';
 import crypto from "crypto";
 import DBConnector, { EDGE_TOKEN_TO_USER, EDGE_USER_TO_TOKEN } from '../../connectors/DBConnector';
 import { obfuscateEmail, obfuscatePhone } from '../../utils/textUtils';
 import { FORGOT_PASSWORD_TEMPLATE, sendEmailByTemplate, sendSMS } from '../../connectors/AWSConnector';
 import config from '../../config';
 import logger from "../../logger/logger";
-import Metrics from "../../metrics/Metrics";
+import Metrics, { withMetrics } from "../../metrics/Metrics";
 import { handleSuccess, handleValidationError } from '../../utils/utils';
 
 type ForgotRequest = {
     user: string;
 };
 
-export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
-    Metrics.increment("accounts.forgot");
+export const handler = async (event: APIGatewayProxyEvent) => {
+    const baseMetricsKey = "accounts.forgotpassword";
+    return await withMetrics(baseMetricsKey, async () => await handlerActions(baseMetricsKey, event))
+}
 
+export const handlerActions = async (baseMetricsKey: string, event: APIGatewayProxyEvent) => {
     let data: ForgotRequest;
     try {
         data = JSON.parse(event.body || '{}');
@@ -28,7 +31,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
     try {
         const __ = DBConnector.__();
-        const result = await(await DBConnector.getGraph()).V()
+        const result = await (await DBConnector.getGraph()).V()
             .hasLabel("User")
             .or(
                 __.has("email", data.user),
@@ -58,6 +61,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
         return handleSuccess(sendResult.body);
     } catch (err) {
+        Metrics.getInstance().increment(`${baseMetricsKey}.errorCount`);
         logger.error((err as Error).message);
         return handleValidationError("Error handling forgot password");
     }
@@ -80,7 +84,7 @@ const sendForgotMessage = async (
 
     try {
         // Upsert ForgotToken
-        let res = await(await DBConnector.getGraph())
+        let res = await (await DBConnector.getGraph())
             .mergeV(new Map([["userId", `${userId}`]]))
             .option(DBConnector.Merge().onCreate, new Map([
                 [DBConnector.T().label, "ForgotToken"],
@@ -95,7 +99,7 @@ const sendForgotMessage = async (
         }
 
         // Add edges between the User and ForgotToken vertices
-        res = await(await DBConnector.getGraph()).V()
+        res = await (await DBConnector.getGraph()).V()
             .hasLabel("User")
             .has(DBConnector.T().id, userId)
             .as("user_id")

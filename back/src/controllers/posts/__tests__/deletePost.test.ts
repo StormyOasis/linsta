@@ -6,7 +6,7 @@ import { APIGatewayProxyResult } from 'aws-lambda';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import config from '../../../config';
 
-import { handler } from '../deletePost';
+import { handlerActions as handler } from '../deletePost';
 import RedisConnector from '../../../connectors/RedisConnector';
 import * as ESConnectorModule from '../../../connectors/ESConnector';
 import * as utils from '../../../utils/utils';
@@ -34,7 +34,14 @@ const validUserId = 'user123';
 describe('deletePost handler', () => {
     beforeEach(() => {
         jest.clearAllMocks();
-        (Metrics.increment as jest.Mock).mockImplementation(() => {});
+        (Metrics.getInstance as jest.Mock).mockReturnValue({
+            increment: jest.fn(),
+            flush: jest.fn(),
+            timing: jest.fn(),
+            gauge: jest.fn(),
+            histogram: jest.fn(),
+        });
+        (Metrics.getInstance().increment as jest.Mock).mockImplementation(() => {});
         (utils.handleValidationError as jest.Mock).mockImplementation((msg, code?) => ({ statusCode: code || 400, body: msg }));
         (utils.handleSuccess as jest.Mock).mockImplementation((msg) => ({ statusCode: 200, body: msg }));
         (utils.verifyJWT as jest.Mock).mockReturnValue(true);
@@ -53,21 +60,21 @@ describe('deletePost handler', () => {
 
     it('returns error if body is invalid JSON', async () => {
         const event = { body: '{invalid' } as any;
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(utils.handleValidationError).toHaveBeenCalledWith("Invalid params passed");
         expect(result.statusCode).toBe(400);
     });
 
     it('returns error if postId is missing', async () => {
         const event = mockEvent({});
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(utils.handleValidationError).toHaveBeenCalledWith("Invalid params passed");
         expect(result.statusCode).toBe(400);
     });
 
     it('returns 403 if verifyJWT fails', async () => {
         (utils.verifyJWT as jest.Mock).mockReturnValue(false);
-        const result = await handler(mockEvent({ postId: validPostId, requestorUserId: validUserId }), {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", mockEvent({ postId: validPostId, requestorUserId: validUserId })) as APIGatewayProxyResult;
         expect(utils.handleValidationError).toHaveBeenCalledWith("You do not have permission to access this data", 403);
         expect(result.statusCode).toBe(403);
     });
@@ -75,7 +82,7 @@ describe('deletePost handler', () => {
     it('returns error if no results from graph', async () => {
         (DBConnector.getGraph as jest.Mock).mockResolvedValueOnce(makeGremlinChainMock([]));
         const event = mockEvent({ postId: validPostId, requestorUserId: validUserId });
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(utils.handleValidationError).toHaveBeenCalledWith("Error deleting post");
         expect(result.statusCode).toBe(400);
     });
@@ -84,7 +91,7 @@ describe('deletePost handler', () => {
         (DBConnector.parseGraphResult as jest.Mock).mockReturnValueOnce({ post: {}, user: undefined });
         (DBConnector.getGraph as jest.Mock).mockResolvedValueOnce(makeGremlinChainMock([{}]));
         const event = mockEvent({ postId: validPostId, requestorUserId: validUserId });
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(utils.handleValidationError).toHaveBeenCalledWith("Error deleting post");
         expect(result.statusCode).toBe(400);
     });
@@ -94,7 +101,7 @@ describe('deletePost handler', () => {
         (utils.verifyJWT as jest.Mock).mockReturnValueOnce(true).mockReturnValueOnce(false);
         (DBConnector.getGraph as jest.Mock).mockResolvedValueOnce(makeGremlinChainMock([{}]));
         const event = mockEvent({ postId: validPostId, requestorUserId: validUserId });
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(utils.handleValidationError).toHaveBeenCalledWith("You do not have permission to access this data", 403);
         expect(result.statusCode).toBe(403);
     });
@@ -105,7 +112,7 @@ describe('deletePost handler', () => {
             .mockResolvedValueOnce(makeGremlinChainMock([{}])) // for results
             .mockResolvedValueOnce(makeGremlinChainMock([])); // for vertexIdsToDelete
         const event = mockEvent({ postId: validPostId, requestorUserId: validUserId });
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(logger.warn).toHaveBeenCalled();
         expect(utils.handleValidationError).toHaveBeenCalledWith("Error deleting post");
         expect(result.statusCode).toBe(400);
@@ -120,7 +127,7 @@ describe('deletePost handler', () => {
             delete: jest.fn().mockResolvedValue({ result: 'error' })
         });
         const event = mockEvent({ postId: validPostId, requestorUserId: validUserId });
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(DBConnector.rollbackTransaction).toHaveBeenCalled();
         expect(utils.handleValidationError).toHaveBeenCalledWith("Error deleting post");
         expect(result.statusCode).toBe(400);
@@ -135,7 +142,7 @@ describe('deletePost handler', () => {
             delete: jest.fn().mockResolvedValue({ result: 'deleted' })
         });
         const event = mockEvent({ postId: validPostId, requestorUserId: validUserId });
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(DBConnector.commitTransaction).toHaveBeenCalled();
         expect(RedisConnector.del).toHaveBeenCalledWith(validEsId);
         expect(utils.handleSuccess).toHaveBeenCalledWith({ status: "OK" });
@@ -145,7 +152,7 @@ describe('deletePost handler', () => {
     it('returns error and rolls back on exception', async () => {
         (DBConnector.getGraph as jest.Mock).mockRejectedValueOnce(new Error('fail'));
         const event = mockEvent({ postId: validPostId, requestorUserId: validUserId });
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(logger.error).toHaveBeenCalled();
         expect(DBConnector.rollbackTransaction).toHaveBeenCalled();
         expect(utils.handleValidationError).toHaveBeenCalledWith("Error deleting post");

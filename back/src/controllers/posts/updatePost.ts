@@ -1,5 +1,5 @@
-import { APIGatewayProxyEvent, APIGatewayProxyHandler } from 'aws-lambda';
-import Metrics from '../../metrics/Metrics';
+import { APIGatewayProxyEvent } from 'aws-lambda';
+import Metrics, { withMetrics } from '../../metrics/Metrics';
 import logger from '../../logger/logger';
 import { getESConnector } from '../../connectors/ESConnector';
 import RedisConnector from '../../connectors/RedisConnector';
@@ -19,9 +19,12 @@ interface UpdatePostRequest extends RequestWithRequestorId {
     };
 }
 
-export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
-    Metrics.increment("posts.updatePost");
+export const handler = async (event: APIGatewayProxyEvent) => {
+    const baseMetricsKey = "posts.updatepost";
+    return await withMetrics(baseMetricsKey, async () => await handlerActions(baseMetricsKey, event))
+}
 
+export const handlerActions = async (baseMetricsKey: string, event: APIGatewayProxyEvent) => {
     let data: UpdatePostRequest;
     try {
         data = JSON.parse(event.body || '{}');
@@ -37,13 +40,13 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
     const jwtPayload = verifyJWT(event, data.requestorUserId);
     if (!jwtPayload) {
         return handleValidationError("You do not have permission to access this data", 403);
-    }    
+    }
 
     try {
         const __ = DBConnector.__();
 
         // Step 1: Get the userId and esId of the post
-        const results = await(await DBConnector.getGraph())
+        const results = await (await DBConnector.getGraph())
             .V(data.postId)
             .as("post")
             .out(EDGE_POST_TO_USER)
@@ -64,10 +67,10 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
         let esId: string | null = null;
         let userId: string | null = null;
         for (const entry of results) {
-            const vertex = DBConnector.unwrapResult(entry);            
+            const vertex = DBConnector.unwrapResult(entry);
             const parsed = DBConnector.parseGraphResult<{ post: { id: string, esId: string }, user: string }>(vertex, ["post", "user"]);
             esId = parsed.post?.esId;
-            userId = parsed.user;                              
+            userId = parsed.user;
         }
 
         if (!esId || !userId) {
@@ -188,6 +191,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
         return handleSuccess(post);
     } catch (err) {
+        Metrics.getInstance().increment(`${baseMetricsKey}.errorCount`);
         logger.error((err as Error).message);
         return handleValidationError("Error updating posts");
     }

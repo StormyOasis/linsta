@@ -1,10 +1,11 @@
-import { APIGatewayProxyEvent, APIGatewayProxyHandler } from 'aws-lambda';
-import Metrics from '../../metrics/Metrics';
+import { APIGatewayProxyEvent } from 'aws-lambda';
+import Metrics, { withMetrics } from '../../metrics/Metrics';
 import logger from '../../logger/logger';
 import DBConnector, {
     EDGE_CHILD_TO_PARENT_COMMENT, EDGE_COMMENT_LIKED_BY_USER,
-    EDGE_COMMENT_TO_USER, 
-    EDGE_POST_TO_COMMENT} from '../../connectors/DBConnector';
+    EDGE_COMMENT_TO_USER,
+    EDGE_POST_TO_COMMENT
+} from '../../connectors/DBConnector';
 import { getVertexPropertySafe, handleSuccess, handleValidationError, verifyJWT } from '../../utils/utils';
 import { Comment, Like, RequestWithRequestorId, User } from '../../utils/types';
 
@@ -12,9 +13,12 @@ interface GetCommentsByPostIdRequest extends RequestWithRequestorId {
     postId: string;
 }
 
-export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent) => {
-    Metrics.increment("comments.getCommentsByPostId");
+export const handler = async (event: APIGatewayProxyEvent) => {
+    const baseMetricsKey = "comments.getcomment";
+    return await withMetrics(baseMetricsKey, async () => await handlerActions(baseMetricsKey, event))
+}
 
+export const handlerActions = async (baseMetricsKey: string, event: APIGatewayProxyEvent) => {
     let data: GetCommentsByPostIdRequest;
     try {
         data = JSON.parse(event.body || '{}');
@@ -29,12 +33,12 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
     if (!verifyJWT(event, data.requestorUserId)) {
         // 403 - Forbidden
         return handleValidationError("You do not have permission to access this data", 403);
-    }    
+    }
 
     try {
         const __ = DBConnector.__();
 
-        const results = await(await DBConnector.getGraph()).V(data.postId)
+        const results = await (await DBConnector.getGraph()).V(data.postId)
             .as("post")
             .out(EDGE_POST_TO_COMMENT)
             .as("comment")
@@ -88,7 +92,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
                     pfp: getVertexPropertySafe(vertexProperties, 'pfp')
                 };
                 userMap.set(newUser.userId, newUser);
-            } else if (map.has(EDGE_COMMENT_TO_USER)) {   
+            } else if (map.has(EDGE_COMMENT_TO_USER)) {
                 const edge = map.get(EDGE_COMMENT_TO_USER);
                 userFromCommentMap.set(edge.outV.id, edge.inV.id);
             } else if (map.has(EDGE_CHILD_TO_PARENT_COMMENT)) {
@@ -100,7 +104,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
         // Merge the 4 maps into one comment list object
         const comments: Comment[] = [];
 
-        for (const [commentId, tmpComment] of commentMap.entries()) {            
+        for (const [commentId, tmpComment] of commentMap.entries()) {
             // Get the user data for the comment
             const userId = userFromCommentMap.get(commentId);
             if (userId == null) {
@@ -124,7 +128,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
                 parentCommentId: parentId,
                 likes: await (async (): Promise<Like[]> => {
                     // Get the likes for this comment from the db
-                    const results = await(await DBConnector.getGraph()).V(commentId)
+                    const results = await (await DBConnector.getGraph()).V(commentId)
                         .out(EDGE_COMMENT_LIKED_BY_USER)
                         .project("user")
                         .by()
@@ -161,6 +165,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
         return handleSuccess(comments);
     } catch (err) {
+        Metrics.getInstance().increment(`${baseMetricsKey}.errorCount`);
         logger.error((err as Error).message);
         return handleValidationError("Error getting comment");
     }

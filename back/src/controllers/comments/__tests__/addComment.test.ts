@@ -5,7 +5,7 @@ import DBConnector from '../../../connectors/DBConnector';
 import { APIGatewayProxyResult } from 'aws-lambda';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import config from '../../../config';
-import { handler } from '../addComment';
+import { handlerActions as handler } from '../addComment';
 import * as utils from '../../../utils/utils';
 import * as textUtils from '../../../utils/textUtils';
 import logger from '../../../logger/logger';
@@ -25,7 +25,14 @@ const mockEvent = (body: any) => ({
 describe('addComment handler', () => {
     beforeEach(() => {
         jest.clearAllMocks();
-        (Metrics.increment as jest.Mock).mockImplementation(() => {});
+        (Metrics.getInstance as jest.Mock).mockReturnValue({
+            increment: jest.fn(),
+            flush: jest.fn(),
+            timing: jest.fn(),
+            gauge: jest.fn(),
+            histogram: jest.fn(),
+        });
+        (Metrics.getInstance().increment as jest.Mock).mockImplementation(() => {});
         (utils.handleValidationError as jest.Mock).mockImplementation((msg, code?) => ({ statusCode: code || 400, body: msg }));
         (utils.handleSuccess as jest.Mock).mockImplementation((msg) => ({ statusCode: 200, body: msg }));
         (utils.verifyJWT as jest.Mock).mockReturnValue(true);
@@ -41,21 +48,21 @@ describe('addComment handler', () => {
 
     it('returns validation error if body is invalid JSON', async () => {
         const event = { body: '{invalid' } as any;
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(utils.handleValidationError).toHaveBeenCalledWith("Invalid params passed");
         expect(result.statusCode).toBe(400);
     });
 
     it('returns validation error if required fields are missing', async () => {
         const event = mockEvent({ text: '', postId: '', userId: '' });
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
         expect(utils.handleValidationError).toHaveBeenCalledWith("Invalid params passed");
     });
 
     it('returns 403 if verifyJWT fails', async () => {
         (utils.verifyJWT as jest.Mock).mockReturnValue(false);
         const event = mockEvent({ text: 'hi', postId: '1', userId: '2', requestorUserId: '3' });
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(utils.handleValidationError).toHaveBeenCalledWith("You do not have permission to access this data", 403);
         expect(result.statusCode).toBe(403);
     });
@@ -63,14 +70,14 @@ describe('addComment handler', () => {
     it('returns error if post not found', async () => {
         (utils.getPostByPostId as jest.Mock).mockResolvedValueOnce(null);
         const event = mockEvent({ text: 'hi', postId: '1', userId: '2', requestorUserId: '2' });
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
         expect(utils.handleValidationError).toHaveBeenCalledWith("Error getting post");
     });
 
     it('returns success if comments are disabled', async () => {
         (utils.getPostByPostId as jest.Mock).mockResolvedValueOnce({ post: { global: { commentsDisabled: true } } });
         const event = mockEvent({ text: 'hi', postId: '1', userId: '2', requestorUserId: '2' });
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(utils.handleSuccess).toHaveBeenCalledWith({ status: "Comments disabled for this post" });
         expect(result.statusCode).toBe(200);
     });
@@ -78,7 +85,7 @@ describe('addComment handler', () => {
     it('returns error if comment vertex creation fails', async () => {
         (DBConnector.getGraph as jest.Mock).mockResolvedValueOnce(makeGremlinChainMock({ value: null }));
         const event = mockEvent({ text: 'hi', postId: '1', userId: '2', requestorUserId: '2' });
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
         expect(DBConnector.rollbackTransaction).toHaveBeenCalled();
         expect(utils.handleValidationError).toHaveBeenCalledWith("Error adding comment");
     });
@@ -89,7 +96,7 @@ describe('addComment handler', () => {
             .mockResolvedValueOnce(makeGremlinChainMock({ value: { id: 'cid' } }))
             .mockResolvedValueOnce(makeGremlinChainMock({ value: null }));
         const event = mockEvent({ text: 'hi', postId: '1', userId: '2', requestorUserId: '2' });
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
         expect(DBConnector.rollbackTransaction).toHaveBeenCalled();
         expect(utils.handleValidationError).toHaveBeenCalledWith("Error adding comment");
     });
@@ -101,7 +108,7 @@ describe('addComment handler', () => {
             .mockResolvedValueOnce(makeGremlinChainMock({ value: { id: 'cid' } }))
             .mockResolvedValueOnce(makeGremlinChainMock({ value: null }));
         const event = mockEvent({ text: 'hi', postId: '1', userId: '2', requestorUserId: '2' });
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
         expect(DBConnector.rollbackTransaction).toHaveBeenCalled();
         expect(utils.handleValidationError).toHaveBeenCalledWith("Error adding comment");
     });
@@ -114,7 +121,7 @@ describe('addComment handler', () => {
             .mockResolvedValueOnce(makeGremlinChainMock({ value: { id: 'cid' } }))
             .mockResolvedValueOnce(makeGremlinChainMock({ value: null }));
         const event = mockEvent({ text: 'hi', postId: '1', userId: '2', parentCommentId: 'parent', requestorUserId: '2' });
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
         expect(DBConnector.rollbackTransaction).toHaveBeenCalled();
         expect(utils.handleValidationError).toHaveBeenCalledWith("Error adding comment");
     });
@@ -125,7 +132,7 @@ describe('addComment handler', () => {
             .mockResolvedValueOnce(makeGremlinChainMock({ value: { id: 'cid' } }))
             .mockResolvedValueOnce(makeGremlinChainMock({ value: { id: 'cid' } }));
         const event = mockEvent({ text: 'hi', postId: '1', userId: '2', requestorUserId: '2' });
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(DBConnector.commitTransaction).toHaveBeenCalled();
         expect(utils.handleSuccess).toHaveBeenCalledWith({ id: 'cid' });
         expect(result.statusCode).toBe(200);
@@ -138,7 +145,7 @@ describe('addComment handler', () => {
             .mockResolvedValueOnce(makeGremlinChainMock({ value: { id: 'cid' } }))
             .mockResolvedValueOnce(makeGremlinChainMock({ value: { id: 'cid' } }));
         const event = mockEvent({ text: 'hi', postId: '1', userId: '2', parentCommentId: 'parent', requestorUserId: '2' });
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(DBConnector.commitTransaction).toHaveBeenCalled();
         expect(utils.handleSuccess).toHaveBeenCalledWith({ id: 'cid' });
         expect(result.statusCode).toBe(200);
@@ -147,7 +154,7 @@ describe('addComment handler', () => {
     it('returns error and rolls back on exception', async () => {
         (DBConnector.getGraph as jest.Mock).mockRejectedValueOnce(new Error('fail'));
         const event = mockEvent({ text: 'hi', postId: '1', userId: '2', requestorUserId: '2' });
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
         expect(DBConnector.rollbackTransaction).toHaveBeenCalled();
         expect(logger.error).toHaveBeenCalled();
         expect(utils.handleValidationError).toHaveBeenCalledWith("Error adding comment");

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { makeGremlinChainMock } = require('../../../connectors/DBConnector');
-import { handler } from '../checkUserName';
+import { handlerActions as handler } from '../checkUserName';
 import DBConnector from '../../../connectors/DBConnector';
 import { APIGatewayProxyResult } from 'aws-lambda';
 import * as utils from '../../../utils/utils';
@@ -17,7 +17,14 @@ jest.mock('../../../config');
 describe('checkUserName handler', () => {
     beforeEach(() => {
         jest.clearAllMocks();
-        (Metrics.increment as jest.Mock).mockImplementation(() => {});
+        (Metrics.getInstance as jest.Mock).mockReturnValue({
+            increment: jest.fn(),
+            flush: jest.fn(),
+            timing: jest.fn(),
+            gauge: jest.fn(),
+            histogram: jest.fn(),
+        });
+        (Metrics.getInstance().increment as jest.Mock).mockImplementation(() => {});
         (utils.handleValidationError as jest.Mock).mockImplementation((msg) => ({ statusCode: 400, body: msg }));
         (utils.handleSuccess as jest.Mock).mockImplementation((msg) => ({ statusCode: 200, body: msg }));
         (DBConnector.getGraph as jest.Mock).mockResolvedValue(makeGremlinChainMock());
@@ -25,19 +32,19 @@ describe('checkUserName handler', () => {
 
     it('returns validation error if username is missing', async () => {
         const event = { pathParameters: {} } as any;
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
         expect(utils.handleValidationError).toHaveBeenCalledWith("Invalid username");
     });
 
     it('returns validation error if username is empty', async () => {
         const event = { pathParameters: { userName: '   ' } } as any;
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
         expect(utils.handleValidationError).toHaveBeenCalledWith("Invalid username");
     });
 
     it('returns validation error if username format is invalid', async () => {
         const event = { pathParameters: { userName: 'bad*name' } } as any;
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
         expect(utils.handleValidationError).toHaveBeenCalledWith("Invalid username format");
     });
 
@@ -46,7 +53,7 @@ describe('checkUserName handler', () => {
         (DBConnector.getGraph as jest.Mock).mockResolvedValueOnce(chain);
 
         const event = { pathParameters: { userName: 'uniqueuser' } } as any;
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
 
         expect(utils.handleSuccess).toHaveBeenCalledWith(true);
         expect(result.statusCode).toBe(200);
@@ -57,7 +64,7 @@ describe('checkUserName handler', () => {
         (DBConnector.getGraph as jest.Mock).mockResolvedValueOnce(chain);
 
         const event = { pathParameters: { userName: 'existinguser' } } as any;
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
 
         expect(utils.handleSuccess).toHaveBeenCalledWith(false);
         expect(result.statusCode).toBe(200);
@@ -67,7 +74,7 @@ describe('checkUserName handler', () => {
         (DBConnector.getGraph as jest.Mock).mockRejectedValueOnce(new Error('fail'));
 
         const event = { pathParameters: { userName: 'anyuser' } } as any;
-        await handler(event, {} as any, undefined as any);
+        await handler("", event);
 
         expect(logger.error).toHaveBeenCalled();
         expect(utils.handleValidationError).toHaveBeenCalledWith("Error checking username uniqueness", 500);

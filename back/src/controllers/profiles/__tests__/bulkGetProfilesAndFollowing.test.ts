@@ -6,7 +6,7 @@ import { APIGatewayProxyResult } from 'aws-lambda';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import config from '../../../config';
 
-import { handler } from '../bulkGetProfilesAndFollowing';
+import { handlerActions as handler } from '../bulkGetProfilesAndFollowing';
 import * as utils from '../../../utils/utils';
 import logger from '../../../logger/logger';
 import Metrics from '../../../metrics/Metrics';
@@ -62,7 +62,14 @@ const validFollowerMap = new Map([["alice", [validFollowerVertex]]]);
 describe('bulkGetProfilesAndFollowing handler', () => {
     beforeEach(() => {
         jest.clearAllMocks();
-        (Metrics.increment as jest.Mock).mockImplementation(() => {});
+        (Metrics.getInstance as jest.Mock).mockReturnValue({
+            increment: jest.fn(),
+            flush: jest.fn(),
+            timing: jest.fn(),
+            gauge: jest.fn(),
+            histogram: jest.fn(),
+        });
+        (Metrics.getInstance().increment as jest.Mock).mockImplementation(() => {});
         (utils.handleValidationError as jest.Mock).mockImplementation((msg, code?) => ({ statusCode: code || 400, body: msg }));
         (utils.handleSuccess as jest.Mock).mockImplementation((msg) => ({ statusCode: 200, body: msg }));
         (utils.verifyJWT as jest.Mock).mockReturnValue(true);
@@ -73,28 +80,28 @@ describe('bulkGetProfilesAndFollowing handler', () => {
 
     it('returns error if body is invalid JSON', async () => {
         const event = { body: '{invalid' } as any;
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(utils.handleValidationError).toHaveBeenCalledWith("Invalid params passed");
         expect(result.statusCode).toBe(400);
     });
 
     it('returns error if userId is missing', async () => {
         const event = mockEvent({ userIds: validUserIds, requestorUserId: validRequestorUserId });
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(utils.handleValidationError).toHaveBeenCalledWith("Invalid params passed");
         expect(result.statusCode).toBe(400);
     });
 
     it('returns error if userIds is missing', async () => {
         const event = mockEvent({ userId: validUserId, requestorUserId: validRequestorUserId });
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(utils.handleValidationError).toHaveBeenCalledWith("Invalid params passed");
         expect(result.statusCode).toBe(400);
     });
 
     it('returns error if userIds is empty', async () => {
         const event = mockEvent({ userId: validUserId, userIds: [], requestorUserId: validRequestorUserId });
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(utils.handleValidationError).toHaveBeenCalledWith("Invalid params passed");
         expect(result.statusCode).toBe(400);
     });
@@ -102,7 +109,7 @@ describe('bulkGetProfilesAndFollowing handler', () => {
     it('returns 403 if verifyJWT fails', async () => {
         (utils.verifyJWT as jest.Mock).mockReturnValue(false);
         const event = mockEvent({ userId: validUserId, userIds: validUserIds, requestorUserId: validRequestorUserId });
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(utils.handleValidationError).toHaveBeenCalledWith("You do not have permission to access this data", 403);
         expect(result.statusCode).toBe(403);
     });
@@ -110,7 +117,7 @@ describe('bulkGetProfilesAndFollowing handler', () => {
     it('returns error if profile results are missing', async () => {
         (DBConnector.getGraph as jest.Mock).mockResolvedValueOnce(makeGremlinChainMock(null));
         const event = mockEvent({ userId: validUserId, userIds: validUserIds, requestorUserId: validRequestorUserId });
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(utils.handleValidationError).toHaveBeenCalledWith("Error getting profiles");
         expect(result.statusCode).toBe(400);
     });
@@ -122,7 +129,7 @@ describe('bulkGetProfilesAndFollowing handler', () => {
             .mockResolvedValueOnce(makeGremlinChainMock([validFollowerMap]));
 
         const event = mockEvent({ userId: validUserId, userIds: validUserIds, requestorUserId: validRequestorUserId });
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
 
         expect(utils.handleSuccess).toHaveBeenCalled();
         expect(result.statusCode).toBe(200);
@@ -143,7 +150,7 @@ describe('bulkGetProfilesAndFollowing handler', () => {
             .mockResolvedValueOnce(makeGremlinChainMock([followerMapWithSelf]));
 
         const event = mockEvent({ userId: validUserId, userIds: validUserIds, requestorUserId: validRequestorUserId });
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
 
         const callArg = (utils.handleSuccess as jest.Mock).mock.calls[0][0];
         expect(callArg[validProfileVertex.id].isFollowed).toBe(true);
@@ -153,7 +160,7 @@ describe('bulkGetProfilesAndFollowing handler', () => {
     it('returns error if an exception is thrown', async () => {
         (DBConnector.getGraph as jest.Mock).mockRejectedValueOnce(new Error('fail'));
         const event = mockEvent({ userId: validUserId, userIds: validUserIds, requestorUserId: validRequestorUserId });
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
+        const result = await handler("", event) as APIGatewayProxyResult;
         expect(logger.error).toHaveBeenCalledWith('fail');
         expect(utils.handleValidationError).toHaveBeenCalledWith("Error getting profiles");
         expect(result.statusCode).toBe(400);

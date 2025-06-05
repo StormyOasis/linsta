@@ -7,6 +7,7 @@ import * as awsFunctions from '../AWSConnector';
 
 import logger from '../../logger/logger';
 
+jest.mock('../../metrics/Metrics');
 jest.mock('../../logger/logger');
 jest.mock('../../config', () => ({
     aws: {
@@ -23,9 +24,29 @@ jest.mock('../../config', () => ({
     },    
 }));
 
-jest.mock('../../metrics/Metrics', () => ({
-    increment: jest.fn()
-}));
+jest.mock('../../metrics/Metrics', () => {
+    return {
+        __esModule: true,
+        default: {
+            getInstance: jest.fn(() => ({
+                increment: jest.fn(),
+                flush: jest.fn(),
+                timing: jest.fn(),
+                gauge: jest.fn(),
+                histogram: jest.fn(),
+            })),
+        },
+        Metrics: {
+            getInstance: jest.fn(() => ({
+                increment: jest.fn(),
+                flush: jest.fn(),
+                timing: jest.fn(),
+                gauge: jest.fn(),
+                histogram: jest.fn(),
+            })),
+        }
+    };
+});
 
 jest.mock('@aws/amazon-location-utilities-auth-helper', () => ({
     withAPIKey: jest.fn().mockResolvedValue({
@@ -121,7 +142,7 @@ describe("uploadFile", () => {
         mockSend = jest.fn();
         (S3Client as jest.Mock).mockImplementation(() => ({ send: mockSend }));
         mockPutObjectCommand = PutObjectCommand as unknown as jest.Mock;
-        mockPutObjectCommand.mockImplementation((params) => ({ params }));
+        mockPutObjectCommand.mockImplementation((params) => ({ params }));     
     });
 
     afterEach(() => {
@@ -178,7 +199,7 @@ describe("removeFile", () => {
         mockSend = jest.fn();
         (S3Client as jest.Mock).mockImplementation(() => ({ send: mockSend }));
         mockDeleteObjectCommand = DeleteObjectCommand as unknown as jest.Mock;
-        mockDeleteObjectCommand.mockImplementation((params) => ({ params }));
+        mockDeleteObjectCommand.mockImplementation((params) => ({ params }));   
     });
 
     afterEach(() => {
