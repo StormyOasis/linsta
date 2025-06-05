@@ -10,7 +10,7 @@ import PfpModal from "./Profile/ProfilePicModal";
 import FollowersModal from "./Profile/FollowersModal";
 import DeleteCommentModal from "./Comments/DeleteCommentModal";
 import EditPostMenuModal from "./Comments/EditPostMenuModal";
-import { PostWithCommentCount } from "../../../../api/types";
+import { Post } from "../../../../api/types";
 import EditPostModal from "./Comments/EditPostModal";
 
 const MODAL_ZINDEX_BASE: number = 9990;
@@ -29,7 +29,7 @@ const ModalOverlayBackground = styled(Flex) <{ $isOverlayEnabled: boolean, $zInd
 
 const ModalManager: React.FC<{}> = () => {
     const { isOverlayEnabled, openModalStack } = useAppSelector((state) => state.modal);
-    const updatedPost:PostWithCommentCount|null = useAppSelector((state: any) => state.misc.updatedPost);
+    const updatedPost:Post|null = useAppSelector((state: any) => state.misc.updatedPost);
 
     const dispatch = useAppDispatch();
 

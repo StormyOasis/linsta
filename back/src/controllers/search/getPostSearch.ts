@@ -2,7 +2,7 @@ import { APIGatewayProxyEvent, APIGatewayProxyHandler } from 'aws-lambda';
 import Metrics from '../../metrics/Metrics';
 import { addCommentCountsToPosts, addLikesToPosts, addPfpsToPosts, buildPostSortClause, handleSuccess, handleValidationError } from '../../utils/utils';
 import { getESConnector } from '../../connectors/ESConnector';
-import { PostWithCommentCount } from '../../utils/types';
+import { Post } from '../../utils/types';
 import logger from '../../logger/logger';
 import { isHashtag } from '../../utils/textUtils';
 import config from '../../config';
@@ -14,7 +14,7 @@ type GetAllPostsBySearchRequest = {
 };
 
 type GetAllPostsBySearchResponse = {
-    posts: PostWithCommentCount[];
+    posts: Post[];
     dateTime: string;
     postId: string;
     done: boolean;
@@ -103,11 +103,11 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
             return handleSuccess(response);
         }
 
-        const posts: Record<string, PostWithCommentCount> = {};
+        const posts: Record<string, Post> = {};
         const postIds: string[] = [];
 
         for (const hit of hits) {
-            const entry = hit._source as PostWithCommentCount;
+            const entry = hit._source as Post;
             const postId = entry.media[0].postId;
             posts[postId] = { ...entry, postId };
             postIds.push(postId);

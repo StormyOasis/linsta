@@ -193,7 +193,7 @@ describe('utils.ts', () => {
 
     describe('addCommentCountsToPosts', () => {
         it('adds comment counts to posts', async () => {
-            const posts = { p1: {}, p2: {} } as any;
+            const posts = { p1: { global: { commentCount: 0 } }, p2: { global: { commentCount: 0 } } } as any;
             (DBConnector.__ as jest.Mock).mockReturnValue({
                 id: jest.fn().mockReturnThis(),
                 outE: jest.fn().mockReturnThis(),
@@ -211,8 +211,8 @@ describe('utils.ts', () => {
             (DBConnector.unwrapResult as jest.Mock).mockImplementation(x => x);
             (DBConnector.parseGraphResult as jest.Mock).mockImplementation(x => x);
             await addCommentCountsToPosts(posts, ['p1', 'p2']);
-            expect(posts.p1.commentCount).toBe(2);
-            expect(posts.p2.commentCount).toBe(3);
+            expect(posts.p1.global.commentCount).toBe(2);
+            expect(posts.p2.global.commentCount).toBe(3);
         });
 
         it('handles no comment results', async () => {
@@ -438,7 +438,7 @@ describe('utils.ts', () => {
             (DBConnector.unwrapResult as jest.Mock).mockImplementation((x) => x);
             (DBConnector.parseGraphResult as jest.Mock).mockImplementation((data) => data);
             const result = await getPostByPostId('post123');
-            expect(result?.post.commentCount).toBe(7);
+            expect(result?.post.global.commentCount).toBe(7);
         });
 
         it('throws an error if esId is invalid', async () => {
@@ -473,7 +473,7 @@ describe('utils.ts', () => {
         });
 
         it('returns a post from Redis if cached', async () => {
-            const mockPost = { postId: 'post123', commentCount: 5, global: { likes: [] }, user: { userId: 'u1', pfp: '' } };
+            const mockPost = { postId: 'post123', global: { likes: [], commentCount: 5 }, user: { userId: 'u1', pfp: '' } };
             (RedisConnector.get as jest.Mock)
                 .mockResolvedValueOnce("esId123")
                 .mockResolvedValueOnce(JSON.stringify(mockPost));

@@ -1,4 +1,4 @@
-import { Like, PostWithCommentCount, Profile, ProfileWithFollowStatus } from './types';
+import { Like, Post, Profile, ProfileWithFollowStatus } from './types';
 import { buildSearchResultSet, getESConnector } from '../connectors/ESConnector';
 import RedisConnector from '../connectors/RedisConnector';
 import DBConnector, { EDGE_USER_FOLLOWS, EDGE_USER_LIKED_POST, EDGE_POST_TO_COMMENT } from '../connectors/DBConnector';
@@ -54,7 +54,7 @@ export const getLikesByPost = async (postId: string | null): Promise<Like[]> => 
     });
 }
 
-export const getPostByPostId = async (postId: string): Promise<| { esId: string; post: PostWithCommentCount } | null> => {
+export const getPostByPostId = async (postId: string): Promise<| { esId: string; post: Post } | null> => {
     if (postId.trim().length === 0) {
         return null;
     }
@@ -85,7 +85,7 @@ export const getPostByPostId = async (postId: string): Promise<| { esId: string;
 
     // esId should now contain the ES id for the given postId
     // Now attempt to pull the full Post object from Redis
-    let post: PostWithCommentCount | null = null;
+    let post: Post | null = null;
     const cachedData = await RedisConnector.get(esId);
     if (cachedData) {
         post = JSON.parse(cachedData);
@@ -106,7 +106,7 @@ export const getPostByPostId = async (postId: string): Promise<| { esId: string;
             throw new Error("Invalid post");
         }
         
-        const entries = buildSearchResultSet(hits) as PostWithCommentCount[];
+        const entries = buildSearchResultSet(hits) as Post[];
         post = entries[0];
     }
 
@@ -125,7 +125,7 @@ export const getPostByPostId = async (postId: string): Promise<| { esId: string;
     if (commentResults?.length > 0) {
         const vertex = DBConnector.unwrapResult(commentResults[0]);
         const parsed = DBConnector.parseGraphResult<{ commentCount: number }>(vertex, ["commentCount"]);
-        post.commentCount = parsed.commentCount;
+        post.global.commentCount = parsed.commentCount;
     }
 
     // Fetch likes and user pfp
@@ -275,13 +275,13 @@ export const getPfpByUserId = async (userId: string): Promise<string> => {
     return results.value.properties.pfp[0]['value'];
 }
 
-export const addPfpsToPosts = async (posts: Record<string, PostWithCommentCount>) => {
+export const addPfpsToPosts = async (posts: Record<string, Post>) => {
     await Promise.all(Object.values(posts).map(async post => {
         post.user.pfp = await getPfpByUserId(post.user.userId);
     }));
 }
 
-export const addCommentCountsToPosts = async (posts: Record<string, PostWithCommentCount>, postIds: string[]) => {
+export const addCommentCountsToPosts = async (posts: Record<string, Post>, postIds: string[]) => {
     const __ = DBConnector.__();
     const commentResults = await(await DBConnector.getGraph()).V(postIds)
         .project("postId", "commentCount")
@@ -297,12 +297,12 @@ export const addCommentCountsToPosts = async (posts: Record<string, PostWithComm
         );
 
         if (parsed.postId in posts) {
-            posts[parsed.postId].commentCount = parsed.commentCount;
+            posts[parsed.postId].global.commentCount = parsed.commentCount;
         }
     } 
 };
 
-export const addLikesToPosts = async (posts: Record<string, PostWithCommentCount>, postIds: string[]) => {
+export const addLikesToPosts = async (posts: Record<string, Post>, postIds: string[]) => {
     const __ = DBConnector.__();
     const likeResults = await(await DBConnector.getGraph()).V(postIds)
         .filter(__.inE(EDGE_USER_LIKED_POST).count().is(DBConnector.P().gt(0)))

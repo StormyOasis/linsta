@@ -290,7 +290,7 @@ export const postGetProfileStatsById = async (data: any): Promise<ServiceRespons
 }
 
 export const postBulkGetProfileAndFollowStatus = async (data: any): Promise<ServiceResponse> => {
-    const res = await axios.post(`${API_HOST}/api/${API_VERSION}/profiles/bulkGetProfiles`, addRequestorId(data), {headers: authHeader()});
+    const res = await axios.post(`${API_HOST}/api/${API_VERSION}/profiles/bulkGetProfilesAndFollowing`, addRequestorId(data), {headers: authHeader()});
     return {
         data: res.data,
         status: res.status,
