@@ -42,14 +42,6 @@ describe('getPostSearch handler', () => {
         expect(JSON.parse(result.body)).toBe('Missing required search params');
     });
 
-    it('returns validation error if postId is empty string', async () => {
-        const event = mockEvent({ postId: '', q: 'foo' });
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
-        expect(utils.handleValidationError).toHaveBeenCalledWith('Missing required search params');
-        expect(result.statusCode).toBe(400);
-        expect(JSON.parse(result.body)).toBe('Missing required search params');
-    });
-
     it('returns empty posts if ES returns no hits', async () => {
         (ESConnectorModule.getESConnector as jest.Mock).mockReturnValue({
             searchWithPagination: jest.fn().mockResolvedValue({ hits: { hits: [] } })
@@ -145,13 +137,6 @@ describe('getPostSearch handler', () => {
         expect(utils.handleValidationError).not.toHaveBeenCalledWith('Missing required search params', 500);
         expect(result.statusCode).toBe(400);
         expect(JSON.parse(result.body)).toBe('Missing required search params');
-    });
-
-    it('returns validation error if postId is missing', async () => {
-        const event = mockEvent({ q: 'validation' }); // no postId property
-        const result = await handler(event, {} as any, undefined as any) as APIGatewayProxyResult;
-        expect(result.statusCode).toBe(400);
-        expect(utils.handleValidationError).toHaveBeenCalledWith('Missing required search params');
     });
 
     it('handles ESConnector returning undefined', async () => {

@@ -77,11 +77,12 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
         return handleValidationError("Missing required search params");
     }
 
-    if (!data.postId) {
+    const term: string | null = data.q?.trim();
+
+    if(term == null) {
         return handleValidationError("Missing required search params");
     }
 
-    const term: string | null = data.q?.trim();
     const query = buildPostSearchQuery(term);
 
     try {
