@@ -11,7 +11,8 @@ export const MODAL_TYPES = {
     FOLLOW_MODAL: "followModal",
     COMMENT_DELETE_MODAL: "commentDeleteModal",
     POST_EDIT_MENU_MODAL: "postEditMenuModal",
-    POST_EDIT_MODAL: "postEditModal"
+    POST_EDIT_MODAL: "postEditModal",
+    FORGOT_PASSWORD_MODAL: "forgotPasswordModal",
 };
 
 export interface ModalState {
