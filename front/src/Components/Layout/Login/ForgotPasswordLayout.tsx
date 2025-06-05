@@ -71,7 +71,7 @@ const ForgotPasswordModalContent: React.FC<ForgotPasswordModalContentProps> = (p
                 <Div $fontWeight="400" $paddingBottom="10px" $textAlign="center">
                     {props.queryResponseText}
                 </Div>
-            </FlexColumn>        
+            </FlexColumn>
         </Div>
     );
 }
@@ -82,7 +82,7 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = (props: F
             title: "Forgot Password",
             element: <ForgotPasswordModalContent queryResponseTitle={props.queryResponseTitle} queryResponseText={props.queryResponseText} />,
             options: {
-                showFooter: false                     
+                showFooter: false
             },
         }
     ];
@@ -93,69 +93,69 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = (props: F
 }
 
 const ForgotPasswordLayout: React.FC = () => {
-    const [userData, setUserData] = useState('');    
+    const [userData, setUserData] = useState('');
     const dispatch = useAppDispatch();
 
     const handleSendLinkClick = async () => {
         let title: string = "Error Sending Link";
         let text: string = "An unexpected error has occurred while sending the login link";
         try {
-            const result = await postForgotPassword({user: userData});
+            const result = await postForgotPassword({ user: userData });
 
-            if(result.status === 200) {
+            if (result.status === 200) {
                 title = result.data.title;
                 text = result.data.text;
             }
-        } catch(err) {
+        } catch (err) {
             console.error(err);
         }
-        
-        dispatch(actions.modalActions.openModal({ 
-            modalName: MODAL_TYPES.FORGOT_PASSWORD_MODAL, 
-            data: { queryResponseTitle: title, queryResponseText: text} 
-        }));        
+
+        dispatch(actions.modalActions.openModal({
+            modalName: MODAL_TYPES.FORGOT_PASSWORD_MODAL,
+            data: { queryResponseTitle: title, queryResponseText: text }
+        }));
     }
 
     return (
-        <>      
+        <>
             <ForgotLayoutWrapper role="main">
                 <Div className={styles.default.innerDiv1}>
                     <Div className={styles.default.innerDiv2}>
                         <Div className={styles.default.signupBox}>
-                        <ForgotHeaderImage/>
-                        <ForgotForm method="post">
-                            <HeadingText>Trouble logging in?</HeadingText>
-                            <SubHeadingText>
-                                Enter your email, phone, or username and we'll send you a link to get back into your account.
-                            </SubHeadingText> 
-                            <StyledInput
-                                datatestid='userName'
-                                placeholder="Email, Phone, or Username"
-                                value={userData}
-                                isValid={userData.length > 0}
-                                onChange={(event: React.ChangeEvent<HTMLInputElement>) => setUserData(event.target.value)} />
-                            <StyledButton
-                                type="button"
-                                disabled={userData.length == 0}
-                                onClick={handleSendLinkClick}
-                                text="Send Login Link">
-                            </StyledButton>
-                            <Div className={styles.default.signupFormDiv1}>
-                                <Div className={styles.default.signupFormDiv2}>
-                                    <Div className={styles.default.signupFormDiv3} />
-                                    <Div className={styles.default.signupFormDiv4}>OR</Div>
-                                    <Div className={styles.default.signupFormDiv3} />
+                            <ForgotHeaderImage />
+                            <ForgotForm method="post">
+                                <HeadingText>Trouble logging in?</HeadingText>
+                                <SubHeadingText>
+                                    Enter your email, phone, or username and we'll send you a link to get back into your account.
+                                </SubHeadingText>
+                                <StyledInput
+                                    datatestid='userName'
+                                    placeholder="Email, Phone, or Username"
+                                    value={userData}
+                                    isValid={userData.length > 0}
+                                    onChange={(event: React.ChangeEvent<HTMLInputElement>) => setUserData(event.target.value)} />
+                                <StyledButton
+                                    type="button"
+                                    disabled={userData.length == 0}
+                                    onClick={handleSendLinkClick}
+                                    text="Send Login Link">
+                                </StyledButton>
+                                <Div className={styles.default.signupFormDiv1}>
+                                    <Div className={styles.default.signupFormDiv2}>
+                                        <Div className={styles.default.signupFormDiv3} />
+                                        <Div className={styles.default.signupFormDiv4}>OR</Div>
+                                        <Div className={styles.default.signupFormDiv3} />
+                                    </Div>
                                 </Div>
-                            </Div>
-                            <SignupText>
-                                Don't have an account? <StyledLink to="/signup">Sign up</StyledLink>                    
-                            </SignupText>  
-                        </ForgotForm>                                
+                                <SignupText>
+                                    Don't have an account? <StyledLink to="/signup">Sign up</StyledLink>
+                                </SignupText>
+                            </ForgotForm>
                         </Div>
                     </Div>
                 </Div>
-            </ForgotLayoutWrapper>            
-        </>        
+            </ForgotLayoutWrapper>
+        </>
     );
 }
 

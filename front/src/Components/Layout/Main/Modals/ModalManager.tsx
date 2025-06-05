@@ -12,6 +12,7 @@ import DeleteCommentModal from "./Comments/DeleteCommentModal";
 import EditPostMenuModal from "./Comments/EditPostMenuModal";
 import EditPostModal from "./Comments/EditPostModal";
 import { ForgotPasswordModal } from "../../Login/ForgotPasswordLayout";
+import { SignupBirthdayModal } from "../../Signup/Flow/SignupBirthdayModal";
 
 const MODAL_ZINDEX_BASE: number = 9990;
 
@@ -69,6 +70,12 @@ const ModalManager: React.FC<{}> = () => {
                         zIndex={zIndex++}
                         onClose={() => closeModal(modalName, data)} />;
                 }
+                case MODAL_TYPES.SIGNUP_BIRTHDAY_MODAL: {
+                    return <SignupBirthdayModal
+                        key={MODAL_TYPES.SIGNUP_BIRTHDAY_MODAL}
+                        zIndex={zIndex++}
+                        onClose={() => closeModal(modalName, data)} />;
+                }                                
                 case MODAL_TYPES.COMMENT_MODAL: {
                     return <CommentModal
                         key={MODAL_TYPES.COMMENT_MODAL}
