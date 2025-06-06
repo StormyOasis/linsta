@@ -6,8 +6,8 @@ import {postAccountsAttempt, getAccountsCheckUserUnique} from "../../../../api/S
 import StyledInput from "../../../../Components/Common/StyledInput";
 import StyledButton from "../../../../Components/Common/StyledButton";
 import LargeLogo from "../../../../Components/Common/LargeLogo";
-import LoginWithFB from "../../../../Components/Common/LoginWithFB";
 import { validateEmailPhone, validateFullName, validatePassword } from "../../../../utils/utils";
+import { Div, Span } from "../../../../Components/Common/CombinedStyling";
 
 const SignupForm = styled.form`
   display: flex;
@@ -32,10 +32,6 @@ export type SignupMainFormProps = {
 
 export default class SignupMainForm extends React.Component<SignupMainFormProps> {
     debounceTimer?: ReturnType<typeof setTimeout>;
-
-    loginWithFacebookClicked = (event: React.MouseEventHandler<HTMLButtonElement>) => {
-        window.alert("todo");
-    };
 
     validateUserName = async (value: string): Promise<boolean> => {
         if (value == null || value.length == 0) 
@@ -144,14 +140,13 @@ export default class SignupMainForm extends React.Component<SignupMainFormProps>
         return (
             <Theme>
                 <LargeLogo />
-                <div>
+                <Div>
                     <SignupForm method="post">
-                        <div className={styles.default.signupFormDiv1}>
-                            <span className={styles.default.signupIntroSpan}>
+                        <Div className={styles.default.signupFormDiv1}>
+                            <Span className={styles.default.signupIntroSpan}>
                                 Sign up to see photos and videos from your friends.
-                            </span>
-                        </div>
-                        <LoginWithFB>Login in with Facebook</LoginWithFB>
+                            </Span>
+                        </Div>
                         <StyledInput
                             name="emailOrPhone"
                             placeholder="Phone Number or Email"
@@ -182,10 +177,10 @@ export default class SignupMainForm extends React.Component<SignupMainFormProps>
                             onChange={this.handleFormChange}
                         ></StyledInput>
 
-                        <div className={styles.default.termsDiv}>
+                        <Div className={styles.default.termsDiv}>
                             By signing up, you agree to our Terms, Privacy Policy and Cookies
                             Policy.
-                        </div>
+                        </Div>
                         <StyledButton
                             datatestid="submit-signupmain"
                             type="button"
@@ -194,7 +189,7 @@ export default class SignupMainForm extends React.Component<SignupMainFormProps>
                             text="Sign Up"
                         />
                     </SignupForm>
-                </div>
+                </Div>
             </Theme>
         );
     }

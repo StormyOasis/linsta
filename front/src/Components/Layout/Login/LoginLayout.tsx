@@ -8,7 +8,6 @@ import StyledLink from "../../../Components/Common/StyledLink";
 import LargeLogo from "../../../Components/Common/LargeLogo";
 import StyledInput from "../../../Components/Common/StyledInput";
 import StyledButton from "../../../Components/Common/StyledButton";
-import LoginWithFB from "../../../Components/Common/LoginWithFB";
 import { useDispatch, useSelector } from "react-redux";
 import { historyUtils, validatePassword } from "../../../utils/utils";
 import { AppDispatch } from "../../../Components/Redux/redux";
@@ -53,10 +52,6 @@ const LoginLayout: React.FC<LoginLayoutProps> = (_props: LoginLayoutProps) => {
         }
     }, []);
 
- 
-    function loginWithFacebookClicked(_event: React.MouseEventHandler<HTMLButtonElement>) {
-        window.alert("todo");
-    };
 
     function isUserNameValid(): boolean {
         return userName.trim().length > 0;
@@ -78,7 +73,6 @@ const LoginLayout: React.FC<LoginLayoutProps> = (_props: LoginLayoutProps) => {
 
     function renderLoginForm() {
         const stylesToAddToLastInput = {marginTop: "8px"};
-        const widthStyle = {width: "100%"};
 
         return (
             <Theme>
@@ -111,9 +105,6 @@ const LoginLayout: React.FC<LoginLayoutProps> = (_props: LoginLayoutProps) => {
                         disabled={!isFormValid()}                        
                         text="Login">
                     </StyledButton>
-                    <Div className={styles.default.signupFormFbLoginDiv} style={widthStyle}>
-                        <LoginWithFB top={true} onClick={loginWithFacebookClicked}>Log in with Facebook</LoginWithFB>
-                    </Div> 
                     <Div>
                         <StyledLink to="/forgot" className={styles.default.forgotWrapper}>Forgot Password?</StyledLink>
                     </Div>

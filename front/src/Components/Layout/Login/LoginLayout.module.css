@@ -31,36 +31,6 @@
     flex-grow: 1;
 }
 
-.signupFormFbLoginDiv {
-    align-items: stretch;
-    line-height: 18px;
-    font-size: 14px;
-    border: none;
-    overflow: visible;
-    margin-top: 8px;
-    margin-bottom: 8px;
-    margin-left: 40px;
-    margin-right: 40px;
-    background-color: transparent;
-    display: flex;
-    flex-direction: column;
-    align-self: center;
-}
-
-.signupFormFbIcon {
-    top: 2px;
-    border: none;
-    color: white;
-    cursor: pointer;
-    display: inline-block;
-    font-size: 14px;
-    font-weight: 600;
-    position: relative;
-    margin-right: 8px;
-    width: 16px;
-    vertical-align: baseline;
-}
-
 .forgotWrapper {
     display: flex;
     flex-direction: column;
