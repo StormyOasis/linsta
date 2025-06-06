@@ -33,6 +33,7 @@ const ImageContainer = styled.div`
     width: 386px;
     justify-content: flex-end;
     vertical-align: middle;
+    overflow: hidden;
 `;
 
 const ControlsContainer = styled.div`
