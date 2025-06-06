@@ -40,7 +40,7 @@ const authSliceCreator = (preloadedState?: any) => {
             state.error = null;
             state.status = "";
             logout();
-            historyUtils.navigate("/");
+            historyUtils.navigate("/login");
         }
 
         return {

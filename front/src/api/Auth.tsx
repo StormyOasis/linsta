@@ -38,6 +38,7 @@ export const login = async (userName: string, password: string) => {
 
 export const logout = () => {
     localStorage.removeItem("user");
+    localStorage.removeItem("recentSearches");
 }
 
 export const getCurrentUser = () => {
