@@ -103,7 +103,7 @@ const PostItem: React.FC<Props> = ({
                                     </Flex>
                                 </Div>
                             </Span>
-                            <Span>
+                            {/*<Span>
                                 <Div $cursor="pointer">
                                     <Flex $paddingRight="8px">
                                         <ActionContainer>
@@ -111,7 +111,7 @@ const PostItem: React.FC<Props> = ({
                                         </ActionContainer>
                                     </Flex>
                                 </Div>
-                            </Span>
+                            </Span>*/}
                         </FlexRow>
 
                         <Div>
