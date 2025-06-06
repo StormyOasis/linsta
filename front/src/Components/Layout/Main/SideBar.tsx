@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import styled from "styled-components";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useMediaQuery } from "react-responsive";
 
 import * as styles from './Main.module.css';
@@ -94,6 +94,13 @@ const ResultsContainer = styled(Flex)`
     overflow-y: auto;
     overflow-x: hidden;
 `;
+
+const BottomLinkWrapper = styled(Flex)`
+    justify-content: center;
+    width: 100%;
+    position: absolute;
+    bottom: 5px;
+`
 
 const SideBar: React.FC = () => {
     const [isSearchExpanded, setIsSearchExpanded] = useState<boolean>(false);
@@ -206,6 +213,12 @@ const SideBar: React.FC = () => {
         setRecentSearches(removeStoredSearchQuery(item));
     }, []);
 
+    const handleLogout = () => {
+        localStorage.clear();
+
+        dispatch(actions.authActions.logoutUser())
+    }
+
     const renderResults = useCallback(() => (
         <>
             <LoadingImage isLoading={isLoading} />
@@ -262,8 +275,15 @@ const SideBar: React.FC = () => {
                     {/*renderMenuItem("Messages", "/messages", <MessagesSVG />, undefined, null)*/}
                     {/*renderMenuItem("Notifications", "/notify", <NotificationsSVG />, undefined, null)*/}
                     {renderMenuItem("Create", null, <CreateSVG />, undefined, createPostHandler)}
-                    {renderMenuItem("Profile", `/${profileUrl}`, <MemoizedProfilePic profile={profile} />, 0, null)}
+                    {renderMenuItem("Profile", `/${profileUrl}`, <MemoizedProfilePic profile={profile} />, 0, null)}                 
                 </NavWrapper>
+                <BottomLinkWrapper>
+                    {!matchesSmallestBP &&
+                        <StyledLink onClick={handleLogout} styleOverride={{fontSize: ".925em", fontWeight: 600}}>                            
+                            Logout
+                        </StyledLink>
+                    }                    
+                </BottomLinkWrapper>                   
             </SideBarWrapper>
 
             <SearchPanel ref={panelRef} $isExpanded={isSearchExpanded}>
