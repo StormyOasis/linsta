@@ -20,7 +20,7 @@ type UpdateProfileRequest = {
 
 export const handler = async (event: APIGatewayProxyEvent) => {
     const baseMetricsKey = "profiles.updateProfileByUserId";
-    return await withMetrics(baseMetricsKey, async () => await handlerActions(baseMetricsKey, event))
+    return await withMetrics(baseMetricsKey, event.headers,async () => await handlerActions(baseMetricsKey, event))
 }
 
 export const handlerActions = async (baseMetricsKey: string, event: APIGatewayProxyEvent) => {

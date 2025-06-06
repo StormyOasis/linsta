@@ -1,6 +1,8 @@
-import { StatsD } from "hot-shots";
+import { StatsD, Tags } from 'hot-shots';
 import config from '../config';
 import logger from '../logger/logger';
+import { APIGatewayProxyEventHeaders } from "aws-lambda";
+import RedisConnector from "../connectors/RedisConnector";
 
 export class Metrics {
     private static instance: Metrics | null = null;
@@ -11,7 +13,9 @@ export class Metrics {
             host: config.metrics.statsd.host,
             port: Number(config.metrics.statsd.port),
             errorHandler: (err) => logger.error('StatsD error', err),
-            isChild: false
+            isChild: false,
+            protocol: "udp",
+            telegraf: false,            
         });        
     }
 
@@ -43,9 +47,9 @@ export class Metrics {
             this.client.timing(stat, time);
     }
 
-    public gauge(stat: string, value: number) {
+    public gauge(stat: string, value: number, sampleRate?:number, tags?:Tags) {
         if (this.client && this.client.socket)
-            this.client.gauge(stat, value);
+            this.client.gauge(stat, value, sampleRate, tags);
     }
 
     public histogram(stat: string, value: number) {
@@ -63,10 +67,20 @@ export class Metrics {
     }
 }
 
-export async function withMetrics<T>(key: string, fn: () => Promise<T>): Promise<T> {
-    const metrics: Metrics = Metrics.getInstance();
+export async function withMetrics<T>(key: string, headers: APIGatewayProxyEventHeaders, fn: () => Promise<T>): Promise<T> {
     const start = Date.now();
+
+    // Extract IP from http headers
+    const ip = headers['x-forwarded-for']?.split(',')[0] || 'unknown';    
+    const metrics: Metrics = Metrics.getInstance();    
     try {
+        const minuteKey = new Date(start).toISOString().slice(0, 16); // we want to expire after once a minute
+        const redisKey = `ips:${minuteKey}`;
+        
+        // Add ip key and set expiration so Redis cleans up old keys automatically    
+        await RedisConnector.sAdd(redisKey, ip);
+        await RedisConnector.expire(redisKey, 3600); // 1 hour TTL
+
         metrics.increment(`${key}.invoked`);
 
         const result = await fn();

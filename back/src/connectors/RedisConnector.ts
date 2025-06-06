@@ -147,6 +147,33 @@ export class RedisConnector {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public sAdd = async (key: string, value: any): Promise<void> => {
+        try {
+            await this.ensureConnected();
+            if (this.client == null) {
+                throw new Error("Redis connection not found");
+            }
+            await this.client.sAdd(key, value);
+        } catch (err) {
+            // Note: It's ok if we fail to add to redis, so don't rethrow exception, just log it
+            logger.warn("Error adding to redis");
+        }
+    }
+    
+    public expire = async (key: string, ttl: number): Promise<void> => {
+        try {
+            await this.ensureConnected();
+            if (this.client == null) {
+                throw new Error("Redis connection not found");
+            }
+            await this.client.expire(key, ttl);
+        } catch (err) {
+            // Note: It's ok if we fail to add to redis, so don't rethrow exception, just log it
+            logger.warn("Error setting expiry on key");
+        }
+    }        
+
     public del = async (key: string): Promise<void> => {
         try {
             await this.ensureConnected();
@@ -160,6 +187,55 @@ export class RedisConnector {
             logger.error("Error deleting key from Redis:", err);
         }
     }
+
+    public sCard = async (key: string): Promise<number> => {
+        try {
+            await this.ensureConnected();
+            if (this.client == null) {
+                throw new Error("Redis connection not found");
+            }
+
+            return await this.client.sCard(key);
+
+        } catch (err) {
+            logger.error("Error getting count from Redis:", err);
+        }
+        return 0;
+    }    
+
+    public scan = async (pattern: string): Promise<string[]> => {
+        try {
+            await this.ensureConnected();
+            if (this.client == null) {
+                throw new Error("Redis connection not found");
+            }
+
+            const keys: string[] = [];
+            for await (const key of this.client.scanIterator({ MATCH: pattern, COUNT: 100 })) {
+                keys.push(key);
+            }
+            return keys;
+
+        } catch (err) {
+            logger.error("Error getting count from Redis:", err);
+        }
+        return [];
+    }    
+
+    public sMembers = async (key: string): Promise<string[]> => {
+        try {
+            await this.ensureConnected();
+            if (this.client == null) {
+                throw new Error("Redis connection not found");
+            }
+
+            return await this.client.sMembers(key);
+
+        } catch (err) {
+            logger.error("Error getting count from Redis:", err);
+        }
+        return [];
+    }        
 
     public close = async (): Promise<void> => {
         if (this.client != null) {
