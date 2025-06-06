@@ -32,6 +32,14 @@ custom:
     noPrependStageInUrl: true
 
 functions:
+  cronProcessor:
+    handler: build/metrics/metricsCron.handler
+    events:
+      - schedule:
+          rate: cron(* * * * ? *)  # every minute
+          enabled: true
+          name: ipTrackingCronRule
+          description: "Trigger Lambda every minute to report unique IPs"    
   accountsCheck:
     handler: build/controllers/accounts/checkUserName.handler
     events:

@@ -1,3 +1,8 @@
+jest.mock('../../logger/logger', () => ({
+    __esModule: true,
+    default: { error: jest.fn(), warn: jest.fn() }
+}));
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Metrics, { withMetrics } from '../Metrics';
 import { StatsD } from 'hot-shots';
@@ -10,9 +15,6 @@ jest.mock('../../config', () => ({
             port: 8125
         }
     }
-}));
-jest.mock('../../logger/logger', () => ({
-    default: { error: jest.fn() }
 }));
 
 describe('Metrics', () => {
@@ -57,7 +59,7 @@ describe('Metrics', () => {
     it('should call gauge on StatsD client', () => {
         const metrics = Metrics.getInstance();
         metrics.gauge('test.gauge', 42);
-        expect(statsdMock.gauge).toHaveBeenCalledWith('test.gauge', 42);
+        expect(statsdMock.gauge).toHaveBeenCalledWith('test.gauge', 42, undefined, undefined);
     });
 
     it('should call histogram on StatsD client', () => {
@@ -114,7 +116,7 @@ describe('withMetrics', () => {
         const spyFlush = jest.spyOn(metrics, 'flush');
 
         const fn = jest.fn().mockResolvedValue('ok');
-        const result = await withMetrics('my.key', fn);
+        const result = await withMetrics('my.key', {}, fn);
 
         expect(spyIncrement).toHaveBeenCalledWith('my.key.invoked');
         expect(spyTiming).toHaveBeenCalledWith(expect.stringContaining('my.key.execution_time_ms'), expect.any(Number));
@@ -126,7 +128,7 @@ describe('withMetrics', () => {
         const metrics = Metrics.getInstance();
         const spyFlush = jest.spyOn(metrics, 'flush');
         const fn = jest.fn().mockRejectedValue(new Error('fail'));
-        await expect(withMetrics('fail.key', fn)).rejects.toThrow('fail');
+        await expect(withMetrics('fail.key', {}, fn)).rejects.toThrow('fail');
         expect(spyFlush).toHaveBeenCalled();
     });
 });

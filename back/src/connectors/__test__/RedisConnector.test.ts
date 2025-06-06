@@ -5,7 +5,18 @@ import logger from '../../logger/logger';
 
 jest.mock('redis');
 jest.mock('../../logger/logger');
-jest.mock('../../metrics/Metrics');
+jest.mock('../../metrics/Metrics', () => ({
+    __esModule: true,
+    default: {
+        getInstance: jest.fn(() => ({
+            gauge: jest.fn(),
+            increment: jest.fn(),
+            flush: jest.fn(),
+            timing: jest.fn(),
+            histogram: jest.fn(),
+        })),
+    }
+}));
 jest.mock('../../config', () => ({
     redis: {
         host: "localhost",
@@ -156,7 +167,7 @@ describe('RedisConnector', () => {
         mockRedisClient.dbSize.mockRejectedValue(new Error('fail'));
         await RedisConnector.connect();
         const count = await RedisConnector.getKeyCount();
-        expect(count).toBeNull();
+        expect(count).toBe(0);
         expect(logger.error).toHaveBeenCalled();
     });
     it('calls del on the redis client with non-existent key', async () => {
@@ -295,7 +306,7 @@ describe('RedisConnector', () => {
         (RedisConnector as any).client = null;
         const connectSpy = jest.spyOn(RedisConnector, 'connect').mockRejectedValueOnce(new Error('fail'));
         const count = await RedisConnector.getKeyCount();
-        expect(count).toBeNull();
+        expect(count).toBe(0);
         expect(logger.error).toHaveBeenCalled();
         connectSpy.mockRestore();
     });

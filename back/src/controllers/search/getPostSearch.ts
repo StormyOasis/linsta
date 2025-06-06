@@ -68,7 +68,7 @@ const buildPostSearchQuery = (term: string | null): Record<string, unknown> => {
 
 export const handler = async (event: APIGatewayProxyEvent) => {
     const baseMetricsKey = "search.getpostsearch";
-    return await withMetrics(baseMetricsKey, async () => await handlerActions(baseMetricsKey, event))
+    return await withMetrics(baseMetricsKey, event.headers,async () => await handlerActions(baseMetricsKey, event))
 }
 
 export const handlerActions = async (baseMetricsKey: string, event: APIGatewayProxyEvent) => {
