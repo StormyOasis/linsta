@@ -197,6 +197,8 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
         const profileLink = renderToString(
             <Theme>
                 <ProfileLink
+                    collaborators={{}}
+                    showCollaborators={false}
                     showLocation={false}
                     showUserName={true}
                     showPfp={false}
@@ -210,6 +212,8 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
             <Flex key={commentId} style={{ padding: "15px 10px" }}>
                 <FlexRowFullWidth>
                     <ProfileLink
+                        collaborators={{}}
+                        showCollaborators={false}
                         showLocation={false}
                         showUserName={false}
                         showPfp={true}
@@ -411,6 +415,10 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
         // Send the actual command to the server
         await postToggleLike({ postId: props.post.postId, userName, userId });
     }
+
+    const handleCollaboratorsClick = () => {
+        dispatch(actions.modalActions.openModal({ modalName: MODAL_TYPES.COLLABORATORS_MODAL, data: { post: props.post } }));
+    }
     
     if (props.post == null) {
         return <></>;
@@ -419,7 +427,6 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
     const sliderWidth = document.body.clientWidth >= 470 ? 470 : document.body.clientWidth;
     const isLiked = useMemo(() => isPostLiked(authUser.userName, props.post), [authUser.userName, props.post]);
 
-    
     return (
         <>
             <Div>
@@ -434,6 +441,9 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                                     <Div $marginLeft="10px" $paddingTop="10px" $paddingBottom="10px" $paddingRight="10px">
                                         <FlexRow $justifyContent="space-between">
                                             <ProfileLink
+                                                collaborators={props.post.global.collaborators}
+                                                showCollaborators={true}
+                                                onCollaboratorsClick={handleCollaboratorsClick}
                                                 showLocation={true}
                                                 location={props.post.global.locationText}      
                                                 showPfp={true}

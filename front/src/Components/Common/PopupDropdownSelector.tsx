@@ -1,7 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import React, { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 import styled from 'styled-components';
 
-import { Div, FlexColumn, FlexRow, Span } from './CombinedStyling';
+import { Div, FlexColumn, FlexRow, FlexRowFullWidth, Span } from './CombinedStyling';
 import Checkbox from './Checkbox';
 import StyledInput from './StyledInput';
 import UpSVG from "/public/images/up-line.svg";
@@ -12,11 +12,11 @@ const DropdownContainer = styled(Div)`
     width: 100%;
 `;
 
-const DropdownToggle = styled.button`
+const DropdownToggle = styled.button<{ $hideBorder?: boolean }>`
     width: 100%;
     padding: 10px;
     font-size: 16px;
-    border: 2px solid ${props => props.theme['colors'].borderDefaultColor};   
+    border: ${props => props.$hideBorder ? "none" : `2px solid ${props.theme['colors'].borderDefaultColor}`};
     border-radius: 10px;
     background-color: ${props => props.theme['colors'].backgroundColor};
     text-align: left;
@@ -30,13 +30,13 @@ const DropdownToggle = styled.button`
     }
 `;
 
-const DropdownMenu = styled(Div)`
+const DropdownMenu = styled(Div) <{ $hideBorder?: boolean }>`
     position: absolute;
     left: 0;
     top: 100%;  
     width: 100%;
     background-color: ${props => props.theme['colors'].backgroundColor};
-    border: 2px solid ${props => props.theme['colors'].borderDefaultColor};    
+    border: ${props => props.$hideBorder ? "none" : `2px solid ${props.theme['colors'].borderDefaultColor}`};
     border-radius: 16px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     max-height: 275px;
@@ -75,7 +75,7 @@ export const TextOption: React.FC<TextOptionProps> = (props: TextOptionProps) =>
     return (
         <TextOptionContainer onClick={() => props.onChange(props.index, props.text, props.dropdownId)}>
             <Div>{props.text}</Div>
-            <Checkbox index={props.index} isChecked={props.isChecked} onSelect={() => { }}></Checkbox>
+            <Checkbox name={`${props.index}`} index={props.index} isChecked={props.isChecked} onSelect={() => { }}></Checkbox>
         </TextOptionContainer>
     );
 };
@@ -83,16 +83,16 @@ export const TextOption: React.FC<TextOptionProps> = (props: TextOptionProps) =>
 export const CustomTextOption: React.FC<TextOptionProps> = (props: TextOptionProps) => {
     return (
         <TextOptionContainer onClick={() => props.onChange(props.index, props.text, props.dropdownId)}>
-            <FlexColumn style={{ width: "100%" }}>
-                <FlexRow style={{ justifyContent: "space-between" }}>
+            <FlexColumn $width="100%">
+                <FlexRow $justifyContent="space-between">
                     <Div>Custom</Div>
-                    <Checkbox index={props.index} isChecked={props.isChecked} onSelect={() => { }}></Checkbox>
+                    <Checkbox name={`${props.index}`} index={props.index} isChecked={props.isChecked} onSelect={() => { }}></Checkbox>
                 </FlexRow>
-                <Div style={{ paddingTop: "5px" }}>
-                    <StyledInput 
+                <Div $paddingTop="5px">
+                    <StyledInput
                         maxLength={props.maxLength ? props.maxLength : 256}
-                        name="styled_input" 
-                        isValid={true} 
+                        name="styled_input"
+                        isValid={true}
                         value={props.text}
                         onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                             if (props.onChange) {
@@ -106,22 +106,40 @@ export const CustomTextOption: React.FC<TextOptionProps> = (props: TextOptionPro
     );
 }
 
-type DropdownProps = {
-    selectedItem: string;
-    children: (onSelect: (index: number, text: string, dropdownId: number) => void) => React.ReactNode;
-    onClose?: () => void;
-    onSelect: (index: number, text: string, dropdownId: number) => void;
+export type PopupDropdownSelectorHandle = {
+    close: () => void;
 };
 
-const PopupDropdownSelector: React.FC<DropdownProps> = (props: DropdownProps) => {
+type DropdownProps = {
+    value?: string;
+    placeholder?: string;
+    inputIcon?: React.ReactNode;
+    selectedItems: string[];
+    isMultiSelect?: boolean;
+    isInputBox?: boolean;
+    hideArrow?: boolean;
+    hideBorder?: boolean;
+    children: (isOpen: boolean, onSelect: (index: number, text: string, dropdownId: number) => void) => React.ReactNode;
+    onClose?: () => void;
+    onSelect: (index: number, text: string, dropdownId: number) => void;
+    onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    onInputClick?: () => void;    
+};
+
+const PopupDropdownSelector = forwardRef<PopupDropdownSelectorHandle, DropdownProps>((props, ref) => {
     const [isOpen, setIsOpen] = React.useState<boolean>(false);
     const dropdownRef = useRef<HTMLDivElement | null>(null);
+
+    // Need to be able to close this popup without lifting state
+    useImperativeHandle(ref, () => ({
+        close: () => setIsOpen(false)
+    }));
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
                 setIsOpen(false);
-                props.onClose && props.onClose();
+                props.onClose?.();
             }
         };
 
@@ -134,19 +152,41 @@ const PopupDropdownSelector: React.FC<DropdownProps> = (props: DropdownProps) =>
 
     return (
         <DropdownContainer ref={dropdownRef}>
-            <DropdownToggle 
-                aria-expanded={isOpen ? 'true' : 'false'}
-                aria-controls="dropdown-menu"
-                onClick={() => setIsOpen((prev) => !prev)}>
-                    <Span>{props.selectedItem}</Span>
-                    <ArrowContainer>
-                        {isOpen ? <UpSVG /> : <DownSVG />}
-                    </ArrowContainer>
-            </DropdownToggle>
+            {!props.isInputBox &&
+                <DropdownToggle
+                    $hideBorder={props.hideBorder || false}
+                    aria-expanded={isOpen ? 'true' : 'false'}
+                    aria-controls="dropdown-menu"
+                    onClick={() => setIsOpen((prev) => !prev)}>
+                    <Span>{props.selectedItems[0]}</Span>
+                    {!props.hideArrow &&
+                        <ArrowContainer>
+                            {isOpen ? <UpSVG /> : <DownSVG />}
+                        </ArrowContainer>
+                    }
+                </DropdownToggle>
+            }
+            {props.isInputBox &&
+                <FlexRowFullWidth>
+                    <StyledInput 
+                        name="collab-input"
+                        placeholder={props.placeholder} 
+                        noMargin={true} 
+                        noBorder={props.hideBorder || false}
+                        noValidation={true} width="100%"
+                        onChange={props.onChange} 
+                        value={props.value || ""}
+                        onClick={() => {
+                            setIsOpen((prev) => props.isMultiSelect ? true : !prev);
+                            props.onInputClick?.()
+                        }}></StyledInput>
+                    {props.inputIcon && props.inputIcon}
+                </FlexRowFullWidth>
+            }
 
-            {isOpen && <DropdownMenu>{props.children(props.onSelect)}</DropdownMenu>}
+            {isOpen && <DropdownMenu $hideBorder={props.hideBorder || false}>{props.children(isOpen, props.onSelect)}</DropdownMenu>}
         </DropdownContainer>
     );
-};
+});
 
 export default PopupDropdownSelector;

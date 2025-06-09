@@ -13,6 +13,7 @@ import EditPostMenuModal from "./Comments/EditPostMenuModal";
 import EditPostModal from "./Comments/EditPostModal";
 import { ForgotPasswordModal } from "../../Login/ForgotPasswordLayout";
 import { SignupBirthdayModal } from "../../Signup/Flow/SignupBirthdayModal";
+import CollaboratorsModal from "./CollaboratorsModal";
 
 const MODAL_ZINDEX_BASE: number = 9990;
 
@@ -94,6 +95,13 @@ const ModalManager: React.FC<{}> = () => {
                         post={data.post}
                         onClose={() => closeModal(modalName, data)} />;
                 }
+                case MODAL_TYPES.COLLABORATORS_MODAL: {
+                    return <CollaboratorsModal
+                        key={MODAL_TYPES.COLLABORATORS_MODAL}
+                        zIndex={zIndex++}
+                        post={data.post}
+                        onClose={() => closeModal(modalName, data)} />;
+                }                
                 case MODAL_TYPES.PROFILE_PIC_MODAL: {
                     return <PfpModal
                         key={MODAL_TYPES.PROFILE_PIC_MODAL}

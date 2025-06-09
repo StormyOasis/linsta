@@ -27,7 +27,7 @@ export const Div = styled.div.attrs<{
     $fontSize?: string|null, $alignItems?: string|null, $alignSelf?: string|null, $textWrap?: string|null,
     $alignContent?: string|null, $zIndex?: string|null, $flexDirection?: string|null, $color?: string|null,
     $top?: string|null, $bottom?: string|null, $left?: string|null, $right?: string|null,
-    $backgroundImage?: string|null}>
+    $backgroundImage?: string|null, $padding?: string|null, $margin?: string|null}>
     (props => ({
         $flexBasis: props.$flexBasis || null,
         $flexGrow: props.$flexGrow || null,
@@ -62,6 +62,8 @@ export const Div = styled.div.attrs<{
         $height: props.$height || null,
         $maxHeight: props.$maxHeight || null,
 
+        $padding: props.$padding || null,
+        $margin: props.$margin || null,
         $marginLeft: props.$marginLeft || null,
         $marginRight: props.$marginRight || null,
         $marginTop: props.$marginTop || null,
@@ -110,10 +112,12 @@ export const Div = styled.div.attrs<{
     height: ${(props) => props.$height};
     max-height: ${(props) => props.$maxHeight};    
     
+    margin: ${(props) => props.$margin ? props.$margin + " !important" : null};
     margin-left: ${(props) => props.$marginLeft ? props.$marginLeft + " !important" : null};
     margin-right: ${(props) => props.$marginRight ? props.$marginRight + " !important" : null};
     margin-top: ${(props) => props.$marginTop ? props.$marginTop + " !important" : null};
     margin-bottom: ${(props) => props.$marginBottom ? props.$marginBottom + " !important" : null};
+    padding: ${(props) => props.$padding ? props.$padding + " !important" : null};
     padding-left: ${(props) => props.$paddingLeft ? props.$paddingLeft + " !important" : null};
     padding-right: ${(props) => props.$paddingRight ? props.$paddingRight + " !important" : null};
     padding-top: ${(props) => props.$paddingTop ? props.$paddingTop + " !important" : null};
@@ -138,7 +142,8 @@ export const Span = styled.span.attrs<{
     $minHeight?: string|null, $height?: string|null, $maxHeight?:string|null, $fontWeight?: string|null,
     $fontSize?: string|null, $alignItems?: string|null, $alignSelf?: string|null, $backgroundImage?: string|null,
     $alignContent?: string|null, $zIndex?: string|null, $flexDirection?: string|null, $textWrap?: string|null,
-    $top?: string|null, $bottom?: string|null, $left?: string|null, $right?: string|null}>
+    $top?: string|null, $bottom?: string|null, $left?: string|null, $right?: string|null,
+    $padding?: string|null, $margin?: string|null}>
     (props => ({
         $flexBasis: props.$flexBasis || null,
         $flexGrow: props.$flexGrow || null,
@@ -173,6 +178,8 @@ export const Span = styled.span.attrs<{
         $height: props.$height || null,
         $maxHeight: props.$maxHeight || null,        
 
+        $padding: props.$padding || null,
+        $margin: props.$margin || null,
         $marginLeft: props.$marginLeft || null,
         $marginRight: props.$marginRight || null,
         $marginTop: props.$marginTop || null,
@@ -221,6 +228,8 @@ export const Span = styled.span.attrs<{
     height: ${(props) => props.$height};
     max-height: ${(props) => props.$maxHeight};
 
+    margin: ${(props) => props.$margin ? props.$margin + " !important" : null};
+    padding: ${(props) => props.$padding ? props.$padding + " !important" : null};
     margin-left: ${(props) => props.$marginLeft ? props.$marginLeft + " !important" : null};
     margin-right: ${(props) => props.$marginRight ? props.$marginRight + " !important" : null};
     margin-top: ${(props) => props.$marginTop ? props.$marginTop + " !important" : null};

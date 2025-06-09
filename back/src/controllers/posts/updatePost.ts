@@ -6,7 +6,7 @@ import RedisConnector from '../../connectors/RedisConnector';
 import DBConnector, { EDGE_POST_TO_USER } from '../../connectors/DBConnector';
 import { handleSuccess, handleValidationError, verifyJWT } from '../../utils/utils';
 import { sanitizeInput } from '../../utils/textUtils';
-import { RequestWithRequestorId } from '../../utils/types';
+import { Profile, RequestWithRequestorId } from '../../utils/types';
 
 interface UpdatePostRequest extends RequestWithRequestorId {
     postId: string;
@@ -16,6 +16,7 @@ interface UpdatePostRequest extends RequestWithRequestorId {
         locationText?: string;
         captionText?: string;
         altText?: string[];
+        collabData?:Record<string, Profile>;
     };
 }
 
@@ -83,7 +84,8 @@ export const handlerActions = async (baseMetricsKey: string, event: APIGatewayPr
             likesDisabled: data.fields.likesDisabled != null ? data.fields.likesDisabled : null,
             locationText: data.fields.locationText != null ? sanitizeInput(data.fields.locationText) : null,
             captionText: data.fields.captionText != null ? sanitizeInput(data.fields.captionText) : null,
-            altText: data.fields.altText != null ? data.fields.altText.map((entry: string) => sanitizeInput(entry)) : null
+            altText: data.fields.altText != null ? data.fields.altText.map((entry: string) => sanitizeInput(entry)) : null,
+            collabData: data.fields.collabData != null ? data.fields.collabData : null
         };
 
         const esResult = await getESConnector().update(esId, {
@@ -102,6 +104,9 @@ export const handlerActions = async (baseMetricsKey: string, event: APIGatewayPr
                 if (params.containsKey('captionText') && params.captionText != null) {
                     ctx._source.global.captionText = params.captionText;
                 }
+                if (params.containsKey('collabData') && params.collabData != null) {
+                    ctx._source.global.collaborators = params.collabData.selectedProfiles;
+                }                    
                 
                 // Update altText for media items using index-matched altText array
                 if (ctx._source.containsKey('media') && params.altText != null) {                    

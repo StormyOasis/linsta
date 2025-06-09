@@ -36,6 +36,7 @@ const CheckMark = styled(CheckIconSVG)`
 `;
 
 type CheckboxProps = {
+    name: string;
     index?: number;
     isChecked: boolean;
     width? :string;
@@ -50,8 +51,8 @@ const Checkbox: React.FC<CheckboxProps> = (props: CheckboxProps) => {
 
     return (
         <CheckboxWrapper>
-            <CheckboxInput type="checkbox" checked={props.isChecked} onChange={() => props.onSelect(index, !props.isChecked)} />
-            <CheckboxLabel $width={width} $height={height} $isChecked={props.isChecked}>
+            <CheckboxInput name={`${props.name}_input`} type="checkbox" checked={props.isChecked} onChange={() => props.onSelect(index, !props.isChecked)} />
+            <CheckboxLabel name={`${props.name}_label`} $width={width} $height={height} $isChecked={props.isChecked}>
                 {props.isChecked && <CheckMark />}
             </CheckboxLabel>
         </CheckboxWrapper>

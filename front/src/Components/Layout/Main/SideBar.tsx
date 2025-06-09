@@ -159,7 +159,7 @@ const SideBar: React.FC = () => {
     const throttledGetSuggestions = useThrottle(async (searchText: string) => {
         setIsLoading(true);
         
-        const results = await getSuggestions(searchText);
+        const results = await getSuggestions({query: searchText, type: "both"});
         
         setIsLoading(false);
         

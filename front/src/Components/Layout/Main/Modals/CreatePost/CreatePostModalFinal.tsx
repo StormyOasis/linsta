@@ -3,8 +3,6 @@ import styled from "styled-components";
 import * as styles from '../../Main.module.css';
 import { ModalSectionWrapper } from "../../../../Common/MultiStepModal";
 
-import CircleXSVG from "/public/images/x-circle.svg";
-import CollabSVG from "/public/images/image-user-plus.svg";
 import { EditData } from "./CreatePostModal";
 import EmojiPickerPopup from "../../../../Common/EmojiPickerPopup";
 import { AuthUser } from "../../../../../api/Auth";
@@ -15,6 +13,8 @@ import ToggleSwitch from "../../../../Common/ToggleSwitch";
 import { Div, FlexColumn, FlexRow, Span } from "../../../../Common/CombinedStyling";
 import LocationPopup from "../../../../Common/LocationPopup";
 import MediaSliderButton from "../../../../Common/MediaSliderButton";
+import CollabPopup from "../../../../../Components/Common/CollabPopup";
+import { CollabData } from "src/api/types";
 
 const MAX_TEXT_LENGTH: number = 2047;
 
@@ -188,10 +188,12 @@ export type CreatePostModalFinalProps = {
     hasErrorOccured: boolean;
     editData: EditData[];
     hideAdvancedSettings?: boolean;
+    collabData: CollabData;
     onLexicalChange: (data: string, charCount: number) => void;
     onDisableCommentsChanged: (value: boolean) => void;
     onDisableLikesChanged: (value: boolean) => void;
     onLocationChanged: (value: string) => void;
+    onCollabChanged: (data: CollabData) => void;
     onAltImageChanged: (index: number, value: string) => void;
 }
 
@@ -200,9 +202,6 @@ const CreatePostModalFinal: React.FC<CreatePostModalFinalProps> = (props: Create
     const [isFlaggedForReset, setIsFlaggedForReset] = useState(false);
     const [emoji, setEmoji] = useState(null);
     const [charCount, setCharCount] = useState(0);
-    const [collabText, setCollabText] = useState<string>("");
-    const [isCollabOpen, setIsCollabOpen] = useState(false);
-    const [collabData, setCollabData] = useState(null);
 
     const authUser:AuthUser = useSelector((state:any) => state.auth.user);
 
@@ -217,10 +216,7 @@ const CreatePostModalFinal: React.FC<CreatePostModalFinalProps> = (props: Create
     const resetState = () => { 
         setIsFlaggedForReset(false);
         setCharCount(0);
-        setEmoji(null);
-        setIsCollabOpen(false);             
-        setCollabText("");
-        setCollabData(null);
+        setEmoji(null);         
     }
 
     const handleEmojiSelect = (emoji: any) => {
@@ -240,35 +236,6 @@ const CreatePostModalFinal: React.FC<CreatePostModalFinalProps> = (props: Create
         props.onLexicalChange(data, charCount);
     }
 
-    const handleCollabTextChange = async (e: React.ChangeEvent<HTMLInputElement>) => {        
-        if(e.currentTarget.value === null || e.currentTarget.value.length === 0) {
-            setCollabData(null);
-            setCollabText("");
-            return;
-        }
-    
-        setCollabText(e.currentTarget.value);
-    }       
-
-    const handleCollabClick = () => {
-        setIsCollabOpen(true);
-    }
-
-    const handleCollabKeyUp = (e:React.KeyboardEvent<HTMLDivElement>) => {
-        if(e.key === "Escape") { // On escape key press, close the picker
-            setIsCollabOpen(false);
-        }
-    }
-
-    const handleCollabClear = (e:React.SyntheticEvent<HTMLInputElement>) => {
-        e.stopPropagation();
-        e.preventDefault();
-        
-        setIsCollabOpen(false);
-        setCollabData(null);
-        setCollabText("");
-    } 
-    
     const renderAltImages = () => {
         const altImages:any = [];
         
@@ -354,30 +321,9 @@ const CreatePostModalFinal: React.FC<CreatePostModalFinalProps> = (props: Create
                                 <InputContainer>
                                     <LocationPopup locationText={props.locationText} onLocationChanged={props.onLocationChanged} />
                                 </InputContainer>
-                                {/*
-                                <InputContainer>
-                                    <Label>
-                                        <Input type="text" placeholder="Add Collaborators" spellCheck={true} 
-                                                aria-label="Add Collaborators" aria-placeholder="Add Collaborators"
-                                                name="collabInput" value={collabText}                                       
-                                                onClick={handleCollabClick} 
-                                                onKeyUp={handleCollabKeyUp}
-                                                onChange={handleCollabTextChange}>                                            
-                                        </Input>
-                                        <SVGContainer>
-                                            {(collabText && collabText.length > 0) ?                                              
-                                                <CircleXSVG style={{cursor: "pointer" }} onClick={handleCollabClear} /> :
-                                                <CollabSVG />
-                                            }                              
-                                        </SVGContainer>
-                                        <CollabPopupContainer $isOpen={isCollabOpen}>
-                                            <FlexColumn>
-                                                collab stuff here
-                                            </FlexColumn>                                    
-                                        </CollabPopupContainer>
-                                    </Label>
-                                </InputContainer>  
-                                */}      
+                               <InputContainer>
+                                    <CollabPopup collabData={props.collabData} onCollabChanged={props.onCollabChanged} />
+                                </InputContainer>     
                                 <Dropdown title="Accessibility">
                                     <div>
                                         <Text>
