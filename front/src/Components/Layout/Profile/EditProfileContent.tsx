@@ -317,7 +317,7 @@ const EditProfileContent: React.FC = () => {
     const renderGenderDropdown = () => {
         return (
             <PopupDropdownSelector
-                selectedItem={selectedGenderItem}
+                selectedItems={[selectedGenderItem]}
                 onClose={() => { }}
                 onSelect={handleItemSelect}>
                 {() => (
@@ -332,7 +332,7 @@ const EditProfileContent: React.FC = () => {
     const renderPronounDropdown = () => {
         return (
             <PopupDropdownSelector
-                selectedItem={selectedPronounItem}
+                selectedItems={[selectedPronounItem]}
                 onClose={() => { }}
                 onSelect={handleItemSelect}>
                 {() => (
@@ -360,6 +360,8 @@ const EditProfileContent: React.FC = () => {
                             <ProfilePfpContainer>
                                 <Div>
                                     <ProfileLink 
+                                        collaborators={[]}
+                                        showCollaborators={true}                                    
                                         pfpWidth="64px" 
                                         showPfp={true} 
                                         showUserName={true} 
@@ -379,6 +381,7 @@ const EditProfileContent: React.FC = () => {
                             <InputContainer>
                                 <InputHeader>Full Name</InputHeader>
                                 <StyledInput
+                                    validationXpos="24px"
                                     validationYpos="10px"
                                     noMargin={true}
                                     style={{ borderRadius: "10px", height: "32px" }}
@@ -394,6 +397,7 @@ const EditProfileContent: React.FC = () => {
                                 <InputHeader>Website</InputHeader>
                                 <StyledInput
                                     validationYpos="10px"
+                                    validationXpos="24px"
                                     noMargin={true}
                                     style={{ borderRadius: "10px", height: "32px" }}
                                     name="website"

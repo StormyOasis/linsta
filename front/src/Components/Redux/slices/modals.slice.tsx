@@ -13,7 +13,8 @@ export const MODAL_TYPES = {
     POST_EDIT_MENU_MODAL: "postEditMenuModal",
     POST_EDIT_MODAL: "postEditModal",
     FORGOT_PASSWORD_MODAL: "forgotPasswordModal",
-    SIGNUP_BIRTHDAY_MODAL: "signupBirthdayModal"
+    SIGNUP_BIRTHDAY_MODAL: "signupBirthdayModal",
+    COLLABORATORS_MODAL: "collaboratorsModal"
 };
 
 export interface ModalState {

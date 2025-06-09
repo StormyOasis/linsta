@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 
 import MultiStepModal from "../../../../Common/MultiStepModal";
-import { Post } from "../../../../../api/types";
+import { CollabData, Post, Profile } from "../../../../../api/types";
 import { isVideoFileFromType, updatePostFields } from "../../../../../utils/utils";
 import CreatePostModalFinal from "../CreatePost/CreatePostModalFinal";
 import { EditData } from "../CreatePost/CreatePostModal";
@@ -17,10 +17,11 @@ const EditPostModal: React.FC<EditPostModalProps> = (props: EditPostModalProps) 
     const [lexicalText, setLexicalText] = useState<string|null>(props.post.global.captionText);
     const [locationText, setLocationText] = useState<string>(props.post.global.locationText);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+    const [collabData, setCollabData] = useState<CollabData>({selectedProfiles: {}} as CollabData);
 
     useEffect(() => {
-        const newEditData:EditData[] = [];
-        for(let i = 0; i < props.post.media.length; i++) {
+        const newEditData: EditData[] = [];
+        for (let i = 0; i < props.post.media.length; i++) {
             const media = props.post.media[i];
             newEditData.push({
                 id: media.id,
@@ -32,7 +33,18 @@ const EditPostModal: React.FC<EditPostModalProps> = (props: EditPostModalProps) 
                 altText: media.altText || ""
             });
         }
-        setEditData(newEditData)
+
+        const selectedProfiles: Record<string, Profile> = Object.entries(props.post.global.collaborators).reduce(
+            (acc, [key, value]) => {
+                acc[key] = value as Profile;
+                return acc;
+            },
+            {} as Record<string, Profile>
+        );
+
+
+        setEditData(newEditData);
+        setCollabData({ selectedProfiles });
     }, []);
 
 
@@ -63,6 +75,7 @@ const EditPostModal: React.FC<EditPostModalProps> = (props: EditPostModalProps) 
         const fieldsToUpdate = [
             {key: "captionText", value: (lexicalText || "")},
             {key: "locationText", value: locationText},
+            {key: "collabData", value: collabData},
             {key: "altText", value: [...editData.map((entry:EditData) => {
                 return entry.altText;
             })]}
@@ -72,6 +85,12 @@ const EditPostModal: React.FC<EditPostModalProps> = (props: EditPostModalProps) 
 
         setIsSubmitting(false);
     }     
+
+    const handleCollabChanged = (data: CollabData) => {               
+        setCollabData({
+            selectedProfiles: data.selectedProfiles,           
+        });
+    }    
 
     const steps = [
         {
@@ -88,6 +107,7 @@ const EditPostModal: React.FC<EditPostModalProps> = (props: EditPostModalProps) 
             },                   
             element: <CreatePostModalFinal 
                         editData={editData}
+                        collabData={collabData}
                         locationText={locationText}
                         lexicalText={lexicalText || ""}
                         isCommentsDisabled={props.post.global.commentsDisabled}
@@ -98,7 +118,8 @@ const EditPostModal: React.FC<EditPostModalProps> = (props: EditPostModalProps) 
                         onLocationChanged={handleLocationChanged}
                         onLexicalChange={handleLexicalChange} 
                         onDisableCommentsChanged={() => {}}
-                        onDisableLikesChanged={() => {}}/>
+                        onDisableLikesChanged={() => {}}
+                        onCollabChanged={handleCollabChanged} />
         }
     ];
 

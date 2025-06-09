@@ -10,6 +10,7 @@ type StyledButtonProps = {
     style?: any;
     datatestid?: string;
     useSecondaryColors?: boolean;
+    className?: string;
 };
 
 const StyledButtonComponent = styled.button<{ $props?: any, $useSecondaryColors?: boolean | undefined }>`
@@ -48,6 +49,7 @@ const StyledButtonComponent = styled.button<{ $props?: any, $useSecondaryColors?
 const StyledButton: React.FC<StyledButtonProps> = (props: StyledButtonProps) => {
     return (
         <StyledButtonComponent
+            className={props.className}
             type={props.type}
             name={props.name}
             disabled={props.disabled}

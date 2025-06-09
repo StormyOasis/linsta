@@ -13,27 +13,26 @@ import ProfileLayout from "./Profile/ProfileLayout";
 import NotFoundLayout from "./NotFoundLayout";
 import ExploreLayout from "./Explore/ExploreLayout";
 
+// 🔁 Trailing slash redirect handler
+const RedirectToProfilePage: React.FC = () => {
+    const { userName } = useParams();
+    const location = useLocation();
+
+    // Always redirect if path ends in slash
+    if (location.pathname.endsWith('/')) {
+        return <Navigate to={`/${userName}`} replace />;
+    }
+
+    return <ProfileLayout edit={false} />;
+};
+
 const Layout: React.FC = () => {
-    const RedirectToProfilePage = () => {
-        const { userName } = useParams();
-        const location = useLocation();
-
-        // Redirect if the URL has a trailing slash
-        if (location.pathname.endsWith('/') && location.pathname !== `/${userName}/`) {
-            return <Navigate to={`/${userName}`} replace />;
-        }        
-    
-        return <ProfileLayout edit={false} />;
-    } 
-
     return (
         <>            
             <FlexColumn id="mainSectionContainer">
                 <ModalManager />
                 <Routes>
                     <Route path="/" element={<Private><MainLayout /></Private>} />                                         
-                    <Route path="/:userName" element={<ProfileLayout edit={false} />} />
-                    <Route path="/:userName/" element={<RedirectToProfilePage/>} />
                     <Route path="/edit/*" element={<Private><ProfileLayout edit={true} /></Private>} />
                     <Route path="/explore/*" element={<Private><ExploreLayout /></Private>} />                    
                     <Route path="/login/*" element={<LoginLayout />} />
@@ -41,7 +40,8 @@ const Layout: React.FC = () => {
                     <Route path="/forgot/*" element={<><Header /><ForgotPasswordLayout /></>} />
                     <Route path="/change_password/*" element={<><Header /><ChangePasswordLayout /></>} />
                     <Route path="/404" element={<NotFoundLayout />} />
-                    
+                    <Route path="/:userName/" element={<RedirectToProfilePage />} />
+                    <Route path="/:userName" element={<ProfileLayout edit={false} />} />                    
                 </Routes>
             </FlexColumn>
         </>

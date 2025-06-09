@@ -146,7 +146,7 @@ const FollowersModalContent: React.FC<FollowersModalContentProps> = (props: Foll
 
     return (
         <Div>
-            <FlexColumn $alignItems="stretch" $paddingTop="15px">
+            <FlexColumn $alignItems="stretch">
                 {renderFollowList()}
             </FlexColumn>
         </Div>

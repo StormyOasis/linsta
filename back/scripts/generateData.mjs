@@ -117,7 +117,7 @@ const generateProfile = async () => {
 
     // Now add to ES
     const userId = result.value.id;
-
+    profile.userId = userId;
     const esResult = await esClient.index({
         index: "profiles",
         document: profile
@@ -126,9 +126,7 @@ const generateProfile = async () => {
     // Now update the profile id in the user vertex
     await g.V(userId)
         .property("profileId", esResult._id)
-        .next();  
-
-    profile.userId = userId;
+        .next();      
 
     return profile;
 };
@@ -142,6 +140,7 @@ const generatePosts = async (profile) => {
     const userId = profile.userId;
     const userName = profile.userName;
     const posts = [];
+    const collaborators = [];
 
     const postCount = Math.floor(Math.random() * 24);
 
@@ -159,7 +158,8 @@ const generatePosts = async (profile) => {
                 dateTime: faker.date.recent(),
                 commentsDisabled: faker.datatype.boolean(),
                 commentCount: faker.number.int(),
-                likesDisabled: faker.datatype.boolean()
+                likesDisabled: faker.datatype.boolean(),
+                collaborators
             },
             media: [
                 {

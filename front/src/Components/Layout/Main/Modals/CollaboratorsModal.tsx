@@ -1,31 +1,27 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 
-import MultiStepModal from "../../../../Common/MultiStepModal";
-import { Like, Post, ProfileWithFollowStatusInt } from "../../../../../api/types";
-import { postBulkGetProfileAndFollowStatus } from "../../../../../../src/api/ServiceController";
-import StyledButton from "../../../../../Components/Common/StyledButton";
-import { followUser } from "../../../../../utils/utils";
-import { Div, FlexColumn, FlexRow, Link, Span } from "../../../../../Components/Common/CombinedStyling";
-import { AuthUser } from "../../../../../api/Auth";
-import { useAppSelector } from "../../../../../Components/Redux/redux";
-import { DEFAULT_PFP } from "../../../../../api/config";
+import MultiStepModal from "../../../Common/MultiStepModal";
+import { Post, ProfileWithFollowStatusInt } from "../../../../api/types";
+import { postBulkGetProfileAndFollowStatus } from "../../../../../src/api/ServiceController";
+import StyledButton from "../../../../Components/Common/StyledButton";
+import { followUser } from "../../../../utils/utils";
+import { Div, FlexColumn, FlexRow, Link, Span } from "../../../../Components/Common/CombinedStyling";
+import { AuthUser } from "../../../../api/Auth";
+import { useAppSelector } from "../../../../Components/Redux/redux";
+import { DEFAULT_PFP } from "../../../../api/config";
 
-type LikesModalProps = {
+type CollaboratorsModalProps = {
     onClose: () => void;
     post: Post;
     zIndex: number;
 }
 
-type LikesModalContentProps = {
+type CollaboratorsModalContentProps = {
     post: Post;
 }
 
-const LikesModalInfoText = styled(Span)`
-    color: ${props => props.theme['colors'].mediumTextColor};
-`;
-
-const LikeEntryContainer = styled(Div)`
+const CollaboratorEntryContainer = styled(Div)`
     width: 100%;
     max-width: 100%;
 `;
@@ -46,26 +42,26 @@ const ProfilePicImg = styled.img`
     border-radius: 50%;
 `;
 
-const LikesModalContent: React.FC<LikesModalContentProps> = (props: LikesModalContentProps) => {
-    const [likeFollowData, setLikeFollowData] = useState<ProfileWithFollowStatusInt | null>(null);
+const CollaboratorsModalContent: React.FC<CollaboratorsModalContentProps> = (props: CollaboratorsModalContentProps) => {
+    const [collaboratorData, setCollaboratorData] = useState<ProfileWithFollowStatusInt | null>(null);
     const authUser: AuthUser = useAppSelector((state: any) => state.auth.user);
     
-    useEffect(() => {
-        const userIds: string[] = props.post.global.likes.map(entry => entry.userId);
+    useEffect(() => {        
+        const userIds: string[] = Object.values(props.post.global.collaborators || {}).map((entry) => entry.userId);
         const userId: string = authUser.id;
-
+        
         postBulkGetProfileAndFollowStatus({ userId, userIds }).then((result: any) => {
-            setLikeFollowData(result.data);
+            setCollaboratorData(result.data);
         })
     }, []);
 
-    const renderLikeList = () => {
-        if (likeFollowData == null) {
+    const renderCollaboratorList = () => {
+        if (collaboratorData == null) {
             return <></>;
         }
 
-        const results = props.post.global.likes.map((entry:Like, index:number) => {                             
-            const lfd = likeFollowData[entry.userId];
+        const results = Object.values(props.post.global.collaborators || {}).map((entry, index:number) => {                             
+            const lfd = collaboratorData[entry.userId];
             if (lfd == null) {
                 return <Div key={`${index}`}></Div>; //prevent 'element in list should have unique key' error
             } 
@@ -74,7 +70,7 @@ const LikesModalContent: React.FC<LikesModalContentProps> = (props: LikesModalCo
             const isFollowing = lfd.isFollowed;
 
             return (
-                <LikeEntryContainer key={entry.userId}>
+                <CollaboratorEntryContainer key={entry.userId}>
                     <FlexRow $paddingBottom="8px" $paddingTop="8px">
                         <Div>
                             <Div $marginRight="10px">
@@ -110,7 +106,7 @@ const LikesModalContent: React.FC<LikesModalContentProps> = (props: LikesModalCo
                             </Div>
                         }
                     </FlexRow>
-                </LikeEntryContainer>
+                </CollaboratorEntryContainer>
             );
         });
 
@@ -122,9 +118,9 @@ const LikesModalContent: React.FC<LikesModalContentProps> = (props: LikesModalCo
 
         // If successful the state needs to be updated to reflect the new follow status
         if (result) {
-            const newLikeFollowData = { ...likeFollowData };
-            newLikeFollowData[followUserId].isFollowed = shouldFollow;
-            setLikeFollowData(newLikeFollowData);
+            const newCollaboratorData = { ...collaboratorData };
+            newCollaboratorData[followUserId].isFollowed = shouldFollow;
+            setCollaboratorData(newCollaboratorData);
         }
     }
 
@@ -133,21 +129,18 @@ const LikesModalContent: React.FC<LikesModalContentProps> = (props: LikesModalCo
     }
 
     return (
-        <div>
-            <LikesModalInfoText>{props.post.user.userName} can see the number of people who liked this post</LikesModalInfoText>
-            <FlexColumn $alignItems="stretch">
-                {renderLikeList()}
-            </FlexColumn>
-        </div>
+        <FlexColumn $alignItems="stretch">
+            {renderCollaboratorList()}
+        </FlexColumn>
     );
 }
 
-const LikesModal: React.FC<LikesModalProps> = (props: LikesModalProps) => {
+const CollaboratorsModal: React.FC<CollaboratorsModalProps> = (props: CollaboratorsModalProps) => {
 
     const steps = [
         {
-            title: "Likes",
-            element: <LikesModalContent post={props.post} />,
+            title: "Collaborators",
+            element: <CollaboratorsModalContent post={props.post} />,
             options: {
                 showFooter: false,
             },
@@ -161,4 +154,4 @@ const LikesModal: React.FC<LikesModalProps> = (props: LikesModalProps) => {
     );
 }
 
-export default LikesModal;
+export default CollaboratorsModal;

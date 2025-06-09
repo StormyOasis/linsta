@@ -30,6 +30,8 @@ export const handler = async (event: APIGatewayProxyEvent) => {
     return await withMetrics(baseMetricsKey, event.headers,async () => await handlerActions(baseMetricsKey, event))
 }
 
+const reservedRoutes = ['edit', 'login', 'signup', 'forgot', 'change_password', 'explore', '404'];
+
 export const handlerActions = async (baseMetricsKey: string, event: APIGatewayProxyEvent) => {
     let data: AttemptRequest;
     try {
@@ -44,6 +46,11 @@ export const handlerActions = async (baseMetricsKey: string, event: APIGatewayPr
     if (!data.emailOrPhone || !data.fullName || !data.userName || !data.password) {
         return handleValidationError("Invalid input");
     }
+
+    if(reservedRoutes.includes(data.userName.toLowerCase())) {
+        return handleValidationError("Invalid username");
+    }
+
 
     // Confirm additional required fields for actual create are present
     if (!data.dryRun && (!data.confirmCode || !data.day || !data.month || !data.year)) {

@@ -48,6 +48,7 @@ export interface Post {
         likesDisabled: boolean;
         locationText: string;
         likes: Like[];
+        collaborators: Record<string, Profile>; 
     },
     media: Media[];
 }
@@ -85,4 +86,8 @@ export interface PostPaginationResponse extends PaginationResponse {
     dateTime: string;
     postId: string;    
     posts: Post[];
+}
+
+export interface CollabData {
+    selectedProfiles: Record<string, Profile>;
 }

@@ -2,6 +2,7 @@ import axios from "axios";
 import { authHeader, AuthUser, getCurrentUser } from "./Auth";
 import { base64ToBlob } from "../utils/utils";
 import { API_HOST } from "./config";
+import { Profile } from "./types";
 
 const API_VERSION = "v1";
 
@@ -110,13 +111,20 @@ export const putSubmitPost = async (data: any, authUser:AuthUser): Promise<Servi
 
     form.append("requestorUserId", getCurrentUser()?.id);
 
+    // Collaborator profiles, but don't waste bandwidth on the entire profile, just profileId and userName
+    let collaborators: { profileId: string; userName: string }[] = [];
+    if(data?.collabData?.selectedProfiles) {
+        collaborators = data?.collabData?.selectedProfiles as Profile[];
+    }     
+
     // Data that pertains to entire post, not just the images/videos contained within
     form.append("global", JSON.stringify({
         commentsDisabled: data.commentsDisabled,
         likesDisabled: data.likesDisabled,
         locationText: data.locationText,
-        captionText: data.captionText
-    }));
+        captionText: data.captionText,
+        collaborators 
+    }));   
 
     const fileData:any[] = [];    
     const entries = data.entries.map((entry:any) => {
@@ -333,10 +341,12 @@ export const getSearch = async (data:any): Promise<ServiceResponse> => {
         statusText: res.statusText,
     }
 }
-export const getSuggestions = async (query: string): Promise<ServiceResponse> => {
+export const getSuggestions = async (data: any): Promise<ServiceResponse> => {
     const res = await axios.get(`${API_HOST}/api/${API_VERSION}/search/getSuggestions`, {
         params: {
-            q: query,
+            q: data.query,
+            type: data.type,
+            resultSize: data.resultSize,
             requestorUserId: getCurrentUser()?.id
         },        
         headers: authHeader()

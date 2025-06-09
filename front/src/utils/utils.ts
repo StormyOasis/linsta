@@ -427,3 +427,18 @@ export const getStoredSearchQueries = ():(string | Profile)[] => {
         return [];
     }
 }
+
+export const buildCollabSearchText = (selectedProfiles: Record<string, Profile>):string => {
+    if(!selectedProfiles) {
+        return "";
+    }
+
+    // Clear out the text input if there's no results
+    let userNames:string = "";
+    
+    Object.values(selectedProfiles).forEach((profile:Profile) => {
+        userNames = `${userNames}${profile.userName} `;
+    });
+
+    return userNames.trim();
+}

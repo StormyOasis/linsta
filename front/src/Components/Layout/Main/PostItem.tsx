@@ -66,6 +66,8 @@ const PostItem: React.FC<Props> = ({
             <PostContainer>
                 <Div $paddingBottom="10px">
                     <ProfileLink
+                        collaborators={[]}
+                        showCollaborators={false}                    
                         pfp={pfp}
                         showUserName={true}
                         showPfp={true}

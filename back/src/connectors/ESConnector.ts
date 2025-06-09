@@ -213,7 +213,11 @@ export default class ESConnector {
                     {
                         "global.dateTime": {
                             order: "desc",
-                            nested: { path: "global" }
+                            nested: { path: "global",     filter: {
+      exists: {
+        field: "global.dateTime"
+      }
+    }}
                         }
                     },
                     { postId: "asc" }
@@ -334,7 +338,7 @@ export default class ESConnector {
         };
     };
 
-    public getAllSuggestions = async (input: string): Promise<SuggestionResponse> => {
+    public getAllSuggestions = async (input: string, type: string = "both", resultSize?: string): Promise<SuggestionResponse> => {
         if (!input.trim()) {
             return {
                 postSuggestions: [],
@@ -343,7 +347,9 @@ export default class ESConnector {
             };
         }
 
-        const size: number = config.es.defaultSuggestionResultSize;
+        const resultSizeAsNum = Number(resultSize); 
+        const size: number = isNaN(resultSizeAsNum) ? config.es.defaultSuggestionResultSize : Math.min(resultSizeAsNum, config.es.defaultResultSize);
+        const isProfileOnly: boolean = type === "profiles";        
         const normalizedInput = input.trim().toLowerCase();
         const isHashtag: boolean = normalizedInput.startsWith('#');
         const cacheKey = `suggestions:${normalizedInput}:${size}`;
@@ -356,26 +362,41 @@ export default class ESConnector {
 
         // Build query bodies for suggesters
         const { mainSuggestBody, profileSuggestBody } = this.buildSuggestQuery(normalizedInput, size, isHashtag);
+        let mainSuggest = null;
+        let profilesSuggest = null;
 
         // Execute suggest queries in parallel
-        const [mainSuggest, profilesSuggest] = await Promise.all([
-            this.withRetries<SearchResponse<Post>>(() =>
-                this.client?.search<Post>({
-                    index: config.es.mainIndex,
-                    _source: false,
-                    body: mainSuggestBody,
-                })
-            ),
-            this.withRetries<SearchResponse<Profile>>(() =>
+        if(isProfileOnly) {
+            profilesSuggest = await this.withRetries<SearchResponse<Profile>>(() =>
                 this.client?.search<Profile>({
                     index: config.es.profileIndex,
                     body: profileSuggestBody,
                 })
-            )
-        ]);
+            );
+        } else {
+            [mainSuggest, profilesSuggest] = await Promise.all([
+                this.withRetries<SearchResponse<Post>>(() =>
+                    this.client?.search<Post>({
+                        index: config.es.mainIndex,
+                        _source: false,
+                        body: mainSuggestBody,
+                    })
+                ),
+                this.withRetries<SearchResponse<Profile>>(() =>
+                    this.client?.search<Profile>({
+                        index: config.es.profileIndex,
+                        body: profileSuggestBody,
+                    })
+                )
+            ]);
+        }
 
         // Flatten and limit suggestions to global size
-        const postSuggestions = extractTextSuggestionsFlat(mainSuggest.suggest, size);
+        let postSuggestions:string[] = [];
+        if(!isProfileOnly && mainSuggest) {
+            postSuggestions = extractTextSuggestionsFlat(mainSuggest.suggest, size);
+        }
+
         const profileSuggestions = extractTextSuggestionsFlat(profilesSuggest.suggest, size);
         // Remove duplicates and limit to size
         const uniqueNames = [...new Set(profileSuggestions)].slice(0, size);
@@ -395,6 +416,7 @@ export default class ESConnector {
             uniqueProfiles = (profilesQuery?.hits.hits || [])            
                 .filter(hit => !!hit._id && !!hit._source?.userName)
                 .map(hit => ({
+                    userId: hit._source?.userId || "",
                     profileId: hit._id as string,
                     userName: hit._source!.userName,
                     bio: hit._source!.bio,
@@ -588,7 +610,8 @@ export const buildDataSetForES = (user: User, global: Global, entries: Entry[]):
             commentsDisabled: global.commentsDisabled,
             likesDisabled: global.likesDisabled,
             locationText: global.locationText,
-            likes: global.likes || []
+            likes: global.likes || [],
+            collaborators: global.collaborators || []
         },
         media: entries.map((entry) => {
             return {
@@ -625,7 +648,8 @@ export const buildSearchResultSet = (hits: any[]): Post[] => {
                 likesDisabled: source.global.likesDisabled,
                 locationText: source.global.locationText,
                 commentCount: 0,
-                likes: []
+                likes: [],
+                collaborators: source.global.collaborators || []
             },
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             media: source.media.map((media: any) => {

@@ -1,289 +1,310 @@
 PUT /main
 {
-  "settings": {
-    "analysis": {
-      "normalizer": {
-        "lowercase_normalizer": {
-          "type": "custom",
-          "filter": [
-            "lowercase"
-          ]
+    "settings": {
+        "analysis": {
+            "normalizer": {
+                "lowercase_normalizer": {
+                    "type": "custom",
+                    "filter": [
+                        "lowercase"
+                    ]
+                }
+            },
+            "filter": {
+                "autocomplete_filter": {
+                    "type": "edge_ngram",
+                    "min_gram": 1,
+                    "max_gram": 20
+                }
+            },
+            "analyzer": {
+                "hashtag_autocomplete": {
+                    "type": "custom",
+                    "tokenizer": "standard",
+                    "filter": [
+                        "lowercase",
+                        "autocomplete_filter"
+                    ]
+                },
+                "hashtag_search": {
+                    "type": "custom",
+                    "tokenizer": "standard",
+                    "filter": [
+                        "lowercase"
+                    ]
+                }
+            }
         }
-      },
-      "filter": {
-        "autocomplete_filter": {
-          "type": "edge_ngram",
-          "min_gram": 1,
-          "max_gram": 20
+    },
+    "mappings": {
+        "properties": {
+            "postId": {
+                "type": "keyword"
+            },
+            "hashtags": {
+                "type": "text",
+                "analyzer": "hashtag_autocomplete",
+                "search_analyzer": "hashtag_search",
+                "fields": {
+                    "raw": {
+                        "type": "keyword",
+                        "normalizer": "lowercase_normalizer"
+                    },
+                    "suggest": {
+                        "type": "completion"
+                    }
+                }
+            },
+            "mentions": {
+                "type": "keyword"
+            },
+            "user": {
+                "type": "nested",
+                "properties": {
+                    "userId": {
+                        "type": "keyword"
+                    },
+                    "userName": {
+                        "type": "text",
+                        "analyzer": "hashtag_autocomplete",
+                        "search_analyzer": "hashtag_search",
+                        "fields": {
+                            "fuzzy": {
+                                "type": "text"
+                            },
+                            "suggest": {
+                                "type": "completion"
+                            }
+                        }
+                    }
+                }
+            },
+            "global": {
+                "type": "nested",
+                "properties": {
+                    "dateTime": {
+                        "type": "date"
+                    },
+                    "collaborators": {
+                        "type": "nested",
+                        "properties": {
+                            "profileId": {
+                                "type": "keyword"
+                            },
+                            "userName": {
+                                "type": "text",
+                                "analyzer": "hashtag_autocomplete",
+                                "search_analyzer": "hashtag_search",
+                                "fields": {
+                                    "fuzzy": {
+                                        "type": "text"
+                                    },
+                                    "suggest": {
+                                        "type": "completion"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "commentsDisabled": {
+                        "type": "boolean"
+                    },
+                    "commentCount": {
+                        "type": "long"
+                    },
+                    "likesDisabled": {
+                        "type": "boolean"
+                    },
+                    "locationText": {
+                        "type": "text",
+                        "analyzer": "hashtag_autocomplete",
+                        "search_analyzer": "hashtag_search",
+                        "fields": {
+                            "fuzzy": {
+                                "type": "text"
+                            },
+                            "suggest": {
+                                "type": "completion"
+                            }
+                        }
+                    },
+                    "captionText": {
+                        "type": "text",
+                        "analyzer": "hashtag_autocomplete",
+                        "search_analyzer": "hashtag_search",
+                        "fields": {
+                            "fuzzy": {
+                                "type": "text"
+                            },
+                            "suggest": {
+                                "type": "completion"
+                            }
+                        }
+                    }
+                }
+            },
+            "media": {
+                "type": "nested",
+                "properties": {
+                    "id": {
+                        "type": "text"
+                    },
+                    "userId": {
+                        "type": "keyword"
+                    },
+                    "postId": {
+                        "type": "keyword"
+                    },
+                    "path": {
+                        "type": "text"
+                    },
+                    "altText": {
+                        "type": "text",
+                        "analyzer": "hashtag_autocomplete",
+                        "search_analyzer": "hashtag_search",
+                        "fields": {
+                            "fuzzy": {
+                                "type": "text"
+                            },
+                            "suggest": {
+                                "type": "completion"
+                            }
+                        }
+                    },
+                    "mimeType": {
+                        "type": "text"
+                    }
+                }
+            }
         }
-      },
-      "analyzer": {
-        "hashtag_autocomplete": {
-          "type": "custom",
-          "tokenizer": "standard",
-          "filter": [
-            "lowercase",
-            "autocomplete_filter"
-          ]
-        },
-        "hashtag_search": {
-          "type": "custom",
-          "tokenizer": "standard",
-          "filter": [
-            "lowercase"
-          ]
-        }
-      }
     }
-  },
-  "mappings": {
-    "properties": {
-      "postId": {
-        "type": "keyword"
-      },
-      "hashtags": {
-        "type": "text",
-        "analyzer": "hashtag_autocomplete",
-        "search_analyzer": "hashtag_search",
-        "fields": {
-          "raw": {
-            "type": "keyword",
-            "normalizer": "lowercase_normalizer"
-          },
-          "suggest": {
-            "type": "completion"
-          }
-        }
-      },
-      "mentions": {
-        "type": "keyword"
-      },
-      "user": {
-        "type": "nested",
-        "properties": {
-          "userId": {
-            "type": "keyword"
-          },
-          "userName": {
-            "type": "text",
-            "analyzer": "hashtag_autocomplete",
-            "search_analyzer": "hashtag_search",
-            "fields": {
-              "fuzzy": {
-                "type": "text"
-              },
-              "suggest": {
-                "type": "completion"
-              }
-            }
-          }
-        }
-      },
-      "global": {
-        "type": "nested",
-        "properties": {
-          "dateTime": {
-            "type": "date"
-          },
-          "commentsDisabled": {
-            "type": "boolean"
-          },
-          "commentCount": {
-            "type": "long"
-          },
-          "likesDisabled": {
-            "type": "boolean"
-          },
-          "locationText": {
-            "type": "text",
-            "analyzer": "hashtag_autocomplete",
-            "search_analyzer": "hashtag_search",
-            "fields": {
-              "fuzzy": {
-                "type": "text"
-              },
-              "suggest": {
-                "type": "completion"
-              }
-            }
-          },
-          "captionText": {
-            "type": "text",
-            "analyzer": "hashtag_autocomplete",
-            "search_analyzer": "hashtag_search",
-            "fields": {
-              "fuzzy": {
-                "type": "text"
-              },
-              "suggest": {
-                "type": "completion"
-              }
-            }
-          }
-        }
-      },
-      "media": {
-        "type": "nested",
-        "properties": {
-          "id": {
-            "type": "text"
-          },
-          "userId": {
-            "type": "keyword"
-          },
-          "postId": {
-            "type": "keyword"
-          },
-          "path": {
-            "type": "text"
-          },
-          "altText": {
-            "type": "text",
-            "analyzer": "hashtag_autocomplete",
-            "search_analyzer": "hashtag_search",
-            "fields": {
-              "fuzzy": {
-                "type": "text"
-              },
-              "suggest": {
-                "type": "completion"
-              }
-            }
-          },
-          "mimeType": {
-            "type": "text"
-          }
-        }
-      }
-    }
-  }
 }
 
 
 PUT /profiles
 {
-  "settings": {
-    "analysis": {
-      "normalizer": {
-        "lowercase_normalizer": {
-          "type": "custom",
-          "filter": [
-            "lowercase"
-          ]
+    "settings": {
+        "analysis": {
+            "normalizer": {
+                "lowercase_normalizer": {
+                    "type": "custom",
+                    "filter": [
+                        "lowercase"
+                    ]
+                }
+            },
+            "filter": {
+                "autocomplete_filter": {
+                    "type": "edge_ngram",
+                    "min_gram": 1,
+                    "max_gram": 20
+                }
+            },
+            "analyzer": {
+                "hashtag_autocomplete": {
+                    "type": "custom",
+                    "tokenizer": "standard",
+                    "filter": [
+                        "lowercase",
+                        "autocomplete_filter"
+                    ]
+                },
+                "hashtag_search": {
+                    "type": "custom",
+                    "tokenizer": "standard",
+                    "filter": [
+                        "lowercase"
+                    ]
+                }
+            }
         }
-      },      
-      "filter": {
-        "autocomplete_filter": {
-          "type": "edge_ngram",
-          "min_gram": 1,
-          "max_gram": 20
+    },
+    "mappings": {
+        "properties": {
+            "userId": {
+                "type": "keyword"
+            },
+            "userName": {
+                "type": "text",
+                "analyzer": "hashtag_autocomplete",
+                "search_analyzer": "hashtag_search",
+                "fields": {
+                    "fuzzy": {
+                        "type": "text"
+                    },
+                    "suggest": {
+                        "type": "completion"
+                    }
+                }
+            },
+            "firstName": {
+                "type": "text",
+                "analyzer": "hashtag_autocomplete",
+                "search_analyzer": "hashtag_search",
+                "fields": {
+                    "fuzzy": {
+                        "type": "text"
+                    },
+                    "suggest": {
+                        "type": "completion"
+                    }
+                }
+            },
+            "lastName": {
+                "type": "text",
+                "analyzer": "hashtag_autocomplete",
+                "search_analyzer": "hashtag_search",
+                "fields": {
+                    "fuzzy": {
+                        "type": "text"
+                    },
+                    "suggest": {
+                        "type": "completion"
+                    }
+                }
+            },
+            "bio": {
+                "type": "text",
+                "analyzer": "hashtag_autocomplete",
+                "search_analyzer": "hashtag_search",
+                "fields": {
+                    "fuzzy": {
+                        "type": "text"
+                    },
+                    "suggest": {
+                        "type": "completion"
+                    }
+                }
+            },
+            "mentions": {
+                "type": "keyword"
+            },
+            "hashtags": {
+                "type": "text",
+                "analyzer": "hashtag_autocomplete",
+                "search_analyzer": "hashtag_search",
+                "fields": {
+                    "raw": {
+                        "type": "keyword",
+                        "normalizer": "lowercase_normalizer"
+                    },
+                    "suggest": {
+                        "type": "completion"
+                    }
+                }
+            },
+            "pfp": {
+                "type": "text"
+            },
+            "gender": {
+                "type": "text"
+            },
+            "pronouns": {
+                "type": "text"
+            },
+            "link": {
+                "type": "text"
+            }
         }
-      },
-      "analyzer": {
-        "hashtag_autocomplete": {
-          "type": "custom",
-          "tokenizer": "standard",
-          "filter": [
-            "lowercase",
-            "autocomplete_filter"
-          ]
-        },
-        "hashtag_search": {
-          "type": "custom",
-          "tokenizer": "standard",
-          "filter": [
-            "lowercase"
-          ]
-        }
-      }
     }
-  },
-  "mappings": {
-    "properties": {
-      "userId": {
-        "type": "keyword"
-      },
-      "userName": {
-        "type": "text",
-        "analyzer": "hashtag_autocomplete",
-        "search_analyzer": "hashtag_search",
-        "fields": {
-          "fuzzy": {
-            "type": "text"
-          },
-          "suggest": {
-            "type": "completion"
-          }
-        }
-      },
-      "firstName": {
-        "type": "text",
-        "analyzer": "hashtag_autocomplete",
-        "search_analyzer": "hashtag_search",
-        "fields": {
-          "fuzzy": {
-            "type": "text"
-          },
-          "suggest": {
-            "type": "completion"
-          }
-        }
-      },
-      "lastName": {
-        "type": "text",
-        "analyzer": "hashtag_autocomplete",
-        "search_analyzer": "hashtag_search",
-        "fields": {
-          "fuzzy": {
-            "type": "text"
-          },
-          "suggest": {
-            "type": "completion"
-          }
-        }
-      },
-      "bio": {
-        "type": "text",
-        "analyzer": "hashtag_autocomplete",
-        "search_analyzer": "hashtag_search",
-        "fields": {
-          "fuzzy": {
-            "type": "text"
-          },
-          "suggest": {
-            "type": "completion"
-          }
-        }
-      },
-      "mentions": {
-        "type": "keyword"
-      },
-      "hashtags": {
-        "type": "text",
-        "analyzer": "hashtag_autocomplete",
-        "search_analyzer": "hashtag_search",
-        "fields": {
-          "raw": {
-            "type": "keyword",
-            "normalizer": "lowercase_normalizer"
-          },
-          "suggest": {
-            "type": "completion"
-          }
-        }
-      },
-      "pfp": {
-        "type": "text"
-      },
-      "gender": {
-        "type": "text"
-      },
-      "pronouns": {
-        "type": "text"
-      },
-      "link": {
-        "type": "text"
-      }
-    }
-  }
 }

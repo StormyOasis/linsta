@@ -11,6 +11,7 @@ import { putSubmitPost } from "../../../../../api/ServiceController";
 import { clearCache, loadImageCached, setImage } from "../../../../../utils/CachedImageLoader";
 import { AuthUser } from "../../../../../api/Auth";
 import { useSelector } from "react-redux";
+import { CollabData } from "../../../../../api/types";
 
 export type CreatePostModalProps = {
     onClose: any
@@ -38,6 +39,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
     const [commentsDisabled, setCommentsDisabled] = useState<boolean>(false); 
     const [likesDisabled, setLikesDisabled] = useState<boolean>(false);
     const [locationText, setLocationText] = useState<string>("");
+    const [collabData, setCollabData] = useState<CollabData>({selectedProfiles: {}} as CollabData);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [hasErrorOccured, setHasErrorOccured] = useState<boolean>(false);
 
@@ -166,12 +168,19 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
     const handleLocationChanged = (value: string) => {
         setLocationText(value);
     }
+
+    const handleCollabChanged = (data: CollabData) => {                
+        setCollabData({
+            selectedProfiles: data.selectedProfiles,           
+        });
+    }
     
     const clearAllFileData = () => {
         files.forEach((file:any) => URL.revokeObjectURL(file.blob));
         imageUrls.forEach((imageUrl:string) => URL.revokeObjectURL(imageUrl));
         editData.forEach((data:EditData) => URL.revokeObjectURL(data.originalUrl));
     
+        setCollabData({selectedProfiles: {}} as CollabData);
         setFiles([]);
         setCropData([]);
         setImageUrls([]);
@@ -190,9 +199,10 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
         setHasErrorOccured(false);
 
         const data = {
-            commentsDisabled: commentsDisabled,
-            likesDisabled: likesDisabled,
-            locationText: locationText,
+            collabData, 
+            commentsDisabled,
+            likesDisabled,
+            locationText,
             captionText: lexicalText,
             entries: editData.map((entry:EditData) => {return entry})
         };
@@ -241,12 +251,14 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
             title: "Create Post",
             element: <CreatePostModalFinal editData={editData} locationText={locationText}
                         isCommentsDisabled={commentsDisabled} isLikesDisabled={likesDisabled}
+                        collabData={collabData}
                         hasErrorOccured={hasErrorOccured}
                         onAltImageChanged={handleAltInputChanged}
                         onLocationChanged={handleLocationChanged}
                         onLexicalChange={handleLexicalChange} 
                         onDisableCommentsChanged={handleDisableCommentsChanged}
-                        onDisableLikesChanged={handleDisableLikesChanged}/>,
+                        onDisableLikesChanged={handleDisableLikesChanged} 
+                        onCollabChanged={handleCollabChanged} />,
             options: {
                 showFooter: true,
                 footerNextPageText: "Share"

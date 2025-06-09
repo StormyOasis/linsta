@@ -19,6 +19,7 @@ export type Global = {
     captionText: string;
     commentsDisabled: boolean;
     commentCount: number;
+    collaborators: Record<string, Profile>;
     likesDisabled: boolean;
     locationText: string;
     likes: Like[];
@@ -52,6 +53,7 @@ export type Comment = {
 };
 
 export interface Profile {
+    userId: string;
     profileId: string;
     bio?: string;
     pfp?: string;    
@@ -64,7 +66,6 @@ export interface Profile {
 }
 
 export interface ProfileWithFollowStatus extends Profile {
-    userId: string;
     isFollowed: boolean;
     followers?: ProfileWithFollowStatus[];   
 }
