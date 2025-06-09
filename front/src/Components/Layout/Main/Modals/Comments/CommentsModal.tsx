@@ -197,7 +197,7 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
         const profileLink = renderToString(
             <Theme>
                 <ProfileLink
-                    collaborators={[]}
+                    collaborators={{}}
                     showCollaborators={false}
                     showLocation={false}
                     showUserName={true}
@@ -212,7 +212,7 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
             <Flex key={commentId} style={{ padding: "15px 10px" }}>
                 <FlexRowFullWidth>
                     <ProfileLink
-                        collaborators={[]}
+                        collaborators={{}}
                         showCollaborators={false}
                         showLocation={false}
                         showUserName={false}
