@@ -60,8 +60,8 @@ export const LikeToggler = (props: LikeTogglerProps) => {
             onClick={props.handleClick}>
 
             {isLiked ?
-                <HeartFilledSVG width={width} height={height} /> :
-                <HeartSVG width={width} height={height} />
+                <HeartFilledSVG stroke="none" width={width} height={height} /> :
+                <HeartSVG stroke="none" width={width} height={height} />
             }
         </Container>
     );

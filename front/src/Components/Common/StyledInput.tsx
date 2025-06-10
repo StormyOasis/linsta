@@ -11,7 +11,7 @@ const StyledInputWrapper = styled(FlexRow)<{ $noMargin?: boolean | undefined, $w
 
 const StyledInputInput = styled.input<{ $noBorder?: boolean | undefined }>`
     border: ${props => props.$noBorder ? "none" : `2px solid ${props.theme['colors'].borderDefaultColor}`};
-    background-color: ${props => props.theme['colors'].inputBackgroundColor};
+    background-color: ${props => props.theme['colors'].backgroundColor};
     display: block;
     width: 99%;
     height: 24px;

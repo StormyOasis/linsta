@@ -53,7 +53,7 @@ const MediaSliderButton: React.FC<MediaSliderButtonProps> = (props: MediaSliderB
         return (
             <MediaSliderLeftNormalWrapper>
                 <MediaSliderButtonContainer onClick={props.onClick}>
-                    <LeftArrowSVG />
+                    <LeftArrowSVG width="24px" height="24px" fill="currentColor" stroke="none" />
                 </MediaSliderButtonContainer>
             </MediaSliderLeftNormalWrapper>
         );
@@ -63,7 +63,7 @@ const MediaSliderButton: React.FC<MediaSliderButtonProps> = (props: MediaSliderB
         return (
             <MediaSliderRightNormalWrapper>
                 <MediaSliderButtonContainer onClick={props.onClick}>
-                    <RightArrowSVG />
+                    <RightArrowSVG width="24px" height="24px" fill="currentColor" stroke="none" />
                 </MediaSliderButtonContainer>
             </MediaSliderRightNormalWrapper>
         );
@@ -73,7 +73,7 @@ const MediaSliderButton: React.FC<MediaSliderButtonProps> = (props: MediaSliderB
         return (
             <MediaSliderBottomLeftWrapper>
                 <MediaSliderButtonContainer onClick={props.onClick}>
-                    <LeftArrowSVG />
+                    <LeftArrowSVG width="24px" height="24px" fill="currentColor" stroke="none" />
                 </MediaSliderButtonContainer>
             </MediaSliderBottomLeftWrapper>
         );        
@@ -83,7 +83,7 @@ const MediaSliderButton: React.FC<MediaSliderButtonProps> = (props: MediaSliderB
         return (
             <MediaSliderBottomRightWrapper>
                 <MediaSliderButtonContainer onClick={props.onClick}>
-                    <RightArrowSVG />
+                    <RightArrowSVG width="24px" height="24px" fill="currentColor" stroke="none" />
                 </MediaSliderButtonContainer>
             </MediaSliderBottomRightWrapper>
         );        

@@ -8,20 +8,20 @@ import { Div, Flex } from "../../../../Common/CombinedStyling";
 import MediaSliderButton from "../../../../Common/MediaSliderButton";
 import { CropSVG, FourToFiveSVG, ImageSVG, OneToOneSVG, SixteenToNineSVG } from "../../../../../Components/Common/Icon";
 
-const CropContainer = styled.div`
+const CropContainer = styled(Div)`
     height: ${props => props.theme['sizes'].cropperHeight};
     width: calc(${props => props.theme['sizes'].defaultModalWidth} - 40px);
     max-width: calc(${props => props.theme['sizes'].maxModalWidth} - 40px);
 `;
 
-const CropperWrapper = styled.div`
+const CropperWrapper = styled(Div)`
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
 `;
-const CropperContainer = styled.div`
+const CropperContainer = styled(Div)`
     position: absolute;
     top: 0;
     left: 0;
@@ -29,13 +29,13 @@ const CropperContainer = styled.div`
     bottom: 5px;
 `;
 
-const CropperAspectRatioButtonWrapper = styled.div`
+const CropperAspectRatioButtonWrapper = styled(Div)`
     z-index: 20;
     position: absolute;
     bottom: 0;
 `;
 
-const CropperAspectRatioButton = styled.div<{$isopen?: string}>`
+const CropperAspectRatioButton = styled(Div)<{$isopen?: string}>`
     width: 24px;
     height: 24px;
     color: ${props => props.$isopen === "true" ? props.theme['colors'].cropperAspectBkgnd : "white"};
@@ -52,7 +52,7 @@ const CropperAspectRatioButton = styled.div<{$isopen?: string}>`
     };    
 `;
 
-const AspectPopupMenu = styled.div`
+const AspectPopupMenu = styled(Div)`
     z-index: 20;
     position:absolute;
     bottom: 50px;
@@ -66,7 +66,7 @@ const AspectPopupMenu = styled.div`
     width: 95px;
 `;
 
-const AspectPopupMenuItem = styled.div<{selected?: boolean}>`
+const AspectPopupMenuItem = styled(Div)<{selected?: boolean}>`
     padding: 5px;
     border-top: 1px solid ${props => props.theme['colors'].borderDarkColor};    
     color: ${props => props.selected ? "white" : props.theme['colors'].borderDarkColor};
@@ -83,7 +83,7 @@ const AspectPopupMenuItem = styled.div<{selected?: boolean}>`
     };
 `;
 
-const AspectPopupMenuItemContent = styled.div`
+const AspectPopupMenuItemContent = styled(Div)`
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -103,12 +103,12 @@ type AspectRatio = {
 }
 
 const aspectRatios:AspectRatio[] = [
-    { value: 0, text: "Original", icon: {width: "22px", height: "22px", element: <ImageSVG/>}},
-    { value: 1 / 1, text: "1:1", icon: {width: "22px", height: "22px", element: <OneToOneSVG />}},
+    { value: 0, text: "Original", icon: {element: <ImageSVG width="22px" height="22px" stroke="none" />}},
+    { value: 1 / 1, text: "1:1", icon: {element: <OneToOneSVG width="22px" height="22px"/>}},
     { value: 1 / 2, text: "1:2", icon: null },    
     { value: 4 / 3, text: "4:3", icon: null },
-    { value: 4 / 5, text: "4:5", icon: {width: "16px", height: "22px", element: <FourToFiveSVG />}},
-    { value: 16 / 9, text: "16:9", icon: {width: "22px", height: "16px", element: <SixteenToNineSVG />}},    
+    { value: 4 / 5, text: "4:5", icon: {element: <FourToFiveSVG width="16px" height="22px" />}},
+    { value: 16 / 9, text: "16:9", icon: {element: <SixteenToNineSVG width="22px" height="16px"/>}},    
 ];
 
 export type CropData = {
@@ -258,12 +258,8 @@ const CreatePostModalCropper: React.FC<CropperProps> = (props: CropperProps) => 
                     return (
                         <AspectPopupMenuItem {...selected} key={ratio.text} onClick={() => setAspect(ratio)}>
                             <AspectPopupMenuItemContent>
-                                <div>{ratio.text}</div>
-                                {ratio.icon &&
-                                    <div style={{ width: ratio.icon.width, height:ratio.icon.height }}>
-                                        {ratio.icon.element}
-                                    </div>
-                                }
+                                <Div>{ratio.text}</Div>
+                                {ratio.icon && ratio.icon.element}
                             </AspectPopupMenuItemContent>
                         </AspectPopupMenuItem>);
                     })
