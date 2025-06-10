@@ -54,7 +54,7 @@ const Dropdown: React.FC<DropdownProps> = (props: DropdownProps) => {
                     {props.title}
                 </Title>
                 <ArrowContainer>
-                    {isOpen ? <UpSVG /> : <DownSVG />}
+                    {isOpen ? <UpSVG width="24px" height="24px" /> : <DownSVG width="24px" height="24px" />}
                 </ArrowContainer>
             </MainContainer>
             <ContentContainer $isOpen={isOpen}>

@@ -481,7 +481,7 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                                     <Div $cursor="pointer">
                                         <Flex $paddingRight="8px">
                                             <ActionContainer>
-                                                <MessageSVG onClick={() => {
+                                                <MessageSVG width="28px" height="28px" onClick={() => {
                                                     if (commentTextAreaRef.current) {
                                                         const textArea = (commentTextAreaRef.current as HTMLTextAreaElement);
                                                         textArea.innerText = `@${props.post.user.userName} `;
@@ -493,13 +493,13 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                                             </ActionContainer>
                                         </Flex>
                                     </Div>
-                                    <Div $cursor="pointer">
+                                    {/*<Div $cursor="pointer">
                                         <Flex $paddingRight="8px">
                                             <ActionContainer>
                                                 <ShareSVG />
                                             </ActionContainer>
                                         </Flex>
-                                    </Div>
+                                    </Div>*/}
                                 </ActionWrapper>
                                 <Div $paddingLeft="10px" $paddingBottom="10px">
                                     <ViewLikesText post={props.post} authUserId={authUser.id} handleClick={() => openLikesModal(props.post)}></ViewLikesText>
