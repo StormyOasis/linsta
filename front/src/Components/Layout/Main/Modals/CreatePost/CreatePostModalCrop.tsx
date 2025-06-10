@@ -6,7 +6,7 @@ import { ModalSectionWrapper } from "../../../../Common/MultiStepModal";
 import Slider from "../../../../Common/Slider";
 import { Div, Flex } from "../../../../Common/CombinedStyling";
 import MediaSliderButton from "../../../../Common/MediaSliderButton";
-import { FourToFiveSVG, ImageSVG, OneToOneSVG, SixteenToNineSVG } from "../../../../../Components/Common/Icon";
+import { CropSVG, FourToFiveSVG, ImageSVG, OneToOneSVG, SixteenToNineSVG } from "../../../../../Components/Common/Icon";
 
 const CropContainer = styled.div`
     height: ${props => props.theme['sizes'].cropperHeight};
@@ -310,7 +310,7 @@ const CreatePostModalCropper: React.FC<CropperProps> = (props: CropperProps) => 
                         </CropperContainer>
                         <CropperAspectRatioButtonWrapper>
                             <CropperAspectRatioButton $isopen={`${isAspectMenuOpen}`} onClick={() => setIsAspectMenuOpen(!isAspectMenuOpen)}>
-                                <CropSVG />
+                                <CropSVG width="24px" height="24px" />
                             </CropperAspectRatioButton>                            
                         </CropperAspectRatioButtonWrapper>
                         {props.hasPrev && 

@@ -36,8 +36,8 @@ const CreatePostModalSelectMedia: React.FC<CreatePostModalSelectMediaProps> = (p
             <div {...getRootProps({ className: 'dropzone' })} >
                 <input {...getInputProps()} />
                 <ModalSectionWrapper style={{ padding: "10px", margin:"auto", width:"50%" }}>
-                    {!props.hasFileRejections && <MediaSVG />}
-                    {props.hasFileRejections && <WarningSVG />}
+                    {!props.hasFileRejections && <MediaSVG width="89px" height="68px" />}
+                    {props.hasFileRejections && <WarningSVG width="89px" height="68px" />}
                 </ModalSectionWrapper>
                 <ModalSectionWrapper style={{ marginTop: "15px", padding: "10px" }}>
                     <Span style={{textWrap: "wrap", wordBreak: "break-word", overflowWrap: "break-word", margin: 0}}

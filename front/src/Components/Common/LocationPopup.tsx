@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import { Div, FlexColumn, Span } from "./CombinedStyling";
 import { getLocation } from "../../api/ServiceController";
 import useThrottle from '../../utils/useThrottle';
+import { CircleXSVG, LocationSVG } from './Icon';
 
 const SVGContainer = styled(Div)`
     width: 24px;
@@ -106,7 +107,7 @@ const LocationPopup: React.FC<LocationProps> = (props: LocationProps) => {
         }
     }, [isLocationOpen]);
 
-    const handleLocationClear = useCallback((e:React.SyntheticEvent<HTMLInputElement>) => {
+    const handleLocationClear = useCallback((e:React.SyntheticEvent) => {
         e.stopPropagation();
         e.preventDefault();
 
