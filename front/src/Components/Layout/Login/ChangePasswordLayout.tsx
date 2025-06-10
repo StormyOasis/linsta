@@ -106,6 +106,7 @@ const renderChangeForm = () => {
                         value={currentPassword}
                         type="password"
                         isValid={validatePassword(currentPassword)}
+                        shouldValidate={true}
                         onChange={(event: React.ChangeEvent<HTMLInputElement>) => setCurrentPassword(event.target.value)} />
                 }
                 <StyledInput
@@ -114,12 +115,14 @@ const renderChangeForm = () => {
                     value={password1}
                     type="password"
                     isValid={validatePassword(password1)}
+                    shouldValidate={true}
                     onChange={(event: React.ChangeEvent<HTMLInputElement>) => setPassword1(event.target.value)} />       
                 <StyledInput
                     name="password2"
                     placeholder="Retype Password"
                     type="password"
                     value={password2}
+                    shouldValidate={true}
                     isValid={validatePassword(password2)}
                     onChange={(event: React.ChangeEvent<HTMLInputElement>) => setPassword2(event.target.value)} />                         
                 <StyledButton

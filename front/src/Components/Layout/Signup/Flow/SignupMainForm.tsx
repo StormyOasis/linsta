@@ -148,6 +148,7 @@ export default class SignupMainForm extends React.Component<SignupMainFormProps>
                             </Span>
                         </Div>
                         <StyledInput
+                            shouldValidate={true}
                             name="emailOrPhone"
                             placeholder="Phone Number or Email"
                             value={this.props.emailOrPhone}
@@ -155,6 +156,7 @@ export default class SignupMainForm extends React.Component<SignupMainFormProps>
                             onChange={this.handleFormChange}
                         ></StyledInput>
                         <StyledInput
+                            shouldValidate={true}
                             name="fullName"
                             placeholder="Full Name"
                             value={this.props.fullName}
@@ -162,6 +164,7 @@ export default class SignupMainForm extends React.Component<SignupMainFormProps>
                             onChange={this.handleFormChange}
                         ></StyledInput>
                         <StyledInput
+                            shouldValidate={true}
                             name="userName"
                             placeholder="Username"
                             value={this.props.userName}
@@ -169,6 +172,7 @@ export default class SignupMainForm extends React.Component<SignupMainFormProps>
                             onChange={this.handleUsernameFormChange}
                         ></StyledInput>
                         <StyledInput
+                            shouldValidate={true}
                             name="password"
                             placeholder="Password"
                             type="password"

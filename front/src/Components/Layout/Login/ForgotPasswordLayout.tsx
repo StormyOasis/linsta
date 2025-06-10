@@ -129,6 +129,7 @@ const ForgotPasswordLayout: React.FC = () => {
                                     Enter your email, phone, or username and we'll send you a link to get back into your account.
                                 </SubHeadingText>
                                 <StyledInput
+                                    shouldValidate={true}
                                     datatestid='userName'
                                     placeholder="Email, Phone, or Username"
                                     value={userData}

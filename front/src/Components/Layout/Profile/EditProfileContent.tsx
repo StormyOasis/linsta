@@ -381,6 +381,7 @@ const EditProfileContent: React.FC = () => {
                             <InputContainer>
                                 <InputHeader>Full Name</InputHeader>
                                 <StyledInput
+                                    shouldValidate={true}
                                     validationXpos="24px"
                                     validationYpos="10px"
                                     noMargin={true}
@@ -396,6 +397,7 @@ const EditProfileContent: React.FC = () => {
                             <InputContainer>
                                 <InputHeader>Website</InputHeader>
                                 <StyledInput
+                                    shouldValidate={true}
                                     validationYpos="10px"
                                     validationXpos="24px"
                                     noMargin={true}

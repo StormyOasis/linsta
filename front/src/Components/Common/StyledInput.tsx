@@ -58,7 +58,7 @@ type StyledInputProps = {
     datatestid?: string;
     noMargin?: boolean;
     noBorder?: boolean;
-    shouldValidate?: boolean;
+    shouldValidate: boolean;
     validationYpos?: string;
     validationXpos?: string;
     width?: string;

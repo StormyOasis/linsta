@@ -93,6 +93,7 @@ export const CustomTextOption: React.FC<TextOptionProps> = (props: TextOptionPro
                         maxLength={props.maxLength ? props.maxLength : 256}
                         name="styled_input"
                         isValid={true}
+                        shouldValidate={true}
                         value={props.text}
                         onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                             if (props.onChange) {
@@ -116,7 +117,7 @@ type DropdownProps = {
     inputIcon?: React.ReactNode;
     selectedItems: string[];
     isMultiSelect?: boolean;
-    shouldValidate?: boolean;
+    shouldValidate: boolean;
     isInputBox?: boolean;
     hideArrow?: boolean;
     hideBorder?: boolean;
@@ -174,7 +175,7 @@ const PopupDropdownSelector = forwardRef<PopupDropdownSelectorHandle, DropdownPr
                         placeholder={props.placeholder} 
                         noMargin={true} 
                         noBorder={props.hideBorder || false}
-                        shouldValidate={props.shouldValidate ?? true} 
+                        shouldValidate={props.shouldValidate} 
                         width="100%"
                         onChange={props.onChange} 
                         value={props.value || ""}
