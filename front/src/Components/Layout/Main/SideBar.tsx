@@ -259,16 +259,16 @@ const SideBar: React.FC = () => {
                 {!matchesSmallestBP &&
                     <Div className={styles.logoWrapper}>
                         <Link to="/" aria-label="Home">
-                            {matchesLargestBP ? <LargeLogo /> : <MainSVG />}
+                            {matchesLargestBP ? <LargeLogo /> : <MainSVG width="22px" height="22px" />}
                         </Link>
                     </Div>
                 }
 
                 <NavWrapper>
-                    {renderMenuItem("Home", "/", <HomeSVG />, undefined, null)}
-                    {!matchesSmallestBP && renderMenuItem("Search", null, <SearchSVG />, undefined, toggleSearchPanel)}
-                    {renderMenuItem("Explore", "/explore", <ExploreSVG />, undefined, null)}
-                    {renderMenuItem("Create", null, <CreateSVG />, undefined, createPostHandler)}
+                    {renderMenuItem("Home", "/", <HomeSVG width="22px" height="22px" fill="black" />, undefined, null)}
+                    {!matchesSmallestBP && renderMenuItem("Search", null, <SearchSVG width="22px" height="22px" />, undefined, toggleSearchPanel)}
+                    {renderMenuItem("Explore", "/explore", <ExploreSVG width="22px" height="22px" />, undefined, null)}
+                    {renderMenuItem("Create", null, <CreateSVG width="22px" height="22px" />, undefined, createPostHandler)}
                     {renderMenuItem("Profile", `/${profileUrl}`, <MemoizedProfilePic profile={profile} />, 0, null)}                 
                 </NavWrapper>
                 <BottomLinkWrapper>

@@ -5,7 +5,6 @@ import { styled } from 'styled-components';
 
 interface IconProps extends React.SVGProps<SVGSVGElement> {
     name?: string;
-    size?: number | string;
     fill?: string;
     stroke?: string;
     strokeWidth?: number;    
@@ -15,11 +14,11 @@ export const Icon: React.FC<IconProps> = (props: IconProps) => {
     return (
         <svg
             className={props.className}
-            width={props.size}
-            height={props.size}
+            width={props.width || undefined}
+            height={props.height || undefined}
             fill={props.fill || 'none'}
             stroke={props.stroke || 'currentColor'}
-            strokeWidth={props.strokeWidth || 1}            
+            strokeWidth={props.strokeWidth || 2}            
             aria-hidden="true"
             focusable="false"
             {...props}>
