@@ -129,7 +129,7 @@ const CollabPopup: React.FC<CollabProps> = (props: CollabProps) => {
 
     const renderIcon = useCallback(() => (
         <SVGContainer>
-            <CollabInputSVG />
+            <CollabInputSVG width="22px" height="22px" stroke="1" />
         </SVGContainer>
     ), []);
 
@@ -249,7 +249,7 @@ const CollabPopup: React.FC<CollabProps> = (props: CollabProps) => {
             <Div>
                 <PopupSVGContainer>
                     <Div>
-                        <CollabInputSVG />
+                        <CollabInputSVG width="64px" height="64px" />
                     </Div>
                 </PopupSVGContainer>
                 <CollaboratorHeading>
