@@ -4,9 +4,7 @@ import styled from "styled-components";
 import { Post } from "../../api/types";
 import { HOST } from "../../api/config";
 import { BoldLink, Div, Span } from "./CombinedStyling";
-
-import HeartSVG from "/public/images/heart.svg";
-import HeartFilledSVG from "/public/images/heart-fill.svg";
+import { HeartFilledSVG, HeartSVG } from "./Icon";
 
 
 type ViewLikesTextProps = {
@@ -62,8 +60,8 @@ export const LikeToggler = (props: LikeTogglerProps) => {
             onClick={props.handleClick}>
 
             {isLiked ?
-                <HeartFilledSVG style={{ width, height }} /> :
-                <HeartSVG style={{ width, height }} />
+                <HeartFilledSVG stroke="none" width={width} height={height} /> :
+                <HeartSVG stroke="none" width={width} height={height} />
             }
         </Container>
     );

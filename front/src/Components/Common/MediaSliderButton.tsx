@@ -1,9 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import LeftArrowSVG from "/public/images/left_arrow.svg";
-import RightArrowSVG from "/public/images/right_arrow.svg";
 import { Div, Flex } from './CombinedStyling';
+import { LeftArrowSVG, RightArrowSVG } from './Icon';
 
 const MediaSliderWrapper = styled(Div)`
     z-index: 20;
@@ -54,7 +53,7 @@ const MediaSliderButton: React.FC<MediaSliderButtonProps> = (props: MediaSliderB
         return (
             <MediaSliderLeftNormalWrapper>
                 <MediaSliderButtonContainer onClick={props.onClick}>
-                    <LeftArrowSVG />
+                    <LeftArrowSVG width="24px" height="24px" fill="currentColor" stroke="none" />
                 </MediaSliderButtonContainer>
             </MediaSliderLeftNormalWrapper>
         );
@@ -64,7 +63,7 @@ const MediaSliderButton: React.FC<MediaSliderButtonProps> = (props: MediaSliderB
         return (
             <MediaSliderRightNormalWrapper>
                 <MediaSliderButtonContainer onClick={props.onClick}>
-                    <RightArrowSVG />
+                    <RightArrowSVG width="24px" height="24px" fill="currentColor" stroke="none" />
                 </MediaSliderButtonContainer>
             </MediaSliderRightNormalWrapper>
         );
@@ -74,7 +73,7 @@ const MediaSliderButton: React.FC<MediaSliderButtonProps> = (props: MediaSliderB
         return (
             <MediaSliderBottomLeftWrapper>
                 <MediaSliderButtonContainer onClick={props.onClick}>
-                    <LeftArrowSVG />
+                    <LeftArrowSVG width="24px" height="24px" fill="currentColor" stroke="none" />
                 </MediaSliderButtonContainer>
             </MediaSliderBottomLeftWrapper>
         );        
@@ -84,7 +83,7 @@ const MediaSliderButton: React.FC<MediaSliderButtonProps> = (props: MediaSliderB
         return (
             <MediaSliderBottomRightWrapper>
                 <MediaSliderButtonContainer onClick={props.onClick}>
-                    <RightArrowSVG />
+                    <RightArrowSVG width="24px" height="24px" fill="currentColor" stroke="none" />
                 </MediaSliderButtonContainer>
             </MediaSliderBottomRightWrapper>
         );        

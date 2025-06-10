@@ -1,8 +1,8 @@
 import React from "react";
 import styled from "styled-components";
 import { Flex} from "../Common/CombinedStyling";
-import SearchBoxSVG from '/public/images/search.svg';
-import XCircleSVG from '/public/images/x-circle.svg';
+import { CircleXSVG, SearchBoxSVG } from "./Icon";
+
 
 const SearchContainer = styled(Flex)`
     align-items: center;
@@ -51,7 +51,7 @@ const SearchBox: React.FC<SearchBoxProps> = (props: SearchBoxProps) => {
     return (
         <SearchContainer>
             <IconWrapper>
-                <SearchBoxSVG />
+                <SearchBoxSVG width="16px" height="16px" fill="currentColor" stroke="none" strokeWidth={1}/>
             </IconWrapper>            
             <Input
                 type="text"
@@ -61,7 +61,7 @@ const SearchBox: React.FC<SearchBoxProps> = (props: SearchBoxProps) => {
             />
             {props.value && (
                 <ClearButton onClick={props.onClear} aria-label="Clear search">
-                    <XCircleSVG />
+                    <CircleXSVG width="16px" height="16px" fill="currentColor" stroke="none" strokeWidth={1} />
                 </ClearButton>
             )}            
         </SearchContainer>

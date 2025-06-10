@@ -7,11 +7,12 @@ import MediaSlider from "../../../Components/Common/MediaSlider";
 import ProfileLink from "../../../Components/Common/ProfileLink";
 import { LikeToggler, ViewLikesText } from "../../../Components/Common/Likes";
 import { Div, Flex, FlexColumn, FlexRow, Span } from "../../../Components/Common/CombinedStyling";
-import MessageSVG from "/public/images/message.svg";
+
 import styled from "styled-components";
 import CommentsSection from "./MainCommentSection";
 import { actions, useAppDispatch } from "../../../Components/Redux/redux";
 import { MODAL_TYPES } from "../../../Components/Redux/slices/modals.slice";
+import { MessageSVG } from "../../../Components/Common/Icon";
 
 const PostContainer = styled(FlexColumn)`
     min-width: min(${props => props.theme["sizes"].feedPostMinWidth}, 100%);
@@ -108,7 +109,7 @@ const PostItem: React.FC<Props> = ({
                                 <Div $cursor="pointer">
                                     <Flex $paddingRight="8px">
                                         <ActionContainer>
-                                            <MessageSVG aria-label="Comment" onClick={onOpenCommentModal} />
+                                            <MessageSVG aria-label="Comment" width="28px" height="28px" onClick={onOpenCommentModal} />
                                         </ActionContainer>
                                     </Flex>
                                 </Div>

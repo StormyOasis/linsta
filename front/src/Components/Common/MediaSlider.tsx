@@ -3,9 +3,8 @@ import styled from 'styled-components';
 import { Media } from '../../api/types';
 import * as styles from './Common.module.css';
 
-import LeftArrowSVG from "/public/images/left_arrow.svg";
-import RightArrowSVG from "/public/images/right_arrow.svg";
 import { Div, Flex, FlexRow } from './CombinedStyling';
+import { LeftArrowSVG, RightArrowSVG } from './Icon';
 
 const MediaSliderWrapper = styled(Div)`
     z-index: 20;

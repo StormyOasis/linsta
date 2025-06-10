@@ -11,8 +11,7 @@ import ProfileLink from "../../../../Common/ProfileLink";
 import { postAddComment, postGetCommentsByPostId, postToggleLike } from "../../../../../api/ServiceController";
 import { dateDiff, getDateAsText, getSanitizedText, isPostLiked, togglePostLikedState } from "../../../../../utils/utils";
 import Theme from "../../../../Themes/Theme";
-import MessageSVG from "/public/images/message.svg";
-import ShareSVG from "/public/images/send.svg";
+
 import { AuthUser } from "../../../../../api/Auth";
 import EmojiPickerPopup from "../../../../Common/EmojiPickerPopup";
 import StyledLink from "../../../../Common/StyledLink";
@@ -21,6 +20,7 @@ import { LikeToggler, ViewLikesText } from "../../../../../Components/Common/Lik
 import { MODAL_TYPES } from "../../../../../Components/Redux/slices/modals.slice";
 import { actions, useAppDispatch, useAppSelector } from "../../../../../Components/Redux/redux";
 import Linkify from "../../../../../Components/Common/Linkify";
+import { MessageSVG, ShareSVG } from "../../../../../Components/Common/Icon";
 
 const MediaSliderWrapper = styled(Div) <{ $width: number }>`
     align-content: center;
@@ -481,7 +481,7 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                                     <Div $cursor="pointer">
                                         <Flex $paddingRight="8px">
                                             <ActionContainer>
-                                                <MessageSVG onClick={() => {
+                                                <MessageSVG width="28px" height="28px" onClick={() => {
                                                     if (commentTextAreaRef.current) {
                                                         const textArea = (commentTextAreaRef.current as HTMLTextAreaElement);
                                                         textArea.innerText = `@${props.post.user.userName} `;
@@ -493,13 +493,13 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                                             </ActionContainer>
                                         </Flex>
                                     </Div>
-                                    <Div $cursor="pointer">
+                                    {/*<Div $cursor="pointer">
                                         <Flex $paddingRight="8px">
                                             <ActionContainer>
                                                 <ShareSVG />
                                             </ActionContainer>
                                         </Flex>
-                                    </Div>
+                                    </Div>*/}
                                 </ActionWrapper>
                                 <Div $paddingLeft="10px" $paddingBottom="10px">
                                     <ViewLikesText post={props.post} authUserId={authUser.id} handleClick={() => openLikesModal(props.post)}></ViewLikesText>

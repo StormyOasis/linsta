@@ -6,12 +6,11 @@ import LoadingImage from "../../../Components/Common/LoadingImage";
 import { MODAL_TYPES } from "../../../Components/Redux/slices/modals.slice";
 import { PostPaginationResponse, Post } from "../../../api/types";
 import { isVideoFileFromPath } from "../../../utils/utils";
-import HeartFilledSVG from "/public/images/heart-fill.svg";
-import MessageSVG from "/public/images/message.svg";
 import { getSearch } from "../../../api/ServiceController";
 import { actions, useAppDispatch, useAppSelector } from "../../../Components/Redux/redux";
 import { AuthUser } from "../../../api/Auth";
 import useInfiniteScroll from "../../../utils/useInfiniteScroll";
+import { HeartFilledSVG, MessageSVG } from "../../../Components/Common/Icon";
 
 const GridContainer = styled(Div)`
     padding-top: 20px;

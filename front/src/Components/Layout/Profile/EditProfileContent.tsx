@@ -360,7 +360,7 @@ const EditProfileContent: React.FC = () => {
                             <ProfilePfpContainer>
                                 <Div>
                                     <ProfileLink 
-                                        collaborators={[]}
+                                        collaborators={{}}
                                         showCollaborators={true}                                    
                                         pfpWidth="64px" 
                                         showPfp={true} 
@@ -381,6 +381,7 @@ const EditProfileContent: React.FC = () => {
                             <InputContainer>
                                 <InputHeader>Full Name</InputHeader>
                                 <StyledInput
+                                    shouldValidate={true}
                                     validationXpos="24px"
                                     validationYpos="10px"
                                     noMargin={true}
@@ -396,6 +397,7 @@ const EditProfileContent: React.FC = () => {
                             <InputContainer>
                                 <InputHeader>Website</InputHeader>
                                 <StyledInput
+                                    shouldValidate={true}
                                     validationYpos="10px"
                                     validationXpos="24px"
                                     noMargin={true}
@@ -403,6 +405,7 @@ const EditProfileContent: React.FC = () => {
                                     name="website"
                                     placeholder="Website"
                                     value={website}
+                                    shouldValidate={true}
                                     isValid={validateUrl(website)}
                                     onChange={(event: React.ChangeEvent<HTMLInputElement>) => setWebsite(event.target.value)}
                                 ></StyledInput>

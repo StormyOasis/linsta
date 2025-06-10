@@ -1,11 +1,10 @@
 import React, { SyntheticEvent, useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 
-import LocationSVG from "/public/images/location.svg";
-import CircleXSVG from "/public/images/x-circle.svg";
 import { Div, FlexColumn, Span } from "./CombinedStyling";
 import { getLocation } from "../../api/ServiceController";
 import useThrottle from '../../utils/useThrottle';
+import { CircleXSVG, LocationSVG } from './Icon';
 
 const SVGContainer = styled(Div)`
     width: 24px;
@@ -108,7 +107,7 @@ const LocationPopup: React.FC<LocationProps> = (props: LocationProps) => {
         }
     }, [isLocationOpen]);
 
-    const handleLocationClear = useCallback((e:React.SyntheticEvent<HTMLInputElement>) => {
+    const handleLocationClear = useCallback((e:React.SyntheticEvent) => {
         e.stopPropagation();
         e.preventDefault();
 
@@ -171,8 +170,8 @@ const LocationPopup: React.FC<LocationProps> = (props: LocationProps) => {
             </Input>
             <SVGContainer>
                 {(props.locationText && props.locationText.length > 0) ?
-                    <CircleXSVG style={{ cursor: "pointer" }} onClick={handleLocationClear} /> :
-                    <LocationSVG />
+                    <CircleXSVG width="16px" height="16px" fill="currentColor" stroke="none" style={{ cursor: "pointer" }} onClick={handleLocationClear} /> :
+                    <LocationSVG strokeWidth={0} width="23px" height="23px" stroke="currentColor" fill="none" />
                 }
             </SVGContainer>
             <LocationPopupContainer ref={popupRef} $isOpen={isLocationOpen}>

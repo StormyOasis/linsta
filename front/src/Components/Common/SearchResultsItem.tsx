@@ -5,10 +5,9 @@ import { Flex, FlexColumnFullWidth, FlexRowFullWidth, Div } from "../Common/Comb
 import { isHashtag } from "../../utils/utils";
 import { Profile } from "../../api/types";
 import StyledLink from "./StyledLink";
-import XSVG from "/public/images/x.svg";
-import SearchSVG from "/public/images/search-icon.svg";
-import HashtagSVG from "/public/images/hashtag.svg";
+
 import MemoizedProfilePic from "./ProfilePicMemo";
+import { HashtagSVG, SearchSVG, XSVG } from "./Icon";
 
 const InnerNavLinkWrapper = styled(Div)`
     padding: 5px;
@@ -53,7 +52,7 @@ const SearchIconWrapper = styled(Div)`
 const MemoizedSearchIcon = React.memo(({ text }: any) => {
     return (
         <SearchIconWrapper $marginRight="20px">
-            {isHashtag(text as string) ? <HashtagSVG /> : <SearchSVG />}
+            {isHashtag(text as string) ? <HashtagSVG width="22px" height="22px" /> : <SearchSVG width="22px" height="22px"/>}
         </SearchIconWrapper>
     );
 });

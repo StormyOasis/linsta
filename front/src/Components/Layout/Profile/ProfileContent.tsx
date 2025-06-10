@@ -9,13 +9,12 @@ import { followUser, getPfpFromProfile, isVideoFileFromPath } from "../../../uti
 import StyledButton from "../../../Components/Common/StyledButton";
 import { MODAL_TYPES, ModalState } from "../../../Components/Redux/slices/modals.slice";
 import { FOLLOWERS_MODAL_TYPE, FOLLOWING_MODAL_TYPE } from "../Main/Modals/Profile/FollowersModal";
-import HeartFilledSVG from "/public/images/heart-fill.svg";
-import MessageSVG from "/public/images/message.svg";
 import { AuthUser } from "../../../api/Auth";
 import StyledLink from "../../../Components/Common/StyledLink";
 import LoadingImage from "../../../Components/Common/LoadingImage";
 import useInfiniteScroll from "../../../utils/useInfiniteScroll";
 import Linkify from "../../../Components/Common/Linkify";
+import { HeartFilledSVG, MessageSVG } from "../../../Components/Common/Icon";
 
 const ProfilePicWrapper = styled(Div)`
     display: flex;

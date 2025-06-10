@@ -171,6 +171,7 @@ const ConfirmationCodeForm: React.FC<ConfirmationCodeFormProps> = (props: Confir
                             placeholder="Confirmation Code"
                             onChange={handleFormChange} 
                             isValid={props.confirmationCode_valid} 
+                            shouldValidate={true}
                         />
                     </ConfirmationWrapper>
                     <ConfirmationWrapper style={{ width: "100%", margin: 0, padding: "16px 8px 16px 8px" }}>

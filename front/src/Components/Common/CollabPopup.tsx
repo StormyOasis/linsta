@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 
-import CollabInputSVG from "/public/images/collaboration.svg";
 import { Div, FlexColumn, FlexRow } from "./CombinedStyling";
 
 import useThrottle from '../../utils/useThrottle';
@@ -13,6 +12,8 @@ import ProfileLink from './ProfileLink';
 import Checkbox from './Checkbox';
 import StyledButton from './StyledButton';
 import { buildCollabSearchText } from '../../utils/utils';
+import { CollabInputSVG } from './Icon';
+
 
 const SVGContainer = styled(Div)`
     width: 24px;
@@ -128,7 +129,7 @@ const CollabPopup: React.FC<CollabProps> = (props: CollabProps) => {
 
     const renderIcon = useCallback(() => (
         <SVGContainer>
-            <CollabInputSVG />
+            <CollabInputSVG width="23px" height="22px" stroke="1" />
         </SVGContainer>
     ), []);
 
@@ -248,7 +249,7 @@ const CollabPopup: React.FC<CollabProps> = (props: CollabProps) => {
             <Div>
                 <PopupSVGContainer>
                     <Div>
-                        <CollabInputSVG />
+                        <CollabInputSVG width="64px" height="64px" />
                     </Div>
                 </PopupSVGContainer>
                 <CollaboratorHeading>
@@ -269,6 +270,7 @@ const CollabPopup: React.FC<CollabProps> = (props: CollabProps) => {
             inputIcon={renderIcon()}
             isInputBox={true}
             isMultiSelect={true}
+            shouldValidate={false}
             hideArrow={true}
             hideBorder={true}
             selectedItems={[]}

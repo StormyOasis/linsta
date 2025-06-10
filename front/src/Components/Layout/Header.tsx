@@ -2,10 +2,9 @@ import React from "react";
 import { styled } from "styled-components";
 import { Link } from "react-router-dom";
 
-import LogoSVG from '/public/images/linsta_small.svg';
-
 import * as styles from './Header.module.css';
 import { Div, FlexColumn, FlexRow } from "../Common/CombinedStyling";
+import { LogoSVG } from "../Common/Icon";
 
 const HeaderWrapper = styled(FlexColumn)`
   z-index: 100;

@@ -4,8 +4,8 @@ import styled from 'styled-components';
 import { Div, FlexColumn, FlexRow, FlexRowFullWidth, Span } from './CombinedStyling';
 import Checkbox from './Checkbox';
 import StyledInput from './StyledInput';
-import UpSVG from "/public/images/up-line.svg";
-import DownSVG from "/public/images/down-line.svg";
+import { DownSVG, UpSVG } from './Icon';
+
 
 const DropdownContainer = styled(Div)`
     position: relative;
@@ -93,6 +93,7 @@ export const CustomTextOption: React.FC<TextOptionProps> = (props: TextOptionPro
                         maxLength={props.maxLength ? props.maxLength : 256}
                         name="styled_input"
                         isValid={true}
+                        shouldValidate={true}
                         value={props.text}
                         onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                             if (props.onChange) {
@@ -116,6 +117,7 @@ type DropdownProps = {
     inputIcon?: React.ReactNode;
     selectedItems: string[];
     isMultiSelect?: boolean;
+    shouldValidate: boolean;
     isInputBox?: boolean;
     hideArrow?: boolean;
     hideBorder?: boolean;
@@ -161,7 +163,7 @@ const PopupDropdownSelector = forwardRef<PopupDropdownSelectorHandle, DropdownPr
                     <Span>{props.selectedItems[0]}</Span>
                     {!props.hideArrow &&
                         <ArrowContainer>
-                            {isOpen ? <UpSVG /> : <DownSVG />}
+                            {isOpen ? <UpSVG width="24px" height="24px"/> : <DownSVG width="24px" height="24px" />}
                         </ArrowContainer>
                     }
                 </DropdownToggle>
@@ -173,7 +175,8 @@ const PopupDropdownSelector = forwardRef<PopupDropdownSelectorHandle, DropdownPr
                         placeholder={props.placeholder} 
                         noMargin={true} 
                         noBorder={props.hideBorder || false}
-                        noValidation={true} width="100%"
+                        shouldValidate={props.shouldValidate} 
+                        width="100%"
                         onChange={props.onChange} 
                         value={props.value || ""}
                         onClick={() => {

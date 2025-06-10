@@ -84,6 +84,7 @@ const LoginLayout: React.FC<LoginLayoutProps> = (_props: LoginLayoutProps) => {
                         </Span>
                     </Div>                    
                     <StyledInput
+                        shouldValidate={true}
                         name="userName"
                         placeholder="Username"
                         value={userName}
@@ -91,6 +92,7 @@ const LoginLayout: React.FC<LoginLayoutProps> = (_props: LoginLayoutProps) => {
                         onChange={(event: React.ChangeEvent<HTMLInputElement>) => setUserName(event.target.value)}
                     ></StyledInput>
                     <StyledInput
+                        shouldValidate={true}
                         name="password"
                         placeholder="Password"
                         type="password"
