@@ -109,7 +109,7 @@ const PostItem: React.FC<Props> = ({
                                 <Div $cursor="pointer">
                                     <Flex $paddingRight="8px">
                                         <ActionContainer>
-                                            <MessageSVG aria-label="Comment" onClick={onOpenCommentModal} />
+                                            <MessageSVG aria-label="Comment" width="28px" height="28px" onClick={onOpenCommentModal} />
                                         </ActionContainer>
                                     </Flex>
                                 </Div>

@@ -4,7 +4,7 @@ import styled from "styled-components";
 import StyledLink from "./StyledLink";
 import { Div, Flex, FlexColumn, FlexRow } from "./CombinedStyling";
 import LoadingImage from "./LoadingImage";
-import { XSVG } from "./Icon";
+import { BackArrowSVG, XSVG } from "./Icon";
 
 const ModalWrapper = styled(Flex)`
     align-items: center;
@@ -154,8 +154,7 @@ const ModalFooter = styled(FlexRow)`
     border-top: 1px solid ${props => props.theme['colors'].borderDefaultColor};
 `;
 
-const PrevButton = styled(Div)`
-    background: url('/public/images/backarrow.svg') no-repeat;
+const PrevButton = styled(BackArrowSVG)`
     cursor: pointer;
     height: 17px;
     width: 22px;

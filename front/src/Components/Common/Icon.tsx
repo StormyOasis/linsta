@@ -45,6 +45,7 @@ export const CreateSVG = makeStyledIcon('create');
 export const HomeSVG = makeStyledIcon('home');
 export const ExploreSVG = makeStyledIcon('explore');
 export const MainSVG = makeStyledIcon('main');
+export const BackArrowSVG = makeStyledIcon('backarrow');
 export const LeftArrowSVG = makeStyledIcon('left_arrow');
 export const RightArrowSVG = makeStyledIcon('right_arrow');
 export const CheckSVG = makeStyledIcon('check');

@@ -267,7 +267,7 @@ const SideBar: React.FC = () => {
                 <NavWrapper>
                     {renderMenuItem("Home", "/", <HomeSVG width="22px" height="22px" fill="black" />, undefined, null)}
                     {!matchesSmallestBP && renderMenuItem("Search", null, <SearchSVG width="22px" height="22px" />, undefined, toggleSearchPanel)}
-                    {renderMenuItem("Explore", "/explore", <ExploreSVG width="22px" height="22px" />, undefined, null)}
+                    {renderMenuItem("Explore", "/explore", <ExploreSVG width="23px" height="23px" />, undefined, null)}
                     {renderMenuItem("Create", null, <CreateSVG width="22px" height="22px" />, undefined, createPostHandler)}
                     {renderMenuItem("Profile", `/${profileUrl}`, <MemoizedProfilePic profile={profile} />, 0, null)}                 
                 </NavWrapper>
