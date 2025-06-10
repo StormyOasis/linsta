@@ -13,7 +13,7 @@ const EditContainer = styled.div`
     flex-direction: row;
     min-width: calc(${props => props.theme['sizes'].defaultModalWidth} - 40px);
     max-width: calc(${props => props.theme['sizes'].maxModalWidth} - 40px);
-    max-height: calc(${props => props.theme['sizes'].maxModalHeight} - 40px);
+    max-height: 412px;
     min-height: calc(${props => props.theme['sizes'].minModalHeight} - 40px);
 `;
 
