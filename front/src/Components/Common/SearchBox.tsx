@@ -51,7 +51,7 @@ const SearchBox: React.FC<SearchBoxProps> = (props: SearchBoxProps) => {
     return (
         <SearchContainer>
             <IconWrapper>
-                <SearchBoxSVG width="16px" height="16px" />
+                <SearchBoxSVG width="16px" height="16px" fill="currentColor" stroke="none" strokeWidth={1}/>
             </IconWrapper>            
             <Input
                 type="text"
@@ -61,7 +61,7 @@ const SearchBox: React.FC<SearchBoxProps> = (props: SearchBoxProps) => {
             />
             {props.value && (
                 <ClearButton onClick={props.onClear} aria-label="Clear search">
-                    <CircleXSVG width="16px" height="16px" />
+                    <CircleXSVG width="16px" height="16px" fill="currentColor" stroke="none" strokeWidth={1} />
                 </ClearButton>
             )}            
         </SearchContainer>

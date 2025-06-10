@@ -170,8 +170,8 @@ const LocationPopup: React.FC<LocationProps> = (props: LocationProps) => {
             </Input>
             <SVGContainer>
                 {(props.locationText && props.locationText.length > 0) ?
-                    <CircleXSVG stroke="1" width="23px" height="23px" style={{ cursor: "pointer" }} onClick={handleLocationClear} /> :
-                    <LocationSVG stroke="1" width="23px" height="23px" />
+                    <CircleXSVG width="16px" height="16px" fill="currentColor" stroke="none" style={{ cursor: "pointer" }} onClick={handleLocationClear} /> :
+                    <LocationSVG strokeWidth={1} width="23px" height="23px" />
                 }
             </SVGContainer>
             <LocationPopupContainer ref={popupRef} $isOpen={isLocationOpen}>
