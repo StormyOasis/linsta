@@ -15,8 +15,8 @@ export const Icon: React.FC<IconProps> = (props: IconProps) => {
     return (
         <svg
             className={props.className}
-            width={props.size || 22}
-            height={props.size || 22}
+            width={props.size}
+            height={props.size}
             fill={props.fill || 'none'}
             stroke={props.stroke || 'currentColor'}
             strokeWidth={props.strokeWidth || 1}            

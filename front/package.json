@@ -23,9 +23,8 @@
     "start": "npm run build && cross-env NODE_ENV=production node ./dist/server.js",
     "start:prod": "cross-env NODE_ENV=production node ./dist/server.js",
     "clean-sketch": "node ./clean-sketch-svgs.mjs",
-    "clean-svgs": "svgo -f assets/svgs/ --config=svgo.config.mjs",
-    "sprite": "npm run clean-svgs && npx svgstore-cli assets/svgs/*.svg -o public/images/sprite.svg",
-    "make-sprite": "npm run clean-sketch && npx svgstore-cli assets/svgs/*.svg -o public/images/sprite.svg"
+    "svg:sprite": "npm run svg:clean && npx svgstore-cli assets/svgs/*.svg -o public/images/sprite.svg",
+    "svg:clean": "svgo -f ./assets/svgs -o ./assets/svgs --config=svgo.config.mjs"
   },
   "eslintConfig": {
     "extends": [
