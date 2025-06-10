@@ -1,35 +1,3 @@
-.validationPass {
-    position: relative;
-    width: 100%;
-}
-
-.validationPass::after {
-    content: "";
-    position: absolute;
-    right: 10px;
-    width: 16px;
-    top: 6px;
-    bottom: 0;
-    height: 16px;
-    background: url("/public/images/check-circle.svg");
-}
-
-.validationFail {
-    position: relative;
-    width: 100%;
-}
-
-.validationFail::after {
-    content: "";
-    position: absolute;
-    right: 10px;
-    width: 16px;
-    top: 6px;
-    bottom: 0;
-    height: 16px;
-    background: url("/public/images/x-circle.svg");
-}
-
 .signupFormDiv1 {
     line-height: 18px;
     margin: 10px 40px 18px 40px;

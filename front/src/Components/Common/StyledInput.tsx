@@ -1,8 +1,8 @@
 import React from "react";
 import { styled } from "styled-components";
 
-import * as styles from "./Common.module.css";
-import { FlexRow } from "./CombinedStyling";
+import { Div, FlexRow } from "./CombinedStyling";
+import { CheckCircleSVG, CircleXSVG } from "./Icon";
 
 const StyledInputWrapper = styled(FlexRow)<{ $noMargin?: boolean | undefined, $width?: string | undefined }>`
     margin: ${props => props.$noMargin ? 0 : "0 40px 5px 40px"};
@@ -32,6 +32,20 @@ const StyledInputLabel = styled.label<{ $top: string, $right: string }>`
     }    
 `;
 
+const ValidationIcon = styled(Div)<{ $top: string; $right: string }>`
+    position: absolute;
+    top: ${props => props.$top};
+    right: ${props => props.$right};
+    width: 16px;
+    height: 16px;
+
+    svg {
+        width: 100%;
+        height: 100%;
+        color: currentColor;
+    }
+`;
+
 type StyledInputProps = {
     name?: string;
     value?: string | Number | undefined;
@@ -44,7 +58,7 @@ type StyledInputProps = {
     datatestid?: string;
     noMargin?: boolean;
     noBorder?: boolean;
-    noValidation?: boolean;
+    shouldValidate?: boolean;
     validationYpos?: string;
     validationXpos?: string;
     width?: string;
@@ -54,17 +68,13 @@ type StyledInputProps = {
 const StyledInput: React.FC<StyledInputProps> = (props: StyledInputProps) => {
     // Determine validation classname (None, valid, invalid)
     const value = `${props.value}`;
-    let validationClass = "";
-    if (value.length != 0) {
-        validationClass = props.isValid ? styles.validationPass : styles.validationFail;
-    }
 
     const top = props.validationYpos ? props.validationYpos : "7px";
     const right = props.validationXpos ? props.validationXpos : "10px";
 
     return (
         <StyledInputWrapper $noMargin={props.noMargin} $width={props.width}>
-            <StyledInputLabel $top={top} $right={right} className={props.noValidation ? "" : validationClass}>
+            <StyledInputLabel $top={top} $right={right}>
                 <StyledInputInput
                     style={props.style}
                     type={props.type}
@@ -75,8 +85,13 @@ const StyledInput: React.FC<StyledInputProps> = (props: StyledInputProps) => {
                     maxLength={props.maxLength ? props.maxLength : 255}
                     data-testid={props.datatestid}
                     $noBorder={props.noBorder}
-                    onClick={() => props.onClick ? props.onClick() : null}
+                    onClick={props.onClick ?? undefined}
                 />
+                {(props.shouldValidate && value.length !== 0) && (
+                    <ValidationIcon $top={top} $right={right}>
+                        {props.isValid ? <CheckCircleSVG stroke="none" fill="currentColor" /> : <CircleXSVG stroke="none" fill="currentColor"/>}
+                    </ValidationIcon>
+                )}                
             </StyledInputLabel>
         </StyledInputWrapper>
     );

@@ -129,7 +129,7 @@ const CollabPopup: React.FC<CollabProps> = (props: CollabProps) => {
 
     const renderIcon = useCallback(() => (
         <SVGContainer>
-            <CollabInputSVG width="22px" height="22px" stroke="1" />
+            <CollabInputSVG width="23px" height="22px" stroke="1" />
         </SVGContainer>
     ), []);
 
@@ -270,6 +270,7 @@ const CollabPopup: React.FC<CollabProps> = (props: CollabProps) => {
             inputIcon={renderIcon()}
             isInputBox={true}
             isMultiSelect={true}
+            shouldValidate={false}
             hideArrow={true}
             hideBorder={true}
             selectedItems={[]}

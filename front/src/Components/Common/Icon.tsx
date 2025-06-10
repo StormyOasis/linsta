@@ -37,6 +37,7 @@ export function makeStyledIcon(fixedName: string) {
 export const SearchSVG = makeStyledIcon('search-icon');
 export const SearchBoxSVG = makeStyledIcon('search');
 export const CircleXSVG = makeStyledIcon('x-circle');
+export const CheckCircleSVG = makeStyledIcon('check-circle');
 export const HeartSVG = makeStyledIcon('heart');
 export const HeartFilledSVG = makeStyledIcon('heart-fill');
 export const CollabInputSVG = makeStyledIcon('collaboration');

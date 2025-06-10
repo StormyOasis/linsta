@@ -116,6 +116,7 @@ type DropdownProps = {
     inputIcon?: React.ReactNode;
     selectedItems: string[];
     isMultiSelect?: boolean;
+    shouldValidate?: boolean;
     isInputBox?: boolean;
     hideArrow?: boolean;
     hideBorder?: boolean;
@@ -173,7 +174,8 @@ const PopupDropdownSelector = forwardRef<PopupDropdownSelectorHandle, DropdownPr
                         placeholder={props.placeholder} 
                         noMargin={true} 
                         noBorder={props.hideBorder || false}
-                        noValidation={true} width="100%"
+                        shouldValidate={props.shouldValidate ?? true} 
+                        width="100%"
                         onChange={props.onChange} 
                         value={props.value || ""}
                         onClick={() => {

@@ -360,7 +360,7 @@ const EditProfileContent: React.FC = () => {
                             <ProfilePfpContainer>
                                 <Div>
                                     <ProfileLink 
-                                        collaborators={[]}
+                                        collaborators={{}}
                                         showCollaborators={true}                                    
                                         pfpWidth="64px" 
                                         showPfp={true} 
@@ -403,6 +403,7 @@ const EditProfileContent: React.FC = () => {
                                     name="website"
                                     placeholder="Website"
                                     value={website}
+                                    shouldValidate={true}
                                     isValid={validateUrl(website)}
                                     onChange={(event: React.ChangeEvent<HTMLInputElement>) => setWebsite(event.target.value)}
                                 ></StyledInput>
