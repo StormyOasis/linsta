@@ -52,7 +52,7 @@ const SearchIconWrapper = styled(Div)`
 const MemoizedSearchIcon = React.memo(({ text }: any) => {
     return (
         <SearchIconWrapper $marginRight="20px">
-            {isHashtag(text as string) ? <HashtagSVG /> : <SearchSVG />}
+            {isHashtag(text as string) ? <HashtagSVG width="22px" height="2px" /> : <SearchSVG width="22px" height="22px"/>}
         </SearchIconWrapper>
     );
 });

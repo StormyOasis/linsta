@@ -161,7 +161,7 @@ const PopupDropdownSelector = forwardRef<PopupDropdownSelectorHandle, DropdownPr
                     <Span>{props.selectedItems[0]}</Span>
                     {!props.hideArrow &&
                         <ArrowContainer>
-                            {isOpen ? <UpSVG /> : <DownSVG />}
+                            {isOpen ? <UpSVG width="24px" height="24px"/> : <DownSVG width="24px" height="24px" />}
                         </ArrowContainer>
                     }
                 </DropdownToggle>
