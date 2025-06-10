@@ -1,10 +1,10 @@
 import React from "react";
-import MediaSVG from "/public/images/media.svg";
-import WarningSVG from "/public/images/warning.svg";
+
 import { ModalSectionWrapper } from "../../../../Common/MultiStepModal";
 import StyledButton from "../../../../Common/StyledButton";
 import { useDropzone } from "react-dropzone";
 import { Span } from "../../../../../Components/Common/CombinedStyling";
+import { MediaSVG, WarningSVG } from "../../../../../Components/Common/Icon";
 
 export type CreatePostModalSelectMediaProps = {
     setFiles?: any;

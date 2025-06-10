@@ -11,8 +11,7 @@ import ProfileLink from "../../../../Common/ProfileLink";
 import { postAddComment, postGetCommentsByPostId, postToggleLike } from "../../../../../api/ServiceController";
 import { dateDiff, getDateAsText, getSanitizedText, isPostLiked, togglePostLikedState } from "../../../../../utils/utils";
 import Theme from "../../../../Themes/Theme";
-import MessageSVG from "/public/images/message.svg";
-import ShareSVG from "/public/images/send.svg";
+
 import { AuthUser } from "../../../../../api/Auth";
 import EmojiPickerPopup from "../../../../Common/EmojiPickerPopup";
 import StyledLink from "../../../../Common/StyledLink";
@@ -21,6 +20,7 @@ import { LikeToggler, ViewLikesText } from "../../../../../Components/Common/Lik
 import { MODAL_TYPES } from "../../../../../Components/Redux/slices/modals.slice";
 import { actions, useAppDispatch, useAppSelector } from "../../../../../Components/Redux/redux";
 import Linkify from "../../../../../Components/Common/Linkify";
+import { MessageSVG, ShareSVG } from "../../../../../Components/Common/Icon";
 
 const MediaSliderWrapper = styled(Div) <{ $width: number }>`
     align-content: center;

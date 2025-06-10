@@ -1,9 +1,8 @@
 import React, { SyntheticEvent, useState } from "react";
 import { styled } from "styled-components";
 
-import UpSVG from "/public/images/up-line.svg";
-import DownSVG from "/public/images/down-line.svg";
 import { Div, FlexColumn, FlexRow } from "./CombinedStyling";
+import { DownSVG, UpSVG } from "./Icon";
 
 const Container = styled(FlexColumn)`
     margin-top: 10px;

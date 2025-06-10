@@ -2,8 +2,9 @@ import React from "react";
 import { createPortal } from "react-dom";
 import styled from "styled-components";
 import StyledLink from "./StyledLink";
-import { Div, Flex, FlexColumn, FlexRow, Span } from "./CombinedStyling";
+import { Div, Flex, FlexColumn, FlexRow } from "./CombinedStyling";
 import LoadingImage from "./LoadingImage";
+import { XSVG } from "./Icon";
 
 const ModalWrapper = styled(Flex)`
     align-items: center;
@@ -117,11 +118,10 @@ const ModalCloseButton = styled.button`
     text-align: center;
 `;
 
-const CloseButton = styled(Span)`
+const CloseButton = styled(XSVG)`
     width: 12px;
     height: 12px;
     margin-right: 5px;
-    background: url('/public/images/x.svg');
 `;
 
 export const ModalContentWrapper = styled(FlexColumn)<{ $hideMargins?: boolean | undefined, $alignItems: string }>`

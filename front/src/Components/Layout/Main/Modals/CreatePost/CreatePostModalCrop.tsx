@@ -4,13 +4,9 @@ import Cropper, { Area, Point } from 'react-easy-crop';
 import { isVideoFileFromType } from "../../../../../utils/utils";
 import { ModalSectionWrapper } from "../../../../Common/MultiStepModal";
 import Slider from "../../../../Common/Slider";
-import CropSVG from "/public/images/crop.svg";
-import OneToOneSVG from "/public/images/1to1.svg";
-import FourToFiveSVG from "/public/images/4to5.svg";
-import SixteenToNineSVG from "/public/images/16to9.svg";
-import ImageSVG from "/public/images/image.svg";
 import { Div, Flex } from "../../../../Common/CombinedStyling";
 import MediaSliderButton from "../../../../Common/MediaSliderButton";
+import { FourToFiveSVG, ImageSVG, OneToOneSVG, SixteenToNineSVG } from "../../../../../Components/Common/Icon";
 
 const CropContainer = styled.div`
     height: ${props => props.theme['sizes'].cropperHeight};

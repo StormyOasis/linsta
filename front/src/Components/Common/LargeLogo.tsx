@@ -1,8 +1,8 @@
 import React from "react";
 import { styled } from "styled-components";
 import { Link } from "react-router-dom";
-import LogoSVG from "/public/images/linsta.svg";
 import { FlexColumn } from "./CombinedStyling";
+import { LinstaSVG } from "./Icon";
 
 const LogoWrapper = styled(FlexColumn)`
   align-content: stretch;
@@ -21,7 +21,7 @@ const LargeLogo: React.FC = () => {
     return (
         <LogoWrapper>
             <Link to="/">
-                <LogoSVG />
+                <LinstaSVG width="196px" height="51px" />
             </Link>
         </LogoWrapper> 
     );

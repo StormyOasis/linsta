@@ -4,8 +4,8 @@ import styled from 'styled-components';
 import { Div, FlexColumn, FlexRow, FlexRowFullWidth, Span } from './CombinedStyling';
 import Checkbox from './Checkbox';
 import StyledInput from './StyledInput';
-import UpSVG from "/public/images/up-line.svg";
-import DownSVG from "/public/images/down-line.svg";
+import { DownSVG, UpSVG } from './Icon';
+
 
 const DropdownContainer = styled(Div)`
     position: relative;

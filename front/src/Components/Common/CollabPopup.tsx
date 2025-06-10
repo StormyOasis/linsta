@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 
-import CollabInputSVG from "/public/images/collaboration.svg";
 import { Div, FlexColumn, FlexRow } from "./CombinedStyling";
 
 import useThrottle from '../../utils/useThrottle';
@@ -13,6 +12,8 @@ import ProfileLink from './ProfileLink';
 import Checkbox from './Checkbox';
 import StyledButton from './StyledButton';
 import { buildCollabSearchText } from '../../utils/utils';
+import { CollabInputSVG } from './Icon';
+
 
 const SVGContainer = styled(Div)`
     width: 24px;

@@ -1,16 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import styled from "styled-components";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useMediaQuery } from "react-responsive";
 
 import * as styles from './Main.module.css';
+import { CreateSVG, ExploreSVG, HomeSVG, MainSVG, SearchSVG } from '../../Common/Icon';
 
-import LogoSVG from "/public/images/linsta.svg";
-import HomeSVG from "/public/images/home.svg";
-import ExploreSVG from "/public/images/explore.svg";
-import SearchSVG from "/public/images/search-icon.svg";
-import CreateSVG from "/public/images/create.svg";
-import MainSVG from "/public/images/main.svg";
 
 import { Div, Flex, FlexColumn, FlexColumnFullWidth, FlexRowFullWidth } from "../../../Components/Common/CombinedStyling";
 import { useAppDispatch, useAppSelector, actions, RootState } from "../../../Components/Redux/redux";
@@ -26,6 +21,7 @@ import useThrottle from "../../../utils/useThrottle";
 import SearchResultItem from "../../../Components/Common/SearchResultsItem";
 import MemoizedProfilePic from "../../../Components/Common/ProfilePicMemo";
 import CustomNavMenuLink from "../../../Components/Common/CustomNavMenuLink";
+import LargeLogo from "../../../Components/Common/LargeLogo";
 
 const SideBarWrapper = styled(Div)`
     z-index: 50;
@@ -263,17 +259,15 @@ const SideBar: React.FC = () => {
                 {!matchesSmallestBP &&
                     <Div className={styles.logoWrapper}>
                         <Link to="/" aria-label="Home">
-                            {matchesLargestBP ? <LogoSVG /> : <MainSVG />}
+                            {matchesLargestBP ? <LargeLogo /> : <MainSVG />}
                         </Link>
                     </Div>
                 }
+
                 <NavWrapper>
                     {renderMenuItem("Home", "/", <HomeSVG />, undefined, null)}
                     {!matchesSmallestBP && renderMenuItem("Search", null, <SearchSVG />, undefined, toggleSearchPanel)}
                     {renderMenuItem("Explore", "/explore", <ExploreSVG />, undefined, null)}
-                    {/*renderMenuItem("Reels", "/reels", <ReelsSVG />, undefined, null)*/}
-                    {/*renderMenuItem("Messages", "/messages", <MessagesSVG />, undefined, null)*/}
-                    {/*renderMenuItem("Notifications", "/notify", <NotificationsSVG />, undefined, null)*/}
                     {renderMenuItem("Create", null, <CreateSVG />, undefined, createPostHandler)}
                     {renderMenuItem("Profile", `/${profileUrl}`, <MemoizedProfilePic profile={profile} />, 0, null)}                 
                 </NavWrapper>

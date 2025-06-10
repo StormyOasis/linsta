@@ -322,7 +322,7 @@ const CreatePostModalFinal: React.FC<CreatePostModalFinalProps> = (props: Create
                                     <LocationPopup locationText={props.locationText} onLocationChanged={props.onLocationChanged} />
                                 </InputContainer>
                                <InputContainer>
-                                    <CollabPopup collabData={props.collabData} onCollabChanged={props.onCollabChanged} />
+                                    <CollabPopup searchText={""} collabData={props.collabData} onCollabChanged={props.onCollabChanged} />
                                 </InputContainer>     
                                 <Dropdown title="Accessibility">
                                     <div>

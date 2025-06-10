@@ -1,8 +1,6 @@
 import React, { SyntheticEvent, useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 
-import LocationSVG from "/public/images/location.svg";
-import CircleXSVG from "/public/images/x-circle.svg";
 import { Div, FlexColumn, Span } from "./CombinedStyling";
 import { getLocation } from "../../api/ServiceController";
 import useThrottle from '../../utils/useThrottle';

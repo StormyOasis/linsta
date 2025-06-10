@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Flex } from './CombinedStyling';
-import CheckIconSVG from '/public/images/check.svg';
+import { CheckSVG } from './Icon';
 
 const CheckboxWrapper = styled(Flex)`
     align-items: center;    
@@ -31,8 +31,8 @@ const CheckboxLabel = styled.label<{ $isChecked: boolean, $width: string, $heigh
     }
 `;
 
-const CheckMark = styled(CheckIconSVG)`  
-    color: ${props => props.theme['colors'].buttonDefaultColor};
+const CheckMark = styled(CheckSVG)`  
+    color: ${props => props.theme['colors'].buttonDefaultColor};   
 `;
 
 type CheckboxProps = {
@@ -51,8 +51,8 @@ const Checkbox: React.FC<CheckboxProps> = (props: CheckboxProps) => {
 
     return (
         <CheckboxWrapper>
-            <CheckboxInput name={`${props.name}_input`} type="checkbox" checked={props.isChecked} onChange={() => props.onSelect(index, !props.isChecked)} />
-            <CheckboxLabel name={`${props.name}_label`} $width={width} $height={height} $isChecked={props.isChecked}>
+            <CheckboxInput id={`${props.name}_input`} type="checkbox" checked={props.isChecked} onChange={() => props.onSelect(index, !props.isChecked)} />
+            <CheckboxLabel id={`${props.name}_label`} $width={width} $height={height} $isChecked={props.isChecked}>
                 {props.isChecked && <CheckMark />}
             </CheckboxLabel>
         </CheckboxWrapper>
