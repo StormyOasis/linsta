@@ -62,7 +62,7 @@
 
     "es": {
         "node": "https://localhost:9200",
-        "apiKey": "cXRyM1ZwSUJrZFl6Z3FPYVB1bHM6MFpEb0FGLUFRSTJjYTdfUVd3QWJRZw==",
+        "apiKey": "V2V5b1hKY0Juc3F3LVJXZ3hyQ1M6UUVwN1Q5RW5SQ2V6aVpsZzBtVHdEQQ==",
         "mainIndex": "main",
         "profileIndex": "profiles",
         "defaultResultSize": 10000,

@@ -90,8 +90,8 @@ export const handlerActions = async (baseMetricsKey: string, event: APIGatewayPr
 
     try {
         const resultSize = config.es.defaultPaginationSize;
-        const results = await getESConnector().searchWithPagination(query, data.dateTime, data.postId, resultSize);
 
+        const results = await getESConnector().searchWithPagination(query, data.dateTime, data.postId, resultSize);
         const response: GetAllPostsBySearchResponse = {
             posts: [],
             dateTime: "",

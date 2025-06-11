@@ -65,7 +65,7 @@ const ProfileLink: React.FC<ProfileLinkProps> = (props: ProfileLinkProps) => {
             return <></>;
         }
 
-        const collaboratorsCount = Object.values(props.collaborators || {})?.length - 1;//-1 because we don't want to include ourself
+        const collaboratorsCount = Object.values(props.collaborators || {})?.length;
         const collaboratorsText = collaboratorsCount === 1 ? "other" : "others"
 
         return (
