@@ -26,6 +26,7 @@ const LogoImage = styled(LogoSVG)`
    display:flex;
    overflow: visible;
    background: transparent;
+   width: 128px;
 `;
 
 const ActionWrapper = styled(FlexRow)`

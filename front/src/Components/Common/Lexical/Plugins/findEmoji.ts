@@ -12,12 +12,9 @@ let unifiedToEmojiMap: Map<string, any> = new Map();
 let isEmojiDataLoaded = false;
 
 export async function loadFullEmojiData(): Promise<void> {
-    console.log("loadFullEmojiData")
     if (isEmojiDataLoaded) return;
 
-    console.log("Fetching emoji data from:", EMOJI_JSON_URL);
     const response = await fetch(EMOJI_JSON_URL);
-    console.log(response);
     if (!response.ok) {
         throw new Error(`Failed to load emoji data: ${response.status}`);
     }
@@ -47,7 +44,6 @@ export async function loadFullEmojiData(): Promise<void> {
 }
 
 export async function findEmoji(text: string): Promise<EmojiMatch | null> {
-    console.log("findEmoji");
     if (!isEmojiDataLoaded) {
         await loadFullEmojiData();
     }

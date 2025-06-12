@@ -2,6 +2,7 @@ import React from "react";
 import { hydrateRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { Provider } from "react-redux";
+import { loadableReady } from '@loadable/component';
 
 import App from "../Components/App";
 import { historyUtils } from "../utils/utils";
@@ -18,13 +19,15 @@ const store = buildStore(window.__PRELOADED_STATE__);
 delete window.__PRELOADED_STATE__;
 
 // We're using SSR
-hydrateRoot(
-    rootElement,
-    <React.StrictMode>
-        <Provider store={store}>
-            <BrowserRouter>
-                <App />
-            </BrowserRouter>
-        </Provider>
-    </React.StrictMode>
+loadableReady(() => 
+    hydrateRoot(
+        rootElement,
+        <React.StrictMode>
+            <Provider store={store}>
+                <BrowserRouter>
+                    <App />
+                </BrowserRouter>
+            </Provider>
+        </React.StrictMode>
+    )
 );

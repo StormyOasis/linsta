@@ -64,6 +64,7 @@ export const SixteenToNineSVG = makeStyledIcon('16to9');
 export const ImageSVG = makeStyledIcon('image');
 export const MediaSVG = makeStyledIcon('media');
 export const WarningSVG = makeStyledIcon('warning');
+export const ForgotSVG = makeStyledIcon('forgot');
 
 
 
