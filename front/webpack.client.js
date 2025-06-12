@@ -114,11 +114,11 @@ module.exports = {
         { from: "robots.txt", to: "robots.txt" },
       ],
     }),
-    isDevelopment &&
+    isProduction &&
     new BundleAnalyzerPlugin({
-      analyzerMode: 'disabled',
-      generateStatsFile: true,
-      statsOptions: { source: false },
+      analyzerMode: 'static', // or 'server'
+      openAnalyzer: true,     // Automatically opens report in your browser
+      reportFilename: 'bundle-report.html', // Optional: output filename
     }),
   ].filter(Boolean),
 
