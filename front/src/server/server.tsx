@@ -7,6 +7,7 @@ import cors from "@koa/cors";
 import serve from "koa-static";
 import path from "path";
 import React from 'react';
+import { ChunkExtractor } from '@loadable/server';
 
 import { ServerStyleSheet } from "styled-components";
 import { renderToString } from "react-dom/server";
@@ -47,9 +48,7 @@ const renderHtml = (title: string, styles: any, html: any, preloadState: any):st
             <div id="root">${html}</div>
             <script>
                 window.__PRELOADED_STATE__ = ${JSON.stringify(preloadState).replace(/</g, '\\u003c')}
-            </script>
-            <script type="application/javascript" src="/vendor.bundle.js" async></script>
-            <script type="application/javascript" src="/main.bundle.js"></script>            
+            </script>         
             <script crossorigin type="application/javascript" src="/public/Pixels.js" defer></script>                   
         </body>
     </html>`;
@@ -66,6 +65,10 @@ router.get(/.*/, async (ctx) => {
             const sheet = new ServerStyleSheet();
 
             const store = buildStore();
+
+            const statsFile = path.resolve(__dirname, '../dist/loadable-stats.json'); // Adjust path as needed
+            const extractor = new ChunkExtractor({ statsFile });
+
             const appElement = <App />;
             const withRouterElement =
                 <Provider store={store}>
@@ -74,9 +77,14 @@ router.get(/.*/, async (ctx) => {
                     </StaticRouter>
                 </Provider>;
 
-            const appHtml = renderToString(sheet.collectStyles(withRouterElement));
+            const jsx = extractor.collectChunks(withRouterElement);
+            const appHtml = renderToString(sheet.collectStyles(jsx));
 
-            ctx.body = renderHtml("Linstagram", sheet.getStyleTags(), appHtml, store.getState());
+            const styles = sheet.getStyleTags();
+            const scripts = extractor.getScriptTags();
+            const links = extractor.getLinkTags();            
+
+            ctx.body = renderHtml("Linstagram", `${styles}${links}`, appHtml, store.getState()).replace('</body>', `${scripts}</body>`);
             ctx.response.set("content-type", "text/html");
             ctx.status = 200;
 

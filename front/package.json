@@ -26,15 +26,15 @@
     "svg:sprite": "npm run svg:clean && npx svgstore-cli assets/svgs/*.svg -o public/images/sprite.svg",
     "svg:clean": "svgo -f ./assets/svgs -o ./assets/svgs --config=svgo.config.mjs"
   },
-"sideEffects": [
-  "./src/client/index.tsx",
-  "./src/server/index.tsx",
-  "./src/api/Auth.tsx",
-  "./src/Components/Redux/redux.tsx",
-  "./src/Components/Redux/slices/*.slice.tsx",
-  "**/*.css",
-  "**/*.svg"  
-],
+  "sideEffects": [
+    "./src/client/index.tsx",
+    "./src/server/index.tsx",
+    "./src/api/Auth.tsx",
+    "./src/Components/Redux/redux.tsx",
+    "./src/Components/Redux/slices/*.slice.tsx",
+    "**/*.css",
+    "**/*.svg"
+  ],
   "eslintConfig": {
     "extends": [
       "react-app",
@@ -55,13 +55,14 @@
     "@koa/cors": "^5.0.0",
     "@koa/router": "^12.0.1",
     "@lexical/react": "^0.17.1",
+    "@loadable/component": "^5.16.7",
+    "@loadable/server": "^5.16.7",
     "@redux-devtools/extension": "^3.3.0",
     "@reduxjs/toolkit": "^2.2.5",
     "axios": "^1.7.2",
     "compress": "^0.99.0",
     "compression": "^1.7.4",
     "crypto-browserify": "^3.12.0",
-    "emoji-datasource-google": "^15.1.2",
     "emoji-picker-react": "^4.11.1",
     "html-react-parser": "^5.2.5",
     "idb-keyval": "^6.2.1",
@@ -96,6 +97,8 @@
     "@babel/preset-env": "^7.25.2",
     "@babel/preset-react": "^7.24.7",
     "@babel/preset-typescript": "7.24.7",
+    "@loadable/babel-plugin": "^5.16.1",
+    "@loadable/webpack-plugin": "^5.15.2",
     "@svgr/webpack": "^8.1.0",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.4.8",
@@ -110,6 +113,7 @@
     "@types/koa__router": "^12.0.4",
     "@types/koa-compress": "^4.0.6",
     "@types/koa-static": "^4.0.4",
+    "@types/loadable__component": "^5.13.9",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@types/react-test-renderer": "^18.3.0",

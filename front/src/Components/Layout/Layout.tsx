@@ -8,12 +8,14 @@ import ForgotPasswordLayout from "../../Components/Layout/Login/ForgotPasswordLa
 import ChangePasswordLayout from "../../Components/Layout/Login/ChangePasswordLayout";
 import Private from "../Common/Private";
 import { FlexColumn } from "../Common/CombinedStyling";
-import ModalManager from "../../Components/Layout/Main/Modals/ModalManager";
-import ProfileLayout from "./Profile/ProfileLayout";
 import NotFoundLayout from "./NotFoundLayout";
 import ExploreLayout from "./Explore/ExploreLayout";
+import loadable from '@loadable/component';
 
-// 🔁 Trailing slash redirect handler
+const LazyProfileLayout = loadable(() => import('./Profile/ProfileLayout'));
+const LazyModalManager = loadable(() => import('../../Components/Layout/Main/Modals/ModalManager'));
+
+// Trailing slash redirect handler
 const RedirectToProfilePage: React.FC = () => {
     const { userName } = useParams();
     const location = useLocation();
@@ -23,17 +25,17 @@ const RedirectToProfilePage: React.FC = () => {
         return <Navigate to={`/${userName}`} replace />;
     }
 
-    return <ProfileLayout edit={false} />;
+    return <LazyProfileLayout edit={false} />;
 };
 
 const Layout: React.FC = () => {
     return (
         <>            
             <FlexColumn id="mainSectionContainer">
-                <ModalManager />
+                <LazyModalManager />
                 <Routes>
                     <Route path="/" element={<Private><MainLayout /></Private>} />                                         
-                    <Route path="/edit/*" element={<Private><ProfileLayout edit={true} /></Private>} />
+                    <Route path="/edit/*" element={<Private><LazyProfileLayout edit={true} /></Private>} />
                     <Route path="/explore/*" element={<Private><ExploreLayout /></Private>} />                    
                     <Route path="/login/*" element={<LoginLayout />} />
                     <Route path="/signup/*" element={<SignupLayout />} />
@@ -41,7 +43,7 @@ const Layout: React.FC = () => {
                     <Route path="/change_password/*" element={<><Header /><ChangePasswordLayout /></>} />
                     <Route path="/404" element={<NotFoundLayout />} />
                     <Route path="/:userName/" element={<RedirectToProfilePage />} />
-                    <Route path="/:userName" element={<ProfileLayout edit={false} />} />                    
+                    <Route path="/:userName" element={<LazyProfileLayout edit={false} />} />                    
                 </Routes>
             </FlexColumn>
         </>

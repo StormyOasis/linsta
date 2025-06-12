@@ -10,6 +10,7 @@ import StyledLink from "../../Common/StyledLink";
 import { MODAL_TYPES } from "../../Redux/slices/modals.slice";
 import { actions, useAppDispatch } from "../../Redux/redux";
 import { postForgotPassword } from "../../../api/ServiceController";
+import { ForgotSVG } from "../../../Components/Common/Icon";
 
 const ForgotLayoutWrapper = styled.main<any>`
   display: flex;
@@ -17,8 +18,7 @@ const ForgotLayoutWrapper = styled.main<any>`
   flex-grow: 1;
 `;
 
-const ForgotHeaderImage = styled(Span)`
-    background-image: url('/public/images/forgot.svg');
+const ForgotHeaderImage = styled(ForgotSVG)`
     display: block; 
     height: 133px; 
     width: 133px;

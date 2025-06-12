@@ -3,17 +3,23 @@ import { styled } from "styled-components";
 import { Div, Flex } from "../../../Common/CombinedStyling";
 import { actions, useAppDispatch, useAppSelector } from "../../../../Components/Redux/redux";
 import { MODAL_TYPES, ModalState } from "../../../../Components/Redux/slices/modals.slice";
-import CreatePostModal from "./CreatePost/CreatePostModal";
-import CommentModal from "./Comments/CommentsModal";
-import LikesModal from "./Main/LikesModal";
-import PfpModal from "./Profile/ProfilePicModal";
-import FollowersModal from "./Profile/FollowersModal";
-import DeleteCommentModal from "./Comments/DeleteCommentModal";
-import EditPostMenuModal from "./Comments/EditPostMenuModal";
-import EditPostModal from "./Comments/EditPostModal";
-import { ForgotPasswordModal } from "../../Login/ForgotPasswordLayout";
-import { SignupBirthdayModal } from "../../Signup/Flow/SignupBirthdayModal";
-import CollaboratorsModal from "./CollaboratorsModal";
+import loadable from '@loadable/component';
+
+const LazyCreatePostModal = loadable(() => import('./CreatePost/CreatePostModal'));
+const LazyCommentModal = loadable(() => import('./Comments/CommentsModal'));
+const LazyLikesModal = loadable(() => import('./Main/LikesModal'));
+const LazyPfpModal = loadable(() => import('./Profile/ProfilePicModal'));
+const LazyFollowersModal = loadable(() => import('./Profile/FollowersModal'));
+const LazyDeleteCommentModal = loadable(() => import('./Comments/DeleteCommentModal'));
+const LazyEditPostMenuModal = loadable(() => import('./Comments/EditPostMenuModal'));
+const LazyEditPostModal = loadable(() => import('./Comments/EditPostModal'));
+const LazyCollaboratorsModal = loadable(() => import('./CollaboratorsModal'));
+const LazySignupBirthdayModal = loadable(() => import('../../Signup/Flow/SignupBirthdayModal'));
+const LazyForgotPasswordModal = loadable(() =>
+  import('../../Login/ForgotPasswordLayout').then(module => ({
+    default: module.ForgotPasswordModal
+  }))
+);
 
 const MODAL_ZINDEX_BASE: number = 9990;
 
@@ -56,7 +62,7 @@ const ModalManager: React.FC<{}> = () => {
 
             switch (modalName) {
                 case MODAL_TYPES.FORGOT_PASSWORD_MODAL: {
-                    return <ForgotPasswordModal
+                    return <LazyForgotPasswordModal
                         key={MODAL_TYPES.FORGOT_PASSWORD_MODAL}
                         zIndex={zIndex++}
                         queryResponseTitle={data.queryResponseTitle} 
@@ -66,19 +72,19 @@ const ModalManager: React.FC<{}> = () => {
                         }} />;
                 }                
                 case MODAL_TYPES.NEW_POST_MODAL: {
-                    return <CreatePostModal
+                    return <LazyCreatePostModal
                         key={MODAL_TYPES.NEW_POST_MODAL}
                         zIndex={zIndex++}
                         onClose={() => closeModal(modalName, data)} />;
                 }
                 case MODAL_TYPES.SIGNUP_BIRTHDAY_MODAL: {
-                    return <SignupBirthdayModal
+                    return <LazySignupBirthdayModal
                         key={MODAL_TYPES.SIGNUP_BIRTHDAY_MODAL}
                         zIndex={zIndex++}
                         onClose={() => closeModal(modalName, data)} />;
                 }                                
                 case MODAL_TYPES.COMMENT_MODAL: {
-                    return <CommentModal
+                    return <LazyCommentModal
                         key={MODAL_TYPES.COMMENT_MODAL}
                         zIndex={zIndex++}
                         post={data.post}
@@ -89,21 +95,21 @@ const ModalManager: React.FC<{}> = () => {
                         }} />;
                 }
                 case MODAL_TYPES.LIKES_MODAL: {
-                    return <LikesModal
+                    return <LazyLikesModal
                         key={MODAL_TYPES.LIKES_MODAL}
                         zIndex={zIndex++}
                         post={data.post}
                         onClose={() => closeModal(modalName, data)} />;
                 }
                 case MODAL_TYPES.COLLABORATORS_MODAL: {
-                    return <CollaboratorsModal
+                    return <LazyCollaboratorsModal
                         key={MODAL_TYPES.COLLABORATORS_MODAL}
                         zIndex={zIndex++}
                         post={data.post}
                         onClose={() => closeModal(modalName, data)} />;
                 }                
                 case MODAL_TYPES.PROFILE_PIC_MODAL: {
-                    return <PfpModal
+                    return <LazyPfpModal
                         key={MODAL_TYPES.PROFILE_PIC_MODAL}
                         zIndex={zIndex++}
                         profile={data.profile}
@@ -114,7 +120,7 @@ const ModalManager: React.FC<{}> = () => {
                         }} />;
                 }
                 case MODAL_TYPES.FOLLOW_MODAL: {
-                    return <FollowersModal
+                    return <LazyFollowersModal
                         key={MODAL_TYPES.FOLLOW_MODAL}
                         zIndex={zIndex++}
                         profile={data.profile}
@@ -126,7 +132,7 @@ const ModalManager: React.FC<{}> = () => {
                         }} />;
                 }
                 case MODAL_TYPES.COMMENT_DELETE_MODAL: {
-                    return <DeleteCommentModal
+                    return <LazyDeleteCommentModal
                         key={MODAL_TYPES.COMMENT_DELETE_MODAL}
                         zIndex={zIndex++}
                         commentId={data.commentId}
@@ -139,7 +145,7 @@ const ModalManager: React.FC<{}> = () => {
                         }} />;
                 }
                 case MODAL_TYPES.POST_EDIT_MENU_MODAL: {
-                    return <EditPostMenuModal 
+                    return <LazyEditPostMenuModal 
                         key={MODAL_TYPES.POST_EDIT_MENU_MODAL}
                         zIndex={zIndex++}
                         post={data.post}
@@ -159,7 +165,7 @@ const ModalManager: React.FC<{}> = () => {
                         }} />;                                                
                 }
                 case MODAL_TYPES.POST_EDIT_MODAL: {
-                    return <EditPostModal
+                    return <LazyEditPostModal
                         key={MODAL_TYPES.POST_EDIT_MODAL}
                         zIndex={zIndex++}
                         post={data.post}

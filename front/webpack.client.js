@@ -6,6 +6,7 @@ const ESLintPlugin = require("eslint-webpack-plugin");
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const TerserPlugin = require('terser-webpack-plugin');
 const Dotenv = require('dotenv-webpack');
+const LoadablePlugin = require('@loadable/webpack-plugin');
 
 const isDevelopment = process.env.NODE_ENV === "development";
 const isProduction = !isDevelopment;
@@ -27,7 +28,7 @@ module.exports = {
   },
 
   output: {
-    filename: "[name].bundle.js",
+    filename: '[name].[contenthash].js',
     path: path.resolve(__dirname, 'dist'),
     publicPath: '/',
     chunkFilename: '[id].chunk.js',
@@ -103,6 +104,10 @@ module.exports = {
     new Dotenv({
       path: `./${envFile}`
     }), 
+    new LoadablePlugin({
+      filename: 'loadable-stats.json', // default name
+      writeToDisk: true, // optional: ensure it's written even in dev      
+    }),
     isDevelopment && new ESLintPlugin(),
     isDevelopment && new webpack.HotModuleReplacementPlugin(),
     new CopyWebpackPlugin({
@@ -114,11 +119,11 @@ module.exports = {
         { from: "robots.txt", to: "robots.txt" },
       ],
     }),
-    isDevelopment &&
+    isProduction &&
     new BundleAnalyzerPlugin({
-      analyzerMode: 'disabled',
-      generateStatsFile: true,
-      statsOptions: { source: false },
+      analyzerMode: 'static', // or 'server'
+      openAnalyzer: true,     // Automatically opens report in your browser
+      reportFilename: 'bundle-report.html', // Optional: output filename
     }),
   ].filter(Boolean),
 

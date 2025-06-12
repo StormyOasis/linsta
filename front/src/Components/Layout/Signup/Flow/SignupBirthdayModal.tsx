@@ -43,3 +43,5 @@ export const SignupBirthdayModal: React.FC<SignupBirthdayModalProps> = (props: S
         <MultiStepModal zIndex={props.zIndex} steps={steps} onClose={props.onClose} stepNumber={0} showLoadingAnimation={false} />
     );
 }
+
+export default SignupBirthdayModal;
