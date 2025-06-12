@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { EmojiClickData } from "emoji-picker-react";
 import styled from "styled-components";
 import { getPosts, postAddComment, postToggleLike } from "../../../api/ServiceController";
 import { Post, PostPaginationResponse } from "../../../api/types";
@@ -11,6 +10,15 @@ import { useAppDispatch, useAppSelector, actions, RootState } from "../../../Com
 import { MODAL_TYPES, ModalState } from "../../../Components/Redux/slices/modals.slice";
 import useInfiniteScroll from "../../../utils/useInfiniteScroll";
 import PostItem from "./PostItem";
+
+import loadable from "@loadable/component";
+
+const LazyEmojiClickData = loadable(() =>
+    import('emoji-picker-react').then(module => ({
+        default: module.EmojiClickData
+    }))
+);
+
 
 const FeedContainer = styled(FlexColumn)`
     max-width: 700px;
@@ -131,7 +139,7 @@ const MainContent: React.FC = () => {
         }
     }
 
-    const handleEmojiClick = useCallback((emoji: EmojiClickData, postId: string) => {
+    const handleEmojiClick = useCallback((emoji: typeof LazyEmojiClickData, postId: string) => {
         const newText = (commentText[`${postId}`] || "") + emoji.emoji;
         setCommentText((prevState) => ({ ...prevState, [postId]: newText }));
     }, [commentText]);

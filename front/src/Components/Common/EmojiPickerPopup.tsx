@@ -1,9 +1,17 @@
 import React, { SyntheticEvent, useState } from "react";
 import { styled } from "styled-components";
-import EmojiPicker, { EmojiClickData, EmojiStyle } from 'emoji-picker-react';
 import { Flex } from "./CombinedStyling";
 
-const EmojiPickerButton = styled.button<{$noPadding: boolean|undefined}>`
+import type { EmojiClickData, EmojiStyle } from 'emoji-picker-react';
+import loadable from "@loadable/component";
+
+const LazyEmojiPicker = loadable(() =>
+    import('emoji-picker-react').then((module) => ({
+        default: module.default,
+    }))
+);
+
+const EmojiPickerButton = styled.button<{ $noPadding: boolean | undefined }>`
     position: relative;
     cursor: pointer;
     outline: none;
@@ -18,7 +26,7 @@ const EmojiPickerButton = styled.button<{$noPadding: boolean|undefined}>`
     align-items: center;
 `;
 
-const EmojiPickerPopupContainer = styled.div<{$isOpen: boolean}>`
+const EmojiPickerPopupContainer = styled.div<{ $isOpen: boolean }>`
     display: ${props => props.$isOpen ? "flex" : "none"};
     position: fixed;
     top: 10px;
@@ -40,13 +48,13 @@ const EmojiPickerPopup: React.FC<EmojiPickerPopupProps> = (props: EmojiPickerPop
         setIsOpen(!isOpen);
     }
 
-    const handleEmojiClick = (emojiData: EmojiClickData, _event: MouseEvent) => {        
+    const handleEmojiClick = (emojiData: EmojiClickData, _event: MouseEvent) => {
         setIsOpen(false);
         props.onEmojiClick(emojiData);
     }
 
-    const handleKeyUp = (e:React.KeyboardEvent<HTMLDivElement>) => {
-        if(e.key === "Escape") { // On escape key press, close the picker
+    const handleKeyUp = (e: React.KeyboardEvent<HTMLDivElement>) => {
+        if (e.key === "Escape") { // On escape key press, close the picker
             setIsOpen(false);
         }
     }
@@ -54,15 +62,15 @@ const EmojiPickerPopup: React.FC<EmojiPickerPopupProps> = (props: EmojiPickerPop
     return (
         <>
             <Flex>
-                <EmojiPickerButton onClick={handleToggleClick} $noPadding={props.noPadding}                    
+                <EmojiPickerButton onClick={handleToggleClick} $noPadding={props.noPadding}
                     role="button"
                     aria-pressed={isOpen}>😀</EmojiPickerButton>
                 <EmojiPickerPopupContainer $isOpen={isOpen} onKeyUp={handleKeyUp}>
-                    <EmojiPicker 
+                    <LazyEmojiPicker
                         onEmojiClick={handleEmojiClick}
-                        emojiStyle={EmojiStyle.GOOGLE} 
-                        open={isOpen} 
-                        previewConfig={{showPreview: false}}/>
+                        emojiStyle={LazyEmojiPicker.GOOGLE}
+                        open={isOpen}
+                        previewConfig={{ showPreview: false }} />
                 </EmojiPickerPopupContainer>
             </Flex>
         </>
