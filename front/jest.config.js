@@ -2,6 +2,7 @@
 module.exports = {
     rootDir: './',    
     setupFiles: ['./jest.polyfill.js'],
+    setupFilesAfterEnv: ["./jest.setup.js"],
     testEnvironment: "jsdom",
     testEnvironmentOptions: {
         customExportConditions: [''],
@@ -13,6 +14,7 @@ module.exports = {
         '!**/dist/**',
         '!/front/*',
         '!**/coverage/**',
+        '!**/public/**',
         '!/node_modules/',
         '!**webpack**',        
         '!**jest**'

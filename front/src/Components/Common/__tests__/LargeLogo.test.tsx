@@ -1,11 +1,11 @@
 import React from 'react'
-import {render} from '@testing-library/react';
 import '@testing-library/jest-dom';
 import LargeLogo from '../LargeLogo';
-import { MemoryRouter } from 'react-router-dom';
+import { renderWithStore } from '../../../utils/test-utils';
 
-
-test("LargeLogo Component", () => {
-    const r = render(<MemoryRouter><LargeLogo></LargeLogo></MemoryRouter>).asFragment();
-    expect(r).toMatchSnapshot();
+describe("LargeLogo Component", () => {
+    it("renders correctly", () => {
+        const r = renderWithStore(<LargeLogo />)
+        expect(r).toMatchSnapshot();
+    })
 })

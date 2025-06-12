@@ -1,53 +1,93 @@
-import React from 'react'
-import renderer from 'react-test-renderer';
-import { render, fireEvent, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event'
+import React from "react";
+import { screen, fireEvent } from "@testing-library/react";
+import StyledLink from "../StyledLink";
 import '@testing-library/jest-dom';
-import Jest from 'jest';
-import StyledLink from '../StyledLink';
-import Theme from '../../Themes/Theme';
-import { MemoryRouter } from 'react-router-dom';
+import { renderWithStore } from '../../../utils/test-utils';
 
 
-test("StyledLink Component", () => {
-    const r = render(
-        <MemoryRouter>
-            <Theme>
-                <StyledLink to="/" onClick={() => true}>Hello</StyledLink>
-            </Theme>
-        </MemoryRouter>).asFragment();
-
-    expect(r).toMatchSnapshot();
-});
-
-test("StyledLink Component With Style Override", () => {
-    const styleOverride = { color: "red" };
-    const r = render(
-        <MemoryRouter>
-            <Theme>
-                <StyledLink to="/" onClick={() => true} styleOverride={styleOverride}>Hello</StyledLink>
-            </Theme>
-        </MemoryRouter>).asFragment();
-
-    expect(r).toMatchSnapshot();
-})
-
-
-test("StyledLink Component with click", async () => {
-    const cb = jest.fn();
-    const r = render(
-        <MemoryRouter>
-            <Theme>
-                <StyledLink datatestid="styledlink-click" onClick={cb}>Hello</StyledLink>
-            </Theme>
-        </MemoryRouter>).asFragment();
-
-    let element = screen.queryByTestId("styledlink-click");
-    expect(element).toBeDefined();
-    if(element) {
-        await userEvent.click(element);
+describe("StyledLink", () => {
+    it("renders as a link when 'to' is provided", () => {
+        const r = renderWithStore(
+            <StyledLink to="/profile" datatestid="styled-link">
+                Profile
+            </StyledLink>
+        );
+        const link = screen.getByTestId("styled-link");
+        expect(link).toBeInTheDocument();
+        expect(link).toHaveAttribute("href", "/profile");
+        expect(link).toHaveTextContent("Profile");
         expect(r).toMatchSnapshot();
-        expect(cb).toHaveBeenCalled();
-    }
+    });
 
-})
+    it("renders as a div when 'to' is not provided", () => {
+        const r = renderWithStore(
+            <StyledLink datatestid="styled-link">No Link</StyledLink>
+        );
+        const div = screen.getByTestId("styled-link");
+        expect(div).toBeInTheDocument();
+        expect(div.tagName.toLowerCase()).toBe("div");
+        expect(div).toHaveTextContent("No Link");
+        expect(r).toMatchSnapshot();
+    });
+
+    it("calls onClick when clicked", () => {
+        const handleClick = jest.fn();
+        const r = renderWithStore(
+            <StyledLink datatestid="styled-link" onClick={handleClick}>
+                Clickable
+            </StyledLink>
+        );
+        const div = screen.getByTestId("styled-link");
+        fireEvent.click(div);
+        expect(handleClick).toHaveBeenCalled();
+        expect(r).toMatchSnapshot();
+    });
+
+    it("applies styleOverride and className", () => {
+        const r = renderWithStore(
+            <StyledLink
+                datatestid="styled-link"
+                styleOverride={{ color: "red" }}
+                className="my-class"
+            >
+                Styled
+            </StyledLink>
+        );
+        const div = screen.getByTestId("styled-link");
+        expect(div).toHaveClass("my-class");
+        expect(div).toHaveStyle("color: red");
+        expect(r).toMatchSnapshot();
+    });
+
+    it("applies role and passes children", () => {
+        const r = renderWithStore(
+            <StyledLink datatestid="styled-link" role="link">
+                ChildText
+            </StyledLink>
+        );
+        const div = screen.getByTestId("styled-link");
+        expect(div).toHaveAttribute("role", "link");
+        expect(div).toHaveTextContent("ChildText");
+        expect(r).toMatchSnapshot();
+    });
+
+    it("uses secondary colors when useSecondaryColors is true", () => {
+        const r = renderWithStore(
+            <StyledLink datatestid="styled-link" useSecondaryColors>
+                Secondary
+            </StyledLink>
+        );
+        expect(screen.getByTestId("styled-link")).toBeInTheDocument();
+        expect(r).toMatchSnapshot();
+    });
+
+    it("renders with noHover prop", () => {
+        const r = renderWithStore(
+            <StyledLink datatestid="styled-link" noHover>
+                NoHover
+            </StyledLink>
+        );
+        expect(screen.getByTestId("styled-link")).toBeInTheDocument();
+        expect(r).toMatchSnapshot();
+    });
+});

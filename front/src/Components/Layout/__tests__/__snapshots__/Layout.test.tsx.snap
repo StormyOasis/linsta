@@ -1,0 +1,183 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Layout routing always renders ModalManager 1`] = `
+<div>
+  <div
+    class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexColumn-sc-c3jdxk-4 escqfF ckFvxY leZDxE"
+    id="mainSectionContainer"
+  >
+    <div
+      data-testid="modal-manager"
+    />
+    <div
+      data-testid="main-layout"
+    />
+  </div>
+</div>
+`;
+
+exports[`Layout routing redirects /:userName/ to /:userName 1`] = `
+<div>
+  <div
+    class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexColumn-sc-c3jdxk-4 escqfF ckFvxY leZDxE"
+    id="mainSectionContainer"
+  >
+    <div
+      data-testid="modal-manager"
+    />
+    <div
+      data-testid="profile-layout"
+    />
+  </div>
+</div>
+`;
+
+exports[`Layout routing renders ChangePasswordLayout and Header for /change_password 1`] = `
+<div>
+  <div
+    class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexColumn-sc-c3jdxk-4 escqfF ckFvxY leZDxE"
+    id="mainSectionContainer"
+  >
+    <div
+      data-testid="modal-manager"
+    />
+    <div
+      data-testid="header"
+    />
+    <div
+      data-testid="change-password-layout"
+    />
+  </div>
+</div>
+`;
+
+exports[`Layout routing renders ExploreLayout for /explore 1`] = `
+<div>
+  <div
+    class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexColumn-sc-c3jdxk-4 escqfF ckFvxY leZDxE"
+    id="mainSectionContainer"
+  >
+    <div
+      data-testid="modal-manager"
+    />
+    <div
+      data-testid="explore-layout"
+    />
+  </div>
+</div>
+`;
+
+exports[`Layout routing renders ForgotPasswordLayout and Header for /forgot 1`] = `
+<div>
+  <div
+    class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexColumn-sc-c3jdxk-4 escqfF ckFvxY leZDxE"
+    id="mainSectionContainer"
+  >
+    <div
+      data-testid="modal-manager"
+    />
+    <div
+      data-testid="header"
+    />
+    <div
+      data-testid="forgot-password-layout"
+    />
+  </div>
+</div>
+`;
+
+exports[`Layout routing renders LoginLayout for /login 1`] = `
+<div>
+  <div
+    class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexColumn-sc-c3jdxk-4 escqfF ckFvxY leZDxE"
+    id="mainSectionContainer"
+  >
+    <div
+      data-testid="modal-manager"
+    />
+    <div
+      data-testid="login-layout"
+    />
+  </div>
+</div>
+`;
+
+exports[`Layout routing renders MainLayout for / 1`] = `
+<div>
+  <div
+    class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexColumn-sc-c3jdxk-4 escqfF ckFvxY leZDxE"
+    id="mainSectionContainer"
+  >
+    <div
+      data-testid="modal-manager"
+    />
+    <div
+      data-testid="main-layout"
+    />
+  </div>
+</div>
+`;
+
+exports[`Layout routing renders NotFoundLayout for /404 1`] = `
+<div>
+  <div
+    class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexColumn-sc-c3jdxk-4 escqfF ckFvxY leZDxE"
+    id="mainSectionContainer"
+  >
+    <div
+      data-testid="modal-manager"
+    />
+    <div
+      data-testid="not-found-layout"
+    />
+  </div>
+</div>
+`;
+
+exports[`Layout routing renders ProfileLayout for /:userName 1`] = `
+<div>
+  <div
+    class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexColumn-sc-c3jdxk-4 escqfF ckFvxY leZDxE"
+    id="mainSectionContainer"
+  >
+    <div
+      data-testid="modal-manager"
+    />
+    <div
+      data-testid="profile-layout"
+    />
+  </div>
+</div>
+`;
+
+exports[`Layout routing renders ProfileLayout in edit mode for /edit 1`] = `
+<div>
+  <div
+    class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexColumn-sc-c3jdxk-4 escqfF ckFvxY leZDxE"
+    id="mainSectionContainer"
+  >
+    <div
+      data-testid="modal-manager"
+    />
+    <div
+      data-testid="profile-layout-edit"
+    />
+  </div>
+</div>
+`;
+
+exports[`Layout routing renders SignupLayout for /signup 1`] = `
+<div>
+  <div
+    class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexColumn-sc-c3jdxk-4 escqfF ckFvxY leZDxE"
+    id="mainSectionContainer"
+  >
+    <div
+      data-testid="modal-manager"
+    />
+    <div
+      data-testid="signup-layout"
+    />
+  </div>
+</div>
+`;

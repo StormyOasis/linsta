@@ -1,0 +1,1215 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CustomTextOption renders input and calls onChange on input change 1`] = `
+{
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div>
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 PopupDropdownSelector__TextOptionContainer-sc-1pspnb2-3 escqfF ckFvxY fjNDtr koqVbL"
+      >
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexColumn-sc-c3jdxk-4 eYNhLJ ckFvxY leZDxE"
+        >
+          <div
+            class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 jNHHWW ckFvxY fjNDtr"
+          >
+            <div
+              class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+            >
+              Custom
+            </div>
+            <button
+              aria-checked="true"
+              data-testid="checkbox-1"
+            >
+              Checked
+            </button>
+          </div>
+          <div
+            class="CombinedStyling__Div-sc-c3jdxk-0 jPYJxD"
+          >
+            <input
+              data-testid="styled-input"
+              maxlength="10"
+              name="styled_input"
+              value="Custom"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <div
+      class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 PopupDropdownSelector__TextOptionContainer-sc-1pspnb2-3 escqfF ckFvxY fjNDtr koqVbL"
+    >
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexColumn-sc-c3jdxk-4 eYNhLJ ckFvxY leZDxE"
+      >
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 jNHHWW ckFvxY fjNDtr"
+        >
+          <div
+            class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+          >
+            Custom
+          </div>
+          <button
+            aria-checked="true"
+            data-testid="checkbox-1"
+          >
+            Checked
+          </button>
+        </div>
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 jPYJxD"
+        >
+          <input
+            data-testid="styled-input"
+            maxlength="10"
+            name="styled_input"
+            value="Custom"
+          />
+        </div>
+      </div>
+    </div>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "store": {
+    "@@observable": [Function],
+    "dispatch": [Function],
+    "getState": [Function],
+    "replaceReducer": [Function],
+    "subscribe": [Function],
+  },
+  "unmount": [Function],
+}
+`;
+
+exports[`PopupDropdownSelector calls onChange and onInputClick when input is used 1`] = `
+{
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div>
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 PopupDropdownSelector__DropdownContainer-sc-1pspnb2-0 escqfF hXfnwo"
+      >
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 CombinedStyling__FlexRowFullWidth-sc-c3jdxk-5 escqfF ckFvxY fjNDtr dVZbKj"
+        >
+          <input
+            data-testid="styled-input"
+            name="collab-input"
+            value=""
+            width="100%"
+          />
+        </div>
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 PopupDropdownSelector__DropdownMenu-sc-1pspnb2-2 escqfF WoCGR"
+        >
+          <div
+            data-testid="dropdown-children"
+          >
+            Open
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <div
+      class="CombinedStyling__Div-sc-c3jdxk-0 PopupDropdownSelector__DropdownContainer-sc-1pspnb2-0 escqfF hXfnwo"
+    >
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 CombinedStyling__FlexRowFullWidth-sc-c3jdxk-5 escqfF ckFvxY fjNDtr dVZbKj"
+      >
+        <input
+          data-testid="styled-input"
+          name="collab-input"
+          value=""
+          width="100%"
+        />
+      </div>
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 PopupDropdownSelector__DropdownMenu-sc-1pspnb2-2 escqfF WoCGR"
+      >
+        <div
+          data-testid="dropdown-children"
+        >
+          Open
+        </div>
+      </div>
+    </div>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "store": {
+    "@@observable": [Function],
+    "dispatch": [Function],
+    "getState": [Function],
+    "replaceReducer": [Function],
+    "subscribe": [Function],
+  },
+  "unmount": [Function],
+}
+`;
+
+exports[`PopupDropdownSelector calls onClose when closed by outside click 1`] = `
+{
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div>
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 PopupDropdownSelector__DropdownContainer-sc-1pspnb2-0 escqfF hXfnwo"
+      >
+        <button
+          aria-controls="dropdown-menu"
+          aria-expanded="false"
+          class="PopupDropdownSelector__DropdownToggle-sc-1pspnb2-1 eSAWqS"
+        >
+          <span
+            class="CombinedStyling__Span-sc-c3jdxk-1 kSRMWv"
+          >
+            Option 1
+          </span>
+          <div
+            class="CombinedStyling__Div-sc-c3jdxk-0 PopupDropdownSelector__ArrowContainer-sc-1pspnb2-4 escqfF bEdmDi"
+          >
+            <svg
+              data-testid="down-svg"
+              height="24px"
+              width="24px"
+            />
+          </div>
+        </button>
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <div
+      class="CombinedStyling__Div-sc-c3jdxk-0 PopupDropdownSelector__DropdownContainer-sc-1pspnb2-0 escqfF hXfnwo"
+    >
+      <button
+        aria-controls="dropdown-menu"
+        aria-expanded="false"
+        class="PopupDropdownSelector__DropdownToggle-sc-1pspnb2-1 eSAWqS"
+      >
+        <span
+          class="CombinedStyling__Span-sc-c3jdxk-1 kSRMWv"
+        >
+          Option 1
+        </span>
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 PopupDropdownSelector__ArrowContainer-sc-1pspnb2-4 escqfF bEdmDi"
+        >
+          <svg
+            data-testid="down-svg"
+            height="24px"
+            width="24px"
+          />
+        </div>
+      </button>
+    </div>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "store": {
+    "@@observable": [Function],
+    "dispatch": [Function],
+    "getState": [Function],
+    "replaceReducer": [Function],
+    "subscribe": [Function],
+  },
+  "unmount": [Function],
+}
+`;
+
+exports[`PopupDropdownSelector calls onSelect when child is clicked 1`] = `
+{
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div>
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 PopupDropdownSelector__DropdownContainer-sc-1pspnb2-0 escqfF hXfnwo"
+      >
+        <button
+          aria-controls="dropdown-menu"
+          aria-expanded="true"
+          class="PopupDropdownSelector__DropdownToggle-sc-1pspnb2-1 eSAWqS"
+        >
+          <span
+            class="CombinedStyling__Span-sc-c3jdxk-1 kSRMWv"
+          >
+            Option 1
+          </span>
+          <div
+            class="CombinedStyling__Div-sc-c3jdxk-0 PopupDropdownSelector__ArrowContainer-sc-1pspnb2-4 escqfF bEdmDi"
+          >
+            <svg
+              data-testid="up-svg"
+              height="24px"
+              width="24px"
+            />
+          </div>
+        </button>
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 PopupDropdownSelector__DropdownMenu-sc-1pspnb2-2 escqfF WoCGR"
+        >
+          <button
+            data-testid="child-option"
+          >
+            Child
+          </button>
+        </div>
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <div
+      class="CombinedStyling__Div-sc-c3jdxk-0 PopupDropdownSelector__DropdownContainer-sc-1pspnb2-0 escqfF hXfnwo"
+    >
+      <button
+        aria-controls="dropdown-menu"
+        aria-expanded="true"
+        class="PopupDropdownSelector__DropdownToggle-sc-1pspnb2-1 eSAWqS"
+      >
+        <span
+          class="CombinedStyling__Span-sc-c3jdxk-1 kSRMWv"
+        >
+          Option 1
+        </span>
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 PopupDropdownSelector__ArrowContainer-sc-1pspnb2-4 escqfF bEdmDi"
+        >
+          <svg
+            data-testid="up-svg"
+            height="24px"
+            width="24px"
+          />
+        </div>
+      </button>
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 PopupDropdownSelector__DropdownMenu-sc-1pspnb2-2 escqfF WoCGR"
+      >
+        <button
+          data-testid="child-option"
+        >
+          Child
+        </button>
+      </div>
+    </div>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "store": {
+    "@@observable": [Function],
+    "dispatch": [Function],
+    "getState": [Function],
+    "replaceReducer": [Function],
+    "subscribe": [Function],
+  },
+  "unmount": [Function],
+}
+`;
+
+exports[`PopupDropdownSelector closes menu when clicking outside 1`] = `
+{
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div>
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 PopupDropdownSelector__DropdownContainer-sc-1pspnb2-0 escqfF hXfnwo"
+      >
+        <button
+          aria-controls="dropdown-menu"
+          aria-expanded="false"
+          class="PopupDropdownSelector__DropdownToggle-sc-1pspnb2-1 eSAWqS"
+        >
+          <span
+            class="CombinedStyling__Span-sc-c3jdxk-1 kSRMWv"
+          >
+            Option 1
+          </span>
+          <div
+            class="CombinedStyling__Div-sc-c3jdxk-0 PopupDropdownSelector__ArrowContainer-sc-1pspnb2-4 escqfF bEdmDi"
+          >
+            <svg
+              data-testid="down-svg"
+              height="24px"
+              width="24px"
+            />
+          </div>
+        </button>
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <div
+      class="CombinedStyling__Div-sc-c3jdxk-0 PopupDropdownSelector__DropdownContainer-sc-1pspnb2-0 escqfF hXfnwo"
+    >
+      <button
+        aria-controls="dropdown-menu"
+        aria-expanded="false"
+        class="PopupDropdownSelector__DropdownToggle-sc-1pspnb2-1 eSAWqS"
+      >
+        <span
+          class="CombinedStyling__Span-sc-c3jdxk-1 kSRMWv"
+        >
+          Option 1
+        </span>
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 PopupDropdownSelector__ArrowContainer-sc-1pspnb2-4 escqfF bEdmDi"
+        >
+          <svg
+            data-testid="down-svg"
+            height="24px"
+            width="24px"
+          />
+        </div>
+      </button>
+    </div>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "store": {
+    "@@observable": [Function],
+    "dispatch": [Function],
+    "getState": [Function],
+    "replaceReducer": [Function],
+    "subscribe": [Function],
+  },
+  "unmount": [Function],
+}
+`;
+
+exports[`PopupDropdownSelector exposes close method via ref 1`] = `
+{
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div>
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 PopupDropdownSelector__DropdownContainer-sc-1pspnb2-0 escqfF hXfnwo"
+      >
+        <button
+          aria-controls="dropdown-menu"
+          aria-expanded="true"
+          class="PopupDropdownSelector__DropdownToggle-sc-1pspnb2-1 eSAWqS"
+        >
+          <span
+            class="CombinedStyling__Span-sc-c3jdxk-1 kSRMWv"
+          >
+            Option 1
+          </span>
+          <div
+            class="CombinedStyling__Div-sc-c3jdxk-0 PopupDropdownSelector__ArrowContainer-sc-1pspnb2-4 escqfF bEdmDi"
+          >
+            <svg
+              data-testid="up-svg"
+              height="24px"
+              width="24px"
+            />
+          </div>
+        </button>
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 PopupDropdownSelector__DropdownMenu-sc-1pspnb2-2 escqfF WoCGR"
+        >
+          <div
+            data-testid="dropdown-children"
+          >
+            Open
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <div
+      class="CombinedStyling__Div-sc-c3jdxk-0 PopupDropdownSelector__DropdownContainer-sc-1pspnb2-0 escqfF hXfnwo"
+    >
+      <button
+        aria-controls="dropdown-menu"
+        aria-expanded="true"
+        class="PopupDropdownSelector__DropdownToggle-sc-1pspnb2-1 eSAWqS"
+      >
+        <span
+          class="CombinedStyling__Span-sc-c3jdxk-1 kSRMWv"
+        >
+          Option 1
+        </span>
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 PopupDropdownSelector__ArrowContainer-sc-1pspnb2-4 escqfF bEdmDi"
+        >
+          <svg
+            data-testid="up-svg"
+            height="24px"
+            width="24px"
+          />
+        </div>
+      </button>
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 PopupDropdownSelector__DropdownMenu-sc-1pspnb2-2 escqfF WoCGR"
+      >
+        <div
+          data-testid="dropdown-children"
+        >
+          Open
+        </div>
+      </div>
+    </div>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "store": {
+    "@@observable": [Function],
+    "dispatch": [Function],
+    "getState": [Function],
+    "replaceReducer": [Function],
+    "subscribe": [Function],
+  },
+  "unmount": [Function],
+}
+`;
+
+exports[`PopupDropdownSelector renders DownSVG when closed and UpSVG when open 1`] = `
+{
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div>
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 PopupDropdownSelector__DropdownContainer-sc-1pspnb2-0 escqfF hXfnwo"
+      >
+        <button
+          aria-controls="dropdown-menu"
+          aria-expanded="true"
+          class="PopupDropdownSelector__DropdownToggle-sc-1pspnb2-1 eSAWqS"
+        >
+          <span
+            class="CombinedStyling__Span-sc-c3jdxk-1 kSRMWv"
+          >
+            Option 1
+          </span>
+          <div
+            class="CombinedStyling__Div-sc-c3jdxk-0 PopupDropdownSelector__ArrowContainer-sc-1pspnb2-4 escqfF bEdmDi"
+          >
+            <svg
+              data-testid="up-svg"
+              height="24px"
+              width="24px"
+            />
+          </div>
+        </button>
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 PopupDropdownSelector__DropdownMenu-sc-1pspnb2-2 escqfF WoCGR"
+        >
+          <div
+            data-testid="dropdown-children"
+          >
+            Open
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <div
+      class="CombinedStyling__Div-sc-c3jdxk-0 PopupDropdownSelector__DropdownContainer-sc-1pspnb2-0 escqfF hXfnwo"
+    >
+      <button
+        aria-controls="dropdown-menu"
+        aria-expanded="true"
+        class="PopupDropdownSelector__DropdownToggle-sc-1pspnb2-1 eSAWqS"
+      >
+        <span
+          class="CombinedStyling__Span-sc-c3jdxk-1 kSRMWv"
+        >
+          Option 1
+        </span>
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 PopupDropdownSelector__ArrowContainer-sc-1pspnb2-4 escqfF bEdmDi"
+        >
+          <svg
+            data-testid="up-svg"
+            height="24px"
+            width="24px"
+          />
+        </div>
+      </button>
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 PopupDropdownSelector__DropdownMenu-sc-1pspnb2-2 escqfF WoCGR"
+      >
+        <div
+          data-testid="dropdown-children"
+        >
+          Open
+        </div>
+      </div>
+    </div>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "store": {
+    "@@observable": [Function],
+    "dispatch": [Function],
+    "getState": [Function],
+    "replaceReducer": [Function],
+    "subscribe": [Function],
+  },
+  "unmount": [Function],
+}
+`;
+
+exports[`PopupDropdownSelector renders DropdownToggle and toggles menu on click 1`] = `
+{
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div>
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 PopupDropdownSelector__DropdownContainer-sc-1pspnb2-0 escqfF hXfnwo"
+      >
+        <button
+          aria-controls="dropdown-menu"
+          aria-expanded="false"
+          class="PopupDropdownSelector__DropdownToggle-sc-1pspnb2-1 eSAWqS"
+        >
+          <span
+            class="CombinedStyling__Span-sc-c3jdxk-1 kSRMWv"
+          >
+            Option 1
+          </span>
+          <div
+            class="CombinedStyling__Div-sc-c3jdxk-0 PopupDropdownSelector__ArrowContainer-sc-1pspnb2-4 escqfF bEdmDi"
+          >
+            <svg
+              data-testid="down-svg"
+              height="24px"
+              width="24px"
+            />
+          </div>
+        </button>
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <div
+      class="CombinedStyling__Div-sc-c3jdxk-0 PopupDropdownSelector__DropdownContainer-sc-1pspnb2-0 escqfF hXfnwo"
+    >
+      <button
+        aria-controls="dropdown-menu"
+        aria-expanded="false"
+        class="PopupDropdownSelector__DropdownToggle-sc-1pspnb2-1 eSAWqS"
+      >
+        <span
+          class="CombinedStyling__Span-sc-c3jdxk-1 kSRMWv"
+        >
+          Option 1
+        </span>
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 PopupDropdownSelector__ArrowContainer-sc-1pspnb2-4 escqfF bEdmDi"
+        >
+          <svg
+            data-testid="down-svg"
+            height="24px"
+            width="24px"
+          />
+        </div>
+      </button>
+    </div>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "store": {
+    "@@observable": [Function],
+    "dispatch": [Function],
+    "getState": [Function],
+    "replaceReducer": [Function],
+    "subscribe": [Function],
+  },
+  "unmount": [Function],
+}
+`;
+
+exports[`PopupDropdownSelector renders StyledInput when isInputBox is true 1`] = `
+{
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div>
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 PopupDropdownSelector__DropdownContainer-sc-1pspnb2-0 escqfF hXfnwo"
+      >
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 CombinedStyling__FlexRowFullWidth-sc-c3jdxk-5 escqfF ckFvxY fjNDtr dVZbKj"
+        >
+          <input
+            data-testid="styled-input"
+            name="collab-input"
+            placeholder="Type here"
+            value="abc"
+            width="100%"
+          />
+        </div>
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <div
+      class="CombinedStyling__Div-sc-c3jdxk-0 PopupDropdownSelector__DropdownContainer-sc-1pspnb2-0 escqfF hXfnwo"
+    >
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 CombinedStyling__FlexRowFullWidth-sc-c3jdxk-5 escqfF ckFvxY fjNDtr dVZbKj"
+      >
+        <input
+          data-testid="styled-input"
+          name="collab-input"
+          placeholder="Type here"
+          value="abc"
+          width="100%"
+        />
+      </div>
+    </div>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "store": {
+    "@@observable": [Function],
+    "dispatch": [Function],
+    "getState": [Function],
+    "replaceReducer": [Function],
+    "subscribe": [Function],
+  },
+  "unmount": [Function],
+}
+`;
+
+exports[`TextOption renders text and calls onChange on click 1`] = `
+{
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div>
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 PopupDropdownSelector__TextOptionContainer-sc-1pspnb2-3 escqfF ckFvxY fjNDtr koqVbL"
+      >
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+        >
+          Option
+        </div>
+        <button
+          aria-checked="false"
+          data-testid="checkbox-0"
+        >
+          Unchecked
+        </button>
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <div
+      class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 PopupDropdownSelector__TextOptionContainer-sc-1pspnb2-3 escqfF ckFvxY fjNDtr koqVbL"
+    >
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+      >
+        Option
+      </div>
+      <button
+        aria-checked="false"
+        data-testid="checkbox-0"
+      >
+        Unchecked
+      </button>
+    </div>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "store": {
+    "@@observable": [Function],
+    "dispatch": [Function],
+    "getState": [Function],
+    "replaceReducer": [Function],
+    "subscribe": [Function],
+  },
+  "unmount": [Function],
+}
+`;

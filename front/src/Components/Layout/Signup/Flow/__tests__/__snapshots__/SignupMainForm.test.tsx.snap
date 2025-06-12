@@ -1,0 +1,146 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SignupMainForm disables Sign Up button if form is invalid 1`] = `
+<div>
+  <div
+    data-testid="mock-theme"
+  >
+    <div
+      data-testid="mock-theme"
+    >
+      <div
+        data-testid="mock-logo"
+      />
+      <div
+        data-testid="mock-div"
+      >
+        <form
+          class="SignupMainForm__SignupForm-sc-18p437d-0 kjyUMW"
+          method="post"
+        >
+          <div
+            class="signupFormDiv1"
+            data-testid="mock-div"
+          >
+            <span
+              class="signupIntroSpan"
+              data-testid="mock-span"
+            >
+              Sign up to see photos and videos from your friends.
+            </span>
+          </div>
+          <input
+            data-testid="mock-input-emailOrPhone"
+            name="emailOrPhone"
+            placeholder="Phone Number or Email"
+            value="test@example.com"
+          />
+          <input
+            data-testid="mock-input-fullName"
+            name="fullName"
+            placeholder="Full Name"
+            value="Test User"
+          />
+          <input
+            data-testid="mock-input-userName"
+            name="userName"
+            placeholder="Username"
+            value="testuser"
+          />
+          <input
+            data-testid="mock-input-password"
+            name="password"
+            placeholder="Password"
+            type="password"
+            value="password123"
+          />
+          <div
+            class="termsDiv"
+            data-testid="mock-div"
+          >
+            By signing up, you agree to our Terms, Privacy Policy and Cookies Policy.
+          </div>
+          <button
+            data-testid="submit-signupmain"
+            disabled=""
+          >
+            Sign Up
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`SignupMainForm renders all fields and matches snapshot 1`] = `
+<div>
+  <div
+    data-testid="mock-theme"
+  >
+    <div
+      data-testid="mock-theme"
+    >
+      <div
+        data-testid="mock-logo"
+      />
+      <div
+        data-testid="mock-div"
+      >
+        <form
+          class="SignupMainForm__SignupForm-sc-18p437d-0 kjyUMW"
+          method="post"
+        >
+          <div
+            class="signupFormDiv1"
+            data-testid="mock-div"
+          >
+            <span
+              class="signupIntroSpan"
+              data-testid="mock-span"
+            >
+              Sign up to see photos and videos from your friends.
+            </span>
+          </div>
+          <input
+            data-testid="mock-input-emailOrPhone"
+            name="emailOrPhone"
+            placeholder="Phone Number or Email"
+            value="test@example.com"
+          />
+          <input
+            data-testid="mock-input-fullName"
+            name="fullName"
+            placeholder="Full Name"
+            value="Test User"
+          />
+          <input
+            data-testid="mock-input-userName"
+            name="userName"
+            placeholder="Username"
+            value="testuser"
+          />
+          <input
+            data-testid="mock-input-password"
+            name="password"
+            placeholder="Password"
+            type="password"
+            value="password123"
+          />
+          <div
+            class="termsDiv"
+            data-testid="mock-div"
+          >
+            By signing up, you agree to our Terms, Privacy Policy and Cookies Policy.
+          </div>
+          <button
+            data-testid="submit-signupmain"
+          >
+            Sign Up
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+`;

@@ -1,0 +1,49 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ProfileLayout renders EditProfileContent when edit is true and matches snapshot 1`] = `
+<div>
+  <div
+    data-testid="mock-theme"
+  >
+    <div
+      data-testid="mock-theme"
+    >
+      <div
+        class="mainWrapper"
+        data-testid="mock-div"
+      >
+        <div
+          data-testid="mock-sidebar"
+        />
+        <div
+          data-testid="mock-edit-profile-content"
+        />
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`ProfileLayout renders ProfileContent when edit is false and matches snapshot 1`] = `
+<div>
+  <div
+    data-testid="mock-theme"
+  >
+    <div
+      data-testid="mock-theme"
+    >
+      <div
+        class="mainWrapper"
+        data-testid="mock-div"
+      >
+        <div
+          data-testid="mock-sidebar"
+        />
+        <div
+          data-testid="mock-profile-content"
+        />
+      </div>
+    </div>
+  </div>
+</div>
+`;

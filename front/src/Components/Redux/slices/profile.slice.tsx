@@ -11,7 +11,7 @@ export interface GlobalProfileState {
     nonce: string | null;
 };
 
-const defaultState: GlobalProfileState = {
+export const profileInitialState: GlobalProfileState = {
     profile: {
         userId: "0",
         userName: '',
@@ -43,11 +43,11 @@ const profileSliceCreator = (preloadedState?: Partial<GlobalProfileState>) => {
 
     function createInitialState() {
         if (historyUtils.isServer) {
-            return { ...defaultState, ...preloadedState };
+            return { ...profileInitialState, ...preloadedState };
         }
 
         return {
-            ...defaultState,
+            ...profileInitialState,
             ...preloadedState
         };
     }

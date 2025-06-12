@@ -1,0 +1,1107 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`LoginLayout calls navigate on successful login 1`] = `
+{
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div>
+      <main
+        class="LoginLayout__LoginLayoutWrapper-sc-1p2723n-0 ewqnAE"
+        role="main"
+      >
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+        >
+          <div
+            class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+          >
+            <div
+              class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+            >
+              <div
+                class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexColumn-sc-c3jdxk-4 LargeLogo__LogoWrapper-sc-1bu4w53-0 escqfF ckFvxY leZDxE kYvtBp"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="Icon-sc-btq2kp-0"
+                  fill="none"
+                  focusable="false"
+                  height="51px"
+                  name="linsta"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  width="196px"
+                >
+                  <use
+                    href="http://localhost:8080/public/images/sprite.svg#linsta"
+                  />
+                </svg>
+              </div>
+              <form
+                class="LoginLayout__LoginForm-sc-1p2723n-1 hLcGhC"
+                method="post"
+              >
+                <div
+                  class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+                >
+                  <span
+                    class="CombinedStyling__Span-sc-c3jdxk-1 kSRMWv"
+                  >
+                    Log in to see photos and videos from your friends.
+                  </span>
+                </div>
+                <div
+                  class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 StyledInput__StyledInputWrapper-sc-fkf055-0 escqfF ckFvxY fjNDtr cyFDIt"
+                >
+                  <label
+                    class="StyledInput__StyledInputLabel-sc-fkf055-2 iHXgrc"
+                  >
+                    <input
+                      class="StyledInput__StyledInputInput-sc-fkf055-1 kkxInS"
+                      maxlength="255"
+                      name="userName"
+                      placeholder="Username"
+                      value="user"
+                    />
+                    <div
+                      class="CombinedStyling__Div-sc-c3jdxk-0 StyledInput__ValidationIcon-sc-fkf055-3 hNEsIT kYVJfy"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        class="Icon-sc-btq2kp-0"
+                        fill="currentColor"
+                        focusable="false"
+                        name="check-circle"
+                        stroke="none"
+                        stroke-width="2"
+                      >
+                        <use
+                          href="http://localhost:8080/public/images/sprite.svg#check-circle"
+                        />
+                      </svg>
+                    </div>
+                  </label>
+                </div>
+                <div
+                  class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 StyledInput__StyledInputWrapper-sc-fkf055-0 escqfF ckFvxY fjNDtr cyFDIt"
+                >
+                  <label
+                    class="StyledInput__StyledInputLabel-sc-fkf055-2 iHXgrc"
+                  >
+                    <input
+                      class="StyledInput__StyledInputInput-sc-fkf055-1 kkxInS"
+                      maxlength="255"
+                      name="password"
+                      placeholder="Password"
+                      type="password"
+                      value="ValidPass1!"
+                    />
+                    <div
+                      class="CombinedStyling__Div-sc-c3jdxk-0 StyledInput__ValidationIcon-sc-fkf055-3 hNEsIT kYVJfy"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        class="Icon-sc-btq2kp-0"
+                        fill="currentColor"
+                        focusable="false"
+                        name="check-circle"
+                        stroke="none"
+                        stroke-width="2"
+                      >
+                        <use
+                          href="http://localhost:8080/public/images/sprite.svg#check-circle"
+                        />
+                      </svg>
+                    </div>
+                  </label>
+                </div>
+                <div
+                  class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 LoginLayout__StatusText-sc-1p2723n-2 escqfF ckFvxY eYtDIA"
+                >
+                  Invalid username or password
+                </div>
+                <button
+                  class="StyledButton__StyledButtonComponent-sc-8t4kac-0 bZbOLt"
+                  style="margin-top: 8px;"
+                  type="submit"
+                >
+                  Login
+                </button>
+                <div
+                  class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+                >
+                  <a
+                    class="CombinedStyling__Link-sc-c3jdxk-7 StyledLink__StyledLinkWrapperFromLink-sc-1rgr01q-0 rKNtR dnJNFP"
+                    href="/forgot"
+                    role=""
+                  >
+                    Forgot Password?
+                  </a>
+                </div>
+              </form>
+            </div>
+            <div
+              class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+              style="padding: 20px 0px;"
+            >
+              Don't have an account? 
+              <a
+                class="CombinedStyling__Link-sc-c3jdxk-7 StyledLink__StyledLinkWrapperFromLink-sc-1rgr01q-0 rKNtR dnJNFP"
+                href="/signup"
+                role=""
+              >
+                Sign up
+              </a>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </body>,
+  "container": <div>
+    <main
+      class="LoginLayout__LoginLayoutWrapper-sc-1p2723n-0 ewqnAE"
+      role="main"
+    >
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+      >
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+        >
+          <div
+            class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+          >
+            <div
+              class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexColumn-sc-c3jdxk-4 LargeLogo__LogoWrapper-sc-1bu4w53-0 escqfF ckFvxY leZDxE kYvtBp"
+            >
+              <svg
+                aria-hidden="true"
+                class="Icon-sc-btq2kp-0"
+                fill="none"
+                focusable="false"
+                height="51px"
+                name="linsta"
+                stroke="currentColor"
+                stroke-width="2"
+                width="196px"
+              >
+                <use
+                  href="http://localhost:8080/public/images/sprite.svg#linsta"
+                />
+              </svg>
+            </div>
+            <form
+              class="LoginLayout__LoginForm-sc-1p2723n-1 hLcGhC"
+              method="post"
+            >
+              <div
+                class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+              >
+                <span
+                  class="CombinedStyling__Span-sc-c3jdxk-1 kSRMWv"
+                >
+                  Log in to see photos and videos from your friends.
+                </span>
+              </div>
+              <div
+                class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 StyledInput__StyledInputWrapper-sc-fkf055-0 escqfF ckFvxY fjNDtr cyFDIt"
+              >
+                <label
+                  class="StyledInput__StyledInputLabel-sc-fkf055-2 iHXgrc"
+                >
+                  <input
+                    class="StyledInput__StyledInputInput-sc-fkf055-1 kkxInS"
+                    maxlength="255"
+                    name="userName"
+                    placeholder="Username"
+                    value="user"
+                  />
+                  <div
+                    class="CombinedStyling__Div-sc-c3jdxk-0 StyledInput__ValidationIcon-sc-fkf055-3 hNEsIT kYVJfy"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="Icon-sc-btq2kp-0"
+                      fill="currentColor"
+                      focusable="false"
+                      name="check-circle"
+                      stroke="none"
+                      stroke-width="2"
+                    >
+                      <use
+                        href="http://localhost:8080/public/images/sprite.svg#check-circle"
+                      />
+                    </svg>
+                  </div>
+                </label>
+              </div>
+              <div
+                class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 StyledInput__StyledInputWrapper-sc-fkf055-0 escqfF ckFvxY fjNDtr cyFDIt"
+              >
+                <label
+                  class="StyledInput__StyledInputLabel-sc-fkf055-2 iHXgrc"
+                >
+                  <input
+                    class="StyledInput__StyledInputInput-sc-fkf055-1 kkxInS"
+                    maxlength="255"
+                    name="password"
+                    placeholder="Password"
+                    type="password"
+                    value="ValidPass1!"
+                  />
+                  <div
+                    class="CombinedStyling__Div-sc-c3jdxk-0 StyledInput__ValidationIcon-sc-fkf055-3 hNEsIT kYVJfy"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="Icon-sc-btq2kp-0"
+                      fill="currentColor"
+                      focusable="false"
+                      name="check-circle"
+                      stroke="none"
+                      stroke-width="2"
+                    >
+                      <use
+                        href="http://localhost:8080/public/images/sprite.svg#check-circle"
+                      />
+                    </svg>
+                  </div>
+                </label>
+              </div>
+              <div
+                class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 LoginLayout__StatusText-sc-1p2723n-2 escqfF ckFvxY eYtDIA"
+              >
+                Invalid username or password
+              </div>
+              <button
+                class="StyledButton__StyledButtonComponent-sc-8t4kac-0 bZbOLt"
+                style="margin-top: 8px;"
+                type="submit"
+              >
+                Login
+              </button>
+              <div
+                class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+              >
+                <a
+                  class="CombinedStyling__Link-sc-c3jdxk-7 StyledLink__StyledLinkWrapperFromLink-sc-1rgr01q-0 rKNtR dnJNFP"
+                  href="/forgot"
+                  role=""
+                >
+                  Forgot Password?
+                </a>
+              </div>
+            </form>
+          </div>
+          <div
+            class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+            style="padding: 20px 0px;"
+          >
+            Don't have an account? 
+            <a
+              class="CombinedStyling__Link-sc-c3jdxk-7 StyledLink__StyledLinkWrapperFromLink-sc-1rgr01q-0 rKNtR dnJNFP"
+              href="/signup"
+              role=""
+            >
+              Sign up
+            </a>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "store": {
+    "@@observable": [Function],
+    "dispatch": [Function],
+    "getState": [Function],
+    "replaceReducer": [Function],
+    "subscribe": [Function],
+  },
+  "unmount": [Function],
+}
+`;
+
+exports[`LoginLayout disables login button when form is invalid 1`] = `
+{
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div>
+      <main
+        class="LoginLayout__LoginLayoutWrapper-sc-1p2723n-0 ewqnAE"
+        role="main"
+      >
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+        >
+          <div
+            class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+          >
+            <div
+              class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+            >
+              <div
+                class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexColumn-sc-c3jdxk-4 LargeLogo__LogoWrapper-sc-1bu4w53-0 escqfF ckFvxY leZDxE kYvtBp"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="Icon-sc-btq2kp-0"
+                  fill="none"
+                  focusable="false"
+                  height="51px"
+                  name="linsta"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  width="196px"
+                >
+                  <use
+                    href="http://localhost:8080/public/images/sprite.svg#linsta"
+                  />
+                </svg>
+              </div>
+              <form
+                class="LoginLayout__LoginForm-sc-1p2723n-1 hLcGhC"
+                method="post"
+              >
+                <div
+                  class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+                >
+                  <span
+                    class="CombinedStyling__Span-sc-c3jdxk-1 kSRMWv"
+                  >
+                    Log in to see photos and videos from your friends.
+                  </span>
+                </div>
+                <div
+                  class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 StyledInput__StyledInputWrapper-sc-fkf055-0 escqfF ckFvxY fjNDtr cyFDIt"
+                >
+                  <label
+                    class="StyledInput__StyledInputLabel-sc-fkf055-2 iHXgrc"
+                  >
+                    <input
+                      class="StyledInput__StyledInputInput-sc-fkf055-1 kkxInS"
+                      maxlength="255"
+                      name="userName"
+                      placeholder="Username"
+                      value="user"
+                    />
+                    <div
+                      class="CombinedStyling__Div-sc-c3jdxk-0 StyledInput__ValidationIcon-sc-fkf055-3 hNEsIT kYVJfy"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        class="Icon-sc-btq2kp-0"
+                        fill="currentColor"
+                        focusable="false"
+                        name="check-circle"
+                        stroke="none"
+                        stroke-width="2"
+                      >
+                        <use
+                          href="http://localhost:8080/public/images/sprite.svg#check-circle"
+                        />
+                      </svg>
+                    </div>
+                  </label>
+                </div>
+                <div
+                  class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 StyledInput__StyledInputWrapper-sc-fkf055-0 escqfF ckFvxY fjNDtr cyFDIt"
+                >
+                  <label
+                    class="StyledInput__StyledInputLabel-sc-fkf055-2 iHXgrc"
+                  >
+                    <input
+                      class="StyledInput__StyledInputInput-sc-fkf055-1 kkxInS"
+                      maxlength="255"
+                      name="password"
+                      placeholder="Password"
+                      type="password"
+                      value="ValidPass1!"
+                    />
+                    <div
+                      class="CombinedStyling__Div-sc-c3jdxk-0 StyledInput__ValidationIcon-sc-fkf055-3 hNEsIT kYVJfy"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        class="Icon-sc-btq2kp-0"
+                        fill="currentColor"
+                        focusable="false"
+                        name="check-circle"
+                        stroke="none"
+                        stroke-width="2"
+                      >
+                        <use
+                          href="http://localhost:8080/public/images/sprite.svg#check-circle"
+                        />
+                      </svg>
+                    </div>
+                  </label>
+                </div>
+                <button
+                  class="StyledButton__StyledButtonComponent-sc-8t4kac-0 bZbOLt"
+                  style="margin-top: 8px;"
+                  type="submit"
+                >
+                  Login
+                </button>
+                <div
+                  class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+                >
+                  <a
+                    class="CombinedStyling__Link-sc-c3jdxk-7 StyledLink__StyledLinkWrapperFromLink-sc-1rgr01q-0 rKNtR dnJNFP"
+                    href="/forgot"
+                    role=""
+                  >
+                    Forgot Password?
+                  </a>
+                </div>
+              </form>
+            </div>
+            <div
+              class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+              style="padding: 20px 0px;"
+            >
+              Don't have an account? 
+              <a
+                class="CombinedStyling__Link-sc-c3jdxk-7 StyledLink__StyledLinkWrapperFromLink-sc-1rgr01q-0 rKNtR dnJNFP"
+                href="/signup"
+                role=""
+              >
+                Sign up
+              </a>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </body>,
+  "container": <div>
+    <main
+      class="LoginLayout__LoginLayoutWrapper-sc-1p2723n-0 ewqnAE"
+      role="main"
+    >
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+      >
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+        >
+          <div
+            class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+          >
+            <div
+              class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexColumn-sc-c3jdxk-4 LargeLogo__LogoWrapper-sc-1bu4w53-0 escqfF ckFvxY leZDxE kYvtBp"
+            >
+              <svg
+                aria-hidden="true"
+                class="Icon-sc-btq2kp-0"
+                fill="none"
+                focusable="false"
+                height="51px"
+                name="linsta"
+                stroke="currentColor"
+                stroke-width="2"
+                width="196px"
+              >
+                <use
+                  href="http://localhost:8080/public/images/sprite.svg#linsta"
+                />
+              </svg>
+            </div>
+            <form
+              class="LoginLayout__LoginForm-sc-1p2723n-1 hLcGhC"
+              method="post"
+            >
+              <div
+                class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+              >
+                <span
+                  class="CombinedStyling__Span-sc-c3jdxk-1 kSRMWv"
+                >
+                  Log in to see photos and videos from your friends.
+                </span>
+              </div>
+              <div
+                class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 StyledInput__StyledInputWrapper-sc-fkf055-0 escqfF ckFvxY fjNDtr cyFDIt"
+              >
+                <label
+                  class="StyledInput__StyledInputLabel-sc-fkf055-2 iHXgrc"
+                >
+                  <input
+                    class="StyledInput__StyledInputInput-sc-fkf055-1 kkxInS"
+                    maxlength="255"
+                    name="userName"
+                    placeholder="Username"
+                    value="user"
+                  />
+                  <div
+                    class="CombinedStyling__Div-sc-c3jdxk-0 StyledInput__ValidationIcon-sc-fkf055-3 hNEsIT kYVJfy"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="Icon-sc-btq2kp-0"
+                      fill="currentColor"
+                      focusable="false"
+                      name="check-circle"
+                      stroke="none"
+                      stroke-width="2"
+                    >
+                      <use
+                        href="http://localhost:8080/public/images/sprite.svg#check-circle"
+                      />
+                    </svg>
+                  </div>
+                </label>
+              </div>
+              <div
+                class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 StyledInput__StyledInputWrapper-sc-fkf055-0 escqfF ckFvxY fjNDtr cyFDIt"
+              >
+                <label
+                  class="StyledInput__StyledInputLabel-sc-fkf055-2 iHXgrc"
+                >
+                  <input
+                    class="StyledInput__StyledInputInput-sc-fkf055-1 kkxInS"
+                    maxlength="255"
+                    name="password"
+                    placeholder="Password"
+                    type="password"
+                    value="ValidPass1!"
+                  />
+                  <div
+                    class="CombinedStyling__Div-sc-c3jdxk-0 StyledInput__ValidationIcon-sc-fkf055-3 hNEsIT kYVJfy"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="Icon-sc-btq2kp-0"
+                      fill="currentColor"
+                      focusable="false"
+                      name="check-circle"
+                      stroke="none"
+                      stroke-width="2"
+                    >
+                      <use
+                        href="http://localhost:8080/public/images/sprite.svg#check-circle"
+                      />
+                    </svg>
+                  </div>
+                </label>
+              </div>
+              <button
+                class="StyledButton__StyledButtonComponent-sc-8t4kac-0 bZbOLt"
+                style="margin-top: 8px;"
+                type="submit"
+              >
+                Login
+              </button>
+              <div
+                class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+              >
+                <a
+                  class="CombinedStyling__Link-sc-c3jdxk-7 StyledLink__StyledLinkWrapperFromLink-sc-1rgr01q-0 rKNtR dnJNFP"
+                  href="/forgot"
+                  role=""
+                >
+                  Forgot Password?
+                </a>
+              </div>
+            </form>
+          </div>
+          <div
+            class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+            style="padding: 20px 0px;"
+          >
+            Don't have an account? 
+            <a
+              class="CombinedStyling__Link-sc-c3jdxk-7 StyledLink__StyledLinkWrapperFromLink-sc-1rgr01q-0 rKNtR dnJNFP"
+              href="/signup"
+              role=""
+            >
+              Sign up
+            </a>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "store": {
+    "@@observable": [Function],
+    "dispatch": [Function],
+    "getState": [Function],
+    "replaceReducer": [Function],
+    "subscribe": [Function],
+  },
+  "unmount": [Function],
+}
+`;
+
+exports[`LoginLayout dispatches loginUser and shows error on failure 1`] = `
+{
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div>
+      <main
+        class="LoginLayout__LoginLayoutWrapper-sc-1p2723n-0 ewqnAE"
+        role="main"
+      >
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+        >
+          <div
+            class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+          >
+            <div
+              class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+            >
+              <div
+                class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexColumn-sc-c3jdxk-4 LargeLogo__LogoWrapper-sc-1bu4w53-0 escqfF ckFvxY leZDxE kYvtBp"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="Icon-sc-btq2kp-0"
+                  fill="none"
+                  focusable="false"
+                  height="51px"
+                  name="linsta"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  width="196px"
+                >
+                  <use
+                    href="http://localhost:8080/public/images/sprite.svg#linsta"
+                  />
+                </svg>
+              </div>
+              <form
+                class="LoginLayout__LoginForm-sc-1p2723n-1 hLcGhC"
+                method="post"
+              >
+                <div
+                  class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+                >
+                  <span
+                    class="CombinedStyling__Span-sc-c3jdxk-1 kSRMWv"
+                  >
+                    Log in to see photos and videos from your friends.
+                  </span>
+                </div>
+                <div
+                  class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 StyledInput__StyledInputWrapper-sc-fkf055-0 escqfF ckFvxY fjNDtr cyFDIt"
+                >
+                  <label
+                    class="StyledInput__StyledInputLabel-sc-fkf055-2 iHXgrc"
+                  >
+                    <input
+                      class="StyledInput__StyledInputInput-sc-fkf055-1 kkxInS"
+                      maxlength="255"
+                      name="userName"
+                      placeholder="Username"
+                      value="user"
+                    />
+                    <div
+                      class="CombinedStyling__Div-sc-c3jdxk-0 StyledInput__ValidationIcon-sc-fkf055-3 hNEsIT kYVJfy"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        class="Icon-sc-btq2kp-0"
+                        fill="currentColor"
+                        focusable="false"
+                        name="check-circle"
+                        stroke="none"
+                        stroke-width="2"
+                      >
+                        <use
+                          href="http://localhost:8080/public/images/sprite.svg#check-circle"
+                        />
+                      </svg>
+                    </div>
+                  </label>
+                </div>
+                <div
+                  class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 StyledInput__StyledInputWrapper-sc-fkf055-0 escqfF ckFvxY fjNDtr cyFDIt"
+                >
+                  <label
+                    class="StyledInput__StyledInputLabel-sc-fkf055-2 iHXgrc"
+                  >
+                    <input
+                      class="StyledInput__StyledInputInput-sc-fkf055-1 kkxInS"
+                      maxlength="255"
+                      name="password"
+                      placeholder="Password"
+                      type="password"
+                      value="ValidPass1!"
+                    />
+                    <div
+                      class="CombinedStyling__Div-sc-c3jdxk-0 StyledInput__ValidationIcon-sc-fkf055-3 hNEsIT kYVJfy"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        class="Icon-sc-btq2kp-0"
+                        fill="currentColor"
+                        focusable="false"
+                        name="check-circle"
+                        stroke="none"
+                        stroke-width="2"
+                      >
+                        <use
+                          href="http://localhost:8080/public/images/sprite.svg#check-circle"
+                        />
+                      </svg>
+                    </div>
+                  </label>
+                </div>
+                <div
+                  class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 LoginLayout__StatusText-sc-1p2723n-2 escqfF ckFvxY eYtDIA"
+                >
+                  Invalid username or password
+                </div>
+                <button
+                  class="StyledButton__StyledButtonComponent-sc-8t4kac-0 bZbOLt"
+                  style="margin-top: 8px;"
+                  type="submit"
+                >
+                  Login
+                </button>
+                <div
+                  class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+                >
+                  <a
+                    class="CombinedStyling__Link-sc-c3jdxk-7 StyledLink__StyledLinkWrapperFromLink-sc-1rgr01q-0 rKNtR dnJNFP"
+                    href="/forgot"
+                    role=""
+                  >
+                    Forgot Password?
+                  </a>
+                </div>
+              </form>
+            </div>
+            <div
+              class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+              style="padding: 20px 0px;"
+            >
+              Don't have an account? 
+              <a
+                class="CombinedStyling__Link-sc-c3jdxk-7 StyledLink__StyledLinkWrapperFromLink-sc-1rgr01q-0 rKNtR dnJNFP"
+                href="/signup"
+                role=""
+              >
+                Sign up
+              </a>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </body>,
+  "container": <div>
+    <main
+      class="LoginLayout__LoginLayoutWrapper-sc-1p2723n-0 ewqnAE"
+      role="main"
+    >
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+      >
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+        >
+          <div
+            class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+          >
+            <div
+              class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexColumn-sc-c3jdxk-4 LargeLogo__LogoWrapper-sc-1bu4w53-0 escqfF ckFvxY leZDxE kYvtBp"
+            >
+              <svg
+                aria-hidden="true"
+                class="Icon-sc-btq2kp-0"
+                fill="none"
+                focusable="false"
+                height="51px"
+                name="linsta"
+                stroke="currentColor"
+                stroke-width="2"
+                width="196px"
+              >
+                <use
+                  href="http://localhost:8080/public/images/sprite.svg#linsta"
+                />
+              </svg>
+            </div>
+            <form
+              class="LoginLayout__LoginForm-sc-1p2723n-1 hLcGhC"
+              method="post"
+            >
+              <div
+                class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+              >
+                <span
+                  class="CombinedStyling__Span-sc-c3jdxk-1 kSRMWv"
+                >
+                  Log in to see photos and videos from your friends.
+                </span>
+              </div>
+              <div
+                class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 StyledInput__StyledInputWrapper-sc-fkf055-0 escqfF ckFvxY fjNDtr cyFDIt"
+              >
+                <label
+                  class="StyledInput__StyledInputLabel-sc-fkf055-2 iHXgrc"
+                >
+                  <input
+                    class="StyledInput__StyledInputInput-sc-fkf055-1 kkxInS"
+                    maxlength="255"
+                    name="userName"
+                    placeholder="Username"
+                    value="user"
+                  />
+                  <div
+                    class="CombinedStyling__Div-sc-c3jdxk-0 StyledInput__ValidationIcon-sc-fkf055-3 hNEsIT kYVJfy"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="Icon-sc-btq2kp-0"
+                      fill="currentColor"
+                      focusable="false"
+                      name="check-circle"
+                      stroke="none"
+                      stroke-width="2"
+                    >
+                      <use
+                        href="http://localhost:8080/public/images/sprite.svg#check-circle"
+                      />
+                    </svg>
+                  </div>
+                </label>
+              </div>
+              <div
+                class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 StyledInput__StyledInputWrapper-sc-fkf055-0 escqfF ckFvxY fjNDtr cyFDIt"
+              >
+                <label
+                  class="StyledInput__StyledInputLabel-sc-fkf055-2 iHXgrc"
+                >
+                  <input
+                    class="StyledInput__StyledInputInput-sc-fkf055-1 kkxInS"
+                    maxlength="255"
+                    name="password"
+                    placeholder="Password"
+                    type="password"
+                    value="ValidPass1!"
+                  />
+                  <div
+                    class="CombinedStyling__Div-sc-c3jdxk-0 StyledInput__ValidationIcon-sc-fkf055-3 hNEsIT kYVJfy"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="Icon-sc-btq2kp-0"
+                      fill="currentColor"
+                      focusable="false"
+                      name="check-circle"
+                      stroke="none"
+                      stroke-width="2"
+                    >
+                      <use
+                        href="http://localhost:8080/public/images/sprite.svg#check-circle"
+                      />
+                    </svg>
+                  </div>
+                </label>
+              </div>
+              <div
+                class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 LoginLayout__StatusText-sc-1p2723n-2 escqfF ckFvxY eYtDIA"
+              >
+                Invalid username or password
+              </div>
+              <button
+                class="StyledButton__StyledButtonComponent-sc-8t4kac-0 bZbOLt"
+                style="margin-top: 8px;"
+                type="submit"
+              >
+                Login
+              </button>
+              <div
+                class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+              >
+                <a
+                  class="CombinedStyling__Link-sc-c3jdxk-7 StyledLink__StyledLinkWrapperFromLink-sc-1rgr01q-0 rKNtR dnJNFP"
+                  href="/forgot"
+                  role=""
+                >
+                  Forgot Password?
+                </a>
+              </div>
+            </form>
+          </div>
+          <div
+            class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+            style="padding: 20px 0px;"
+          >
+            Don't have an account? 
+            <a
+              class="CombinedStyling__Link-sc-c3jdxk-7 StyledLink__StyledLinkWrapperFromLink-sc-1rgr01q-0 rKNtR dnJNFP"
+              href="/signup"
+              role=""
+            >
+              Sign up
+            </a>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "store": {
+    "@@observable": [Function],
+    "dispatch": [Function],
+    "getState": [Function],
+    "replaceReducer": [Function],
+    "subscribe": [Function],
+  },
+  "unmount": [Function],
+}
+`;

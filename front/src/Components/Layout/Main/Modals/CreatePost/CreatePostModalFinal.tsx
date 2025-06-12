@@ -105,13 +105,6 @@ const InputContainer = styled.div`
     margin-top: 10px;
 `;
 
-const SVGContainer = styled.div`
-    width: 24px;
-    height: 24px;
-    margin: auto;
-    align-content: center;
-`;
-
 const Label = styled.label`
     display: flex;
     flex-direction: row;
@@ -127,20 +120,6 @@ const Input = styled.input`
     &:focus {
         outline: none;
     }
-`;
-
-const CollabPopupContainer = styled.div<{$isOpen: boolean}>`
-    display: ${props => props.$isOpen ? "flex" : "none"};
-    position: fixed;
-    top: 10px;
-    width: 20%;
-    height: 50%;
-    z-index: 9;
-    background-color: ${props => props.theme['colors'].backgroundColor};
-    border: 1px solid ${props => props.theme['colors'].borderDefaultColor};
-    border-radius: 8px;
-    overflow-y: auto;
-    overflow-x: clip;    
 `;
 
 const Text = styled.div`

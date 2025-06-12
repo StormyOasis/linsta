@@ -6,7 +6,7 @@ import * as styles from './Header.module.css';
 import { Div, FlexColumn, FlexRow } from "../Common/CombinedStyling";
 import { LogoSVG } from "../Common/Icon";
 
-const HeaderWrapper = styled(FlexColumn)`
+export const HeaderWrapper = styled(FlexColumn)`
   z-index: 100;
   align-items: center;
   height: 60px;  

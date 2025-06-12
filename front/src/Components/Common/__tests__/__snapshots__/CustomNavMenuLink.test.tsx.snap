@@ -1,0 +1,587 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CustomNavMenuLink calls onClick when clicked (DivLink) 1`] = `
+{
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div>
+      <div
+        aria-description="Menu Link"
+        class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CustomNavMenuLink__DivLink-sc-1cwq39-2 escqfF ckFvxY eiXdbS"
+      >
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 CustomNavMenuLink__InnerNavLinkWrapper-sc-1cwq39-0 escqfF kIiyXc"
+        >
+          <div
+            class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+          >
+            <svg
+              data-testid="icon"
+            />
+          </div>
+          <div
+            class="CombinedStyling__Div-sc-c3jdxk-0 htdXAs"
+          >
+            <span
+              class="CombinedStyling__Span-sc-c3jdxk-1 kSRMWv"
+            >
+              Menu Link
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <div
+      aria-description="Menu Link"
+      class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CustomNavMenuLink__DivLink-sc-1cwq39-2 escqfF ckFvxY eiXdbS"
+    >
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 CustomNavMenuLink__InnerNavLinkWrapper-sc-1cwq39-0 escqfF kIiyXc"
+      >
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+        >
+          <svg
+            data-testid="icon"
+          />
+        </div>
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 htdXAs"
+        >
+          <span
+            class="CombinedStyling__Span-sc-c3jdxk-1 kSRMWv"
+          >
+            Menu Link
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "store": {
+    "@@observable": [Function],
+    "dispatch": [Function],
+    "getState": [Function],
+    "replaceReducer": [Function],
+    "subscribe": [Function],
+  },
+  "unmount": [Function],
+}
+`;
+
+exports[`CustomNavMenuLink calls onClick when clicked (NavLink) 1`] = `
+{
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div>
+      <a
+        aria-label="Menu Link"
+        class="CustomNavMenuLink__NavLink-sc-1cwq39-1 icZHz"
+        href="/test"
+      >
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 CustomNavMenuLink__InnerNavLinkWrapper-sc-1cwq39-0 escqfF kIiyXc"
+        >
+          <div
+            class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+          >
+            <svg
+              data-testid="icon"
+            />
+          </div>
+          <div
+            class="CombinedStyling__Div-sc-c3jdxk-0 htdXAs"
+          >
+            <span
+              class="CombinedStyling__Span-sc-c3jdxk-1 kSRMWv"
+            >
+              Menu Link
+            </span>
+          </div>
+        </div>
+      </a>
+    </div>
+  </body>,
+  "container": <div>
+    <a
+      aria-label="Menu Link"
+      class="CustomNavMenuLink__NavLink-sc-1cwq39-1 icZHz"
+      href="/test"
+    >
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 CustomNavMenuLink__InnerNavLinkWrapper-sc-1cwq39-0 escqfF kIiyXc"
+      >
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+        >
+          <svg
+            data-testid="icon"
+          />
+        </div>
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 htdXAs"
+        >
+          <span
+            class="CombinedStyling__Span-sc-c3jdxk-1 kSRMWv"
+          >
+            Menu Link
+          </span>
+        </div>
+      </div>
+    </a>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "store": {
+    "@@observable": [Function],
+    "dispatch": [Function],
+    "getState": [Function],
+    "replaceReducer": [Function],
+    "subscribe": [Function],
+  },
+  "unmount": [Function],
+}
+`;
+
+exports[`CustomNavMenuLink does not render text when matchesLargestBP is false 1`] = `
+{
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div>
+      <div
+        aria-description="Menu Link"
+        class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CustomNavMenuLink__DivLink-sc-1cwq39-2 escqfF ckFvxY eiXdbS"
+      >
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 CustomNavMenuLink__InnerNavLinkWrapper-sc-1cwq39-0 escqfF kIiyXc"
+        >
+          <div
+            class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+          >
+            <svg
+              data-testid="icon"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <div
+      aria-description="Menu Link"
+      class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CustomNavMenuLink__DivLink-sc-1cwq39-2 escqfF ckFvxY eiXdbS"
+    >
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 CustomNavMenuLink__InnerNavLinkWrapper-sc-1cwq39-0 escqfF kIiyXc"
+      >
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+        >
+          <svg
+            data-testid="icon"
+          />
+        </div>
+      </div>
+    </div>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "store": {
+    "@@observable": [Function],
+    "dispatch": [Function],
+    "getState": [Function],
+    "replaceReducer": [Function],
+    "subscribe": [Function],
+  },
+  "unmount": [Function],
+}
+`;
+
+exports[`CustomNavMenuLink renders DivLink when 'to' prop is null 1`] = `
+{
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div>
+      <div
+        aria-description="Menu Link"
+        class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CustomNavMenuLink__DivLink-sc-1cwq39-2 escqfF ckFvxY eiXdbS"
+      >
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 CustomNavMenuLink__InnerNavLinkWrapper-sc-1cwq39-0 escqfF kIiyXc"
+        >
+          <div
+            class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+          >
+            <svg
+              data-testid="icon"
+            />
+          </div>
+          <div
+            class="CombinedStyling__Div-sc-c3jdxk-0 htdXAs"
+          >
+            <span
+              class="CombinedStyling__Span-sc-c3jdxk-1 kSRMWv"
+            >
+              Menu Link
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <div
+      aria-description="Menu Link"
+      class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CustomNavMenuLink__DivLink-sc-1cwq39-2 escqfF ckFvxY eiXdbS"
+    >
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 CustomNavMenuLink__InnerNavLinkWrapper-sc-1cwq39-0 escqfF kIiyXc"
+      >
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+        >
+          <svg
+            data-testid="icon"
+          />
+        </div>
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 htdXAs"
+        >
+          <span
+            class="CombinedStyling__Span-sc-c3jdxk-1 kSRMWv"
+          >
+            Menu Link
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "store": {
+    "@@observable": [Function],
+    "dispatch": [Function],
+    "getState": [Function],
+    "replaceReducer": [Function],
+    "subscribe": [Function],
+  },
+  "unmount": [Function],
+}
+`;
+
+exports[`CustomNavMenuLink renders NavLink when 'to' prop is provided 1`] = `
+{
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div>
+      <a
+        aria-label="Menu Link"
+        class="CustomNavMenuLink__NavLink-sc-1cwq39-1 icZHz"
+        href="/test"
+      >
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 CustomNavMenuLink__InnerNavLinkWrapper-sc-1cwq39-0 escqfF kIiyXc"
+        >
+          <div
+            class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+          >
+            <svg
+              data-testid="icon"
+            />
+          </div>
+          <div
+            class="CombinedStyling__Div-sc-c3jdxk-0 htdXAs"
+          >
+            <span
+              class="CombinedStyling__Span-sc-c3jdxk-1 kSRMWv"
+            >
+              Menu Link
+            </span>
+          </div>
+        </div>
+      </a>
+    </div>
+  </body>,
+  "container": <div>
+    <a
+      aria-label="Menu Link"
+      class="CustomNavMenuLink__NavLink-sc-1cwq39-1 icZHz"
+      href="/test"
+    >
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 CustomNavMenuLink__InnerNavLinkWrapper-sc-1cwq39-0 escqfF kIiyXc"
+      >
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 escqfF"
+        >
+          <svg
+            data-testid="icon"
+          />
+        </div>
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 htdXAs"
+        >
+          <span
+            class="CombinedStyling__Span-sc-c3jdxk-1 kSRMWv"
+          >
+            Menu Link
+          </span>
+        </div>
+      </div>
+    </a>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "store": {
+    "@@observable": [Function],
+    "dispatch": [Function],
+    "getState": [Function],
+    "replaceReducer": [Function],
+    "subscribe": [Function],
+  },
+  "unmount": [Function],
+}
+`;

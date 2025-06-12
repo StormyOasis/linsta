@@ -1,0 +1,271 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CreatePostModalCrop handles next/prev file navigation 1`] = `
+<div>
+  <div
+    data-testid="mock-theme"
+  >
+    <div
+      data-testid="mock-modal-section-wrapper"
+    >
+      <div>
+        <div>
+          <div>
+            <div
+              data-testid="mock-cropper"
+            />
+          </div>
+          <div>
+            <div>
+              <svg
+                data-testid="mock-crop-svg"
+              />
+            </div>
+          </div>
+          <button
+            data-testid="mock-media-slider-btn-bottomRight"
+          />
+        </div>
+      </div>
+    </div>
+    <div
+      data-testid="mock-modal-section-wrapper"
+      style="width: 100%;"
+    >
+      <div>
+        <input
+          data-testid="mock-slider-Zoom"
+          max="4"
+          min="0"
+          step="0.1"
+          type="range"
+          value="1"
+        />
+        <input
+          data-testid="mock-slider-Rotation"
+          max="360"
+          min="0"
+          step="1"
+          type="range"
+          value="0"
+        />
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`CreatePostModalCrop renders cropper and sliders for image file 1`] = `
+<div>
+  <div
+    data-testid="mock-theme"
+  >
+    <div
+      data-testid="mock-modal-section-wrapper"
+    >
+      <div>
+        <div>
+          <div>
+            <div
+              data-testid="mock-cropper"
+            />
+          </div>
+          <div>
+            <div>
+              <svg
+                data-testid="mock-crop-svg"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      data-testid="mock-modal-section-wrapper"
+      style="width: 100%;"
+    >
+      <div>
+        <input
+          data-testid="mock-slider-Zoom"
+          max="4"
+          min="0"
+          step="0.1"
+          type="range"
+          value="1"
+        />
+        <input
+          data-testid="mock-slider-Rotation"
+          max="360"
+          min="0"
+          step="1"
+          type="range"
+          value="0"
+        />
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`CreatePostModalCrop renders video warning if file is video 1`] = `
+<div>
+  <div
+    data-testid="mock-theme"
+  >
+    <div>
+      Note: Editing video files is currently unsupported
+    </div>
+    <div
+      data-testid="mock-modal-section-wrapper"
+    >
+      <div>
+        <div>
+          <div>
+            <div
+              data-testid="mock-cropper"
+            />
+          </div>
+          <div>
+            <div>
+              <svg
+                data-testid="mock-crop-svg"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      data-testid="mock-modal-section-wrapper"
+      style="width: 100%;"
+    >
+      <div>
+        <input
+          data-testid="mock-slider-Zoom"
+          max="4"
+          min="0"
+          step="0.1"
+          type="range"
+          value="1"
+        />
+        <input
+          data-testid="mock-slider-Rotation"
+          max="360"
+          min="0"
+          step="1"
+          type="range"
+          value="0"
+        />
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`CreatePostModalCrop toggles aspect ratio menu 1`] = `
+<div>
+  <div
+    data-testid="mock-theme"
+  >
+    <div
+      data-testid="mock-modal-section-wrapper"
+    >
+      <div>
+        <div>
+          <div>
+            <div
+              data-testid="mock-cropper"
+            />
+            <div>
+              <div>
+                <div>
+                  <div>
+                    Original
+                  </div>
+                  <svg
+                    data-testid="mock-image-svg"
+                  />
+                </div>
+              </div>
+              <div>
+                <div>
+                  <div>
+                    1:1
+                  </div>
+                  <svg
+                    data-testid="mock-1-1-svg"
+                  />
+                </div>
+              </div>
+              <div>
+                <div>
+                  <div>
+                    1:2
+                  </div>
+                </div>
+              </div>
+              <div>
+                <div>
+                  <div>
+                    4:3
+                  </div>
+                </div>
+              </div>
+              <div>
+                <div>
+                  <div>
+                    4:5
+                  </div>
+                  <svg
+                    data-testid="mock-4-5-svg"
+                  />
+                </div>
+              </div>
+              <div>
+                <div>
+                  <div>
+                    16:9
+                  </div>
+                  <svg
+                    data-testid="mock-16-9-svg"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div>
+              <svg
+                data-testid="mock-crop-svg"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      data-testid="mock-modal-section-wrapper"
+      style="width: 100%;"
+    >
+      <div>
+        <input
+          data-testid="mock-slider-Zoom"
+          max="4"
+          min="0"
+          step="0.1"
+          type="range"
+          value="1"
+        />
+        <input
+          data-testid="mock-slider-Rotation"
+          max="360"
+          min="0"
+          step="1"
+          type="range"
+          value="0"
+        />
+      </div>
+    </div>
+  </div>
+</div>
+`;

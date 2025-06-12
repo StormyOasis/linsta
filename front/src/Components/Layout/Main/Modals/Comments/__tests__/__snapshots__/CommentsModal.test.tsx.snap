@@ -1,0 +1,1357 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CommentsModal adds emoji to comment text when emoji is picked 1`] = `
+<div>
+  <div
+    data-testid="mock-theme"
+  >
+    <div
+      data-testid="mock-multistepmodal"
+    >
+      <div>
+        <div>
+          <div>
+            <div>
+              <div
+                data-testid="mock-media-slider"
+                media=""
+              />
+            </div>
+            <div>
+              <div>
+                <div>
+                  <div>
+                    <div>
+                      <div
+                        collaborators="[object Object]"
+                        data-testid="mock-profile-link"
+                        location=""
+                        pfp="pfp.png"
+                        url="http://localhost:8080/testuser"
+                        username="testuser"
+                      />
+                      <div>
+                        <a>
+                          ...
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <div
+                    style="padding: 15px 10px;"
+                  >
+                    <div>
+                      <div
+                        collaborators="[object Object]"
+                        data-testid="mock-profile-link"
+                        pfp="pfp.png"
+                        url="http://localhost:8080/testuser"
+                        username="testuser"
+                      />
+                      <div>
+                        <span>
+                          <span
+                            data-testid="mock-linkify"
+                          >
+                            &lt;div data-testid="mock-theme"&gt;&lt;div data-testid="mock-profile-link" collaborators="[object Object]" url="http://localhost:8080/testuser" userName="testuser"&gt;&lt;/div&gt;&lt;/div&gt;caption
+                          </span>
+                        </span>
+                        <div>
+                          <span>
+                            1d
+                          </span>
+                          <button
+                            aria-label="Reply to comment"
+                          >
+                            Reply
+                          </button>
+                        </div>
+                        <div />
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <div>
+                      No Comments Yet
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <div>
+                    <div>
+                      <button
+                        aria-label="Toogle post like"
+                        data-testid="mock-like-toggler"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <div>
+                      <div>
+                        <svg
+                          data-testid="mock-message-svg"
+                          height="28px"
+                          width="28px"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <span
+                    authuserid="1"
+                    data-testid="mock-view-likes-text"
+                    post="[object Object]"
+                  />
+                  <span>
+                    Today
+                  </span>
+                </div>
+                <div>
+                  <div>
+                    <textarea
+                      aria-label="Add a new comment..."
+                      placeholder="Add a new comment..."
+                    >
+                      Hi
+                    </textarea>
+                    <div>
+                      <div>
+                        <a
+                          data-testid="mock-styled-link"
+                        >
+                          Post
+                        </a>
+                      </div>
+                      <div
+                        data-testid="mock-emoji-picker"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`CommentsModal renders linkify and emoji picker 1`] = `
+<div>
+  <div
+    data-testid="mock-theme"
+  >
+    <div
+      data-testid="mock-multistepmodal"
+    >
+      <div>
+        <div>
+          <div>
+            <div>
+              <div
+                data-testid="mock-media-slider"
+                media=""
+              />
+            </div>
+            <div>
+              <div>
+                <div>
+                  <div>
+                    <div>
+                      <div
+                        collaborators="[object Object]"
+                        data-testid="mock-profile-link"
+                        location=""
+                        pfp="pfp.png"
+                        url="http://localhost:8080/testuser"
+                        username="testuser"
+                      />
+                      <div>
+                        <a>
+                          ...
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <div
+                    style="padding: 15px 10px;"
+                  >
+                    <div>
+                      <div
+                        collaborators="[object Object]"
+                        data-testid="mock-profile-link"
+                        pfp="pfp.png"
+                        url="http://localhost:8080/testuser"
+                        username="testuser"
+                      />
+                      <div>
+                        <span>
+                          <span
+                            data-testid="mock-linkify"
+                          >
+                            &lt;div data-testid="mock-theme"&gt;&lt;div data-testid="mock-profile-link" collaborators="[object Object]" url="http://localhost:8080/testuser" userName="testuser"&gt;&lt;/div&gt;&lt;/div&gt;caption
+                          </span>
+                        </span>
+                        <div>
+                          <span>
+                            1d
+                          </span>
+                          <button
+                            aria-label="Reply to comment"
+                          >
+                            Reply
+                          </button>
+                        </div>
+                        <div />
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <div>
+                      No Comments Yet
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <div>
+                    <div>
+                      <button
+                        aria-label="Toogle post like"
+                        data-testid="mock-like-toggler"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <div>
+                      <div>
+                        <svg
+                          data-testid="mock-message-svg"
+                          height="28px"
+                          width="28px"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <span
+                    authuserid="1"
+                    data-testid="mock-view-likes-text"
+                    post="[object Object]"
+                  />
+                  <span>
+                    Today
+                  </span>
+                </div>
+                <div>
+                  <div>
+                    <textarea
+                      aria-label="Add a new comment..."
+                      placeholder="Add a new comment..."
+                    />
+                    <div>
+                      <div
+                        data-testid="mock-emoji-picker"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`CommentsModal renders message and share icons 1`] = `
+<div>
+  <div
+    data-testid="mock-theme"
+  >
+    <div
+      data-testid="mock-multistepmodal"
+    >
+      <div>
+        <div>
+          <div>
+            <div>
+              <div
+                data-testid="mock-media-slider"
+                media=""
+              />
+            </div>
+            <div>
+              <div>
+                <div>
+                  <div>
+                    <div>
+                      <div
+                        collaborators="[object Object]"
+                        data-testid="mock-profile-link"
+                        location=""
+                        pfp="pfp.png"
+                        url="http://localhost:8080/testuser"
+                        username="testuser"
+                      />
+                      <div>
+                        <a>
+                          ...
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <div
+                    style="padding: 15px 10px;"
+                  >
+                    <div>
+                      <div
+                        collaborators="[object Object]"
+                        data-testid="mock-profile-link"
+                        pfp="pfp.png"
+                        url="http://localhost:8080/testuser"
+                        username="testuser"
+                      />
+                      <div>
+                        <span>
+                          <span
+                            data-testid="mock-linkify"
+                          >
+                            &lt;div data-testid="mock-theme"&gt;&lt;div data-testid="mock-profile-link" collaborators="[object Object]" url="http://localhost:8080/testuser" userName="testuser"&gt;&lt;/div&gt;&lt;/div&gt;caption
+                          </span>
+                        </span>
+                        <div>
+                          <span>
+                            1d
+                          </span>
+                          <button
+                            aria-label="Reply to comment"
+                          >
+                            Reply
+                          </button>
+                        </div>
+                        <div />
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <div>
+                      No Comments Yet
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <div>
+                    <div>
+                      <button
+                        aria-label="Toogle post like"
+                        data-testid="mock-like-toggler"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <div>
+                      <div>
+                        <svg
+                          data-testid="mock-message-svg"
+                          height="28px"
+                          width="28px"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <span
+                    authuserid="1"
+                    data-testid="mock-view-likes-text"
+                    post="[object Object]"
+                  />
+                  <span>
+                    Today
+                  </span>
+                </div>
+                <div>
+                  <div>
+                    <textarea
+                      aria-label="Add a new comment..."
+                      placeholder="Add a new comment..."
+                    />
+                    <div>
+                      <div
+                        data-testid="mock-emoji-picker"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`CommentsModal renders modal and matches snapshot 1`] = `
+<div>
+  <div
+    data-testid="mock-theme"
+  >
+    <div
+      data-testid="mock-multistepmodal"
+    >
+      <div>
+        <div>
+          <div>
+            <div>
+              <div
+                data-testid="mock-media-slider"
+                media=""
+              />
+            </div>
+            <div>
+              <div>
+                <div>
+                  <div>
+                    <div>
+                      <div
+                        collaborators="[object Object]"
+                        data-testid="mock-profile-link"
+                        location=""
+                        pfp="pfp.png"
+                        url="http://localhost:8080/testuser"
+                        username="testuser"
+                      />
+                      <div>
+                        <a>
+                          ...
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <div
+                    style="padding: 15px 10px;"
+                  >
+                    <div>
+                      <div
+                        collaborators="[object Object]"
+                        data-testid="mock-profile-link"
+                        pfp="pfp.png"
+                        url="http://localhost:8080/testuser"
+                        username="testuser"
+                      />
+                      <div>
+                        <span>
+                          <span
+                            data-testid="mock-linkify"
+                          >
+                            &lt;div data-testid="mock-theme"&gt;&lt;div data-testid="mock-profile-link" collaborators="[object Object]" url="http://localhost:8080/testuser" userName="testuser"&gt;&lt;/div&gt;&lt;/div&gt;caption
+                          </span>
+                        </span>
+                        <div>
+                          <span>
+                            1d
+                          </span>
+                          <button
+                            aria-label="Reply to comment"
+                          >
+                            Reply
+                          </button>
+                        </div>
+                        <div />
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <div>
+                      No Comments Yet
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <div>
+                    <div>
+                      <button
+                        aria-label="Toogle post like"
+                        data-testid="mock-like-toggler"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <div>
+                      <div>
+                        <svg
+                          data-testid="mock-message-svg"
+                          height="28px"
+                          width="28px"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <span
+                    authuserid="1"
+                    data-testid="mock-view-likes-text"
+                    post="[object Object]"
+                  />
+                  <span>
+                    Today
+                  </span>
+                </div>
+                <div>
+                  <div>
+                    <textarea
+                      aria-label="Add a new comment..."
+                      placeholder="Add a new comment..."
+                    />
+                    <div>
+                      <div
+                        data-testid="mock-emoji-picker"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`CommentsModal renders profile link, media slider, and like toggler 1`] = `
+<div>
+  <div
+    data-testid="mock-theme"
+  >
+    <div
+      data-testid="mock-multistepmodal"
+    >
+      <div>
+        <div>
+          <div>
+            <div>
+              <div
+                data-testid="mock-media-slider"
+                media=""
+              />
+            </div>
+            <div>
+              <div>
+                <div>
+                  <div>
+                    <div>
+                      <div
+                        collaborators="[object Object]"
+                        data-testid="mock-profile-link"
+                        location=""
+                        pfp="pfp.png"
+                        url="http://localhost:8080/testuser"
+                        username="testuser"
+                      />
+                      <div>
+                        <a>
+                          ...
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <div
+                    style="padding: 15px 10px;"
+                  >
+                    <div>
+                      <div
+                        collaborators="[object Object]"
+                        data-testid="mock-profile-link"
+                        pfp="pfp.png"
+                        url="http://localhost:8080/testuser"
+                        username="testuser"
+                      />
+                      <div>
+                        <span>
+                          <span
+                            data-testid="mock-linkify"
+                          >
+                            &lt;div data-testid="mock-theme"&gt;&lt;div data-testid="mock-profile-link" collaborators="[object Object]" url="http://localhost:8080/testuser" userName="testuser"&gt;&lt;/div&gt;&lt;/div&gt;caption
+                          </span>
+                        </span>
+                        <div>
+                          <span>
+                            1d
+                          </span>
+                          <button
+                            aria-label="Reply to comment"
+                          >
+                            Reply
+                          </button>
+                        </div>
+                        <div />
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <div>
+                      No Comments Yet
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <div>
+                    <div>
+                      <button
+                        aria-label="Toogle post like"
+                        data-testid="mock-like-toggler"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <div>
+                      <div>
+                        <svg
+                          data-testid="mock-message-svg"
+                          height="28px"
+                          width="28px"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <span
+                    authuserid="1"
+                    data-testid="mock-view-likes-text"
+                    post="[object Object]"
+                  />
+                  <span>
+                    Today
+                  </span>
+                </div>
+                <div>
+                  <div>
+                    <textarea
+                      aria-label="Add a new comment..."
+                      placeholder="Add a new comment..."
+                    />
+                    <div>
+                      <div
+                        data-testid="mock-emoji-picker"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`CommentsModal renders styled link 1`] = `
+<div>
+  <div
+    data-testid="mock-theme"
+  >
+    <div
+      data-testid="mock-multistepmodal"
+    >
+      <div>
+        <div>
+          <div>
+            <div>
+              <div
+                data-testid="mock-media-slider"
+                media=""
+              />
+            </div>
+            <div>
+              <div>
+                <div>
+                  <div>
+                    <div>
+                      <div
+                        collaborators="[object Object]"
+                        data-testid="mock-profile-link"
+                        location=""
+                        pfp="pfp.png"
+                        url="http://localhost:8080/testuser"
+                        username="testuser"
+                      />
+                      <div>
+                        <a>
+                          ...
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <div
+                    style="padding: 15px 10px;"
+                  >
+                    <div>
+                      <div
+                        collaborators="[object Object]"
+                        data-testid="mock-profile-link"
+                        pfp="pfp.png"
+                        url="http://localhost:8080/testuser"
+                        username="testuser"
+                      />
+                      <div>
+                        <span>
+                          <span
+                            data-testid="mock-linkify"
+                          >
+                            &lt;div data-testid="mock-theme"&gt;&lt;div data-testid="mock-profile-link" collaborators="[object Object]" url="http://localhost:8080/testuser" userName="testuser"&gt;&lt;/div&gt;&lt;/div&gt;caption
+                          </span>
+                        </span>
+                        <div>
+                          <span>
+                            1d
+                          </span>
+                          <button
+                            aria-label="Reply to comment"
+                          >
+                            Reply
+                          </button>
+                        </div>
+                        <div />
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <div>
+                      No Comments Yet
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <div>
+                    <div>
+                      <button
+                        aria-label="Toogle post like"
+                        data-testid="mock-like-toggler"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <div>
+                      <div>
+                        <svg
+                          data-testid="mock-message-svg"
+                          height="28px"
+                          width="28px"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <span
+                    authuserid="1"
+                    data-testid="mock-view-likes-text"
+                    post="[object Object]"
+                  />
+                  <span>
+                    Today
+                  </span>
+                </div>
+                <div>
+                  <div>
+                    <textarea
+                      aria-label="Add a new comment..."
+                      placeholder="Add a new comment..."
+                    >
+                      Hello
+                    </textarea>
+                    <div>
+                      <div>
+                        <a
+                          data-testid="mock-styled-link"
+                        >
+                          Post
+                        </a>
+                      </div>
+                      <div
+                        data-testid="mock-emoji-picker"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`CommentsModal renders theme and multistep modal 1`] = `
+<div>
+  <div
+    data-testid="mock-theme"
+  >
+    <div
+      data-testid="mock-multistepmodal"
+    >
+      <div>
+        <div>
+          <div>
+            <div>
+              <div
+                data-testid="mock-media-slider"
+                media=""
+              />
+            </div>
+            <div>
+              <div>
+                <div>
+                  <div>
+                    <div>
+                      <div
+                        collaborators="[object Object]"
+                        data-testid="mock-profile-link"
+                        location=""
+                        pfp="pfp.png"
+                        url="http://localhost:8080/testuser"
+                        username="testuser"
+                      />
+                      <div>
+                        <a>
+                          ...
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <div
+                    style="padding: 15px 10px;"
+                  >
+                    <div>
+                      <div
+                        collaborators="[object Object]"
+                        data-testid="mock-profile-link"
+                        pfp="pfp.png"
+                        url="http://localhost:8080/testuser"
+                        username="testuser"
+                      />
+                      <div>
+                        <span>
+                          <span
+                            data-testid="mock-linkify"
+                          >
+                            &lt;div data-testid="mock-theme"&gt;&lt;div data-testid="mock-profile-link" collaborators="[object Object]" url="http://localhost:8080/testuser" userName="testuser"&gt;&lt;/div&gt;&lt;/div&gt;caption
+                          </span>
+                        </span>
+                        <div>
+                          <span>
+                            1d
+                          </span>
+                          <button
+                            aria-label="Reply to comment"
+                          >
+                            Reply
+                          </button>
+                        </div>
+                        <div />
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <div>
+                      No Comments Yet
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <div>
+                    <div>
+                      <button
+                        aria-label="Toogle post like"
+                        data-testid="mock-like-toggler"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <div>
+                      <div>
+                        <svg
+                          data-testid="mock-message-svg"
+                          height="28px"
+                          width="28px"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <span
+                    authuserid="1"
+                    data-testid="mock-view-likes-text"
+                    post="[object Object]"
+                  />
+                  <span>
+                    Today
+                  </span>
+                </div>
+                <div>
+                  <div>
+                    <textarea
+                      aria-label="Add a new comment..."
+                      placeholder="Add a new comment..."
+                    />
+                    <div>
+                      <div
+                        data-testid="mock-emoji-picker"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`CommentsModal shows 'No Comments Yet' when there are no comments 1`] = `
+<div>
+  <div
+    data-testid="mock-theme"
+  >
+    <div
+      data-testid="mock-multistepmodal"
+    >
+      <div>
+        <div>
+          <div>
+            <div>
+              <div
+                data-testid="mock-media-slider"
+                media=""
+              />
+            </div>
+            <div>
+              <div>
+                <div>
+                  <div>
+                    <div>
+                      <div
+                        collaborators="[object Object]"
+                        data-testid="mock-profile-link"
+                        location=""
+                        pfp="pfp.png"
+                        url="http://localhost:8080/testuser"
+                        username="testuser"
+                      />
+                      <div>
+                        <a>
+                          ...
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <div
+                    style="padding: 15px 10px;"
+                  >
+                    <div>
+                      <div
+                        collaborators="[object Object]"
+                        data-testid="mock-profile-link"
+                        pfp="pfp.png"
+                        url="http://localhost:8080/testuser"
+                        username="testuser"
+                      />
+                      <div>
+                        <span>
+                          <span
+                            data-testid="mock-linkify"
+                          >
+                            &lt;div data-testid="mock-theme"&gt;&lt;div data-testid="mock-profile-link" collaborators="[object Object]" url="http://localhost:8080/testuser" userName="testuser"&gt;&lt;/div&gt;&lt;/div&gt;caption
+                          </span>
+                        </span>
+                        <div>
+                          <span>
+                            1d
+                          </span>
+                          <button
+                            aria-label="Reply to comment"
+                          >
+                            Reply
+                          </button>
+                        </div>
+                        <div />
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <div>
+                      No Comments Yet
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <div>
+                    <div>
+                      <button
+                        aria-label="Toogle post like"
+                        data-testid="mock-like-toggler"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <div>
+                      <div>
+                        <svg
+                          data-testid="mock-message-svg"
+                          height="28px"
+                          width="28px"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <span
+                    authuserid="1"
+                    data-testid="mock-view-likes-text"
+                    post="[object Object]"
+                  />
+                  <span>
+                    Today
+                  </span>
+                </div>
+                <div>
+                  <div>
+                    <textarea
+                      aria-label="Add a new comment..."
+                      placeholder="Add a new comment..."
+                    />
+                    <div>
+                      <div
+                        data-testid="mock-emoji-picker"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`CommentsModal submits a comment when Enter is pressed 1`] = `
+<div>
+  <div
+    data-testid="mock-theme"
+  >
+    <div
+      data-testid="mock-multistepmodal"
+    >
+      <div>
+        <div>
+          <div>
+            <div>
+              <div
+                data-testid="mock-media-slider"
+                media=""
+              />
+            </div>
+            <div>
+              <div>
+                <div>
+                  <div>
+                    <div>
+                      <div
+                        collaborators="[object Object]"
+                        data-testid="mock-profile-link"
+                        location=""
+                        pfp="pfp.png"
+                        url="http://localhost:8080/testuser"
+                        username="testuser"
+                      />
+                      <div>
+                        <a>
+                          ...
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <div
+                    style="padding: 15px 10px;"
+                  >
+                    <div>
+                      <div
+                        collaborators="[object Object]"
+                        data-testid="mock-profile-link"
+                        pfp="pfp.png"
+                        url="http://localhost:8080/testuser"
+                        username="testuser"
+                      />
+                      <div>
+                        <span>
+                          <span
+                            data-testid="mock-linkify"
+                          >
+                            &lt;div data-testid="mock-theme"&gt;&lt;div data-testid="mock-profile-link" collaborators="[object Object]" url="http://localhost:8080/testuser" userName="testuser"&gt;&lt;/div&gt;&lt;/div&gt;caption
+                          </span>
+                        </span>
+                        <div>
+                          <span>
+                            1d
+                          </span>
+                          <button
+                            aria-label="Reply to comment"
+                          >
+                            Reply
+                          </button>
+                        </div>
+                        <div />
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <div>
+                      No Comments Yet
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <div>
+                    <div>
+                      <button
+                        aria-label="Toogle post like"
+                        data-testid="mock-like-toggler"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <div>
+                      <div>
+                        <svg
+                          data-testid="mock-message-svg"
+                          height="28px"
+                          width="28px"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <span
+                    authuserid="1"
+                    data-testid="mock-view-likes-text"
+                    post="[object Object]"
+                  />
+                  <span>
+                    Today
+                  </span>
+                </div>
+                <div>
+                  <div>
+                    <textarea
+                      aria-label="Add a new comment..."
+                      placeholder="Add a new comment..."
+                    >
+                      Hello
+                    </textarea>
+                    <div>
+                      <div>
+                        <a
+                          data-testid="mock-styled-link"
+                        >
+                          Post
+                        </a>
+                      </div>
+                      <div
+                        data-testid="mock-emoji-picker"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`CommentsModal submits a comment when Post is clicked 1`] = `
+<div>
+  <div
+    data-testid="mock-theme"
+  >
+    <div
+      data-testid="mock-multistepmodal"
+    >
+      <div>
+        <div>
+          <div>
+            <div>
+              <div
+                data-testid="mock-media-slider"
+                media=""
+              />
+            </div>
+            <div>
+              <div>
+                <div>
+                  <div>
+                    <div>
+                      <div
+                        collaborators="[object Object]"
+                        data-testid="mock-profile-link"
+                        location=""
+                        pfp="pfp.png"
+                        url="http://localhost:8080/testuser"
+                        username="testuser"
+                      />
+                      <div>
+                        <a>
+                          ...
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <div
+                    style="padding: 15px 10px;"
+                  >
+                    <div>
+                      <div
+                        collaborators="[object Object]"
+                        data-testid="mock-profile-link"
+                        pfp="pfp.png"
+                        url="http://localhost:8080/testuser"
+                        username="testuser"
+                      />
+                      <div>
+                        <span>
+                          <span
+                            data-testid="mock-linkify"
+                          >
+                            &lt;div data-testid="mock-theme"&gt;&lt;div data-testid="mock-profile-link" collaborators="[object Object]" url="http://localhost:8080/testuser" userName="testuser"&gt;&lt;/div&gt;&lt;/div&gt;caption
+                          </span>
+                        </span>
+                        <div>
+                          <span>
+                            1d
+                          </span>
+                          <button
+                            aria-label="Reply to comment"
+                          >
+                            Reply
+                          </button>
+                        </div>
+                        <div />
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <div>
+                      No Comments Yet
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <div>
+                    <div>
+                      <button
+                        aria-label="Toogle post like"
+                        data-testid="mock-like-toggler"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <div>
+                      <div>
+                        <svg
+                          data-testid="mock-message-svg"
+                          height="28px"
+                          width="28px"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <span
+                    authuserid="1"
+                    data-testid="mock-view-likes-text"
+                    post="[object Object]"
+                  />
+                  <span>
+                    Today
+                  </span>
+                </div>
+                <div>
+                  <div>
+                    <textarea
+                      aria-label="Add a new comment..."
+                      placeholder="Add a new comment..."
+                    >
+                      Hello
+                    </textarea>
+                    <div>
+                      <div>
+                        <a
+                          data-testid="mock-styled-link"
+                        >
+                          Post
+                        </a>
+                      </div>
+                      <div
+                        data-testid="mock-emoji-picker"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;

@@ -10,7 +10,7 @@ export interface GlobalMiscState {
     updatedPost: Post | null
 };
 
-const defaultState: GlobalMiscState = {
+export const miscInitialState: GlobalMiscState = {
     deletedCommentId: null,
     deletedPostId: null,
     updatedPost: null
@@ -22,11 +22,11 @@ const miscSliceCreator = (preloadedState?: Partial<GlobalMiscState>) => {
 
     function createInitialState() {
         if (historyUtils.isServer) {
-            return { ...defaultState, ...preloadedState };
+            return { ...miscInitialState, ...preloadedState };
         }
 
         return {
-            ...defaultState,
+            ...miscInitialState,
             ...preloadedState
         };
     }

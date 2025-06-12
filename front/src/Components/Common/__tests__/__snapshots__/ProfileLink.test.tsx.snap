@@ -1,0 +1,865 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ProfileLink calls onCollaboratorsClick when collaborators link is clicked 1`] = `
+{
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div>
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 escqfF ckFvxY fjNDtr"
+      >
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexColumn-sc-c3jdxk-4 liUebu ckFvxY leZDxE"
+        >
+          <span
+            class="CombinedStyling__Span-sc-c3jdxk-1 ProfileLink__ProfileLinkWrapper-sc-1yirz98-1 kSRMWv jCUubI"
+          >
+            <div
+              class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 escqfF ckFvxY fjNDtr"
+            >
+              <a
+                aria-label="alice's profile link"
+                data-testid="styled-link"
+                href="/profile/alice"
+                role="link"
+                style="margin-right: 5px;"
+              >
+                alice
+              </a>
+              <span
+                class="CombinedStyling__Span-sc-c3jdxk-1 dNokkg"
+              >
+                and
+              </span>
+              <a
+                aria-label="alice's collaborators"
+                data-testid="styled-link"
+              >
+                1 other
+              </a>
+            </div>
+          </span>
+        </div>
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <div
+      class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 escqfF ckFvxY fjNDtr"
+    >
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexColumn-sc-c3jdxk-4 liUebu ckFvxY leZDxE"
+      >
+        <span
+          class="CombinedStyling__Span-sc-c3jdxk-1 ProfileLink__ProfileLinkWrapper-sc-1yirz98-1 kSRMWv jCUubI"
+        >
+          <div
+            class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 escqfF ckFvxY fjNDtr"
+          >
+            <a
+              aria-label="alice's profile link"
+              data-testid="styled-link"
+              href="/profile/alice"
+              role="link"
+              style="margin-right: 5px;"
+            >
+              alice
+            </a>
+            <span
+              class="CombinedStyling__Span-sc-c3jdxk-1 dNokkg"
+            >
+              and
+            </span>
+            <a
+              aria-label="alice's collaborators"
+              data-testid="styled-link"
+            >
+              1 other
+            </a>
+          </div>
+        </span>
+      </div>
+    </div>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "store": {
+    "@@observable": [Function],
+    "dispatch": [Function],
+    "getState": [Function],
+    "replaceReducer": [Function],
+    "subscribe": [Function],
+  },
+  "unmount": [Function],
+}
+`;
+
+exports[`ProfileLink renders collaborators when showCollaborators is true and collaborators exist 1`] = `
+{
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div>
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 escqfF ckFvxY fjNDtr"
+      >
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexColumn-sc-c3jdxk-4 liUebu ckFvxY leZDxE"
+        >
+          <span
+            class="CombinedStyling__Span-sc-c3jdxk-1 ProfileLink__ProfileLinkWrapper-sc-1yirz98-1 kSRMWv jCUubI"
+          >
+            <div
+              class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 escqfF ckFvxY fjNDtr"
+            >
+              <a
+                aria-label="alice's profile link"
+                data-testid="styled-link"
+                href="/profile/alice"
+                role="link"
+                style="margin-right: 5px;"
+              >
+                alice
+              </a>
+              <span
+                class="CombinedStyling__Span-sc-c3jdxk-1 dNokkg"
+              >
+                and
+              </span>
+              <a
+                aria-label="alice's collaborators"
+                data-testid="styled-link"
+              >
+                2 others
+              </a>
+            </div>
+          </span>
+        </div>
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <div
+      class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 escqfF ckFvxY fjNDtr"
+    >
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexColumn-sc-c3jdxk-4 liUebu ckFvxY leZDxE"
+      >
+        <span
+          class="CombinedStyling__Span-sc-c3jdxk-1 ProfileLink__ProfileLinkWrapper-sc-1yirz98-1 kSRMWv jCUubI"
+        >
+          <div
+            class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 escqfF ckFvxY fjNDtr"
+          >
+            <a
+              aria-label="alice's profile link"
+              data-testid="styled-link"
+              href="/profile/alice"
+              role="link"
+              style="margin-right: 5px;"
+            >
+              alice
+            </a>
+            <span
+              class="CombinedStyling__Span-sc-c3jdxk-1 dNokkg"
+            >
+              and
+            </span>
+            <a
+              aria-label="alice's collaborators"
+              data-testid="styled-link"
+            >
+              2 others
+            </a>
+          </div>
+        </span>
+      </div>
+    </div>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "store": {
+    "@@observable": [Function],
+    "dispatch": [Function],
+    "getState": [Function],
+    "replaceReducer": [Function],
+    "subscribe": [Function],
+  },
+  "unmount": [Function],
+}
+`;
+
+exports[`ProfileLink renders full name when showFullName is true 1`] = `
+{
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div>
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 escqfF ckFvxY fjNDtr"
+      >
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexColumn-sc-c3jdxk-4 liUebu ckFvxY leZDxE"
+        >
+          <span
+            class="CombinedStyling__Span-sc-c3jdxk-1 ProfileLink__ProfileLinkWrapper-sc-1yirz98-1 kSRMWv jCUubI"
+          >
+            <a
+              aria-label="Alice Smith's profile link"
+              data-testid="styled-link"
+              href="/profile/alice"
+              role="link"
+              style="margin-right: 5px; font-weight: 500; font-size: 13px;"
+            >
+              Alice Smith
+            </a>
+          </span>
+        </div>
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <div
+      class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 escqfF ckFvxY fjNDtr"
+    >
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexColumn-sc-c3jdxk-4 liUebu ckFvxY leZDxE"
+      >
+        <span
+          class="CombinedStyling__Span-sc-c3jdxk-1 ProfileLink__ProfileLinkWrapper-sc-1yirz98-1 kSRMWv jCUubI"
+        >
+          <a
+            aria-label="Alice Smith's profile link"
+            data-testid="styled-link"
+            href="/profile/alice"
+            role="link"
+            style="margin-right: 5px; font-weight: 500; font-size: 13px;"
+          >
+            Alice Smith
+          </a>
+        </span>
+      </div>
+    </div>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "store": {
+    "@@observable": [Function],
+    "dispatch": [Function],
+    "getState": [Function],
+    "replaceReducer": [Function],
+    "subscribe": [Function],
+  },
+  "unmount": [Function],
+}
+`;
+
+exports[`ProfileLink renders location when showLocation is true 1`] = `
+{
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div>
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 escqfF ckFvxY fjNDtr"
+      >
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexColumn-sc-c3jdxk-4 liUebu ckFvxY leZDxE"
+        >
+          <span
+            class="CombinedStyling__Span-sc-c3jdxk-1 ProfileLink__ProfileLinkWrapper-sc-1yirz98-1 kSRMWv jCUubI"
+          >
+            <a
+              aria-label="Search Wonderland"
+              data-testid="styled-link"
+              href="http://localhost:8080/explore?q=Wonderland"
+              role="link"
+              style="margin-right: 5px; font-weight: 500; font-size: 13px;"
+            >
+              Wonderland
+            </a>
+          </span>
+        </div>
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <div
+      class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 escqfF ckFvxY fjNDtr"
+    >
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexColumn-sc-c3jdxk-4 liUebu ckFvxY leZDxE"
+      >
+        <span
+          class="CombinedStyling__Span-sc-c3jdxk-1 ProfileLink__ProfileLinkWrapper-sc-1yirz98-1 kSRMWv jCUubI"
+        >
+          <a
+            aria-label="Search Wonderland"
+            data-testid="styled-link"
+            href="http://localhost:8080/explore?q=Wonderland"
+            role="link"
+            style="margin-right: 5px; font-weight: 500; font-size: 13px;"
+          >
+            Wonderland
+          </a>
+        </span>
+      </div>
+    </div>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "store": {
+    "@@observable": [Function],
+    "dispatch": [Function],
+    "getState": [Function],
+    "replaceReducer": [Function],
+    "subscribe": [Function],
+  },
+  "unmount": [Function],
+}
+`;
+
+exports[`ProfileLink renders profile picture when showPfp is true 1`] = `
+{
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div>
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 escqfF ckFvxY fjNDtr"
+      >
+        <span
+          class="CombinedStyling__Span-sc-c3jdxk-1 ProfileLink__ProfilePicWrapper-sc-1yirz98-0 kSRMWv iFCCBK"
+        >
+          <a
+            aria-label="alice's profile picture link"
+            data-testid="styled-link"
+            href="/profile/alice"
+          >
+            <img
+              alt="alice's profile picture"
+              aria-label="alice's profile picture"
+              class="ProfileLink__PfPImg-sc-1yirz98-2 fRxbUI"
+              src="/pfp.jpg"
+            />
+          </a>
+        </span>
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexColumn-sc-c3jdxk-4 liUebu ckFvxY leZDxE"
+        />
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <div
+      class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 escqfF ckFvxY fjNDtr"
+    >
+      <span
+        class="CombinedStyling__Span-sc-c3jdxk-1 ProfileLink__ProfilePicWrapper-sc-1yirz98-0 kSRMWv iFCCBK"
+      >
+        <a
+          aria-label="alice's profile picture link"
+          data-testid="styled-link"
+          href="/profile/alice"
+        >
+          <img
+            alt="alice's profile picture"
+            aria-label="alice's profile picture"
+            class="ProfileLink__PfPImg-sc-1yirz98-2 fRxbUI"
+            src="/pfp.jpg"
+          />
+        </a>
+      </span>
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexColumn-sc-c3jdxk-4 liUebu ckFvxY leZDxE"
+      />
+    </div>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "store": {
+    "@@observable": [Function],
+    "dispatch": [Function],
+    "getState": [Function],
+    "replaceReducer": [Function],
+    "subscribe": [Function],
+  },
+  "unmount": [Function],
+}
+`;
+
+exports[`ProfileLink renders user name when showUserName is true 1`] = `
+{
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div>
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 escqfF ckFvxY fjNDtr"
+      >
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexColumn-sc-c3jdxk-4 liUebu ckFvxY leZDxE"
+        >
+          <span
+            class="CombinedStyling__Span-sc-c3jdxk-1 ProfileLink__ProfileLinkWrapper-sc-1yirz98-1 kSRMWv jCUubI"
+          >
+            <div
+              class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 escqfF ckFvxY fjNDtr"
+            >
+              <a
+                aria-label="alice's profile link"
+                data-testid="styled-link"
+                href="/profile/alice"
+                role="link"
+                style="margin-right: 5px;"
+              >
+                alice
+              </a>
+            </div>
+          </span>
+        </div>
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <div
+      class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 escqfF ckFvxY fjNDtr"
+    >
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexColumn-sc-c3jdxk-4 liUebu ckFvxY leZDxE"
+      >
+        <span
+          class="CombinedStyling__Span-sc-c3jdxk-1 ProfileLink__ProfileLinkWrapper-sc-1yirz98-1 kSRMWv jCUubI"
+        >
+          <div
+            class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 escqfF ckFvxY fjNDtr"
+          >
+            <a
+              aria-label="alice's profile link"
+              data-testid="styled-link"
+              href="/profile/alice"
+              role="link"
+              style="margin-right: 5px;"
+            >
+              alice
+            </a>
+          </div>
+        </span>
+      </div>
+    </div>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "store": {
+    "@@observable": [Function],
+    "dispatch": [Function],
+    "getState": [Function],
+    "replaceReducer": [Function],
+    "subscribe": [Function],
+  },
+  "unmount": [Function],
+}
+`;
+
+exports[`ProfileLink renders with onClick if url is not provided 1`] = `
+{
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div>
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 escqfF ckFvxY fjNDtr"
+      >
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexColumn-sc-c3jdxk-4 liUebu ckFvxY leZDxE"
+        >
+          <span
+            class="CombinedStyling__Span-sc-c3jdxk-1 ProfileLink__ProfileLinkWrapper-sc-1yirz98-1 kSRMWv jCUubI"
+          >
+            <div
+              class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 escqfF ckFvxY fjNDtr"
+            >
+              <a
+                aria-label="alice's profile link"
+                data-testid="styled-link"
+                href=""
+                role="link"
+                style="margin-right: 5px;"
+              >
+                alice
+              </a>
+            </div>
+          </span>
+        </div>
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <div
+      class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 escqfF ckFvxY fjNDtr"
+    >
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexColumn-sc-c3jdxk-4 liUebu ckFvxY leZDxE"
+      >
+        <span
+          class="CombinedStyling__Span-sc-c3jdxk-1 ProfileLink__ProfileLinkWrapper-sc-1yirz98-1 kSRMWv jCUubI"
+        >
+          <div
+            class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 escqfF ckFvxY fjNDtr"
+          >
+            <a
+              aria-label="alice's profile link"
+              data-testid="styled-link"
+              href=""
+              role="link"
+              style="margin-right: 5px;"
+            >
+              alice
+            </a>
+          </div>
+        </span>
+      </div>
+    </div>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "store": {
+    "@@observable": [Function],
+    "dispatch": [Function],
+    "getState": [Function],
+    "replaceReducer": [Function],
+    "subscribe": [Function],
+  },
+  "unmount": [Function],
+}
+`;

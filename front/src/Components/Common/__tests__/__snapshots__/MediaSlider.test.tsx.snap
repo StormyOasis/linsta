@@ -1,0 +1,893 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`MediaSlider advances and reverses slides on arrow click 1`] = `
+{
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div>
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 hFwhZR ckFvxY fjNDtr"
+      >
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 MediaSlider__MediaSliderWrapper-sc-18myx6p-0 MediaSlider__MediaSliderRightButtonWrapper-sc-18myx6p-2 escqfF hBVrOw esYoPw"
+        >
+          <div
+            class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 MediaSlider__MediaSliderButtonContainer-sc-18myx6p-3 escqfF ckFvxY dwUXFz"
+          >
+            <svg
+              data-testid="right-arrow"
+            />
+          </div>
+        </div>
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 MediaSlider__SlideItem-sc-18myx6p-5 escqfF ihiCtr"
+          style="transform: translateX(-0px);"
+        >
+          <img
+            alt="Image 1"
+            aria-label="Image 1"
+            class="mediaSliderMedia"
+            role="img"
+            src="/img1.jpg"
+          />
+        </div>
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 MediaSlider__SlideItem-sc-18myx6p-5 escqfF ihiCtr"
+          style="transform: translateX(-0px);"
+        >
+          <img
+            alt="Image 2"
+            aria-label="Image 2"
+            class="mediaSliderMedia"
+            role="img"
+            src="/img2.jpg"
+          />
+        </div>
+        <div
+          class="mediaCircles"
+        >
+          <div
+            class="CombinedStyling__Div-sc-c3jdxk-0 MediaSlider__MediaCircle-sc-18myx6p-4 escqfF fCmPRU"
+            style="opacity: 1;"
+          />
+          <div
+            class="CombinedStyling__Div-sc-c3jdxk-0 MediaSlider__MediaCircle-sc-18myx6p-4 escqfF fCmPRU"
+            style="opacity: 0.4;"
+          />
+        </div>
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <div
+      class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 hFwhZR ckFvxY fjNDtr"
+    >
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 MediaSlider__MediaSliderWrapper-sc-18myx6p-0 MediaSlider__MediaSliderRightButtonWrapper-sc-18myx6p-2 escqfF hBVrOw esYoPw"
+      >
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 MediaSlider__MediaSliderButtonContainer-sc-18myx6p-3 escqfF ckFvxY dwUXFz"
+        >
+          <svg
+            data-testid="right-arrow"
+          />
+        </div>
+      </div>
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 MediaSlider__SlideItem-sc-18myx6p-5 escqfF ihiCtr"
+        style="transform: translateX(-0px);"
+      >
+        <img
+          alt="Image 1"
+          aria-label="Image 1"
+          class="mediaSliderMedia"
+          role="img"
+          src="/img1.jpg"
+        />
+      </div>
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 MediaSlider__SlideItem-sc-18myx6p-5 escqfF ihiCtr"
+        style="transform: translateX(-0px);"
+      >
+        <img
+          alt="Image 2"
+          aria-label="Image 2"
+          class="mediaSliderMedia"
+          role="img"
+          src="/img2.jpg"
+        />
+      </div>
+      <div
+        class="mediaCircles"
+      >
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 MediaSlider__MediaCircle-sc-18myx6p-4 escqfF fCmPRU"
+          style="opacity: 1;"
+        />
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 MediaSlider__MediaCircle-sc-18myx6p-4 escqfF fCmPRU"
+          style="opacity: 0.4;"
+        />
+      </div>
+    </div>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "store": {
+    "@@observable": [Function],
+    "dispatch": [Function],
+    "getState": [Function],
+    "replaceReducer": [Function],
+    "subscribe": [Function],
+  },
+  "unmount": [Function],
+}
+`;
+
+exports[`MediaSlider does not render arrows if only one media 1`] = `
+{
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div>
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 hFwhZR ckFvxY fjNDtr"
+      >
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 MediaSlider__SlideItem-sc-18myx6p-5 escqfF ihiCtr"
+          style="transform: translateX(-0px);"
+        >
+          <video
+            aria-label="Video 1"
+            autoplay=""
+            class="mediaSliderMedia"
+            role="video"
+            src="/video1.mp4"
+          />
+        </div>
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <div
+      class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 hFwhZR ckFvxY fjNDtr"
+    >
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 MediaSlider__SlideItem-sc-18myx6p-5 escqfF ihiCtr"
+        style="transform: translateX(-0px);"
+      >
+        <video
+          aria-label="Video 1"
+          autoplay=""
+          class="mediaSliderMedia"
+          role="video"
+          src="/video1.mp4"
+        />
+      </div>
+    </div>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "store": {
+    "@@observable": [Function],
+    "dispatch": [Function],
+    "getState": [Function],
+    "replaceReducer": [Function],
+    "subscribe": [Function],
+  },
+  "unmount": [Function],
+}
+`;
+
+exports[`MediaSlider renders images and navigation circles 1`] = `
+{
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div>
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 hFwhZR ckFvxY fjNDtr"
+      >
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 MediaSlider__MediaSliderWrapper-sc-18myx6p-0 MediaSlider__MediaSliderRightButtonWrapper-sc-18myx6p-2 escqfF hBVrOw esYoPw"
+        >
+          <div
+            class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 MediaSlider__MediaSliderButtonContainer-sc-18myx6p-3 escqfF ckFvxY dwUXFz"
+          >
+            <svg
+              data-testid="right-arrow"
+            />
+          </div>
+        </div>
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 MediaSlider__SlideItem-sc-18myx6p-5 escqfF ihiCtr"
+          style="transform: translateX(-0px);"
+        >
+          <img
+            alt="Image 1"
+            aria-label="Image 1"
+            class="mediaSliderMedia"
+            role="img"
+            src="/img1.jpg"
+          />
+        </div>
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 MediaSlider__SlideItem-sc-18myx6p-5 escqfF ihiCtr"
+          style="transform: translateX(-0px);"
+        >
+          <img
+            alt="Image 2"
+            aria-label="Image 2"
+            class="mediaSliderMedia"
+            role="img"
+            src="/img2.jpg"
+          />
+        </div>
+        <div
+          class="mediaCircles"
+        >
+          <div
+            class="CombinedStyling__Div-sc-c3jdxk-0 MediaSlider__MediaCircle-sc-18myx6p-4 escqfF fCmPRU"
+            style="opacity: 1;"
+          />
+          <div
+            class="CombinedStyling__Div-sc-c3jdxk-0 MediaSlider__MediaCircle-sc-18myx6p-4 escqfF fCmPRU"
+            style="opacity: 0.4;"
+          />
+        </div>
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <div
+      class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 hFwhZR ckFvxY fjNDtr"
+    >
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 MediaSlider__MediaSliderWrapper-sc-18myx6p-0 MediaSlider__MediaSliderRightButtonWrapper-sc-18myx6p-2 escqfF hBVrOw esYoPw"
+      >
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 MediaSlider__MediaSliderButtonContainer-sc-18myx6p-3 escqfF ckFvxY dwUXFz"
+        >
+          <svg
+            data-testid="right-arrow"
+          />
+        </div>
+      </div>
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 MediaSlider__SlideItem-sc-18myx6p-5 escqfF ihiCtr"
+        style="transform: translateX(-0px);"
+      >
+        <img
+          alt="Image 1"
+          aria-label="Image 1"
+          class="mediaSliderMedia"
+          role="img"
+          src="/img1.jpg"
+        />
+      </div>
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 MediaSlider__SlideItem-sc-18myx6p-5 escqfF ihiCtr"
+        style="transform: translateX(-0px);"
+      >
+        <img
+          alt="Image 2"
+          aria-label="Image 2"
+          class="mediaSliderMedia"
+          role="img"
+          src="/img2.jpg"
+        />
+      </div>
+      <div
+        class="mediaCircles"
+      >
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 MediaSlider__MediaCircle-sc-18myx6p-4 escqfF fCmPRU"
+          style="opacity: 1;"
+        />
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 MediaSlider__MediaCircle-sc-18myx6p-4 escqfF fCmPRU"
+          style="opacity: 0.4;"
+        />
+      </div>
+    </div>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "store": {
+    "@@observable": [Function],
+    "dispatch": [Function],
+    "getState": [Function],
+    "replaceReducer": [Function],
+    "subscribe": [Function],
+  },
+  "unmount": [Function],
+}
+`;
+
+exports[`MediaSlider renders video when mimeType includes 'video' 1`] = `
+{
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div>
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 hFwhZR ckFvxY fjNDtr"
+      >
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 MediaSlider__SlideItem-sc-18myx6p-5 escqfF ihiCtr"
+          style="transform: translateX(-0px);"
+        >
+          <video
+            aria-label="Video 1"
+            autoplay=""
+            class="mediaSliderMedia"
+            role="video"
+            src="/video1.mp4"
+          />
+        </div>
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <div
+      class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 hFwhZR ckFvxY fjNDtr"
+    >
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 MediaSlider__SlideItem-sc-18myx6p-5 escqfF ihiCtr"
+        style="transform: translateX(-0px);"
+      >
+        <video
+          aria-label="Video 1"
+          autoplay=""
+          class="mediaSliderMedia"
+          role="video"
+          src="/video1.mp4"
+        />
+      </div>
+    </div>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "store": {
+    "@@observable": [Function],
+    "dispatch": [Function],
+    "getState": [Function],
+    "replaceReducer": [Function],
+    "subscribe": [Function],
+  },
+  "unmount": [Function],
+}
+`;
+
+exports[`MediaSlider shows left arrow after advancing 1`] = `
+{
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div>
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 hFwhZR ckFvxY fjNDtr"
+      >
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 MediaSlider__MediaSliderWrapper-sc-18myx6p-0 MediaSlider__MediaSliderLeftButtonWrapper-sc-18myx6p-1 escqfF hBVrOw cLNiRv"
+        >
+          <div
+            class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 MediaSlider__MediaSliderButtonContainer-sc-18myx6p-3 escqfF ckFvxY dwUXFz"
+          >
+            <svg
+              data-testid="left-arrow"
+            />
+          </div>
+        </div>
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 MediaSlider__SlideItem-sc-18myx6p-5 escqfF ihiCtr"
+          style="transform: translateX(-470px);"
+        >
+          <img
+            alt="Image 1"
+            aria-label="Image 1"
+            class="mediaSliderMedia"
+            role="img"
+            src="/img1.jpg"
+          />
+        </div>
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 MediaSlider__SlideItem-sc-18myx6p-5 escqfF ihiCtr"
+          style="transform: translateX(-470px);"
+        >
+          <img
+            alt="Image 2"
+            aria-label="Image 2"
+            class="mediaSliderMedia"
+            role="img"
+            src="/img2.jpg"
+          />
+        </div>
+        <div
+          class="mediaCircles"
+        >
+          <div
+            class="CombinedStyling__Div-sc-c3jdxk-0 MediaSlider__MediaCircle-sc-18myx6p-4 escqfF fCmPRU"
+            style="opacity: 0.4;"
+          />
+          <div
+            class="CombinedStyling__Div-sc-c3jdxk-0 MediaSlider__MediaCircle-sc-18myx6p-4 escqfF fCmPRU"
+            style="opacity: 1;"
+          />
+        </div>
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <div
+      class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 hFwhZR ckFvxY fjNDtr"
+    >
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 MediaSlider__MediaSliderWrapper-sc-18myx6p-0 MediaSlider__MediaSliderLeftButtonWrapper-sc-18myx6p-1 escqfF hBVrOw cLNiRv"
+      >
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 MediaSlider__MediaSliderButtonContainer-sc-18myx6p-3 escqfF ckFvxY dwUXFz"
+        >
+          <svg
+            data-testid="left-arrow"
+          />
+        </div>
+      </div>
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 MediaSlider__SlideItem-sc-18myx6p-5 escqfF ihiCtr"
+        style="transform: translateX(-470px);"
+      >
+        <img
+          alt="Image 1"
+          aria-label="Image 1"
+          class="mediaSliderMedia"
+          role="img"
+          src="/img1.jpg"
+        />
+      </div>
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 MediaSlider__SlideItem-sc-18myx6p-5 escqfF ihiCtr"
+        style="transform: translateX(-470px);"
+      >
+        <img
+          alt="Image 2"
+          aria-label="Image 2"
+          class="mediaSliderMedia"
+          role="img"
+          src="/img2.jpg"
+        />
+      </div>
+      <div
+        class="mediaCircles"
+      >
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 MediaSlider__MediaCircle-sc-18myx6p-4 escqfF fCmPRU"
+          style="opacity: 0.4;"
+        />
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 MediaSlider__MediaCircle-sc-18myx6p-4 escqfF fCmPRU"
+          style="opacity: 1;"
+        />
+      </div>
+    </div>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "store": {
+    "@@observable": [Function],
+    "dispatch": [Function],
+    "getState": [Function],
+    "replaceReducer": [Function],
+    "subscribe": [Function],
+  },
+  "unmount": [Function],
+}
+`;
+
+exports[`MediaSlider shows right arrow if has next 1`] = `
+{
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div>
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 hFwhZR ckFvxY fjNDtr"
+      >
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 MediaSlider__MediaSliderWrapper-sc-18myx6p-0 MediaSlider__MediaSliderRightButtonWrapper-sc-18myx6p-2 escqfF hBVrOw esYoPw"
+        >
+          <div
+            class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 MediaSlider__MediaSliderButtonContainer-sc-18myx6p-3 escqfF ckFvxY dwUXFz"
+          >
+            <svg
+              data-testid="right-arrow"
+            />
+          </div>
+        </div>
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 MediaSlider__SlideItem-sc-18myx6p-5 escqfF ihiCtr"
+          style="transform: translateX(-0px);"
+        >
+          <img
+            alt="Image 1"
+            aria-label="Image 1"
+            class="mediaSliderMedia"
+            role="img"
+            src="/img1.jpg"
+          />
+        </div>
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 MediaSlider__SlideItem-sc-18myx6p-5 escqfF ihiCtr"
+          style="transform: translateX(-0px);"
+        >
+          <img
+            alt="Image 2"
+            aria-label="Image 2"
+            class="mediaSliderMedia"
+            role="img"
+            src="/img2.jpg"
+          />
+        </div>
+        <div
+          class="mediaCircles"
+        >
+          <div
+            class="CombinedStyling__Div-sc-c3jdxk-0 MediaSlider__MediaCircle-sc-18myx6p-4 escqfF fCmPRU"
+            style="opacity: 1;"
+          />
+          <div
+            class="CombinedStyling__Div-sc-c3jdxk-0 MediaSlider__MediaCircle-sc-18myx6p-4 escqfF fCmPRU"
+            style="opacity: 0.4;"
+          />
+        </div>
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <div
+      class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 CombinedStyling__FlexRow-sc-c3jdxk-3 hFwhZR ckFvxY fjNDtr"
+    >
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 MediaSlider__MediaSliderWrapper-sc-18myx6p-0 MediaSlider__MediaSliderRightButtonWrapper-sc-18myx6p-2 escqfF hBVrOw esYoPw"
+      >
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 CombinedStyling__Flex-sc-c3jdxk-2 MediaSlider__MediaSliderButtonContainer-sc-18myx6p-3 escqfF ckFvxY dwUXFz"
+        >
+          <svg
+            data-testid="right-arrow"
+          />
+        </div>
+      </div>
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 MediaSlider__SlideItem-sc-18myx6p-5 escqfF ihiCtr"
+        style="transform: translateX(-0px);"
+      >
+        <img
+          alt="Image 1"
+          aria-label="Image 1"
+          class="mediaSliderMedia"
+          role="img"
+          src="/img1.jpg"
+        />
+      </div>
+      <div
+        class="CombinedStyling__Div-sc-c3jdxk-0 MediaSlider__SlideItem-sc-18myx6p-5 escqfF ihiCtr"
+        style="transform: translateX(-0px);"
+      >
+        <img
+          alt="Image 2"
+          aria-label="Image 2"
+          class="mediaSliderMedia"
+          role="img"
+          src="/img2.jpg"
+        />
+      </div>
+      <div
+        class="mediaCircles"
+      >
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 MediaSlider__MediaCircle-sc-18myx6p-4 escqfF fCmPRU"
+          style="opacity: 1;"
+        />
+        <div
+          class="CombinedStyling__Div-sc-c3jdxk-0 MediaSlider__MediaCircle-sc-18myx6p-4 escqfF fCmPRU"
+          style="opacity: 0.4;"
+        />
+      </div>
+    </div>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "store": {
+    "@@observable": [Function],
+    "dispatch": [Function],
+    "getState": [Function],
+    "replaceReducer": [Function],
+    "subscribe": [Function],
+  },
+  "unmount": [Function],
+}
+`;

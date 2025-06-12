@@ -27,7 +27,7 @@ export interface GlobalModalState {
     isOverlayEnabled: boolean;
 };
 
-const defaultState:GlobalModalState = {
+export const modalInitialState:GlobalModalState = {
     openModalStack: [],
     isOverlayEnabled: false,    
 };
@@ -38,11 +38,11 @@ const modalSliceCreator = (preloadedState?: Partial<GlobalModalState>) => {
 
     function createInitialState() {
         if (historyUtils.isServer) {
-            return {...defaultState, ...preloadedState};
+            return {...modalInitialState, ...preloadedState};
         }
 
         return {
-            ...defaultState,            
+            ...modalInitialState,            
             ...preloadedState
         };
     }

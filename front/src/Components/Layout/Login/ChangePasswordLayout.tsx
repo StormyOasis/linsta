@@ -66,7 +66,7 @@ const isFormValid = (password1: string, password2: string, token?: string|null, 
 const onSubmit = async (setIsFinished:any, password1: string, password2: string, token?: string|null, currentPassword?: string) => {
     try {
         const result = await postChangePassword({userName: getCurrentUser()?.userName, oldPassword: currentPassword, token, password1, password2});
-        
+       
         if(result.status == 200 && result.data.status === "OK") {
             setIsFinished(true);
         }        
@@ -75,7 +75,6 @@ const onSubmit = async (setIsFinished:any, password1: string, password2: string,
         }        
 
     } catch(err) {
-        console.error(err);
         return false;
     }
     return true;
@@ -90,9 +89,10 @@ const renderChangeForm = () => {
     const [searchParams, _setSearchParams] = useSearchParams();
 
     const token = searchParams.get('token');
+
     return (
         <>
-            {isFinished && <Navigate to="/" replace={true} />}
+            {isFinished && <div data-testid="change-pass-navigate-element"><Navigate to="/" replace={true}/></div>}
             <ChangeHeaderImage/>
             <ChangeForm method="post">
                 <HeadingText>Reset Password</HeadingText>

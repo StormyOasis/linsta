@@ -20,7 +20,7 @@ import { LikeToggler, ViewLikesText } from "../../../../../Components/Common/Lik
 import { MODAL_TYPES } from "../../../../../Components/Redux/slices/modals.slice";
 import { actions, useAppDispatch, useAppSelector } from "../../../../../Components/Redux/redux";
 import Linkify from "../../../../../Components/Common/Linkify";
-import { MessageSVG, ShareSVG } from "../../../../../Components/Common/Icon";
+import { MessageSVG } from "../../../../../Components/Common/Icon";
 
 const MediaSliderWrapper = styled(Div) <{ $width: number }>`
     align-content: center;

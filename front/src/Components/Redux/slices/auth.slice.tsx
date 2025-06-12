@@ -4,6 +4,12 @@ import { historyUtils } from "../../../utils/utils";
 
 const NAME = "auth";
 
+export const authInitialState = {
+    user: {},
+    error: null,
+    status: ""
+};
+
 export const loginUser = createAsyncThunk(`${NAME}/login`, async ({ userName, password }: any, thunkApi) => {
     try {
         return await login(userName, password);
@@ -16,19 +22,13 @@ const authSliceCreator = (preloadedState?: any) => {
     const initialState = createInitialState();
     const reducers = createReducers();
 
-    const defaultState = {
-        user: {},
-        error: null,
-        status: ""
-    };
-
     function createInitialState() {
         if (historyUtils.isServer) {
-            return {...defaultState, ...preloadedState};
+            return {...authInitialState, ...preloadedState};
         }
 
         return {
-            ...defaultState,            
+            ...authInitialState,            
             ...preloadedState,            
             user: JSON.parse(localStorage.getItem('user') as string),
         };

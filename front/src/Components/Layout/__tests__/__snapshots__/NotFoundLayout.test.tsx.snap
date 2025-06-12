@@ -1,0 +1,62 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`NotFoundLayout renders with sidebar when logged in 1`] = `
+<div>
+  <div
+    data-testid="mock-theme"
+  >
+    <div
+      data-testid="mock-theme"
+    >
+      <div>
+        <div
+          data-testid="sidebar"
+        />
+        <div
+          style="padding: 40px; margin: auto; flex-wrap: wrap; align-items: center;"
+        >
+          <div>
+            Sorry, this page is not available
+          </div>
+          <a
+            data-testid="styled-link"
+            href="/"
+            to="/"
+          >
+            Go Back to Linstagram
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`NotFoundLayout renders without sidebar when not logged in 1`] = `
+<div>
+  <div
+    data-testid="mock-theme"
+  >
+    <div
+      data-testid="mock-theme"
+    >
+      <div>
+        <div
+          style="padding: 40px; margin: auto; flex-wrap: wrap; align-items: center;"
+        >
+          <div>
+            Sorry, this page is not available
+          </div>
+          <a
+            data-testid="styled-link"
+            href="/"
+            to="/"
+          >
+            Go Back to Linstagram
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;

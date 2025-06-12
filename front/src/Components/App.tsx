@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react"
 import { useLocation, useNavigate } from "react-router-dom";
 import { ErrorBoundary } from "react-error-boundary";
 
-import Layout from "../Components/Layout/Layout";
-import Theme from "../Components/Themes/Theme";
+import Layout from "./Layout/Layout";
+import Theme from "./Themes/Theme";
 import { historyUtils } from "../utils/utils";
 import { useSelector } from "react-redux";
 import { useAppDispatch } from "./Redux/redux";

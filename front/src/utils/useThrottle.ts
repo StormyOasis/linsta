@@ -1,11 +1,19 @@
 import { useRef, useCallback } from 'react';
 
+/**
+ * React hook for throttling a callback function.
+ * The callback will only be invoked at most once every `delay` milliseconds.
+ *
+ * @param callback - The function to throttle.
+ * @param delay - The minimum delay (ms) between calls.
+ * @returns A throttled version of the callback.
+ */
 const useThrottle = <T extends (...args: any[]) => void>(callback: T, delay: number) => {
-    const lastCall = useRef(0);
+    const lastCall = useRef<number>(0);
 
-    const throttledCallback = useCallback(
+    return useCallback(
         (...args: Parameters<T>) => {
-            const now = new Date().getTime();
+            const now = performance.now();
             if (now - lastCall.current >= delay) {
                 lastCall.current = now;
                 callback(...args);
@@ -13,8 +21,6 @@ const useThrottle = <T extends (...args: any[]) => void>(callback: T, delay: num
         },
         [callback, delay]
     );
-
-    return throttledCallback;
 };
 
 export default useThrottle;

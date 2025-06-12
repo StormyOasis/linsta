@@ -67,7 +67,7 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = (props: ToggleSwitchProps) => 
 
     return (
         <>
-            <SwitchInput id={id} type="checkbox" onChange={handleChange} checked={isChecked}></SwitchInput>
+            <SwitchInput id={id} data-testid="toggle-checkbox" type="checkbox" onChange={handleChange} checked={isChecked}></SwitchInput>
             <SwitchLabel htmlFor={id}>
                 <SwitchSliderSpan>
                 </SwitchSliderSpan>

@@ -2,7 +2,6 @@ import React from 'react';
 import { SPRITE_PATH } from '../../api/config';
 import { styled } from 'styled-components';
 
-
 interface IconProps extends React.SVGProps<SVGSVGElement> {
     name?: string;
     fill?: string;

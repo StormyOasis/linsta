@@ -1,11 +1,27 @@
 import React, { useEffect, useRef } from 'react';
 import useThrottle from './useThrottle';
 
-type asyncLoadMoreFuncton = () => Promise<void>;
+/**
+ * Type for the async load more function.
+ */
+type AsyncLoadMoreFunction = () => Promise<void>;
 
-const useInfiniteScroll = (loadMore: asyncLoadMoreFuncton, isLoading: boolean, childRef: React.MutableRefObject<HTMLDivElement | null>) => {
+/**
+ * Custom hook for infinite scrolling.
+ * Attaches a throttled scroll event listener to a container and triggers `loadMore`
+ * when the user scrolls near the bottom.
+ *
+ * @param loadMore - Async function to load more items.
+ * @param isLoading - Whether a load is currently in progress.
+ * @param containerRef - Ref to the scrollable container element.
+ */
+const useInfiniteScroll = (loadMore: AsyncLoadMoreFunction, 
+    isLoading: boolean, 
+    childRef: React.MutableRefObject<HTMLDivElement | null>) => {
+        
     const hasScrolled = useRef<boolean>(false);  // Track if the user has scrolled
 
+    // Throttled scroll handler
     const throttledHandleScroll = useThrottle(async () => {
         if (typeof window !== 'undefined' && childRef.current) {
             const element = childRef.current as HTMLElement;
@@ -32,6 +48,7 @@ const useInfiniteScroll = (loadMore: asyncLoadMoreFuncton, isLoading: boolean, c
         };
     }, [throttledHandleScroll, childRef]);
 
+    // Reset trigger flag when loading finishes
     useEffect(() => {
         if (!isLoading) {
             hasScrolled.current = false;

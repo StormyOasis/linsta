@@ -91,3 +91,15 @@ export interface PostPaginationResponse extends PaginationResponse {
 export interface CollabData {
     selectedProfiles: Record<string, Profile>;
 }
+
+export type SearchResults = {
+    posts: Post[];
+    profiles: Profile[];
+};
+
+export type SearchResponse = {
+    results: SearchResults | null;
+    loading: boolean;
+    hasMore: boolean;
+    searchAfter: any[] | null;
+};

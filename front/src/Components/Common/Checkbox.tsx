@@ -52,7 +52,7 @@ const Checkbox: React.FC<CheckboxProps> = (props: CheckboxProps) => {
     return (
         <CheckboxWrapper>
             <CheckboxInput id={`${props.name}_input`} type="checkbox" checked={props.isChecked} onChange={() => props.onSelect(index, !props.isChecked)} />
-            <CheckboxLabel id={`${props.name}_label`} $width={width} $height={height} $isChecked={props.isChecked}>
+            <CheckboxLabel id={`${props.name}_label`} $width={width} $height={height} $isChecked={props.isChecked} data-testid="checkbox-label">
                 {props.isChecked && <CheckMark />}
             </CheckboxLabel>
         </CheckboxWrapper>

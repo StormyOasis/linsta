@@ -227,7 +227,7 @@ const CreatePostModalCropper: React.FC<CropperProps> = (props: CropperProps) => 
         });
     }    
 
-    const onCropComplete = async (_croppedArea: Area, croppedAreaPixels: Area) => {
+    const onCropComplete = async (_croppedArea: Area, croppedAreaPixels: Area) => {     
         let newCrop = crop;
         if(aspect.value === 0) {            
             const {width, height} = await getImageDimensions(props.file.blob);

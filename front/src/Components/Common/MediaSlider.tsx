@@ -105,10 +105,10 @@ const MediaSlider: React.FC<MediaSliderProps> = (props: MediaSliderProps) => {
                         <SlideItem key={index} style={{transform: `translateX(-${translateX}px)`}}>
                         {
                             media.mimeType.indexOf('video') !== -1 ? 
-                                <video autoPlay src={media.path} 
+                                <video role="video" autoPlay src={media.path} 
                                     aria-label={media.altText} 
                                     className={styles.mediaSliderMedia} /> :
-                                <img src={media.path} alt={media.altText}
+                                <img role="img" src={media.path} alt={media.altText}
                                     aria-label={media.altText} 
                                     className={styles.mediaSliderMedia} />            
                         }

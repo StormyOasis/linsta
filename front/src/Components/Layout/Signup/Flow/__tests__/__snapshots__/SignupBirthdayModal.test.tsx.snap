@@ -1,0 +1,47 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SignupBirthdayModal renders modal content and matches snapshot 1`] = `
+<div>
+  <div
+    data-testid="mock-multistepmodal"
+  >
+    <div
+      data-testid="mock-content-wrapper"
+    >
+      <div
+        data-testid="mock-section-wrapper"
+        style="padding: 4px;"
+      >
+        <div
+          data-testid="mock-div"
+        />
+      </div>
+      <div
+        data-testid="mock-section-wrapper"
+        style="padding: 8px;"
+      >
+        <div
+          data-testid="mock-div"
+        >
+          Birthdays on Linstagram
+        </div>
+      </div>
+      <div
+        data-testid="mock-section-wrapper"
+        style="padding: 8px;"
+      >
+        <div
+          data-testid="mock-div"
+        >
+          Providing your birthday improves the features and ads you see, and helps us keep the Linstagram community safe. You can find your birthday in your personal information account settings.
+        </div>
+      </div>
+    </div>
+    <button
+      data-testid="close-btn"
+    >
+      Close
+    </button>
+  </div>
+</div>
+`;

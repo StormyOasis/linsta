@@ -174,7 +174,7 @@ const LocationPopup: React.FC<LocationProps> = (props: LocationProps) => {
                     <LocationSVG strokeWidth={0} width="23px" height="23px" stroke="currentColor" fill="none" />
                 }
             </SVGContainer>
-            <LocationPopupContainer ref={popupRef} $isOpen={isLocationOpen}>
+            <LocationPopupContainer ref={popupRef} $isOpen={isLocationOpen}  data-testid="location-popup-container">
                 <FlexColumn>
                     {renderLocationEntries()}
                 </FlexColumn>

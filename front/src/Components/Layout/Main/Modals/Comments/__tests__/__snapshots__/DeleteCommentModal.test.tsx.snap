@@ -1,0 +1,30 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`DeleteCommentModal renders modal and matches snapshot 1`] = `
+<div>
+  <div
+    data-testid="mock-theme"
+  >
+    <div
+      data-testid="mock-multistepmodal"
+    >
+      <div>
+        <div>
+          <a
+            data-testid="mock-styled-link"
+          >
+            Delete Comment
+          </a>
+        </div>
+        <div>
+          <a
+            data-testid="mock-styled-link"
+          >
+            Cancel
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;

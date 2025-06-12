@@ -1,0 +1,142 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ConfirmationCodeForm disables Next button if confirmationCode_valid is false 1`] = `
+<div>
+  <div
+    data-testid="mock-theme"
+  >
+    <div
+      style="align-items: center;"
+    >
+      <span
+        aria-label="Email Confirmation"
+      />
+      <div>
+        <span
+          style="font-weight: 600; margin: 0px;"
+        >
+          Enter Confirmation Code
+        </span>
+      </div>
+      <div>
+        <span
+          style="max-width: 100%;"
+        >
+          Enter the confirmation code we sent to 
+          test@example.com
+          .
+          <button>
+            Resend Code
+          </button>
+        </span>
+      </div>
+    </div>
+    <div>
+      <div
+        style="align-items: center; margin: 8px 0px; padding: 0px 40px;"
+      >
+        <div
+          style="margin: 0px; padding: 0px;"
+        >
+          <input
+            data-testid="mock-input"
+            maxlength="8"
+            name="confirmationCode"
+            placeholder="Confirmation Code"
+            style="border-radius: 6px; cursor: text; line-height: 30px; padding: 0px 12px; text-align: left; text-transform: none; width: 240px;"
+            type="text"
+            value="123456"
+          />
+        </div>
+        <div
+          style="width: 100%; margin: 0px; padding: 16px 8px 16px 8px;"
+        >
+          <button
+            data-testid="submit-signupconfirm"
+            disabled=""
+          >
+            Next
+          </button>
+        </div>
+        <div
+          style="margin: 0px;"
+        >
+          <button>
+            Go Back
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`ConfirmationCodeForm renders all fields and matches snapshot 1`] = `
+<div>
+  <div
+    data-testid="mock-theme"
+  >
+    <div
+      style="align-items: center;"
+    >
+      <span
+        aria-label="Email Confirmation"
+      />
+      <div>
+        <span
+          style="font-weight: 600; margin: 0px;"
+        >
+          Enter Confirmation Code
+        </span>
+      </div>
+      <div>
+        <span
+          style="max-width: 100%;"
+        >
+          Enter the confirmation code we sent to 
+          test@example.com
+          .
+          <button>
+            Resend Code
+          </button>
+        </span>
+      </div>
+    </div>
+    <div>
+      <div
+        style="align-items: center; margin: 8px 0px; padding: 0px 40px;"
+      >
+        <div
+          style="margin: 0px; padding: 0px;"
+        >
+          <input
+            data-testid="mock-input"
+            maxlength="8"
+            name="confirmationCode"
+            placeholder="Confirmation Code"
+            style="border-radius: 6px; cursor: text; line-height: 30px; padding: 0px 12px; text-align: left; text-transform: none; width: 240px;"
+            type="text"
+            value="123456"
+          />
+        </div>
+        <div
+          style="width: 100%; margin: 0px; padding: 16px 8px 16px 8px;"
+        >
+          <button
+            data-testid="submit-signupconfirm"
+          >
+            Next
+          </button>
+        </div>
+        <div
+          style="margin: 0px;"
+        >
+          <button>
+            Go Back
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;

@@ -132,13 +132,13 @@ export const toggleCommentLike = async (commentId: string, userName: string, use
     comments: CommentUiData[], setComments: (comments: CommentUiData[]) => void): Promise<void> => {
 
     let result = await postToggleCommentLike({ commentId, userName, userId });
-    if (result.status === 200) {
+    if (result && result.status === 200) {
         const newCommentsList: any = structuredClone(comments);
 
         // update the comment list by updating the comment instance in the comment state array
         const comment: CommentUiData | null = searchCommentsById(commentId, newCommentsList);
 
-        if (comment === null) {
+        if (comment == null) {
             return;
         }
 

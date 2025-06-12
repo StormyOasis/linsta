@@ -1,0 +1,55 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`EditPostMenuModal renders modal and matches snapshot 1`] = `
+<div>
+  <div
+    data-testid="mock-theme"
+  >
+    <div
+      data-testid="mock-multistepmodal"
+    >
+      <div>
+        <div>
+          <a
+            data-testid="mock-styled-link"
+          >
+            Delete Post
+          </a>
+        </div>
+        <div>
+          <a
+            data-testid="mock-styled-link"
+          >
+            Edit
+          </a>
+        </div>
+        <div>
+          <a
+            data-testid="mock-styled-link"
+          >
+            <span>
+              Hide like count to others
+            </span>
+          </a>
+        </div>
+        <div>
+          <a
+            data-testid="mock-styled-link"
+          >
+            <span>
+              Turn off commenting
+            </span>
+          </a>
+        </div>
+        <div>
+          <a
+            data-testid="mock-styled-link"
+          >
+            Cancel
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
