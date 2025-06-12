@@ -26,6 +26,15 @@
     "svg:sprite": "npm run svg:clean && npx svgstore-cli assets/svgs/*.svg -o public/images/sprite.svg",
     "svg:clean": "svgo -f ./assets/svgs -o ./assets/svgs --config=svgo.config.mjs"
   },
+"sideEffects": [
+  "./src/client/index.tsx",
+  "./src/server/index.tsx",
+  "./src/api/Auth.tsx",
+  "./src/Components/Redux/redux.tsx",
+  "./src/Components/Redux/slices/*.slice.tsx",
+  "**/*.css",
+  "**/*.svg"  
+],
   "eslintConfig": {
     "extends": [
       "react-app",
