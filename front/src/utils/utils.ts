@@ -188,7 +188,7 @@ export const extractFrameFromVideo = async (video: HTMLVideoElement): Promise<st
     return new Promise((resolve, _reject) => {
         canvas.toBlob((file: any) =>
             resolve(URL.createObjectURL(file))
-            , 'image/jpeg')
+            , 'image/jpeg', .8)
     })
 }
 
