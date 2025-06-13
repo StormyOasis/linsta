@@ -4,75 +4,58 @@ export type EmojiMatch = Readonly<{
     unifiedID: string;
 }>;
 
-const EMOJI_JSON_URL = 'https://cdn.jsdelivr.net/npm/emoji-datasource-google@latest/emoji.json';
+// Mapping unified ids to emojis so emoji data can be looked up by id 
+let emojiReplacements: Record<string, string> | null = null;
+let unifiedToEmoji: Record<string, string> | null = null;
+let loadingPromise: Promise<void> | null = null;
 
-let emojiReplacementMap: Map<string, string> = new Map();
-let unifiedToEmojiMap: Map<string, any> = new Map();
-
-let isEmojiDataLoaded = false;
-
-export async function loadFullEmojiData(): Promise<void> {
-    if (isEmojiDataLoaded) return;
-
-    const response = await fetch(EMOJI_JSON_URL);
-    if (!response.ok) {
-        throw new Error(`Failed to load emoji data: ${response.status}`);
+export const preloadEmojiData = (): Promise<void> => {
+    if (loadingPromise) {
+        return loadingPromise;
     }
-
-    const emojis = await response.json();
-
-    emojiReplacementMap = new Map();
-    unifiedToEmojiMap = new Map();
-
-    for (const row of emojis) {
-        emojiReplacementMap.set(`:${row.short_name}:`, row.unified);
-
-        if (row.text != null) {
-            emojiReplacementMap.set(row.text, row.unified);
-        }
-
-        if (row.texts != null) {
-            for (const t of row.texts) {
-                emojiReplacementMap.set(t, row.unified);
-            }
-        }
-
-        unifiedToEmojiMap.set(row.unified, row);
-    }
-
-    isEmojiDataLoaded = true;
+    loadingPromise = import('./emoji.json').then((mod) => {
+        emojiReplacements = mod.default;
+        unifiedToEmoji = Object.fromEntries(
+            Object.entries(emojiReplacements || {}).map(([k, v]) => [v, k])
+        );
+    });
+    return loadingPromise;
 }
 
-export async function findEmoji(text: string): Promise<EmojiMatch | null> {
-    if (!isEmojiDataLoaded) {
-        await loadFullEmojiData();
+
+export const findEmojiByUnfiedId = (unified: string): string => {
+    if (!unifiedToEmoji) {
+        throw new Error("Emoji data not loaded yet");
+    }    
+    return unifiedToEmoji[unified];
+}
+
+/**
+ * Finds emoji shortcodes in text and if found - returns its position in text, matched shortcode and unified ID
+ */
+export default function findEmoji(text: string):(EmojiMatch | null)  {
+    if (!emojiReplacements) {
+        throw new Error("Emoji data not loaded yet");
     }
 
     const skippedText: string[] = [];
 
     for (const word of text.split(" ")) {
-        if (!emojiReplacementMap.has(word)) {
+        if (!emojiReplacements[word]) {
             skippedText.push(word);
             continue;
         }
-
         if (skippedText.length > 0) {
+            // Compensate for space between skippedText and word
             skippedText.push("");
         }
 
         return {
             position: skippedText.join(" ").length,
             shortcode: word,
-            unifiedID: emojiReplacementMap.get(word)!,
+            unifiedID: emojiReplacements[word]!,
         };
     }
 
     return null;
-}
-
-export async function findEmojiByUnfiedId(unified: string): Promise<any | null> {
-    if (!isEmojiDataLoaded) {
-        await loadFullEmojiData();
-    }    
-    return unifiedToEmojiMap.get(unified);
 }

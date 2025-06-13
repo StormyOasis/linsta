@@ -1,6 +1,5 @@
 import React, { useCallback } from "react";
 import styled from "styled-components";
-import { EmojiClickData } from "emoji-picker-react";
 
 import {
     Div,
@@ -16,6 +15,13 @@ import StyledLink from "../../Common/StyledLink";
 import { getSanitizedText, isOverflowed } from "../../../utils/utils";
 import { Post } from "../../../api/types";
 import { HOST } from "../../../api/config";
+import loadable from "@loadable/component";
+
+const LazyEmojiClickData = loadable(() =>
+    import('emoji-picker-react').then(module => ({
+        default: module.EmojiClickData
+    }))
+);
 
 const CaptionContainer = styled(Div) <{ $isExpanded?: boolean }>`
     width: min(470px, 100vw);
@@ -43,12 +49,12 @@ type CommentsSectionProps = {
     onExpand: () => void;
     onCommentChange: (value: string) => void;
     onSubmitComment: () => void;
-    onEmojiClick: (emoji: EmojiClickData) => void;
+    onEmojiClick: (emoji: typeof LazyEmojiClickData) => void;
     openCommentModal: () => void;
 }
 
 const CommentsSection: React.FC<CommentsSectionProps> = React.memo((props: CommentsSectionProps) => {
-    const { post, commentText, isExpanded, onExpand, onCommentChange, onSubmitComment, onEmojiClick, openCommentModal} = props;
+    const { post, commentText, isExpanded, onExpand, onCommentChange, onSubmitComment, onEmojiClick, openCommentModal } = props;
     const [sanitizedHtml, sanitizedText] = getSanitizedText(post.global.captionText);
     const overflowed = isOverflowed(`postid_${post.postId}`);
 
@@ -73,7 +79,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = React.memo((props: Comme
                                     showPfp={false}
                                     url={`${HOST}/${post.user.userName}`}
                                     userName={post.user.userName}
-                                />
+                                    collaborators={{}} />
                                 <Span><Linkify html={sanitizedHtml} /></Span>
                             </Span>
                         </Div>
