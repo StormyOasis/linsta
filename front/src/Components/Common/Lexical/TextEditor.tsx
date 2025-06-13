@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
@@ -22,6 +22,8 @@ import { $generateHtmlFromNodes } from '@lexical/html';
 import { EditorState, LexicalEditor } from "lexical";
 import Placeholder from "./Plugins/Placeholder";
 import InitialHtmlPlugin from "./Plugins/InitialHtmlPlugin";
+import { preloadEmojiData } from './Plugins/findEmoji';
+import { ClickToFocusPlugin } from './Plugins/ClickToFocusPlugin';
 
 type TextEditorProps = {
     emoji: any;
@@ -44,6 +46,10 @@ const TextEditor = (props: TextEditorProps) => {
         },
     };
 
+    useEffect(() => {
+        preloadEmojiData().catch(console.error);
+    }, []);
+
     const handleChange = (editorState: EditorState, editor: LexicalEditor) => {
         editorState.read(() => {
             const html = $generateHtmlFromNodes(editor);
@@ -52,25 +58,27 @@ const TextEditor = (props: TextEditorProps) => {
     }
 
     return (
-        <div id="editor-selector-parent">
+        <div id="editor-selector-parent">            
             <LexicalComposer initialConfig={initialConfig}>
-                <RichTextPlugin
-                    contentEditable={<ContentEditable />}
-                    placeholder={<Placeholder placeholder={props.placeholder} />}
-                    ErrorBoundary={LexicalErrorBoundary}
-                />
-                <HistoryPlugin />
-                <AutoFocusPlugin />
-                <InsertEmojiPlugin emoji={props.emoji} />
-                <EmojiPlugin />
-                <AutoLinkPlugin matchers={MATCHERS} />
-                <HashtagPlugin />
-                <CharacterLimitPlugin charset="UTF-8" maxLength={props.maxTextLength} renderer={(_remainingCharacters) => {
-                    return <></>;
-                }} />
-                <MaxLengthPlugin maxLength={props.maxTextLength} getCurrentLength={props.getCurrentLength} />
-                <OnChangePlugin onChange={handleChange} />
-                <InitialHtmlPlugin initialValue={props.defaultValue} />
+                <ClickToFocusPlugin>
+                    <RichTextPlugin
+                        contentEditable={<ContentEditable />}
+                        placeholder={<Placeholder placeholder={props.placeholder} />}
+                        ErrorBoundary={LexicalErrorBoundary}
+                    />
+                    <HistoryPlugin />
+                    <InsertEmojiPlugin emoji={props.emoji} />
+                    <EmojiPlugin />
+                    <AutoLinkPlugin matchers={MATCHERS} />
+                    <HashtagPlugin />
+                    <CharacterLimitPlugin charset="UTF-8" maxLength={props.maxTextLength} renderer={(_remainingCharacters) => {
+                        return <></>;
+                    }} />
+                    <MaxLengthPlugin maxLength={props.maxTextLength} getCurrentLength={props.getCurrentLength} />
+                    <OnChangePlugin onChange={handleChange} />
+                    <InitialHtmlPlugin initialValue={props.defaultValue} />
+                    <AutoFocusPlugin />
+                </ClickToFocusPlugin>
             </LexicalComposer>
         </div>
     );

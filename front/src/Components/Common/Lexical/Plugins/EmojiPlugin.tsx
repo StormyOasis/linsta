@@ -8,14 +8,14 @@
 
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { TextNode } from "lexical";
-import { findEmoji } from "./findEmoji";
+import findEmoji from "./findEmoji";
 import { $createEmojiNode } from "./EmojiNode";
 import { useEffect } from "react";
 
 const EmojiPlugin = () => {
     const [editor] = useLexicalComposerContext();
 
-    const $textNodeTransform = async (node: TextNode): Promise<void> => {
+    const $textNodeTransform = (node: TextNode) => {
         if (!node.isSimpleText() || node.hasFormat('code')) {
             return;
         }
@@ -25,7 +25,7 @@ const EmojiPlugin = () => {
         // Find only 1st occurrence as transform will be re-run anyway for the rest
         // because newly inserted nodes are considered to be dirty
 
-        const emojiMatch = await findEmoji(text);
+        const emojiMatch = findEmoji(text);
         if (emojiMatch === null) {
             return;
         }

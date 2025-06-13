@@ -44,9 +44,7 @@ body {
 }
 
 .emoji-node {
-    background-image: url('/public/images/emojis/google/sheets/20.png');
     display:inline-block;
-    color: rgba(0,0,0,0);
     width: 20px;
     height: 20px;
 }
@@ -55,6 +53,7 @@ body {
     outline: none;
     min-height: 105px;
     max-height: 105px;
+    height: 105px;
     overflow-y: auto;
 }
 

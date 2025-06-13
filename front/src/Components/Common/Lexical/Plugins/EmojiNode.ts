@@ -11,8 +11,6 @@ import type { EditorConfig, NodeKey, SerializedTextNode, Spread } from 'lexical'
 import { $applyNodeReplacement, TextNode } from 'lexical';
 import { findEmojiByUnfiedId } from './findEmoji';
 
-const DEFAULT_SPRITE_SHEET_SIZE = 20;
-
 export type SerializedEmojiNode = Spread<
     {
         unifiedID: string;
@@ -46,15 +44,13 @@ export class EmojiNode extends TextNode {
      */
     override createDOM(_config: EditorConfig): HTMLElement {
         const dom = document.createElement('span');
-        dom.className = 'emoji-node';
 
         const emoji = findEmojiByUnfiedId(this.__unifiedID.toUpperCase());
         if(emoji == null) {
             return dom;
         }
 
-        dom.style.backgroundPositionX = `-${(emoji.sheet_x * (DEFAULT_SPRITE_SHEET_SIZE + 2)) + 1}px`;
-        dom.style.backgroundPositionY = `-${(emoji.sheet_y * (DEFAULT_SPRITE_SHEET_SIZE + 2)) + 1}px`;
+        dom.className = 'emoji-node';
         dom.innerText = this.__text;
         return dom;      
     }

@@ -1,4 +1,4 @@
-import React, { SyntheticEvent, useState } from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import * as styles from '../../Main.module.css';
 import { ModalSectionWrapper } from "../../../../Common/MultiStepModal";
@@ -18,7 +18,7 @@ import { CollabData } from "src/api/types";
 
 const MAX_TEXT_LENGTH: number = 2047;
 
-const EditContainer = styled.div`
+const EditContainer = styled(Div)`
     display: flex;
     position: relative;
     flex-direction: row;
@@ -28,7 +28,7 @@ const EditContainer = styled.div`
     min-height: calc(${props => props.theme['sizes'].minModalHeight} - 40px);
 `;
 
-const ImageContainer = styled.div`    
+const ImageContainer = styled(Div)`    
     display: flex;
     width: 386px;
     justify-content: flex-end;
@@ -36,7 +36,7 @@ const ImageContainer = styled.div`
     overflow: hidden;
 `;
 
-const ControlsContainer = styled.div`
+const ControlsContainer = styled(Div)`
     display: flex;    
     flex-direction: column;
     width: 386px;  
@@ -44,11 +44,12 @@ const ControlsContainer = styled.div`
     pointer-events: all;
 `;
 
-const ControlContentContainer = styled.div`
+const ControlContentContainer = styled(Div)`
     display: flex;
     flex-direction: column;
     overflow-x: hidden;
     overflow-y: auto;
+    height: 100%;
 `;
 
 const PreviewImage = styled.img`
@@ -67,7 +68,7 @@ const PreviewVideo = styled.video`
     overflow: hidden;
 `;
 
-const TextEditorContainerWrapper = styled.div`
+const TextEditorContainerWrapper = styled(Div)`
     min-height: ${props => props.theme['sizes'].minPostTextEditorHeight};
     max-height: ${props => props.theme['sizes'].maxPostTextEditorHeight};
     position: relative;
@@ -80,28 +81,28 @@ const TextEditorContainerWrapper = styled.div`
     border-bottom-right-radius: 0;
 `;
 
-const TextEditorContainer = styled.div`
+const TextEditorContainer = styled(Div)`
     align-items: center;
     position: relative;
     width: 100%;  
 `;
 
-const TextEditorBottomWrapper = styled.div`
+const TextEditorBottomWrapper = styled(Div)`
     display: flex;
     align-items: center;
     width: 100%;
 `;
 
-const CharacterCountContainer = styled.div`
+const CharacterCountContainer = styled(Div)`
     color: ${props => props.theme['colors'].mediumTextColor};
     font-size: .9em;
 `;
 
-const AdditionalControlsContainer = styled.div`
+const AdditionalControlsContainer = styled(Div)`
     padding-right: 5px;
 `;
 
-const InputContainer = styled.div`
+const InputContainer = styled(Div)`
     margin-top: 10px;
 `;
 
@@ -122,7 +123,7 @@ const Input = styled.input`
     }
 `;
 
-const Text = styled.div`
+const Text = styled(Div)`
     position: relative;
     word-wrap: break-word;
     word-break: break-word;
@@ -137,7 +138,7 @@ const AltInput = styled(Input)`
     margin-left: 5px;
 `;
 
-const AltImage = styled.div<{$editData:EditData}>`
+const AltImage = styled(Div)<{$editData:EditData}>`
     background-image: url('${props => props.$editData.data}');
     background-position: center;
     background-repeat: no-repeat;
@@ -282,8 +283,12 @@ const CreatePostModalFinal: React.FC<CreatePostModalFinalProps> = (props: Create
                         <ControlContentContainer>
                             <TextEditorContainerWrapper>
                                 <TextEditorContainer>
-                                    <TextEditor onChange={handleLexicalChange} defaultValue={props.lexicalText}
-                                        maxTextLength={MAX_TEXT_LENGTH} emoji={emoji} getCurrentLength={getCurrentLength} />                                
+                                    <TextEditor 
+                                        onChange={handleLexicalChange} 
+                                        defaultValue={props.lexicalText}
+                                        maxTextLength={MAX_TEXT_LENGTH} 
+                                        emoji={emoji} 
+                                        getCurrentLength={getCurrentLength} />                                
                                 </TextEditorContainer>                                                         
                                 <TextEditorBottomWrapper>
                                     <Span $flexBasis="75%">

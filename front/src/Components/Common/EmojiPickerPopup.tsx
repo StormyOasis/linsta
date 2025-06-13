@@ -2,7 +2,8 @@ import React, { SyntheticEvent, useState } from "react";
 import { styled } from "styled-components";
 import { Flex } from "./CombinedStyling";
 
-import type { EmojiClickData, EmojiStyle } from 'emoji-picker-react';
+import { EmojiStyle } from 'emoji-picker-react';
+import type { EmojiClickData } from 'emoji-picker-react';
 import loadable from "@loadable/component";
 
 const LazyEmojiPicker = loadable(() =>
@@ -62,14 +63,17 @@ const EmojiPickerPopup: React.FC<EmojiPickerPopupProps> = (props: EmojiPickerPop
     return (
         <>
             <Flex>
-                <EmojiPickerButton onClick={handleToggleClick} $noPadding={props.noPadding}
+                <EmojiPickerButton 
+                    onClick={handleToggleClick} 
+                    $noPadding={props.noPadding}
                     role="button"
                     aria-pressed={isOpen}>😀</EmojiPickerButton>
                 <EmojiPickerPopupContainer $isOpen={isOpen} onKeyUp={handleKeyUp}>
                     <LazyEmojiPicker
-                        onEmojiClick={handleEmojiClick}
-                        emojiStyle={LazyEmojiPicker.GOOGLE}
+                        onEmojiClick={handleEmojiClick}    
+                        emojiStyle={EmojiStyle.NATIVE}                    
                         open={isOpen}
+                        skinTonesDisabled={true}
                         previewConfig={{ showPreview: false }} />
                 </EmojiPickerPopupContainer>
             </Flex>
