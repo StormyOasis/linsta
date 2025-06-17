@@ -78,23 +78,33 @@ export class DBConnector {
 
     public connect = async ():Promise<void> => {
         await pRetry(async () => {
-            logger.info("Creating DB connection...");
+            logger.info(`Creating ${config.database.hostType} DB connection...`);
+
+            const isNeptune: boolean = config.database.hostType === "neptune";
 
             const host: string = config.database.host;
             const port: number = config.database.port as number;
-            const user: string = config.database.user;
-            const password: string = config.database.password;
 
-            const url = `ws://${host}:${port}/gremlin`;
+            const url = `ws://${host}:${port}/gremlin`;   
 
-            const authenticator = new gremlin.driver.auth.PlainTextSaslAuthenticator(user, password);
-
-            this.connection = new gremlin.driver.DriverRemoteConnection(url, {
-                authenticator,
+            const options = {
                 traversalsource: 'g',
-                rejectUnauthorized: true,
-                mimeType: 'application/vnd.gremlin-v3.0+json'
-            });
+                mimeType: 'application/vnd.gremlin-v3.0+json',
+            };
+
+            /*if(!isNeptune) {
+                const user: string = config.database.user;
+                const password: string = config.database.password;
+                const authenticator = new gremlin.driver.auth.PlainTextSaslAuthenticator(user, password);
+                options = {
+                    authenticator,
+                    traversalsource: 'g',
+                    rejectUnauthorized: true,
+                    mimeType: 'application/vnd.gremlin-v3.0+json'
+                };
+            }*/
+
+            this.connection = new gremlin.driver.DriverRemoteConnection(url, options);
 
             // Try opening a test traversal to ensure connection works
             this.g = gremlin.process.AnonymousTraversalSource.traversal().withRemote(this.connection);

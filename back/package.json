@@ -9,11 +9,13 @@
     "start": "NODE_EXTRA_CA_CERTS='/usr/share/es/certs/ca.crt' tsc -p tsconfig.json && node build/index.js",
     "start:prod": "NODE_ENV=production NODE_EXTRA_CA_CERTS='/usr/share/es/certs/ca.crt' tsc -p tsconfig.json && NODE_ENV=production node build/index.js",
     "clean": "rm -rf ./dist/* ./build/* ./package/* ./coverage/* ./app/* ./snapshots/*",
-    "build": "tsc -p tsconfig.json --skipLibCheck",
+    "build": "tsc -p tsconfig.json --skipLibCheck && npm run copyCert",
     "lint": "eslint src/ --ext .js,.jsx,.ts,.tsx",
     "templates": "node scripts/createTemplates.mjs",
     "generateData": "NODE_EXTRA_CA_CERTS='/usr/share/es/certs/ca.crt' node scripts/generateData.mjs",
-    "offline": "npm run build && serverless offline"
+    "offline": "npm run build && serverless offline",
+    "copyCert": "mkdir -p build/certs && cp certs/ca.crt build/certs/ca.crt",
+    "deploy": "npm run build && serverless deploy"
   },
   "repository": {
     "type": "git",
@@ -89,6 +91,7 @@
     "serverless": "^4.15.1",
     "serverless-jest-plugin": "^0.4.0",
     "serverless-offline": "^14.4.0",
+    "serverless-prune-plugin": "^2.1.0",
     "ts-jest": "^29.3.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.2",

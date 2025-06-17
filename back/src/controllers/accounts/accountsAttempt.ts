@@ -27,7 +27,7 @@ type AttemptRequest = {
 
 export const handler = async (event: APIGatewayProxyEvent) => {    
     const baseMetricsKey = "accounts.attempt";
-    return await withMetrics(baseMetricsKey, event.headers,async () => await handlerActions(baseMetricsKey, event))
+    return await withMetrics(baseMetricsKey, event, async () => await handlerActions(baseMetricsKey, event));
 }
 
 const reservedRoutes = ['edit', 'login', 'signup', 'forgot', 'change_password', 'explore', '404'];
@@ -197,7 +197,7 @@ export const handlerActions = async (baseMetricsKey: string, event: APIGatewayPr
         if (failureOccured) {
             return handleValidationError("Error creating user")
         } else {
-            return handleSuccess({ status: "OK" });
+            return handleSuccess("OK");
         }
     } else {
         try {
@@ -228,7 +228,7 @@ export const handlerActions = async (baseMetricsKey: string, event: APIGatewayPr
 
             await DBConnector.commitTransaction();
 
-            return handleSuccess({ status: "OK" });
+            return handleSuccess("OK");
         } catch (err) {
             await DBConnector.rollbackTransaction();
             logger.error(`Error Commiting transaction: ${err}`);

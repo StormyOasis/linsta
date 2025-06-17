@@ -11,6 +11,7 @@
     },
 
     "database" : {
+        "hostType": "janus",
         "host": "localhost",
         "port": 8182,
         "user": "laurenb",

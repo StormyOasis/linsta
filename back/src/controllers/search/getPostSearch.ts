@@ -68,14 +68,15 @@ const buildPostSearchQuery = (term: string | null): Record<string, unknown> => {
 
 export const handler = async (event: APIGatewayProxyEvent) => {
     const baseMetricsKey = "search.getpostsearch";
-    return await withMetrics(baseMetricsKey, event.headers,async () => await handlerActions(baseMetricsKey, event))
+    return await withMetrics(baseMetricsKey, event, async () => await handlerActions(baseMetricsKey, event));
 }
 
 export const handlerActions = async (baseMetricsKey: string, event: APIGatewayProxyEvent) => {
+ 
     let data: GetAllPostsBySearchRequest;
     try {
         data = JSON.parse(event.body || '{}');
-
+        logger.info(data);
     } catch {
         return handleValidationError("Missing required search params");
     }
@@ -90,8 +91,10 @@ export const handlerActions = async (baseMetricsKey: string, event: APIGatewayPr
 
     try {
         const resultSize = config.es.defaultPaginationSize;
-
         const results = await getESConnector().searchWithPagination(query, data.dateTime, data.postId, resultSize);
+        logger.info("results");
+        logger.info(JSON.stringify(results));
+
         const response: GetAllPostsBySearchResponse = {
             posts: [],
             dateTime: "",
@@ -132,8 +135,8 @@ export const handlerActions = async (baseMetricsKey: string, event: APIGatewayPr
 
         return handleSuccess(response);
     } catch (err) {
-        Metrics.getInstance().increment(`${baseMetricsKey}.errorCount`);
         logger.error("Search error", err);
+        Metrics.getInstance().increment(`${baseMetricsKey}.errorCount`);        
         return handleValidationError("Error getting posts");
     }
 };

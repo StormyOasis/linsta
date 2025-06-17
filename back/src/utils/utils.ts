@@ -360,14 +360,24 @@ export const addLikesToPosts = async (posts: Record<string, Post>, postIds: stri
 export const handleValidationError = (error: string, statusCode: number = 400) => {
     return {
         statusCode,
-        body: JSON.stringify({error})
+        headers: { 
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Credentials': true             
+        },
+        body: JSON.stringify({data: error, statusText: "FAIL", status: statusCode})
     }
 };
 
-export const handleSuccess = (result: unknown) => {
+export const handleSuccess = (result: any) => {
     return {
         statusCode: 200,
-        body: JSON.stringify(result)
+        headers: { 
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Credentials': true             
+        },
+        body: JSON.stringify({data: result, statusText: "OK", status: 200})
     }    
 }
 

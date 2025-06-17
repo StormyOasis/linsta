@@ -42,6 +42,7 @@ interface ESConfig {
 }
 
 interface DBConfig {
+    hostType: string;
     backoffFactor: number;
     maxTimeout: number;
     minTimeout: number;
@@ -89,6 +90,7 @@ const appConfig: AppConfig = {
     port: config.get<number>('port'),
     host: config.get<string>('host'),
     database: {
+        hostType: config.get<string>('database.hostType'),
         host: config.get<string>('database.host'),
         user: config.get<string>('database.user'),
         port: config.get<number>('database.port'),
@@ -162,6 +164,7 @@ if (process.env.NODE_ENV === 'production') {
     appConfig.frontHost = process.env.FRONT_HOST ?? appConfig.frontHost;
     appConfig.host = process.env.HOST ?? appConfig.host;
   
+    appConfig.database.hostType = process.env.DB_HOST_TYPE ?? appConfig.database.hostType;
     appConfig.database.host = process.env.DB_HOST ?? appConfig.database.host;
     appConfig.database.port = process.env.DB_PORT ?? appConfig.database.port;
     appConfig.database.user = process.env.DB_USER ?? appConfig.database.user;

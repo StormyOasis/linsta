@@ -6,7 +6,7 @@ import Metrics, { withMetrics } from '../../metrics/Metrics';
 
 export const handler = async (event: APIGatewayProxyEvent) => {
     const baseMetricsKey = "accounts.checkunique";
-    return await withMetrics(baseMetricsKey, event.headers,async () => await handlerActions(baseMetricsKey, event))
+    return await withMetrics(baseMetricsKey, event, async () => await handlerActions(baseMetricsKey, event))
 }
 
 export const handlerActions = async (baseMetricsKey: string, event: APIGatewayProxyEvent) => {
@@ -35,8 +35,8 @@ export const handlerActions = async (baseMetricsKey: string, event: APIGatewayPr
         return handleSuccess(isUnique);
 
     } catch (err) {
-        Metrics.getInstance().increment(`${baseMetricsKey}.errorCount`);
         logger.error((err as Error).message);
+        Metrics.getInstance().increment(`${baseMetricsKey}.errorCount`);        
         return handleValidationError("Error checking username uniqueness", 500);
     }
 }

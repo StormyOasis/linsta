@@ -116,7 +116,7 @@ describe('withMetrics', () => {
         const spyFlush = jest.spyOn(metrics, 'flush');
 
         const fn = jest.fn().mockResolvedValue('ok');
-        const result = await withMetrics('my.key', {}, fn);
+        const result = await withMetrics('my.key', {} as any, fn);
 
         expect(spyIncrement).toHaveBeenCalledWith('my.key.invoked');
         expect(spyTiming).toHaveBeenCalledWith(expect.stringContaining('my.key.execution_time_ms'), expect.any(Number));
@@ -128,7 +128,7 @@ describe('withMetrics', () => {
         const metrics = Metrics.getInstance();
         const spyFlush = jest.spyOn(metrics, 'flush');
         const fn = jest.fn().mockRejectedValue(new Error('fail'));
-        await expect(withMetrics('fail.key', {}, fn)).rejects.toThrow('fail');
+        await expect(withMetrics('fail.key', {} as any, fn)).rejects.toThrow('fail');
         expect(spyFlush).toHaveBeenCalled();
     });
 });

@@ -54,7 +54,7 @@ export class RedisConnector {
         const redisPort = config.redis.port;
         const maxRetries = config.redis.maxRetries as number;
         const connectTimeout = config.redis.connectTimeout as number;
-
+logger.info("Redis url: " + `redis://${redisUserName}:${redisPassword}@${redisHost}:${redisPort}`)
         const options: RedisClientOptions = {
             url: `redis://${redisUserName}:${redisPassword}@${redisHost}:${redisPort}`,
             socket: {

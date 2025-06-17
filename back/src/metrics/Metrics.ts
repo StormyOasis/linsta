@@ -1,7 +1,7 @@
 import { StatsD, Tags } from 'hot-shots';
 import config from '../config';
 import logger from '../logger/logger';
-import { APIGatewayProxyEventHeaders } from "aws-lambda";
+import { APIGatewayProxyEvent, APIGatewayProxyEventHeaders } from "aws-lambda";
 import RedisConnector from "../connectors/RedisConnector";
 
 export class Metrics {
@@ -67,16 +67,21 @@ export class Metrics {
     }
 }
 
-export async function withMetrics<T>(key: string, headers: APIGatewayProxyEventHeaders, fn: () => Promise<T>): Promise<T> {
+export async function withMetrics<T>(key: string, event: APIGatewayProxyEvent, fn: () => Promise<T>): Promise<T> {
+    logger.info(`Invoking ${key}`);
     const start = Date.now();
 
     // Extract IP from http headers
-    const ip = headers['x-forwarded-for']?.split(',')[0] || 'unknown';    
+    let ip = event.requestContext.identity.sourceIp;
+    if(!ip) {
+        ip = !ip && event.headers['x-forwarded-for']?.split(',')[0] || 'unknown';  
+    }
+  
     const metrics: Metrics = Metrics.getInstance();    
     try {
         const minuteKey = new Date(start).toISOString().slice(0, 16); // we want to expire after once a minute
         const redisKey = `ips:${minuteKey}`;
-        
+
         // Add ip key and set expiration so Redis cleans up old keys automatically    
         await RedisConnector.sAdd(redisKey, ip);
         await RedisConnector.expire(redisKey, 3600); // 1 hour TTL

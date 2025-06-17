@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { FC, useEffect } from "react";
 import { styled } from "styled-components";
 
 import { getAccountsSendVerifyNotification, postAccountsAttempt } from "../../../../api/ServiceController";
@@ -98,7 +98,7 @@ export type ConfirmationCodeFormProps = {
     changePage: any,
 }
 
-const ConfirmationCodeForm: React.FC<ConfirmationCodeFormProps> = (props: ConfirmationCodeFormProps) => {
+const ConfirmationCodeForm: FC<ConfirmationCodeFormProps> = (props: ConfirmationCodeFormProps) => {
     const dispatch = useDispatch<AppDispatch>();
     
     useEffect(() => {

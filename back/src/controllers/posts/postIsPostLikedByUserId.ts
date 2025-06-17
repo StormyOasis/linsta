@@ -11,7 +11,7 @@ type LikeRequest = {
 
 export const handler = async (event: APIGatewayProxyEvent) => {
     const baseMetricsKey = "posts.islikedbyuserid";
-    return await withMetrics(baseMetricsKey, event.headers,async () => await handlerActions(baseMetricsKey, event))
+    return await withMetrics(baseMetricsKey, event, async () => await handlerActions(baseMetricsKey, event));
 }
 
 export const handlerActions = async (baseMetricsKey: string, event: APIGatewayProxyEvent) => {

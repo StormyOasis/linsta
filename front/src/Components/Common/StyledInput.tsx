@@ -1,4 +1,4 @@
-import React from "react";
+import React, {FC} from "react";
 import { styled } from "styled-components";
 
 import { Div, FlexRow } from "./CombinedStyling";
@@ -65,7 +65,7 @@ type StyledInputProps = {
     onClick?: () => void;
 }
 
-const StyledInput: React.FC<StyledInputProps> = (props: StyledInputProps) => {
+const StyledInput: FC<StyledInputProps> = (props: StyledInputProps) => {
     // Determine validation classname (None, valid, invalid)
     const value = `${props.value}`;
 

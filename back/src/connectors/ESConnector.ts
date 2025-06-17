@@ -21,18 +21,20 @@ export default class ESConnector {
     private client: Client;
 
     constructor() {
+        logger.info("Connecting to ElasticSearch...");
         this.client = new Client({
             node: config.es.node,
-            auth: {
-                apiKey: config.es.apiKey
+            auth: {                
+                apiKey: config.es.apiKey                
             },
             tls: {
-                ca: fs.readFileSync(path.resolve('/usr/share/es/certs/ca.crt')),
+                //rejectUnauthorized: false,
+                ca: fs.readFileSync(path.resolve(__dirname, '../../certs/ca.crt')),
             }
         });
     }
 
-    public getClient = ():Client => {
+    public getClient = (): Client => {
         return this.client;
     }
 
@@ -49,7 +51,7 @@ export default class ESConnector {
                 );
             }
         }) as Promise<T>;
-    }   
+    }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public buildHashtagQuery = (term: string, searchAfter?: any[]) => {
@@ -213,11 +215,13 @@ export default class ESConnector {
                     {
                         "global.dateTime": {
                             order: "desc",
-                            nested: { path: "global",     filter: {
-      exists: {
-        field: "global.dateTime"
-      }
-    }}
+                            nested: {
+                                path: "global", filter: {
+                                    exists: {
+                                        field: "global.dateTime"
+                                    }
+                                }
+                            }
                         }
                     },
                     { postId: "asc" }
@@ -347,9 +351,9 @@ export default class ESConnector {
             };
         }
 
-        const resultSizeAsNum = Number(resultSize); 
+        const resultSizeAsNum = Number(resultSize);
         const size: number = isNaN(resultSizeAsNum) ? config.es.defaultSuggestionResultSize : Math.min(resultSizeAsNum, config.es.defaultResultSize);
-        const isProfileOnly: boolean = type === "profiles";        
+        const isProfileOnly: boolean = type === "profiles";
         const normalizedInput = input.trim().toLowerCase();
         const isHashtag: boolean = normalizedInput.startsWith('#');
         const cacheKey = `suggestions:${normalizedInput}:${size}`;
@@ -366,7 +370,7 @@ export default class ESConnector {
         let profilesSuggest = null;
 
         // Execute suggest queries in parallel
-        if(isProfileOnly) {
+        if (isProfileOnly) {
             profilesSuggest = await this.withRetries<SearchResponse<Profile>>(() =>
                 this.client?.search<Profile>({
                     index: config.es.profileIndex,
@@ -392,8 +396,8 @@ export default class ESConnector {
         }
 
         // Flatten and limit suggestions to global size
-        let postSuggestions:string[] = [];
-        if(!isProfileOnly && mainSuggest) {
+        let postSuggestions: string[] = [];
+        if (!isProfileOnly && mainSuggest) {
             postSuggestions = extractTextSuggestionsFlat(mainSuggest.suggest, size);
         }
 
@@ -406,14 +410,14 @@ export default class ESConnector {
         if (uniqueNames.length > 0) {
             // Query profiles index to fetch full Profile docs
             const profileQueryBody = this.buildProfileSearchQuery(uniqueNames, isHashtag, size);
-            const profilesQuery:SearchResponse<Profile> = await this.withRetries(() =>
+            const profilesQuery: SearchResponse<Profile> = await this.withRetries(() =>
                 this.client?.search<Profile>({
                     index: config.es.profileIndex,
                     body: profileQueryBody
                 })
-            );  
+            );
 
-            uniqueProfiles = (profilesQuery?.hits.hits || [])            
+            uniqueProfiles = (profilesQuery?.hits.hits || [])
                 .filter(hit => !!hit._id && !!hit._source?.userName)
                 .map(hit => ({
                     userId: hit._source?.userId || "",
@@ -449,7 +453,7 @@ export default class ESConnector {
     public search = async (query: object, resultSize: number | null) => {
         const size: number = resultSize ? resultSize : config.es.defaultResultSize;
 
-        const result = await this.withRetries(() => 
+        const result = await this.withRetries(() =>
             this.client?.search({
                 index: config.es.mainIndex,
                 query,
@@ -472,7 +476,7 @@ export default class ESConnector {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public searchWithPagination = async (query: any, dateTime: string | undefined, postId: string | undefined, resultSize?: number | null)
-        :Promise<SearchResponse> => {
+        : Promise<SearchResponse> => {
 
         const size: number = resultSize ? resultSize : config.es.defaultPaginationSize;
 
@@ -481,7 +485,7 @@ export default class ESConnector {
             query.search_after = [dateTime, postId];
         }
 
-        return await this.withRetries(() =>
+       return await this.withRetries(() => 
             this.client?.search({
                 index: config.es.mainIndex,
                 body: query,
@@ -490,17 +494,17 @@ export default class ESConnector {
         );
     }
 
-    public searchProfile = async (query: object, resultSize: number | null):Promise<SearchResponse> => {
+    public searchProfile = async (query: object, resultSize: number | null): Promise<SearchResponse> => {
         const size: number = resultSize ? resultSize : config.es.defaultResultSize;
 
-        return await this.withRetries(() => 
+        return await this.withRetries(() =>
             this.client?.search({
                 index: config.es.profileIndex,
                 query,
                 size,
             })
         );
-    }    
+    }
 
     public delete = async (id: string): Promise<DeleteResponse> => {
         if (!this.client) {
@@ -543,7 +547,7 @@ export default class ESConnector {
         );
     }
 
-    public insert = async (dataSet: object): Promise<IndexResponse>  => {
+    public insert = async (dataSet: object): Promise<IndexResponse> => {
         return this.withRetries(() =>
             this.client.index({
                 index: config.es.mainIndex,
@@ -561,7 +565,7 @@ export default class ESConnector {
         );
     }
 
-    public update = async (id: string, script?: object, source?: boolean, body?: object):Promise<UpdateResponse> => {
+    public update = async (id: string, script?: object, source?: boolean, body?: object): Promise<UpdateResponse> => {
         return this.withRetries(() =>
             this.client.update({
                 index: config.es.mainIndex,
@@ -573,7 +577,7 @@ export default class ESConnector {
         );
     }
 
-    public updateProfile = async (id: string, script?: object, body?: object):Promise<UpdateResponse> => {
+    public updateProfile = async (id: string, script?: object, body?: object): Promise<UpdateResponse> => {
         return this.withRetries(() =>
             this.client.update({
                 index: config.es.profileIndex,
@@ -595,7 +599,7 @@ export const buildDataSetForES = (user: User, global: Global, entries: Entry[]):
         global.locationText,
         ...entries.map((entry) => entry.alt)
     ])
-    
+
     const dataSet = {
         hashtags,
         mentions,
