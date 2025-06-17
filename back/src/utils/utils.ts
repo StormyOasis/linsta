@@ -365,7 +365,11 @@ export const handleValidationError = (error: string, statusCode: number = 400) =
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Credentials': true
         },
-        body: JSON.stringify({ data: error, statusText: "FAIL", status: statusCode })
+        body: JSON.stringify({
+            data: error,
+            statusText: "FAIL",
+            status: statusCode
+        })
     }
 };
 
