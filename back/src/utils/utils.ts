@@ -358,6 +358,7 @@ export const addLikesToPosts = async (posts: Record<string, Post>, postIds: stri
 
 // Helper function to validate and return errors
 export const handleValidationError = (error: string, statusCode: number = 400) => {
+    logger.info(`Failure: Code ${statusCode} ${error} `);
     return {
         statusCode,
         headers: {
@@ -374,6 +375,7 @@ export const handleValidationError = (error: string, statusCode: number = 400) =
 };
 
 export const handleSuccess = (result: any) => {
+    logger.info(`Success: ${result}`);
     return {
         statusCode: 200,
         headers: {
