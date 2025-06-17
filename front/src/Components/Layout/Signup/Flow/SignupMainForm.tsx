@@ -115,11 +115,11 @@ export default class SignupMainForm extends React.Component<SignupMainFormProps>
 
     submitForm = async (event: React.ChangeEvent<HTMLButtonElement>) => {
         event?.preventDefault();
-console.log("validate");
+
         if (!this.isFormValid()) {
             return false;
         }
-console.log("postAccountsAttempt");
+
         const res = await postAccountsAttempt({
             dryRun: true,
             emailOrPhone: this.props.emailOrPhone,
