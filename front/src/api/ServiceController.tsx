@@ -21,11 +21,7 @@ const addRequestorId = (data: object)=> {
 
 export const postAccountsAttempt = async (data: any): Promise<ServiceResponse> => {
     const res = await axios.post(`${API_HOST}/api/${API_VERSION}/accounts/attempt/`, data);
-    return {
-        data: res.data,
-        status: res.status,
-        statusText: res.statusText,
-    }
+    return res.data;
 };
 
 export const getAccountsCheckUserUnique = async (value: string | number): Promise<ServiceResponse> => {
