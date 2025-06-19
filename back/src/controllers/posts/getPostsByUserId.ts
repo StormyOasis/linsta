@@ -69,10 +69,7 @@ export const handlerActions = async (baseMetricsKey: string, event: APIGatewayPr
             const hits = results?.hits?.hits || [];
 
             if (hits.length === 0) {
-                return {
-                    statusCode: 200,
-                    body: JSON.stringify(response),
-                };
+                return handleSuccess(response);
             }
 
             const posts: Record<string, Post> = {};

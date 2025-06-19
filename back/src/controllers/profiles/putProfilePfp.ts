@@ -82,7 +82,7 @@ export const handlerActions = async (baseMetricsKey: string, event: APIGatewayPr
         // Profile has just been updated, need to upsert into redis
         await updateProfileInRedis(profile, parsed.userId);
 
-        return handleSuccess({ url });
+        return handleSuccess(url);
     } catch (err) {
         Metrics.getInstance().increment(`${baseMetricsKey}.errorCount`);
         logger.error((err as Error).message);
