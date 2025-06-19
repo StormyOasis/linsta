@@ -66,7 +66,6 @@ export const MediaSVG = makeStyledIcon('media');
 export const WarningSVG = makeStyledIcon('warning');
 export const ForgotSVG = makeStyledIcon('forgot');
 export const EmailSVG = makeStyledIcon('email');
-export const DefaultPFPSVG = makeStyledIcon('profile-user-default');
 
 
 

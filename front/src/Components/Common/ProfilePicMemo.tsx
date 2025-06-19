@@ -6,8 +6,8 @@ import { Span } from './CombinedStyling';
 
 const ProfilePicWrapper = styled(Span)`
     display: inline-block;
-    width: 32px;
-    height: 32px;
+    width: 30px;
+    height: 30px;
     object-fit: contain;
     border-radius: 50%;
     padding-right: 7px;
@@ -15,8 +15,8 @@ const ProfilePicWrapper = styled(Span)`
 
 const PfpImg = styled.img`
     border-radius: 50%;
-    max-width: 32px;
-    max-height: 32px;
+    max-width: 30px;
+    max-height: 30px;
 `;
 
 const MemoizedProfilePic = React.memo(({ profile, marginRight = "0px" }: any) => {

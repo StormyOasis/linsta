@@ -41,7 +41,7 @@ const renderHtml = (title: string, styles: any, html: any, preloadState: any):st
             <link rel="preconnect" href="https://linsta-public.s3.us-west-2.amazonaws.com">
             <link rel="preconnect" href="${API_HOST}">
             <link rel="stylesheet" href="/public/defaults.css">
-            <link rel="icon" href="/public/images/logo_small.png">
+            <link rel="icon" href="${process.env.REACT_APP_HOST}/public/images/logo_small.png">
             ${styles}
         </head>
         <body>
