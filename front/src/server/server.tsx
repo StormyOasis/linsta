@@ -111,7 +111,7 @@ app.use(async (ctx, next) => {
 });
 app.use(compress({
     filter: (contentType) => {
-        return /text|javascript|json/.test(contentType);
+        return /text|javascript|json|svg/.test(contentType);
     },
     gzip: {
         flush: zlib.constants.Z_SYNC_FLUSH
