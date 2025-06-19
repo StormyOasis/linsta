@@ -127,7 +127,7 @@ export default class SignupMainForm extends React.Component<SignupMainFormProps>
             fullName: this.props.fullName,
             password: this.props.password,
         });
-console.log(res);
+
         if (res.statusText === "OK") {
             this.props.changePage(1);
             return true;

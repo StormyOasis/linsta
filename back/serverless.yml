@@ -11,18 +11,17 @@ provider:
       - subnet-02f925bef5ee3850f # Private subnet 1
       - subnet-010162509dc3b1723 # Private subnet 2
   environment:
-    GRAPH_ENDPOINT: 10.0.2.192
-    REDIS_ENDPOINT: 10.0.2.192
-    ELASTICSEARCH_ENDPOINT: https://10.0.2.114:9200
-    MONITORING_ENDPOINT: 10.0.1.65
+    GRAPH_ENDPOINT: db.linsta.lboydstun.com
+    REDIS_ENDPOINT: redis.linsta.lboydstun.com
+    ELASTICSEARCH_ENDPOINT: https://search.linsta.lboydstun.com:9200
+    MONITORING_ENDPOINT: monitoring.linsta.lboydstun.com
     NODE_ENV: 'production'
   iamRoleStatements:
     - Effect: Allow
       Action:
-        - graph:*
-        - elasticsearch:*
-        - redis:*
-        - monitoring:*
+        - ses:SendEmail
+        - sns:Publish
+        - ses:SendTemplatedEmail
         - logs:CreateLogGroup
         - logs:CreateLogStream
         - logs:PutLogEvents
@@ -85,11 +84,21 @@ functions:
           cors: true  # Enable CORS for cross-origin requests
   accountsSendConfirmCode:
     handler: build/controllers/accounts/sendConfirmCode.handler
+    timeout: 12
     events:
       - http:
           path: /api/v1/accounts/sendConfirmCode
           method: get
-          cors: true  # Enable CORS for cross-origin requests
+          cors:
+            origin: 'https://www.lboydstun.com'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: true
   accountsForgotPassword:
     handler: build/controllers/accounts/forgotPassword.handler
     events:

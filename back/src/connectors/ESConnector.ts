@@ -32,6 +32,7 @@ export default class ESConnector {
                 ca: fs.readFileSync(path.resolve(__dirname, '../../certs/ca.crt')),
             }
         });
+        logger.info("Built ElasticSearch client");
     }
 
     public getClient = (): Client => {

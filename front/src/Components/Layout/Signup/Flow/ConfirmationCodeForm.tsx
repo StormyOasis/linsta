@@ -7,8 +7,10 @@ import StyledButton from "../../../../Components/Common/StyledButton";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../../../../Components/Redux/redux";
 import { loginUser } from "../../../../Components/Redux/slices/auth.slice";
+import { EmailSVG } from "../../../Common/Icon";
+import { Div, Span } from "../../../../Components/Common/CombinedStyling";
 
-const ConfirmationWrapper = styled.div`
+const ConfirmationWrapper = styled(Div)`
     align-content: stretch;
     align-items: stretch;
     display: flex;
@@ -20,15 +22,12 @@ const ConfirmationWrapper = styled.div`
     padding: 8px 28px;
 `;
 
-const EmailImage = styled.span`
-    background-image: url('/public/images/email.svg');
-    background-repeat: none;
-    display: block;
+const EmailImage = styled(EmailSVG)`    
     height: 84px;
     width: 117px;
 `;
 
-const ConfirmationInnerWrapper = styled.div`
+const ConfirmationInnerWrapper = styled(Div)`
     align-content: stretch;
     align-items: stretch;
     display: flex;
@@ -42,7 +41,7 @@ const ConfirmationInnerWrapper = styled.div`
     overflow: visible; 
 `;
 
-const Text = styled.span`
+const Text = styled(Span)`
     display: block;    
     margin: 0;
     overflow: visible;
