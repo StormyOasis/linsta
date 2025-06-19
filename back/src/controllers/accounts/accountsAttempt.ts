@@ -30,7 +30,7 @@ export const handler = async (event: APIGatewayProxyEvent) => {
     return await withMetrics(baseMetricsKey, event, async () => await handlerActions(baseMetricsKey, event));
 }
 
-const reservedRoutes = ['edit', 'login', 'signup', 'forgot', 'change_password', 'explore', '404'];
+const reservedRoutes = ['edit', 'login', 'signup', 'forgot', 'change_password', 'explore', '404', 'about'];
 
 export const handlerActions = async (baseMetricsKey: string, event: APIGatewayProxyEvent) => {
     let data: AttemptRequest;

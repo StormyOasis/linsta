@@ -66,8 +66,9 @@ export const handlerActions = async (baseMetricsKey: string, event: APIGatewayPr
 
     // Now send the email or text notification of the code
     try {
+        logger.info(`B4 mail ${isEmailAddr}`)
         if (isEmailAddr) {
-            await sendEmailByTemplate(SEND_CONFIRM_TEMPLATE, {
+            const sendRes = await sendEmailByTemplate(SEND_CONFIRM_TEMPLATE, {
                 destination: { ToAddresses: [userData] },
                 source: config.aws.ses.defaultReplyAddress,
                 template: SEND_CONFIRM_TEMPLATE,
@@ -77,14 +78,15 @@ export const handlerActions = async (baseMetricsKey: string, event: APIGatewayPr
                     code: token
                 }
             });
+            logger.info(sendRes);
         } else {
             await sendSMS(userData, token);
         }
 
         return handleSuccess("OK");
     } catch (err) {
-        Metrics.getInstance().increment(`${baseMetricsKey}.errorCount`);
         logger.error((err as Error).message);
+        Metrics.getInstance().increment(`${baseMetricsKey}.errorCount`);        
         return handleValidationError("Error Sending confirmation code");
     }
 }

@@ -40,15 +40,20 @@ export const sendEmailByTemplate = async (templateName: string, params: SESTempl
         Template: templateName,
         TemplateData: JSON.stringify(params.templateData)
     });
-
+logger.info("Command:", {command});
     try {
-        const sesClient = getAWSClient(SESClient, {});
+        logger.info("Before send");
+        logger.info(`Creating SES client with region: ${config.aws.region}`);
 
+        const sesClient = getAWSClient(SESClient, {});
+        logger.info(`sesClient ${JSON.stringify(sesClient.config)}`);
         return await sesClient.send(command);
     } catch (error) {
         logger.error("Failure sending email", error);
         Metrics.getInstance().increment("aws.sesfailurecount");
         throw new Error("Failed to send email via SES.");
+    } finally {
+        logger.info("Done")
     }
 }
 

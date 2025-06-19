@@ -7,23 +7,23 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 import config from '../config';
 import { APIGatewayProxyEvent } from 'aws-lambda';
 
-export const verifyJWT = (event: APIGatewayProxyEvent, userId: string):JwtPayload|string|null => {
+export const verifyJWT = (event: APIGatewayProxyEvent, userId: string): JwtPayload | string | null => {
     if (!event || !userId) {
         return null;
     }
 
     const authHeader = event.headers?.Authorization || event.headers?.authorization;
-    if(!authHeader) {
+    if (!authHeader) {
         return null;
     }
     const token = authHeader.replace(/^Bearer /, '');
     try {
-        const jwtPayload:JwtPayload|string = jwt.verify(token, config.auth.jwt.secret);
+        const jwtPayload: JwtPayload | string = jwt.verify(token, config.auth.jwt.secret);
 
         if (!jwtPayload || (typeof jwtPayload === "object" && jwtPayload.id != userId)) {
             return null
         }
-        return jwtPayload; 
+        return jwtPayload;
     } catch {
         return null;
     }
@@ -35,7 +35,7 @@ export const getLikesByPost = async (postId: string | null): Promise<Like[]> => 
     }
 
     // Get a list of all users that like the given post id
-    const results = await(await DBConnector.getGraph()).V(postId)
+    const results = await (await DBConnector.getGraph()).V(postId)
         .inE(EDGE_USER_LIKED_POST)
         .outV()
         .project("userId", "userName", "profileId")
@@ -63,7 +63,7 @@ export const getPostByPostId = async (postId: string): Promise<| { esId: string;
     let esId: string | null = await RedisConnector.get(postId);
     if (!esId) {
         // If mapping not found in Redis then pull from the graph and set in redis
-        const results = await(await DBConnector.getGraph()).V(postId).project("esId").by("esId").toList();
+        const results = await (await DBConnector.getGraph()).V(postId).project("esId").by("esId").toList();
 
         if (!results || results.length === 0) {
             throw new Error("Error getting post");
@@ -80,7 +80,7 @@ export const getPostByPostId = async (postId: string): Promise<| { esId: string;
         }
 
         // Add to / update to Redis
-        await RedisConnector.set(postId, esId);        
+        await RedisConnector.set(postId, esId);
     }
 
     // esId should now contain the ES id for the given postId
@@ -98,14 +98,14 @@ export const getPostByPostId = async (postId: string): Promise<| { esId: string;
                 },
             },
             1
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ) as any;
 
         const hits = esResults?.body?.hits?.hits;
         if (!hits || hits.length === 0) {
             throw new Error("Invalid post");
         }
-        
+
         const entries = buildSearchResultSet(hits) as Post[];
         post = entries[0];
     }
@@ -116,7 +116,7 @@ export const getPostByPostId = async (postId: string): Promise<| { esId: string;
 
     // Update post with comment count from graph
     const __ = DBConnector.__();
-    const commentResults = await(await DBConnector.getGraph())
+    const commentResults = await (await DBConnector.getGraph())
         .V(postId)
         .project("commentCount")
         .by(__.outE(EDGE_POST_TO_COMMENT).count())
@@ -141,7 +141,7 @@ export const getPostByPostId = async (postId: string): Promise<| { esId: string;
 
 export const getFollowingUserIds = async (userId: string): Promise<string[]> => {
     try {
-        const results = await(await DBConnector.getGraph())
+        const results = await (await DBConnector.getGraph())
             .V(userId)
             .out(EDGE_USER_FOLLOWS)
             .toList();
@@ -183,9 +183,9 @@ export const getProfile = async (userId: string | null, userName: string | null)
 
         // DB first
         if (userName !== null) {
-            results = await(await DBConnector.getGraph()).V().has("userName", userName).next();
+            results = await (await DBConnector.getGraph()).V().has("userName", userName).next();
         } else {
-            results = await(await DBConnector.getGraph()).V(userId).next();
+            results = await (await DBConnector.getGraph()).V(userId).next();
         }
 
         if (results == null || results.value == null) {
@@ -197,7 +197,7 @@ export const getProfile = async (userId: string | null, userName: string | null)
         const profileId: string = getVertexPropertySafe(vertexProperties, 'profileId');
 
         // Now get profile from ES
-        results = await getESConnector().searchProfile({term: { _id: profileId }}, null);
+        results = await getESConnector().searchProfile({ term: { _id: profileId } }, null);
 
         const hits = results?.hits?.hits;
         if (!results || hits == null || hits.length === 0) {
@@ -222,7 +222,7 @@ export const getProfile = async (userId: string | null, userName: string | null)
         };
 
         // Inverse key used to update the other copy of profile stored in redis
-        const inverseKey = `profile:${userName != null ? 'id' : 'name'}:${userName != null ? userIdFromResult: profile.userName}`;
+        const inverseKey = `profile:${userName != null ? 'id' : 'name'}:${userName != null ? userIdFromResult : profile.userName}`;
 
         // Add to redis. Store the profile under both the userId and userName(hence inverseKey var)    
         const profileString = JSON.stringify(profile);
@@ -237,12 +237,12 @@ export const getProfile = async (userId: string | null, userName: string | null)
     return null;
 }
 
-export const getVertexPropertySafe = (vertexProperties: Record<string, Array<{ value: string }>> | undefined, 
+export const getVertexPropertySafe = (vertexProperties: Record<string, Array<{ value: string }>> | undefined,
     propertyName: string, defaultValue: string = ""): string => {
-        return vertexProperties?.[propertyName]?.[0]?.value ?? defaultValue;
+    return vertexProperties?.[propertyName]?.[0]?.value ?? defaultValue;
 };
 
-export const updateProfileInRedis = async (profile: Profile, userId:string) => {
+export const updateProfileInRedis = async (profile: Profile, userId: string) => {
     // Build the redis key based on if searching by user name or by user id
     const key = `profile:id:${userId}`;
 
@@ -259,14 +259,14 @@ export const getPfpByUserId = async (userId: string): Promise<string> => {
     // Try to pull the pfp from redis first
     const key = `profile:id:${userId}`;
     const cachedData = await RedisConnector.get(key);
-    if(cachedData) {
-        const profile:Profile = JSON.parse(cachedData);
-        if(profile && profile.pfp) {
+    if (cachedData) {
+        const profile: Profile = JSON.parse(cachedData);
+        if (profile && profile.pfp) {
             return profile.pfp;
         }
     }
 
-    const results = await(await DBConnector.getGraph()).V(userId).next();
+    const results = await (await DBConnector.getGraph()).V(userId).next();
 
     if (results == null || results.value == null || results.value.properties.pfp == null) {
         return "";
@@ -283,14 +283,14 @@ export const addPfpsToPosts = async (posts: Record<string, Post>) => {
 
 export const addCommentCountsToPosts = async (posts: Record<string, Post>, postIds: string[]) => {
     const __ = DBConnector.__();
-    const commentResults = await(await DBConnector.getGraph()).V(postIds)
+    const commentResults = await (await DBConnector.getGraph()).V(postIds)
         .project("postId", "commentCount")
         .by(__.id())
         .by(__.outE(EDGE_POST_TO_COMMENT).count())
         .toList();
 
     for (const result of commentResults) {
-        const data = DBConnector.unwrapResult(result);    
+        const data = DBConnector.unwrapResult(result);
         const parsed = DBConnector.parseGraphResult<{ postId: string; commentCount: number }>(
             data,
             ["postId", "commentCount"]
@@ -299,12 +299,12 @@ export const addCommentCountsToPosts = async (posts: Record<string, Post>, postI
         if (parsed.postId in posts) {
             posts[parsed.postId].global.commentCount = parsed.commentCount;
         }
-    } 
+    }
 };
 
 export const addLikesToPosts = async (posts: Record<string, Post>, postIds: string[]) => {
     const __ = DBConnector.__();
-    const likeResults = await(await DBConnector.getGraph()).V(postIds)
+    const likeResults = await (await DBConnector.getGraph()).V(postIds)
         .filter(__.inE(EDGE_USER_LIKED_POST).count().is(DBConnector.P().gt(0)))
         .project("postId", "users")
         .by(__.id())
@@ -358,28 +358,38 @@ export const addLikesToPosts = async (posts: Record<string, Post>, postIds: stri
 
 // Helper function to validate and return errors
 export const handleValidationError = (error: string, statusCode: number = 400) => {
+    logger.info(`Failure: Code ${statusCode} ${error} `);
     return {
         statusCode,
-        headers: { 
+        headers: {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Credentials': true             
+            'Access-Control-Allow-Credentials': true
         },
-        body: JSON.stringify({data: error, statusText: "FAIL", status: statusCode})
+        body: JSON.stringify({
+            data: error,
+            statusText: "FAIL",
+            status: statusCode
+        })
     }
 };
 
 export const handleSuccess = (result: any) => {
+    logger.info(`Success: ${result}`);
     return {
         statusCode: 200,
-        headers: { 
+        headers: {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Credentials': true             
+            'Access-Control-Allow-Credentials': true
         },
-        body: JSON.stringify({data: result, statusText: "OK", status: 200})
-    }    
-}
+        body: JSON.stringify({
+            data: result,
+            statusText: "OK",
+            status: 200
+        })
+    };
+};
 
 export const buildPostSortClause = () => [
     {
