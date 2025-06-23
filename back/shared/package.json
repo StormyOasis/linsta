@@ -1,0 +1,28 @@
+{
+    "name": "@linsta/shared",
+    "version": "1.0.0",
+    "main": "build/index.js",
+    "types": "build/index.d.ts",
+    "scripts": {
+        "build": "tsc -p tsconfig.json",
+        "lint": "eslint src --ext .ts",
+        "test": "jest"
+    },
+    "dependencies": {
+        "@aws-sdk/client-location": "^3.645.0",
+        "@aws-sdk/client-s3": "^3.645.0",
+        "@aws-sdk/client-ses": "^3.623.0",
+        "@aws-sdk/client-sns": "^3.623.0",
+        "@aws/amazon-location-utilities-auth-helper": "^1.0.7",
+        "@elastic/elasticsearch": "^8.18.2",
+        "gremlin": "^3.7.3",
+        "hot-shots": "^10.2.1",
+        "p-retry": "^4.6.2",
+        "redis": "^4.7.0",
+        "sanitize-html": "^2.13.0",
+        "winston": "^3.13.0"
+    },
+    "devDependencies": {
+        "@types/gremlin": "^3.6.7"
+    }
+}

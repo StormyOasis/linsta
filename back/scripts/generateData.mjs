@@ -1,4 +1,3 @@
-import config from 'config';
 import fs from 'fs';
 import bcrypt from 'bcrypt';
 import { Client } from '@elastic/elasticsearch';
@@ -9,11 +8,12 @@ import gremlin from 'gremlin';
 import { exit } from 'process';
 
 const esClient = new Client({
-    node: config.get("es.node"),
+    node: "https://localhost:9200",
     auth: {
-        apiKey: config.get("es.apiKey")
+        apiKey: "Nk56a2xaY0IxOW1ZTGcxN0tUUGk6MjhyajBfUjl3WDBjSzJuNUJEMmxnUQ=="
     },
     tls: {
+        rejectUnauthorized:false,
         ca: fs.readFileSync("/usr/share/es/certs/ca.crt"),
     }
 });
@@ -40,14 +40,14 @@ const generateHashtags = (num) => {
 const generateMentions = (num) => {
     const mentions = [];
     for (let i = 0; i < num; i++) {
-        mentions.push(`@${faker.internet.userName()}`);
+        mentions.push(`@${faker.internet.username()}`);
     }
     return mentions;
 };
 
 // Generate a random user profile
 const generateProfile = async () => {
-    const userName = faker.internet.userName();
+    const userName = faker.internet.username();
     const firstName = faker.name.firstName();
     const lastName = faker.name.lastName();
     const bio = faker.lorem.sentence();

@@ -533,7 +533,7 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
                                             <Flex $marginTop="auto" $marginBottom="auto">
                                                 {
                                                     (commentText && commentText.length > 0) &&
-                                                    <Div $paddingLeft="5px" $paddingRight="5px">
+                                                    <Div $paddingLeft="5px" $paddingRight="5px" $margin="auto">
                                                         <StyledLink
                                                             onClick={async () => await handleSubmitComment(commentText.trim())}>
                                                             Post

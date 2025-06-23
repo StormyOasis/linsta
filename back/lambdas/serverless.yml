@@ -1,0 +1,166 @@
+service: linsta-api
+
+provider:
+  name: aws
+  runtime: nodejs22.x
+  region: us-west-2
+  apiGateway:
+    binaryMediaTypes:
+      - image/jpeg
+      - image/png
+      - multipart/form-data
+      - application/octet-stream  
+  vpc:
+    securityGroupIds:
+      - sg-0c35adbcbdcc26c2a # Redis security group
+    subnetIds:
+      - subnet-02f925bef5ee3850f # Private subnet 1
+      - subnet-010162509dc3b1723 # Private subnet 2
+  environment:
+    GRAPH_ENDPOINT: localhost
+    REDIS_ENDPOINT: localhost
+    ELASTICSEARCH_ENDPOINT: localhost:9200
+    MONITORING_ENDPOINT: localhost
+    NODE_ENV: 'production'
+  iamRoleStatements:
+    # S3 access – limited to a specific bucket
+    - Effect: Allow
+      Action:
+        - s3:PutObject
+        - s3:DeleteObject
+        - s3:GetObject
+      Resource: arn:aws:s3:::linsta-public/*  
+    - Effect: Allow
+      Action:
+        - ses:SendEmail
+        - sns:Publish
+        - ses:SendTemplatedEmail
+        - logs:CreateLogGroup
+        - logs:CreateLogStream
+        - logs:PutLogEvents
+      Resource: "*"
+    - Effect: Allow
+      Action:
+        - geo:SearchPlaceIndexForText
+        - geo:SearchPlaceIndexForPosition
+        - geo:SearchPlaceIndexForSuggestions
+        - geo:GetPlace
+      Resource: arn:aws:geo:us-west-2:847903130022:place-index/LinstaPlaceIndex      
+
+package:
+  include:
+    - build/certs/ca.crt
+  patterns:
+    - '!node_modules/mock-aws-s3/**'
+    - '!**/*.html'
+
+plugins:
+  - serverless-offline
+  - serverless-jest-plugin
+  - serverless-prune-plugin
+  - serverless-dotenv-plugin
+
+custom:
+  dotenv:
+    path: ../../.env  # path to root .env file
+  prune:
+    automatic: true
+    number: 2 # Keeps only the last 3 versions
+  jest:
+    collectCove
+  serverless-offline:
+    watch:
+      ignore:
+        - '**/*.ts'          
+        - 'node_modules/**'   
+        - '.serverless/**'
+        - 'dist/**'         
+        - 'app/**'
+        - 'build/**'
+        - 'coverage/**'
+        - 'logs/**'
+    httpPort: 3003
+    noPrependStageInUrl: true
+
+functions:
+  #cronProcessor:
+  #  handler: build/metrics/metricsCron.handler
+  #  events:
+  #    - schedule:
+  #        rate: cron(* * * * ? *)  # every minute
+  #        enabled: true
+  #        name: ipTrackingCronRule
+  #        description: "Trigger Lambda every minute to report unique IPs"    
+  addPost:
+    handler: build/controllers/posts/addPost.handler
+    events:
+      - http:
+          path: /api/v1/posts/addPost
+          method: post
+          cors: true  # Enable CORS for cross-origin requests
+      - http:
+          path: /api/v1/posts/addPost
+          method: put       
+          cors: true  # Enable CORS for cross-origin requests   
+  deletePost:
+    handler: build/controllers/posts/deletePost.handler
+    events:
+      - http:
+          path: /api/v1/posts/deletePost
+          method: post
+          cors: true  # Enable CORS for cross-origin requests
+      - http:
+          path: /api/v1/posts/deletePost
+          method: delete
+          cors: true  # Enable CORS for cross-origin requests
+  updatePost:
+    handler: build/controllers/posts/updatePost.handler
+    events:
+      - http:
+          path: /api/v1/posts/updatePost
+          method: post
+          cors: true  # Enable CORS for cross-origin requests
+      - http:
+          path: /api/v1/posts/updatePost
+          method: patch
+          cors: true  # Enable CORS for cross-origin requests
+  addComment:
+    handler: build/controllers/comments/addComment.handler
+    events:
+      - http:
+          path: /api/v1/comment/add
+          method: post
+          cors: true  # Enable CORS for cross-origin requests
+  deleteComment:
+    handler: build/controllers/comments/deleteComment.handler
+    events:
+      - http:
+          path: /api/v1/comment/delete
+          method: post
+          cors: true  # Enable CORS for cross-origin requests
+      - http:
+          path: /api/v1/comment/delete
+          method: delete
+          cors: true  # Enable CORS for cross-origin requests
+  updateProfileByUserId:
+    handler: build/controllers/profiles/updateProfileByUserId.handler
+    events:
+      - http:
+          path: /api/v1/profiles/updateProfileByUserId
+          method: post
+          cors: true  # Enable CORS for cross-origin requests
+      - http:
+          path: /api/v1/profiles/updateProfileByUserId
+          method: patch
+          cors: true  # Enable CORS for cross-origin requests
+  putProfilePfp:
+    handler: build/controllers/profiles/putProfilePfp.handler
+    events:
+      - http:
+          path: /api/v1/profiles/updatePfp
+          method: post
+          cors: true  # Enable CORS for cross-origin requests
+      - http:
+          path: /api/v1/profiles/updatePfp
+          method: put  
+          cors: true  # Enable CORS for cross-origin requests
