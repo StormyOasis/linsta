@@ -1,8 +1,10 @@
 service: linsta-api
 
+frameworkVersion: '4'
+
 provider:
   name: aws
-  runtime: nodejs22.x
+  runtime: nodejs22.x        
   region: us-west-2
   apiGateway:
     binaryMediaTypes:
@@ -12,29 +14,28 @@ provider:
       - application/octet-stream  
   vpc:
     securityGroupIds:
-      - sg-0c35adbcbdcc26c2a # Redis security group
+      - sg-0c35adbcbdcc26c2a
     subnetIds:
-      - subnet-02f925bef5ee3850f # Private subnet 1
-      - subnet-010162509dc3b1723 # Private subnet 2
+      - subnet-02f925bef5ee3850f
+      - subnet-010162509dc3b1723
   environment:
-    GRAPH_ENDPOINT: localhost
-    REDIS_ENDPOINT: localhost
-    ELASTICSEARCH_ENDPOINT: localhost:9200
-    MONITORING_ENDPOINT: localhost
+    GRAPH_ENDPOINT: db.linsta.lboydstun.com
+    REDIS_ENDPOINT: redis.linsta.lboydstun.com
+    ELASTICSEARCH_ENDPOINT: https://search.linsta.lboydstun.com:9200
+    MONITORING_ENDPOINT: monitoring.linsta.lboydstun.com
     NODE_ENV: 'production'
   iamRoleStatements:
-    # S3 access – limited to a specific bucket
     - Effect: Allow
       Action:
         - s3:PutObject
         - s3:DeleteObject
         - s3:GetObject
-      Resource: arn:aws:s3:::linsta-public/*  
+      Resource: arn:aws:s3:::linsta-public/*
     - Effect: Allow
       Action:
         - ses:SendEmail
-        - sns:Publish
         - ses:SendTemplatedEmail
+        - sns:Publish
         - logs:CreateLogGroup
         - logs:CreateLogStream
         - logs:PutLogEvents
@@ -45,36 +46,46 @@ provider:
         - geo:SearchPlaceIndexForPosition
         - geo:SearchPlaceIndexForSuggestions
         - geo:GetPlace
-      Resource: arn:aws:geo:us-west-2:847903130022:place-index/LinstaPlaceIndex      
+      Resource: arn:aws:geo:us-west-2:847903130022:place-index/LinstaPlaceIndex
 
 package:
+  individually: false       # Package all lambdas together into one zip
   include:
-    - build/certs/ca.crt
-  patterns:
-    - '!node_modules/mock-aws-s3/**'
-    - '!**/*.html'
+    - build/certs/ca.crt    # Explicitly include certs
+    - build/**              # Include all compiled output
+    - node_modules/**       # Include dependencies
+  exclude:
+    - tests/**              # Exclude test folders
+    - '**/*.test.js'        # Exclude test files
+    - '**/*.spec.js'
+    - '**/*.ts'             # Exclude TS source files (only JS output needed)
+    - '*.log'               # Exclude log files
+    - '.git/**'             # Exclude git metadata
+    - '.vscode/**'          # Exclude editor configs
+    - 'node_modules/mock-aws-s3/**'  # Exclude mock packages if unused
+    - '**/*.html'           # Exclude any html files if unused
+
 
 plugins:
   - serverless-offline
   - serverless-jest-plugin
   - serverless-prune-plugin
-  - serverless-dotenv-plugin
 
 custom:
   dotenv:
-    path: ../../.env  # path to root .env file
+    path: ../../.env
   prune:
     automatic: true
-    number: 2 # Keeps only the last 3 versions
+    number: 2
   jest:
     collectCove
   serverless-offline:
     watch:
       ignore:
-        - '**/*.ts'          
-        - 'node_modules/**'   
+        - '**/*.ts'
+        - 'node_modules/**'
         - '.serverless/**'
-        - 'dist/**'         
+        - 'dist/**'
         - 'app/**'
         - 'build/**'
         - 'coverage/**'
@@ -83,84 +94,76 @@ custom:
     noPrependStageInUrl: true
 
 functions:
-  #cronProcessor:
-  #  handler: build/metrics/metricsCron.handler
-  #  events:
-  #    - schedule:
-  #        rate: cron(* * * * ? *)  # every minute
-  #        enabled: true
-  #        name: ipTrackingCronRule
-  #        description: "Trigger Lambda every minute to report unique IPs"    
   addPost:
     handler: build/controllers/posts/addPost.handler
     events:
       - http:
           path: /api/v1/posts/addPost
           method: post
-          cors: true  # Enable CORS for cross-origin requests
+          cors: true
       - http:
           path: /api/v1/posts/addPost
-          method: put       
-          cors: true  # Enable CORS for cross-origin requests   
+          method: put
+          cors: true
   deletePost:
     handler: build/controllers/posts/deletePost.handler
     events:
       - http:
           path: /api/v1/posts/deletePost
           method: post
-          cors: true  # Enable CORS for cross-origin requests
+          cors: true
       - http:
           path: /api/v1/posts/deletePost
           method: delete
-          cors: true  # Enable CORS for cross-origin requests
+          cors: true
   updatePost:
     handler: build/controllers/posts/updatePost.handler
     events:
       - http:
           path: /api/v1/posts/updatePost
           method: post
-          cors: true  # Enable CORS for cross-origin requests
+          cors: true
       - http:
           path: /api/v1/posts/updatePost
           method: patch
-          cors: true  # Enable CORS for cross-origin requests
+          cors: true
   addComment:
     handler: build/controllers/comments/addComment.handler
     events:
       - http:
           path: /api/v1/comment/add
           method: post
-          cors: true  # Enable CORS for cross-origin requests
+          cors: true
   deleteComment:
     handler: build/controllers/comments/deleteComment.handler
     events:
       - http:
           path: /api/v1/comment/delete
           method: post
-          cors: true  # Enable CORS for cross-origin requests
+          cors: true
       - http:
           path: /api/v1/comment/delete
           method: delete
-          cors: true  # Enable CORS for cross-origin requests
+          cors: true
   updateProfileByUserId:
     handler: build/controllers/profiles/updateProfileByUserId.handler
     events:
       - http:
           path: /api/v1/profiles/updateProfileByUserId
           method: post
-          cors: true  # Enable CORS for cross-origin requests
+          cors: true
       - http:
           path: /api/v1/profiles/updateProfileByUserId
           method: patch
-          cors: true  # Enable CORS for cross-origin requests
+          cors: true
   putProfilePfp:
     handler: build/controllers/profiles/putProfilePfp.handler
     events:
       - http:
           path: /api/v1/profiles/updatePfp
           method: post
-          cors: true  # Enable CORS for cross-origin requests
+          cors: true
       - http:
           path: /api/v1/profiles/updatePfp
-          method: put  
-          cors: true  # Enable CORS for cross-origin requests
+          method: put
+          cors: true

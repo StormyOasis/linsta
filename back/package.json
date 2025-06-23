@@ -1,10 +1,5 @@
 {
     "private": true,
-    "workspaces": [
-        "koa",
-        "lambdas",
-        "shared"
-    ],
     "name": "linsta_back",
     "description": "Backend for Linstagram",
     "version": "1.0.0",
@@ -17,38 +12,17 @@
         "url": "git+https://github.com/StormyOasis/linsta.git"
     },
     "scripts": {
-        "clean": "rimraf ./koa/build ./lambdas/build ./shared/build",
-        "build": "npm run build -w koa && npm run build -w lambdas && npm run build -w shared",
-        "lint": "npm run lint -w koa && npm run lint -w lambdas && npm run lint -w shared",
-        "test": "npm run test -w koa && npm run test -w lambdas && npm run test -w shared",
-        "deploy": "npm run deploy -w lambdas",
-        "start": "npm run build && concurrently \"npm run start:koa\" \"npm run start:lambdas\"",
-        "start:koa": "npm --workspace koa run start",
-        "start:lambdas": "npm --workspace lambdas run start"
-    },
-    "devDependencies": {
-        "@faker-js/faker": "^9.8.0",
-        "@types/node": "^24.0.3",
-        "@types/sanitize-html": "^2.13.0",
-        "@typescript-eslint/eslint-plugin": "^7.13.1",
-        "@typescript-eslint/parser": "^7.13.1",
-        "babel-jest": "^29.7.0",
-        "concurrently": "^9.1.2",
-        "dockerize": "^0.1.0",
-        "eslint": "^8.57.0",
-        "eslint-config-prettier": "^9.1.0",
-        "faker-js": "^1.0.0",
-        "jest": "^29.7.0",
-        "jest-environment-jsdom": "^29.7.0",
-        "npm-run-all": "^4.1.5",
-        "rimraf": "^5.0.5",
-        "serverless-dotenv-plugin": "^6.0.0",
-        "serverless-jest-plugin": "^0.4.0",
-        "ts-jest": "^29.3.0",
-        "ts-node": "^10.9.2",
-        "typescript": "^5.8.2"
-    },
-    "dependencies": {
-        "faker": "^6.6.6"
+        "clean": "rm -rf ./koa/build ./lambdas/build ./shared/build",
+        "build:shared": "cd shared && npm install && npm run build",
+        "build:koa": "npm run build:shared && cd koa && npm install && npm run build",
+        "build:lambdas": "npm run build:shared && cd lambdas && npm install && npm run build",
+        "build": "npm --prefix shared run build && npm --prefix koa run build && npm --prefix lambdas run build",
+        "lint": "cd shared && npm run lint && cd ../koa && npm run lint && cd ../lambdas && npm run lint",
+        "test": "cd shared && npm run test && cd ../koa && npm run test && cd ../lambdas && npm run test",
+        "deploy": "npm run build:lambdas && cd lambdas && npm run deploy",
+        "start": "npm run build && npm run start:koa",
+        "start:dev": "npm run build && concurrently \"npm run start:koa\" \"npm run start:lambdas\"",
+        "start:koa": "cd koa && npm run start",
+        "start:lambdas": "cd lambdas && npm run start"
     }
 }

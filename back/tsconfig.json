@@ -1,14 +1,21 @@
 {
-    "files": [],
+    "compilerOptions": {
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "skipLibCheck": true,
+        "moduleResolution": "node",
+        "module": "commonjs",         // or "commonjs", but consistent
+        "target": "es2020",
+    },
     "references": [
+        {
+            "path": "./shared"
+        },        
         {
             "path": "./koa"
         },
         {
             "path": "./lambdas"
-        },
-        {
-            "path": "./shared"
         }
     ]
 }

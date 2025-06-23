@@ -86,6 +86,7 @@ export { SearchService } from './connectors/elastic/SearchService';
 export { IndexService } from './connectors/elastic/IndexService';
 
 // Types
+/*
 export type {
     User,
     Post,
@@ -98,3 +99,5 @@ export type {
     ProfileWithFollowStatusInt,
     RequestWithRequestorId
 } from './types';
+*/
+export * from './types';
