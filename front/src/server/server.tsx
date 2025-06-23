@@ -20,7 +20,7 @@ import { API_HOST, PORT } from "../api/config";
 const router = new Router();
 const app = new Koa();
 
-const renderHtml = (title: string, styles: any, html: any, preloadState: any):string => {
+const renderHtml = (title: string, styles: any, html: any, preloadState: any): string => {
     return `
     <!DOCTYPE html>
     <html lang="en">
@@ -29,19 +29,98 @@ const renderHtml = (title: string, styles: any, html: any, preloadState: any):st
             <meta name="viewport" content="width=device-width, initial-scale=1">    
             <meta name="description" content="Linstagram - An instagram clone">    
             <title>${title}</title>
-	    <link rel="icon" type="image/png" href="${process.env.REACT_APP_HOST}/favicon.png">
+	        <link rel="icon" type="image/png" href="${process.env.REACT_APP_HOST}/favicon.png">
             <script>
                 window.env = {
                     REACT_APP_PORT: "${process.env.REACT_APP_PORT}",
                     REACT_APP_HOST: "${process.env.REACT_APP_HOST}",
                     REACT_APP_API_HOST: "${process.env.REACT_APP_API_HOST}",
+                    REACT_APP_LAMBDA_HOST: "${process.env.REACT_APP_LAMBDA_HOST}",
                     REACT_APP_METRICS_HOST: "${process.env.REACT_APP_METRICS_HOST}",
                     REACT_APP_METRICS_PORT: "${process.env.REACT_APP_METRICS_PORT}"             
                 };
             </script>
             <link rel="preconnect" href="https://linsta-public.s3.us-west-2.amazonaws.com">
             <link rel="preconnect" href="${API_HOST}">
-            <link rel="stylesheet" href="/public/defaults.css">            
+            <style>
+                body {
+                    margin: 0;
+                }
+
+                * {
+                    line-height: 18px;
+                    font-size: 14px;
+                    font-family: -apple-system, 
+                                BlinkMacSystemFont, 
+                                "Apple Color Emoji", 
+                                "Segoe UI Emoji", 
+                                "Segoe UI Symbol", 
+                                "Noto Color Emoji", 
+                                "Twemoji Mozilla", 
+                                "Segoe UI", 
+                                "EmojiOne Color",
+                                "Android Emoji", 
+                                Roboto, 
+                                Helvetica, 
+                                Arial, 
+                                sans-serif;
+                }
+
+                @keyframes modalAnimation {
+                    0% {
+                        opacity: 0;
+                        transform: scale(1.25);
+                        transform-origin: center;
+                    }
+
+                    100% {
+                        opacity: 1;
+                        transform: scale(1);
+                        transform-origin: center;
+                    }
+                }
+
+                .EmojiPickerReact * {
+                    --epr-emoji-size: 20px;
+                    --epr-category-label-height: 20px;    
+                    --epr-horizontal-padding: 5px;
+                    --epr-emoji-padding: 5px;
+                    --epr-emoji-fullsize: calc(var(--epr-emoji-size) + var(--epr-emoji-padding)* 2);    
+                }
+
+                .emoji-node {
+                    display: inline-block;
+                    width: 20px;
+                    height: 20px;
+                }
+
+                #editor-selector-parent:first-child {
+                    outline: none;
+                    min-height: 105px;
+                    max-height: 105px;
+                    height: 105px;
+                    overflow-y: auto;
+                }
+
+                #editor-selector-parent div[contenteditable] {
+                    outline: none;
+                    margin-top: 14px;
+                    margin-left: 2px;    
+                }
+
+                #editor-selector-parent div[contenteditable]:focus {
+                    outline: none;
+                    margin-top: 14px;
+                    margin-left: 2px;    
+                }
+
+                .editor-placeholder {
+                    position: absolute;
+                    top: 0px;
+                    margin-top: 14px;
+                    margin-left: 2px;
+                }
+            </style>       
             ${styles}
         </head>
         <body>
@@ -82,7 +161,7 @@ router.get(/.*/, async (ctx) => {
 
             const styles = sheet.getStyleTags();
             const scripts = extractor.getScriptTags();
-            const links = extractor.getLinkTags();            
+            const links = extractor.getLinkTags();
 
             ctx.body = renderHtml("Linstagram", `${styles}${links}`, appHtml, store.getState()).replace('</body>', `${scripts}</body>`);
             ctx.response.set("content-type", "text/html");

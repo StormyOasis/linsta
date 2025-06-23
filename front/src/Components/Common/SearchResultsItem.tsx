@@ -94,7 +94,7 @@ const SearchResultItem: React.FC<SearchResultItemProps> = ({ item, onClick, onRe
                                 e.stopPropagation();
                                 onRemove();
                             }}>
-                                <XSVG />
+                                <XSVG width="12px" height="12px" />
                             </StyledLink>
                         }
                     </FlexRowFullWidth>

@@ -1,0 +1,24 @@
+{
+    "name": "lambdas",
+    "scripts": {
+        "deploy": "serverless deploy",
+        "build": "tsc -p tsconfig.json",
+        "lint": "eslint src --ext .ts",
+        "test": "jest",
+        "start": "serverless offline start"
+    },    
+    "dependencies": {
+        "aws-lambda": "^1.0.7",
+        "dotenv": "^16.5.0",
+        "jsonwebtoken": "^9.0.2",
+        "lambda-multipart-parser": "^1.0.1",
+        "shared": "*"
+    },
+    "devDependencies": {
+        "@types/aws-lambda": "^8.10.150",
+        "@types/jsonwebtoken": "^9.0.10",
+        "serverless": "^4.17.1",
+        "serverless-offline": "^14.4.0",
+        "serverless-prune-plugin": "^2.1.0"
+    }
+}

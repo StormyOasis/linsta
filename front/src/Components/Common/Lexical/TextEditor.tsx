@@ -46,10 +46,6 @@ const TextEditor = (props: TextEditorProps) => {
         },
     };
 
-    useEffect(() => {
-        preloadEmojiData().catch(console.error);
-    }, []);
-
     const handleChange = (editorState: EditorState, editor: LexicalEditor) => {
         editorState.read(() => {
             const html = $generateHtmlFromNodes(editor);

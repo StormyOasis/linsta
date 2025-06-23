@@ -108,7 +108,6 @@ const ExploreContent: React.FC = () => {
 
     useEffect(() => {
         const term = decodeURIComponent(searchParams.get("q") ?? "");
-
         if (!hasFetchedRef.current || lastQueryRef.current !== term) {
             hasFetchedRef.current = true;
             lastQueryRef.current = term;
@@ -208,9 +207,9 @@ const ExploreContent: React.FC = () => {
                         <Flex $justifyContent="center" style={{ margin: "0 auto" }}>
                             <GridContainer $width="100%">
                                 <FlexRowFullWidth $paddingBottom="20px">
-                                    {(!isLoading && hasFetchedRef.current && posts.length === 0) &&
+                                    {(!isLoading && hasFetchedRef.current && posts.length === 0 && q?.length > 0) &&
                                         <Span $fontSize="18px" $lineHeight="25px" $paddingRight="6px">No results found for term:</Span>
-                                    }
+                                    }                                    
                                     <Span $fontWeight="600" $fontSize="18px" $lineHeight="25px">{q}</Span>
                                 </FlexRowFullWidth>
                                 {posts.map((post: Post, index: number) => (
