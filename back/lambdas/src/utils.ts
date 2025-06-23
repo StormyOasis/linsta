@@ -24,12 +24,11 @@ export const verifyJWT = (event: APIGatewayProxyEvent, userId: string): JwtPaylo
     const token = authHeader.replace(/^Bearer /, '');
     try {
         const jwtPayload: JwtPayload | string = jwt.verify(token, config.auth.jwt.secret);
-
         if (!jwtPayload || (typeof jwtPayload === "object" && jwtPayload.id != userId)) {
             return null
         }
         return jwtPayload;
-    } catch {
+    } catch(err) {
         return null;
     }
 }

@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 import path from 'path';
+import { existsSync } from 'fs';
 
 interface AWSConfig {
     region: string;
@@ -74,10 +75,10 @@ interface AppConfig {
     metrics: {
         statsd: {
             host: string;
-            port: string|number;
-        }            
-    };    
-    
+            port: string | number;
+        }
+    };
+
     auth: AuthConfig;
     database: DBConfig;
     es: ESConfig;
@@ -85,7 +86,7 @@ interface AppConfig {
     aws: AWSConfig;
 }
 
-const appConfig:AppConfig = {
+const appConfig: AppConfig = {
     frontHost: '',
     port: '',
     host: '',
@@ -130,7 +131,7 @@ const appConfig:AppConfig = {
         minTimeout: 0,
         maxRetries: 0
     },
-    redis:{
+    redis: {
         host: '',
         port: '',
         userName: '',
@@ -156,8 +157,20 @@ const appConfig:AppConfig = {
     }
 };
 
-// Load .env file
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+
+
+
+function loadEnv(): void {
+    const envPath = path.resolve(process.cwd(), '.env');
+
+    if (existsSync(envPath)) {
+        dotenv.config({ path: envPath });
+    } else {
+        console.warn(`⚠️  .env file not found at ${envPath}`);
+    }
+}
+
+loadEnv();
 
 appConfig.port = process.env.PORT ?? appConfig.port;
 appConfig.frontHost = process.env.FRONT_HOST ?? appConfig.frontHost;

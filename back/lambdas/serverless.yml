@@ -54,6 +54,7 @@ package:
     - build/certs/ca.crt    # Explicitly include certs
     - build/**              # Include all compiled output
     - node_modules/**       # Include dependencies
+    - ../.env          # Include your .env file here
   exclude:
     - tests/**              # Exclude test folders
     - '**/*.test.js'        # Exclude test files
@@ -73,7 +74,7 @@ plugins:
 
 custom:
   dotenv:
-    path: ../../.env
+    path: ../.env
   prune:
     automatic: true
     number: 2
