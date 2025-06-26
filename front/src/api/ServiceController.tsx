@@ -1,7 +1,7 @@
 import axios from "axios";
 import { authHeader, AuthUser, getCurrentUser } from "./Auth";
 import { base64ToBlob } from "../utils/utils";
-import { API_HOST, LAMBDA_HOST } from "./config";
+import { API_HOST } from "./config";
 import { Profile } from "./types";
 
 const API_VERSION = "v1";
@@ -66,7 +66,7 @@ export const putSubmitPfp = async (data: any, userId: string): Promise<ServiceRe
 
     form.append("requestorUserId", getCurrentUser()?.id);
 
-    const res = await axios.putForm(`${LAMBDA_HOST}/api/${API_VERSION}/profiles/updatePfp`, form, { headers: authHeader() });
+    const res = await axios.putForm(`${API_HOST}/api/${API_VERSION}/profiles/updatePfp`, form, { headers: authHeader() });
 
     return res.data;
 }
@@ -114,7 +114,7 @@ export const putSubmitPost = async (data: any, authUser: AuthUser): Promise<Serv
         form.append(entry.id, entry.data);
     });
 
-    const res = await axios.putForm(`${LAMBDA_HOST}/api/${API_VERSION}/posts/addPost`, form, { headers: authHeader() });
+    const res = await axios.putForm(`${API_HOST}/api/${API_VERSION}/posts/addPost`, form, { headers: authHeader() });
 
     return res.data;
 }
@@ -135,12 +135,12 @@ export const postToggleLike = async (data: any): Promise<ServiceResponse> => {
 }
 
 export const postDeletePost = async (data: any): Promise<ServiceResponse> => {
-    const res = await axios.post(`${LAMBDA_HOST}/api/${API_VERSION}/posts/deletePost`, addRequestorId(data), { headers: authHeader() });
+    const res = await axios.post(`${API_HOST}/api/${API_VERSION}/posts/deletePost`, addRequestorId(data), { headers: authHeader() });
     return res.data;
 }
 
 export const postUpdatePost = async (data: any): Promise<ServiceResponse> => {
-    const res = await axios.post(`${LAMBDA_HOST}/api/${API_VERSION}/posts/updatePost`, addRequestorId(data), { headers: authHeader() });
+    const res = await axios.post(`${API_HOST}/api/${API_VERSION}/posts/updatePost`, addRequestorId(data), { headers: authHeader() });
     return res.data;
 }
 
@@ -150,12 +150,12 @@ export const postSetFollowStatus = async (data: any): Promise<ServiceResponse> =
 }
 
 export const postAddComment = async (data: any): Promise<ServiceResponse> => {
-    const res = await axios.post(`${LAMBDA_HOST}/api/${API_VERSION}/comment/add`, addRequestorId(data), { headers: authHeader() });
+    const res = await axios.post(`${API_HOST}/api/${API_VERSION}/comment/add`, addRequestorId(data), { headers: authHeader() });
     return res.data;
 }
 
 export const postDeleteComment = async (data: any): Promise<ServiceResponse> => {
-    const res = await axios.post(`${LAMBDA_HOST}/api/${API_VERSION}/comment/delete`, addRequestorId(data), { headers: authHeader() });
+    const res = await axios.post(`${API_HOST}/api/${API_VERSION}/comment/delete`, addRequestorId(data), { headers: authHeader() });
     return res.data;
 }
 
@@ -190,7 +190,7 @@ export const postGetFollowingByUserId = async (data: any): Promise<ServiceRespon
 }
 
 export const postUpdateProfile = async (data: any): Promise<ServiceResponse> => {
-    const res = await axios.post(`${LAMBDA_HOST}/api/${API_VERSION}/profiles/update`, addRequestorId(data), { headers: authHeader() });
+    const res = await axios.post(`${API_HOST}/api/${API_VERSION}/profiles/update`, addRequestorId(data), { headers: authHeader() });
     return res.data;
 }
 
@@ -210,7 +210,7 @@ export const postGetPostsByUserId = async (data: any): Promise<ServiceResponse> 
 }
 
 export const postUpdateProfileByUserId = async (data: any): Promise<ServiceResponse> => {
-    const res = await axios.post(`${LAMBDA_HOST}/api/${API_VERSION}/profiles/updateProfileByUserId`, addRequestorId(data), { headers: authHeader() });
+    const res = await axios.post(`${API_HOST}/api/${API_VERSION}/profiles/updateProfileByUserId`, addRequestorId(data), { headers: authHeader() });
     return res.data;
 }
 

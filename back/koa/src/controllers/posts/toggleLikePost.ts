@@ -11,8 +11,7 @@ import {
 
 import {
     handleSuccess,
-    handleValidationError,
-    verifyJWT
+    handleValidationError
 } from "../../utils";
 
 type LikeRequest = {
@@ -32,11 +31,6 @@ export const handlerActions = async (baseMetricsKey: string, ctx: Context) => {
 
     if (!postId || !userId) {
         return handleValidationError(ctx, "Missing postId or userId");
-    }
-
-    if (!verifyJWT(ctx, () => { })) {
-        // 403 - Forbidden
-        return handleValidationError(ctx, "You do not have permission to access this data", 403);
     }
 
     let isLiked: boolean | undefined = false;

@@ -1,6 +1,6 @@
 import { getPostByPostId, logger, metrics, withMetrics } from "@linsta/shared";
 import { Context } from "koa";
-import { handleSuccess, handleValidationError, verifyJWT } from "../../utils";
+import { handleSuccess, handleValidationError } from "../../utils";
 
 type GetPostByIdRequest = {
     postId: string;
@@ -18,11 +18,6 @@ export const handlerActions = async (baseMetricsKey: string, ctx: Context) => {
 
     if (!postId) {
         return handleValidationError(ctx, "Error getting post");
-    }
-
-    if (!verifyJWT(ctx, () => { })) {
-        // 403 - Forbidden
-        return handleValidationError(ctx, "You do not have permission to access this data", 403);
     }
 
     try {

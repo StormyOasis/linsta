@@ -1,44 +1,37 @@
-import { APIGatewayProxyEvent } from 'aws-lambda';
-import * as multipart from 'lambda-multipart-parser';
-import { getIpFromEvent, getFileExtByMimeType, verifyJWT } from '../../utils';
+import { handleSuccess, handleValidationError } from '../../utils';
 import {
     DBConnector,
     RedisConnector,
     EDGE_POST_TO_USER,
     EDGE_USER_TO_POST,
-    handleSuccess,
-    handleValidationError,
+    getFileExtension,
     metrics,
     withMetrics,
     logger,
     sanitize,
     uploadFile,
     updatePostIdInES,
-    IndexService
+    IndexService,
+    sendImageProcessingMessage,
+    getFileExtByMimeType,
 } from '@linsta/shared';
-import type { LambdaMultipartFile, User, Global, Entry, Post } from '@linsta/shared';
+import type { User, Global, Entry, Post } from '@linsta/shared';
+import formidable from 'formidable';
+import { Context } from 'koa';
 
-export const handler = async (event: APIGatewayProxyEvent) => {
+export const handler = async (ctx: Context) => {
     const baseMetricsKey = "posts.addpost";
-    const ip = getIpFromEvent(event);
+    const ip = ctx.ip;
 
-    return await withMetrics(baseMetricsKey, ip, async () => await handlerActions(baseMetricsKey, event));
+    return await withMetrics(baseMetricsKey, ip, async () => await handlerActions(baseMetricsKey, ctx));
 }
 
-export const handlerActions = async (baseMetricsKey: string, event: APIGatewayProxyEvent) => {
-    let parsed;
-    try {
-        parsed = await multipart.parse(event);
-    } catch (err) {
-        logger.error("Error parsing multipart data", err);
-        return handleValidationError("Invalid form data");
-    }
+export const handlerActions = async (baseMetricsKey: string, ctx: Context) => {
+    const data = ctx.request.body;
+    const files = ctx.request.files;
 
-    const data: multipart.MultipartRequest = parsed;
-    const files: multipart.MultipartFile[] = parsed.files;
-
-    if (!data || !files || !data.user || !data.global || !data.entries) {
-        return handleValidationError("Invalid params passed");
+    if (!data || !files) {
+        return handleValidationError(ctx, "Invalid params passed");
     }
 
     let user: User, global: Global, entries: Entry[];
@@ -47,18 +40,13 @@ export const handlerActions = async (baseMetricsKey: string, event: APIGatewayPr
         global = JSON.parse(data.global);
         entries = JSON.parse(data.entries);
     } catch (err) {
-        return handleValidationError("Invalid JSON in fields");
+        return handleValidationError(ctx, "Invalid JSON in fields");
     }
 
     // Sanitize input
     user.userId = sanitize(user.userId);
     global.captionText = sanitize(global.captionText);
     global.locationText = sanitize(global.locationText);
-
-    if (!verifyJWT(event, data.requestorUserId)) {
-        // 403 - Forbidden
-        return handleValidationError("You do not have permission to access this data", 403);
-    }
 
     try {
         // Upload each file to S3
@@ -69,7 +57,7 @@ export const handlerActions = async (baseMetricsKey: string, event: APIGatewayPr
 
         const indexResponse = await IndexService.insertPost(dataSet)
         if (!indexResponse || indexResponse.result !== 'created') {
-            return handleValidationError("Error adding post");
+            return handleValidationError(ctx, "Error adding post");
         }
 
         // Add an associated vertex and edges to the graph for this post
@@ -82,7 +70,7 @@ export const handlerActions = async (baseMetricsKey: string, event: APIGatewayPr
             .next();
 
         if (!graphResult || !graphResult.value) {
-            return handleValidationError("Error adding post");
+            return handleValidationError(ctx, "Error adding post");
         }
 
         const postId: string = graphResult.value.id;
@@ -106,33 +94,31 @@ export const handlerActions = async (baseMetricsKey: string, event: APIGatewayPr
         // Add the post data to redis
         await RedisConnector.set(indexResponse._id, JSON.stringify(dataSet));
 
-        return handleSuccess({ status: "OK", postId });
+        // We've finished all post stuff so it's now time to queue up an image processing processing event
+        entries.forEach(async (entry:Entry) => {
+            const ext = getFileExtension(entry.url);
+            const key = `${user.userId}/${entry.id}.${ext}`;
+            await sendImageProcessingMessage(indexResponse._id, entry.id, key, (entry.mimeType || "").includes("video"));
+        });
+
+        return handleSuccess(ctx, { status: "OK", postId });
     } catch (err) {
         await DBConnector.rollbackTransaction();
         metrics.increment(`${baseMetricsKey}.errorCount`);
         logger.error((err as Error).message);        
-        return handleValidationError("Error adding post");
+        return handleValidationError(ctx, "Error adding post");
     }
 };
 
-const processFileUploads = async (userId: string, entries: Entry[], files: LambdaMultipartFile[]): Promise<void> => {
+const processFileUploads = async (userId: string, entries: Entry[], files: formidable.Files): Promise<void> => {
     for (const entry of entries) {
-        const file = files.find(f => f.fieldname === entry.id);
-        if (!file) {
-            throw new Error(`Missing file for entry ${entry.id}`);
-        }
+        const file: formidable.File = (files[entry.id] as formidable.File);
 
-        const { tag, url } = await uploadFile(
-            file,
-            entry.id,
-            userId,
-            getFileExtByMimeType(file.contentType)
-        );
-
-        entry.entityTag = tag.replace(/"/g, '');
-        entry.url = url;
-        entry.mimeType = file.contentType;
+        const result = await uploadFile(file, entry.id, userId, getFileExtByMimeType(file.mimetype));
+        entry.entityTag = result.tag.replace('"', '').replace('"', '');
+        entry.url = result.url;
+        entry.mimeType = file.mimetype;
         entry.alt = sanitize(entry.alt);
-        entry.userId = userId;
+        entry.userId = userId;        
     }
 }

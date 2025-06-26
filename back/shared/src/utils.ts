@@ -1,5 +1,6 @@
 import DBConnector, { EDGE_USER_LIKED_POST } from './connectors/DBConnector';
 import { buildSearchResultSet } from './connectors/elastic/ESConnector';
+import { IndexService } from './connectors/elastic/IndexService';
 import { SearchService } from './connectors/elastic/SearchService';
 import RedisConnector from './connectors/RedisConnector';
 import logger from './logger';
@@ -23,7 +24,7 @@ export const handleValidationError = (error: string, statusCode: number = 400) =
     }
 };
 
-export const handleSuccess = (result: unknown) => {    
+export const handleSuccess = (result: unknown) => {
     return {
         statusCode: 200,
         headers: {
@@ -233,7 +234,7 @@ export const getProfile = async (userId: string | null, userName: string | null)
         const profileId: string = DBConnector.getVertexPropertySafe(vertexProperties, 'profileId');
 
         // Now get profile from ES
-        const esResult = await SearchService.searchProfiles({query:{ term: { _id: profileId } }});
+        const esResult = await SearchService.searchProfiles({ query: { term: { _id: profileId } } });
 
         const hits = (esResult as any)?.hits?.hits;
         if (!esResult || hits == null || hits.length === 0) {
@@ -273,3 +274,102 @@ export const getProfile = async (userId: string | null, userName: string | null)
     return null;
 }
 
+export const updateEntryUrl = async (postEsId: string, entryId: string, mimeType: string, newUrl: string) => {
+    // We need to change the media url in ES and possibly redis
+    const params: Record<string, unknown> = {
+        newUrl,
+        mimeType,
+        entryId
+    };
+
+    // Update ES first, it's the source of truth 
+    const esResult = await IndexService.updatePost(postEsId, {
+        source:
+            `
+            // Update the url and mime-type media items using entry id matching
+            if (ctx._source.containsKey('media')) {                    
+                int mediaSize = ctx._source.media.size();     
+                
+                // Iterate through the media array and update the altText
+                for (int i = 0; i < mediaSize; i++) {
+                    if (ctx._source.media[i].id == params.entryId) {
+                        ctx._source.media[i].path = params.newUrl;
+                        ctx._source.media[i].mimeType = params.mimeType;
+                        break;
+                    }
+                }
+            }
+        `,
+        "params": params,
+        "lang": "painless"
+    }, true);
+
+    if (!esResult || esResult?.result !== "updated") {
+        throw new Error("Failed to update url in ES");
+    }
+
+    // Now update Redis(if necessary)
+    const cached = await RedisConnector.get(postEsId);
+    if (cached) {
+        // Found in Redis, update the mime-type and url        
+        try {
+            const post: Post = JSON.parse(cached) as Post;
+            for (const entry of post.media) {
+                if (entry.id == params.entryId) {
+                    entry.mimeType = mimeType;
+                    entry.url = newUrl;
+                    break;
+                }
+            }
+            await RedisConnector.set(postEsId, JSON.stringify(post));
+        } catch {
+            logger.warn(`Failed to update cached post data for esId ${postEsId}`);
+        }
+    }
+}
+
+export const getFileExtension = (url: string) => {
+    try {
+        // Remove query parameters or hash fragments
+        const cleanUrl = url.split(/[?#]/)[0];
+
+        // Extract the file extension
+        const parts:string[] = cleanUrl.split('.');
+        return parts.length > 1 ? parts.pop()?.toLowerCase() : null;
+    } catch (error) {
+        return null;
+    }
+}
+
+export const getFileExtByMimeType = (mimeType: string | null): string => {
+    switch (mimeType) {
+        case "image/jpeg": {
+            return ".jpg";
+        }
+        case "image/png": {
+            return ".png";
+        }
+        case "video/mp4": {
+            return ".mp4";
+        }
+        default: {
+            throw new Error("Unknown mime type");
+        }
+    }
+}
+
+export const updateProfileInRedis = async (profile: Profile, userId: string) => {
+    if (!profile || !userId) {
+        throw new Error("Invalid params to Redis");
+    }
+
+    // Build the redis key based on if searching by user name or by user id
+    const key = `profile:id:${userId}`;
+    // Inverse key used to update the other copy of profile stored in redis
+    const inverseKey = `profile:name:${profile.userName}`;
+    const profileString = JSON.stringify(profile);
+
+    // Add to redis. Store the profile under both the userId and userName(hence inverseKey var)    
+    await RedisConnector.set(key, profileString);
+    await RedisConnector.set(inverseKey, profileString);
+};

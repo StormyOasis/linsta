@@ -1,6 +1,6 @@
 import { DBConnector, EDGE_USER_FOLLOWS, logger, metrics, RequestWithRequestorId, withMetrics } from "@linsta/shared";
 import { Context } from "koa";
-import { handleSuccess, handleValidationError, verifyJWT } from "../../utils";
+import { handleSuccess, handleValidationError } from "../../utils";
 
 interface FollowingType extends RequestWithRequestorId {
     userId: string;
@@ -20,11 +20,6 @@ export const handlerActions = async (baseMetricsKey: string, ctx: Context) => {
 
     if (!userId || !followId || typeof follow !== 'boolean') {
         return handleValidationError(ctx, "Missing or invalid parameters");
-    }
-
-    if (!verifyJWT(ctx, () => {})) {
-        // 403 - Forbidden
-        return handleValidationError(ctx, "You do not have permission to access this data", 403);
     }
 
     try {        

@@ -15,6 +15,10 @@ import {
   handleValidationError as sharedHandleValidationError
 } from "@linsta/shared";
 
+export const isUserAuthorized = (ctx: Context, userId: string): boolean => {
+    return ctx.state.user?.id === userId;
+}
+
 export const handleSuccess = (ctx: Context, result: unknown) => {
     const data = sharedHandleSuccess(result);
 

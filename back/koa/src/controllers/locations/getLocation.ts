@@ -1,6 +1,6 @@
 import { getLocationData, metrics, withMetrics } from "@linsta/shared";
 import { Context } from "koa";
-import { handleSuccess, handleValidationError, verifyJWT } from "../../utils";
+import { handleSuccess, handleValidationError } from "../../utils";
 
 type GetLocationsRequest = {
     term: string
@@ -19,11 +19,6 @@ export const handlerActions = async (baseMetricsKey: string, ctx: Context) => {
     
     if (!term) {
         return handleValidationError(ctx, "Invalid params passed");
-    }
-
-    if (!verifyJWT(ctx, () => {})) {
-        // 403 - Forbidden
-        return handleValidationError(ctx, "You do not have permission to access this data", 403);
     }
 
     try {

@@ -6,8 +6,9 @@ import koaJwt from 'koa-jwt';
 import compress from 'koa-compress';
 import zlib from "node:zlib";
 import path from "node:path";
+
 // Load .env file
-require("dotenv").config({ path: path.resolve(__dirname, '../../../.env') });
+//require("dotenv").config({ path: path.resolve(__dirname, '../../../.env') });
 
 import { config, DBConnector, logger, RedisConnector } from "@linsta/shared";
 

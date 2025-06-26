@@ -16,10 +16,10 @@ const ProfilePicWrapper = styled(Span)`
 
 const PfpImg = styled.img<{$isValidPfp:boolean}>`
     border-radius: 50%;
-    max-width: ${props => props.$isValidPfp ? "30px" : "42px"};
-    max-height: ${props => props.$isValidPfp ? "30px" : "42px"};
-    width: ${props => props.$isValidPfp ? "30px" : "42px"};
-    height: ${props => props.$isValidPfp ? "30px" : "42px"};
+    max-width: 30px;
+    max-height: 30px;
+    width: 30px;
+    height: 30px;
 `;
 
 const MemoizedProfilePic = React.memo(({ profile, marginRight = "0px" }: any) => {
