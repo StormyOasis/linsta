@@ -170,11 +170,14 @@ const appConfig: AppConfig = {
 
 function loadEnv(): void {
     const envPath = path.resolve(process.cwd(), '../.env');
+    const envPathSameDir = path.resolve(process.cwd(), './.env');
 
     if (existsSync(envPath)) {
         dotenv.config({ path: envPath });
+    } else if(existsSync(envPathSameDir)) {
+        dotenv.config({ path: envPathSameDir });
     } else {
-        console.warn(`.env file not found at ${envPath}`);
+        console.warn(`.env file not found at ${envPath} or ${envPathSameDir}`);
     }
 }
 

@@ -9,7 +9,7 @@ let emojiReplacements: Record<string, string> | null = null;
 let unifiedToEmoji: Record<string, string> | null = null;
 let loadingPromise: Promise<void> | null = null;
 
-export const preloadEmojiData = (): Promise<void> => {
+export const preloadEmojiData = async (): Promise<void> => {
     if(unifiedToEmoji) {
         return Promise.resolve();
     }
@@ -26,9 +26,9 @@ export const preloadEmojiData = (): Promise<void> => {
     return loadingPromise;
 }
 
+preloadEmojiData().then(() => console.log("Loaded emojis"));
 
-export const findEmojiByUnfiedId = async (unified: string): Promise<string> => {
-    await preloadEmojiData();
+export const findEmojiByUnfiedId = (unified: string): string => {    
 
     if (!unifiedToEmoji) {
         throw new Error("Emoji data not loaded yet");
@@ -39,8 +39,7 @@ export const findEmojiByUnfiedId = async (unified: string): Promise<string> => {
 /**
  * Finds emoji shortcodes in text and if found - returns its position in text, matched shortcode and unified ID
  */
-export default async function findEmoji(text: string):Promise<(EmojiMatch | null)>  {
-    await preloadEmojiData();    
+export default function findEmoji(text: string):(EmojiMatch | null)  {
     if (!emojiReplacements) {
         throw new Error("Emoji data not loaded yet");
     }

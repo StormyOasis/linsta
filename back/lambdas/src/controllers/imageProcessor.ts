@@ -29,12 +29,11 @@ export const handler: SQSHandler = async (event) => {
 
             // Upload .webp
             const newUrlBase = await uploadProcessedImage(newKey, processedBuffer);
-
             // Delete original
             await removeFile(originalUrl);
 
             // Append ?ts=... (Cache busting)
-            const newUrl = `${newUrlBase}?ts=${Date.now()}`;
+            const newUrl = `${newUrlBase.url}?ts=${Date.now()}`;
             await updateEntryUrl(postEsId, entryId, "image/webp", newUrl);
 
             logger.info(`Image ${entryId} updated to ${newUrl}`);
