@@ -87,11 +87,11 @@ export const getPostFromCacheOrES = async (esId: string): Promise<Post | null> =
     }
 
     const esResults = await SearchService.searchPosts(
-        { bool: { must: [{ match: { _id: esId } }] } } as any,
+        { query: {bool: { must: [{ match: { _id: esId } }] } } } as any,
         1
     );
 
-    const hits = (esResults as any)?.body?.hits?.hits;
+    const hits = (esResults as any)?.hits?.hits;
     if (!hits?.length) {
         return null;
     }

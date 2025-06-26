@@ -18,7 +18,7 @@ export class SearchService {
                         }
                     }
                 ],
-                ...body
+                body
             })
         );
     }
@@ -32,7 +32,7 @@ export class SearchService {
             ESConnector.getClient().search({
                 index: config.es.mainIndex,
                 size: size ?? config.es.defaultPaginationSize,
-                ...body
+                body
             })
         );
     }
@@ -42,7 +42,7 @@ export class SearchService {
             ESConnector.getClient().search({
                 index: config.es.profileIndex,
                 size: size ?? config.es.defaultResultSize,
-                ...body                
+                body                
             })
         );
     }
