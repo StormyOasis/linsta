@@ -43,6 +43,8 @@ export const handlerActions = async (baseMetricsKey: string, ctx: Context) => {
         // Upload the new file if we aren't clearing out the pfp property
         if(files != null && files.fileData != null) {
             const file:formidable.File = (files.fileData as formidable.File);            
+            console.log(file);
+            console.log(file.mimetype);
             const result = await uploadFile(file, `pfp-${crypto.randomUUID()}`, data.userId, getFileExtByMimeType(file.mimetype));
             url = result.url;
         } else {

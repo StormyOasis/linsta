@@ -23,6 +23,6 @@
         "start": "npm run build && npm run start:koa",
         "start:dev": "npm run build && concurrently \"npm run start:koa\" \"npm run start:lambdas\"",
         "start:koa": "cd koa && npm run start",
-        "start:lambdas": "cd lambdas && npm run start"
+        "start:lambdas": "cd lambdas && npm run start"        
     }
 }

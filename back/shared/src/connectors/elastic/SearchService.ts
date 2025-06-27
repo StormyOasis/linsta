@@ -2,6 +2,7 @@ import ESConnector from './ESConnector';
 import { withRetries } from './RetryWrapper';
 import config from '../../config';
 import { json } from 'stream/consumers';
+import logger from '../../logger';
 
 export class SearchService {
     static async searchPosts(body: object, size?: number) {

@@ -16,24 +16,6 @@ export class IndexService {
     }
 
     public static async insertProfile(doc: any): Promise<IndexResponse> {
-        const {userName, firstName, lastName, bio, hashtags} = doc;
-
-        // We need to add the suggest fields
-        doc.userName_suggest = {
-            input: [userName]
-        }
-        doc.firstName_suggest = {
-            input: [firstName]
-        },
-        doc.lastName_suggest = {
-            input: [lastName]
-        },
-        doc.bio_suggest = {
-            input: [bio || []]
-        },
-        doc.hashtags_suggest =  {
-            input: hashtags || []
-        }
         return withRetries(() =>
             ESConnector.getClient().index({
                 index: config.es.profileIndex,

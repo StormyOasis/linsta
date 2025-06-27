@@ -87,7 +87,7 @@ export const getPostFromCacheOrES = async (esId: string): Promise<Post | null> =
     }
 
     const esResults = await SearchService.searchPosts(
-        { query: {bool: { must: [{ match: { _id: esId } }] } } } as any,
+        { query: { bool: { must: [{ match: { _id: esId } }] } } } as any,
         1
     );
 
@@ -232,15 +232,12 @@ export const getProfile = async (userId: string | null, userName: string | null)
         const vertexProperties = results.value.properties;
         const userIdFromResult: string = results.value.id;
         const profileId: string = DBConnector.getVertexPropertySafe(vertexProperties, 'profileId');
-
         // Now get profile from ES
         const esResult = await SearchService.searchProfiles({ query: { term: { _id: profileId } } });
-
         const hits = (esResult as any)?.hits?.hits;
         if (!esResult || hits == null || hits.length === 0) {
             throw new Error("Profile not found");
         }
-
         // Should only be at most 1 results since we are querying by id
         const source = hits[0]._source as Partial<Profile>;
 
@@ -268,7 +265,7 @@ export const getProfile = async (userId: string | null, userName: string | null)
 
         return profile;
     } catch (err) {
-        logger.error("Failed to get profile", { userId, userName, error: err });
+        logger.error("Failed to get profile", { userId, userName, error: JSON.stringify(err) });
     }
 
     return null;
@@ -334,7 +331,7 @@ export const getFileExtension = (url: string) => {
         const cleanUrl = url.split(/[?#]/)[0];
 
         // Extract the file extension
-        const parts:string[] = cleanUrl.split('.');
+        const parts: string[] = cleanUrl.split('.');
         return parts.length > 1 ? parts.pop()?.toLowerCase() : null;
     } catch (error) {
         return null;
@@ -343,18 +340,57 @@ export const getFileExtension = (url: string) => {
 
 export const getFileExtByMimeType = (mimeType: string | null): string => {
     switch (mimeType) {
-        case "image/jpeg": {
+        // Image MIME types
+        case "image/jpeg":
+        case "image/jpg": // technically alias for jpeg
             return ".jpg";
-        }
-        case "image/png": {
+        case "image/png":
             return ".png";
-        }
-        case "video/mp4": {
+        case "image/gif":
+            return ".gif";
+        case "image/webp":
+            return ".webp";
+        case "image/svg+xml":
+            return ".svg";
+        case "image/bmp":
+            return ".bmp";
+        case "image/tiff":
+        case "image/tif":
+            return ".tiff";
+        case "image/x-icon":
+        case "image/vnd.microsoft.icon":
+            return ".ico";
+        case "image/heic":
+        case "image/heif":
+            return ".heic";
+
+        // Video MIME types
+        case "video/mp4":
             return ".mp4";
-        }
-        default: {
-            throw new Error("Unknown mime type");
-        }
+        case "video/quicktime":
+            return ".mov";
+        case "video/x-msvideo":
+            return ".avi";
+        case "video/x-ms-wmv":
+            return ".wmv";
+        case "video/webm":
+            return ".webm";
+        case "video/mpeg":
+            return ".mpeg";
+        case "video/3gpp":
+            return ".3gp";
+        case "video/3gpp2":
+            return ".3g2";
+        case "video/x-flv":
+            return ".flv";
+        case "video/ogg":
+            return ".ogv";
+        case "application/x-matroska":
+        case "video/x-matroska":
+            return ".mkv";
+
+        default:
+            throw new Error(`Unknown mime type: ${mimeType}`);
     }
 }
 

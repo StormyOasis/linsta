@@ -53,7 +53,7 @@ const generateProfile = async () => {
     const bio = faker.lorem.sentence();
     const hashtags = generateHashtags(3);
     const email = `${userName}@gmail.com`;
-    const password = `${userName}1`;
+    const password = `${userName}1!`;
     const hashedPassword = await bcrypt.hash(password, 10);
     const currentTime = moment();
     const momentData = {
@@ -81,7 +81,7 @@ const generateProfile = async () => {
         link: faker.internet.url(),
 
         // Use the actual values in suggest fields
-        userName_suggest: {
+        /*userName_suggest: {
             input: [userName]
         },
         firstName_suggest: {
@@ -95,7 +95,7 @@ const generateProfile = async () => {
         },
         hashtags_suggest: {
             input: hashtags
-        }
+        }*/
     };
 
     // Add profile to database
@@ -171,7 +171,7 @@ const generatePosts = async (profile) => {
                 }
             ],
             // SUGGEST fields using the same values
-            userName_suggest: {
+            /*userName_suggest: {
                 input: [userName]
             },
             captionText_suggest: {
@@ -185,7 +185,7 @@ const generatePosts = async (profile) => {
             },
             altText_suggest: {
                 input: [altText]
-            }
+            }*/
         };
 
         // Add to ES
