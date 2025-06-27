@@ -189,11 +189,6 @@ export const postGetFollowingByUserId = async (data: any): Promise<ServiceRespon
     return res.data;
 }
 
-export const postUpdateProfile = async (data: any): Promise<ServiceResponse> => {
-    const res = await axios.post(`${API_HOST}/api/${API_VERSION}/profiles/update`, addRequestorId(data), { headers: authHeader() });
-    return res.data;
-}
-
 export const postGetProfileStatsById = async (data: any): Promise<ServiceResponse> => {
     const res = await axios.post(`${API_HOST}/api/${API_VERSION}/profiles/getStatsById`, addRequestorId(data), { headers: authHeader() });
     return res.data;
@@ -210,7 +205,7 @@ export const postGetPostsByUserId = async (data: any): Promise<ServiceResponse> 
 }
 
 export const postUpdateProfileByUserId = async (data: any): Promise<ServiceResponse> => {
-    const res = await axios.post(`${API_HOST}/api/${API_VERSION}/profiles/updateProfileByUserId`, addRequestorId(data), { headers: authHeader() });
+    const res = await axios.post(`${API_HOST}/api/${API_VERSION}/profiles/update`, addRequestorId(data), { headers: authHeader() });
     return res.data;
 }
 
