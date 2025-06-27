@@ -1,6 +1,6 @@
 import { DBConnector, EDGE_COMMENT_LIKED_BY_USER, EDGE_USER_LIKED_COMMENT, logger, metrics, withMetrics, type RequestWithRequestorId } from "@linsta/shared";
 import { Context } from "koa";
-import { handleSuccess, handleValidationError, verifyJWT } from "../../utils";
+import { handleSuccess, handleValidationError } from "../../utils";
 
 
 interface LikeRequest extends RequestWithRequestorId {
@@ -20,11 +20,6 @@ export const handlerActions = async (baseMetricsKey: string, ctx: Context) => {
 
     if (!commentId || !userId) {
         return handleValidationError(ctx, "Invalid params passed");
-    }
-
-    if (!verifyJWT(ctx, () => {})) {
-        // 403 - Forbidden
-        return handleValidationError(ctx, "You do not have permission to access this data", 403);
     }
 
     try {

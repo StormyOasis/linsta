@@ -1,11 +1,8 @@
-import { APIGatewayProxyEvent } from 'aws-lambda';
-import { getIpFromEvent, verifyJWT } from '../../utils';
+import { handleSuccess, handleValidationError } from '../../utils';
 import {
     DBConnector,
     RedisConnector,
     EDGE_POST_TO_USER,
-    handleSuccess,
-    handleValidationError,
     withMetrics,
     metrics,
     logger,
@@ -13,6 +10,7 @@ import {
     sanitizeInput
 } from '@linsta/shared';
 import type { Profile, RequestWithRequestorId } from '@linsta/shared';
+import { Context } from 'koa';
 
 interface UpdatePostRequest extends RequestWithRequestorId {
     postId: string;
@@ -26,29 +24,18 @@ interface UpdatePostRequest extends RequestWithRequestorId {
     };
 }
 
-export const handler = async (event: APIGatewayProxyEvent) => {
+export const handler = async (ctx: Context) => {
     const baseMetricsKey = "posts.updatepost";
-    const ip = getIpFromEvent(event);
+    const ip = ctx.ip;
 
-    return await withMetrics(baseMetricsKey, ip, async () => await handlerActions(baseMetricsKey, event));
+    return await withMetrics(baseMetricsKey, ip, async () => await handlerActions(baseMetricsKey, ctx));
 }
 
-export const handlerActions = async (baseMetricsKey: string, event: APIGatewayProxyEvent) => {
-    let data: UpdatePostRequest;
-    try {
-        data = JSON.parse(event.body || '{}');
-    } catch {
-        return handleValidationError("Invalid params passed");
-    }
+export const handlerActions = async (baseMetricsKey: string, ctx: Context) => {
+    const data:UpdatePostRequest = ctx.request.body;
 
     if (!data?.postId || !data.fields) {
-        return handleValidationError('Invalid params passed');
-    }
-
-    // JWT Authorization: Only the owner can update
-    const jwtPayload = verifyJWT(event, data.requestorUserId);
-    if (!jwtPayload) {
-        return handleValidationError("You do not have permission to access this data", 403);
+        return handleValidationError(ctx, 'Invalid params passed');
     }
 
     try {
@@ -70,7 +57,7 @@ export const handlerActions = async (baseMetricsKey: string, event: APIGatewayPr
             .toList();
 
         if (!results?.length) {
-            return handleValidationError("Error updating post");
+            return handleValidationError(ctx, "Error updating post");
         }
 
         const vertex = DBConnector.unwrapResult(results[0]);
@@ -79,7 +66,7 @@ export const handlerActions = async (baseMetricsKey: string, event: APIGatewayPr
         const userId = parsed.user;
 
         if (!esId || !userId) {
-            return handleValidationError("Error updating post");
+            return handleValidationError(ctx, "Error updating post");
         }
 
         // Step 2: Update the post in ES with the supplied fields
@@ -188,20 +175,20 @@ export const handlerActions = async (baseMetricsKey: string, event: APIGatewayPr
         }, true);
 
         if (!esResult || esResult?.result !== "updated") {
-            return handleValidationError("Error updating post");
+            return handleValidationError(ctx, "Error updating post");
         }
 
         // Step 3: Update the value in Redis by simply replacing the entire object
         const post = esResult.get?._source;
         if (!post) {
-            return handleValidationError("Error updating post");
+            return handleValidationError(ctx, "Error updating post");
         }
         await RedisConnector.set(esId, JSON.stringify(post));
 
-        return handleSuccess(post);
+        return handleSuccess(ctx, post);
     } catch (err) {
         metrics.increment(`${baseMetricsKey}.errorCount`);
         logger.error((err as Error).message);
-        return handleValidationError("Error updating posts");
+        return handleValidationError(ctx, "Error updating posts");
     }
 };

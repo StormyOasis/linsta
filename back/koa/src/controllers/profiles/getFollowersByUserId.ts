@@ -11,8 +11,7 @@ import {
 
 import {
     handleSuccess,
-    handleValidationError,
-    verifyJWT
+    handleValidationError
 } from "../../utils";
 
 type GetFollowersByUserIdRequest = {
@@ -31,11 +30,6 @@ export const handlerActions = async (baseMetricsKey: string, ctx: Context) => {
 
     if (!userId) {
         return handleValidationError(ctx, "Invalid params passed");
-    }
-
-    if (!verifyJWT(ctx, () => { })) {
-        // 403 - Forbidden
-        return handleValidationError(ctx, "You do not have permission to access this data", 403);
     }
 
     try {

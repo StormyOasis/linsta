@@ -13,7 +13,6 @@ import {
 import {
     handleSuccess,
     handleValidationError,
-    verifyJWT
 } from "../../utils";
 
 type BulkGetProfilesRequest = {
@@ -33,11 +32,6 @@ export const handlerActions = async (baseMetricsKey: string, ctx: Context) => {
 
     if (!userIds || !userIds?.length) {
         return handleValidationError(ctx, "Invalid params passed");
-    }
-
-    if (!verifyJWT(ctx, () => { })) {
-        // 403 - Forbidden
-        return handleValidationError(ctx, "You do not have permission to access this data", 403);
     }
 
     try {

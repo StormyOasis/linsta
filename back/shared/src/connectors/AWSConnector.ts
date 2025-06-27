@@ -2,11 +2,16 @@ import { Destination, SendTemplatedEmailCommand, SESClient } from "@aws-sdk/clie
 import { SNSClient, PublishCommand } from "@aws-sdk/client-sns";
 import { LocationClient, SearchPlaceIndexForTextCommand } from "@aws-sdk/client-location";
 import { withAPIKey } from "@aws/amazon-location-utilities-auth-helper";
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
+import { SQSClient, SendMessageCommand } from '@aws-sdk/client-sqs';
 
 import config from '../config';
 import logger from "../logger";
 import Metrics from "../metrics";
+import { Entry } from "../types";
+import formidable from 'formidable';
+import { Readable } from "stream";
+import { readFileSync } from "fs";
 
 export const SEND_CONFIRM_TEMPLATE = `sendconfirmemail`;
 export const FORGOT_PASSWORD_TEMPLATE = `forgotpasswordemail`;
@@ -18,12 +23,16 @@ export type SESTemplate = {
     templateData: object;
 }
 
-export type LambdaMultipartFile = {
-    filename: string;
-    content: Buffer;
-    contentType: string;
-    encoding: string;
-    fieldname: string;
+export type ImageProcessingMessage = {
+    type: "image_processing";
+    version: "v1";
+    data: {
+        postEsId: string;
+        entryId: string;
+        key: string;
+        compress: boolean;
+        isVideo: boolean;
+    };
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -90,13 +99,13 @@ export const getLocationData = async (term: string) => {
 }
 
 export const uploadFile = async (
-    file: LambdaMultipartFile,
+    file: formidable.File,
     entryId: string,
     userId: string,
     fileExt?: string
 ): Promise<{ tag: string, url: string }> => {
     try {
-        if (!file || !file.content) {
+        if (!file) {
             throw new Error("Invalid file");
         }
 
@@ -107,8 +116,7 @@ export const uploadFile = async (
         const result = await s3Client.send(new PutObjectCommand({
             Bucket: bucket,
             Key: key,
-            Body: file.content,
-            ContentType: file.contentType,
+            Body: readFileSync(file.filepath)
         }));
 
         return {
@@ -141,3 +149,63 @@ export const removeFile = async (fileName: string): Promise<void> => {
         throw new Error("Failed to remove file.");
     }
 }
+
+export const getFileFromS3 = async (key: string): Promise<Buffer> => {
+    const bucket = config.aws.s3.userMediaBucket;
+    const s3Client = getAWSClient(S3Client, {});
+
+    const response = await s3Client.send(new GetObjectCommand({
+        Bucket: bucket,
+        Key: key,
+    }));
+
+    const stream = response.Body as Readable;
+
+    return new Promise((resolve, reject) => {
+        const chunks: Buffer[] = [];
+        stream.on('data', chunk => chunks.push(chunk));
+        stream.on('end', () => resolve(Buffer.concat(chunks)));
+        stream.on('error', reject);
+    });
+};
+
+export const uploadProcessedImage = async (key: string, buffer: Buffer)
+    : Promise<{ url: string; key: string }> => {
+
+    const bucket = config.aws.s3.userMediaBucket;
+    const s3Client = getAWSClient(S3Client, {});
+
+    await s3Client.send(
+        new PutObjectCommand({
+            Bucket: bucket,
+            Key: key,
+            Body: buffer,
+            ContentType: 'image/webp',
+        })
+    );
+
+    return {
+        key,
+        url: `https://${bucket}.s3.${config.aws.region}.amazonaws.com/${key}`,
+    };
+};
+
+export const sendImageProcessingMessage = async (postEsId: string, entryId: string, key: string, isVideo: boolean) => {
+    const message:ImageProcessingMessage = {
+        type: "image_processing",
+        version: "v1",
+        data: {
+            postEsId,
+            entryId,
+            key,
+            isVideo,
+            compress: true
+        },
+    };
+
+    const sqsClient = getAWSClient(SQSClient, {});
+    await sqsClient.send(new SendMessageCommand({
+        QueueUrl: config.aws.sqs.imageQueueUrl,
+        MessageBody: JSON.stringify(message),
+    }));
+};

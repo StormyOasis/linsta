@@ -47,13 +47,20 @@ provider:
         - geo:SearchPlaceIndexForSuggestions
         - geo:GetPlace
       Resource: arn:aws:geo:us-west-2:847903130022:place-index/LinstaPlaceIndex
+    - Effect: Allow
+      Action:
+        - sqs:ReceiveMessage
+        - sqs:DeleteMessage
+        - sqs:GetQueueAttributes
+      Resource:
+        - arn:aws:sqs:us-west-2:847903130022:linsta-image-queue
 
 package:
-  individually: false       # Package all lambdas together into one zip
+  individually: true       # Package all lambdas together into one zip
+  excludeDevDependencies: true
   include:
     - build/certs/ca.crt    # Explicitly include certs
-    - build/**              # Include all compiled output
-    - node_modules/**       # Include dependencies
+    - build/**              # Include all compiled output    
     - ../.env          # Include your .env file here
   exclude:
     - tests/**              # Exclude test folders
@@ -65,6 +72,9 @@ package:
     - '.vscode/**'          # Exclude editor configs
     - 'node_modules/mock-aws-s3/**'  # Exclude mock packages if unused
     - '**/*.html'           # Exclude any html files if unused
+    - node_modules/**       # Include dependencies
+    - node_modules/sharp/build/**
+    - node_modules/sharp/**
 
 
 plugins:
@@ -95,76 +105,17 @@ custom:
     noPrependStageInUrl: true
 
 functions:
-  addPost:
-    handler: build/controllers/posts/addPost.handler
+  imageProcessor:
+    handler: build/controllers/imageProcessor.handler
+    layers:
+      - arn:aws:lambda:us-west-2:847903130022:layer:sharp-webp:1
+    package:
+      include:
+        - node_modules/@linsta/shared/**
+        - node_modules/detect-libc/**
+        - node_modules/color/**
+        - node_modules/semver/**
     events:
-      - http:
-          path: /api/v1/posts/addPost
-          method: post
-          cors: true
-      - http:
-          path: /api/v1/posts/addPost
-          method: put
-          cors: true
-  deletePost:
-    handler: build/controllers/posts/deletePost.handler
-    events:
-      - http:
-          path: /api/v1/posts/deletePost
-          method: post
-          cors: true
-      - http:
-          path: /api/v1/posts/deletePost
-          method: delete
-          cors: true
-  updatePost:
-    handler: build/controllers/posts/updatePost.handler
-    events:
-      - http:
-          path: /api/v1/posts/updatePost
-          method: post
-          cors: true
-      - http:
-          path: /api/v1/posts/updatePost
-          method: patch
-          cors: true
-  addComment:
-    handler: build/controllers/comments/addComment.handler
-    events:
-      - http:
-          path: /api/v1/comment/add
-          method: post
-          cors: true
-  deleteComment:
-    handler: build/controllers/comments/deleteComment.handler
-    events:
-      - http:
-          path: /api/v1/comment/delete
-          method: post
-          cors: true
-      - http:
-          path: /api/v1/comment/delete
-          method: delete
-          cors: true
-  updateProfileByUserId:
-    handler: build/controllers/profiles/updateProfileByUserId.handler
-    events:
-      - http:
-          path: /api/v1/profiles/updateProfileByUserId
-          method: post
-          cors: true
-      - http:
-          path: /api/v1/profiles/updateProfileByUserId
-          method: patch
-          cors: true
-  putProfilePfp:
-    handler: build/controllers/profiles/putProfilePfp.handler
-    events:
-      - http:
-          path: /api/v1/profiles/updatePfp
-          method: post
-          cors: true
-      - http:
-          path: /api/v1/profiles/updatePfp
-          method: put
-          cors: true
+      - sqs:
+          arn: arn:aws:sqs:us-west-2:847903130022:linsta-image-queue
+          batchSize: 1

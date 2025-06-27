@@ -24,29 +24,27 @@ const EmojiPlugin = () => {
 
         // Find only 1st occurrence as transform will be re-run anyway for the rest
         // because newly inserted nodes are considered to be dirty
+        const emojiMatch = findEmoji(text);
+        if (emojiMatch === null) {
+            return;
+        }
 
-        findEmoji(text).then((emojiMatch) => {
-            if (emojiMatch === null) {
-                return;
-            }
+        let targetNode;
+        if (emojiMatch.position === 0) {
+            // First text chunk within string, splitting into 2 parts
+            [targetNode] = node.splitText(
+                emojiMatch.position + emojiMatch.shortcode.length,
+            );
+        } else {
+            // In the middle of a string
+            [, targetNode] = node.splitText(
+                emojiMatch.position,
+                emojiMatch.position + emojiMatch.shortcode.length,
+            );
+        }
 
-            let targetNode;
-            if (emojiMatch.position === 0) {
-                // First text chunk within string, splitting into 2 parts
-                [targetNode] = node.splitText(
-                    emojiMatch.position + emojiMatch.shortcode.length,
-                );
-            } else {
-                // In the middle of a string
-                [, targetNode] = node.splitText(
-                    emojiMatch.position,
-                    emojiMatch.position + emojiMatch.shortcode.length,
-                );
-            }
-
-            const emojiNode = $createEmojiNode(emojiMatch.unifiedID);
-            targetNode.replace(emojiNode);
-        })
+        const emojiNode = $createEmojiNode(emojiMatch.unifiedID);
+        targetNode.replace(emojiNode);        
     }
 
     useEffect(() => {

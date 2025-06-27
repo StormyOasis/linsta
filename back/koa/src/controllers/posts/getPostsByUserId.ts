@@ -1,6 +1,6 @@
 import { buildPostSortClause, config, logger, metrics, SearchService, withMetrics, type Post } from "@linsta/shared";
 import { Context } from "koa";
-import { addCommentCountsToPosts, addLikesToPosts, addPfpsToPosts, handleSuccess, handleValidationError, verifyJWT } from "../../utils";
+import { addCommentCountsToPosts, addLikesToPosts, addPfpsToPosts, handleSuccess, handleValidationError } from "../../utils";
 
 
 type GetPostsByUserIdRequest = {
@@ -28,11 +28,6 @@ export const handlerActions = async (baseMetricsKey: string, ctx: Context) => {
 
     if (!userId) {
         return handleValidationError(ctx, "Invalid params passed");
-    }
-
-    if (!verifyJWT(ctx, () => { })) {
-        // 403 - Forbidden
-        return handleValidationError(ctx, "You do not have permission to access this data", 403);
     }
 
     try {

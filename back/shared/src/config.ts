@@ -15,6 +15,10 @@ interface AWSConfig {
     s3: {
         userMediaBucket: string;
     };
+    sqs: {
+        imageQueue: string;
+        imageQueueUrl: string;
+    }
 }
 
 interface RedisConfig {
@@ -153,6 +157,10 @@ const appConfig: AppConfig = {
         },
         s3: {
             userMediaBucket: ''
+        },
+        sqs: {
+            imageQueue: '',
+            imageQueueUrl:'' 
         }
     }
 };
@@ -161,12 +169,15 @@ const appConfig: AppConfig = {
 
 
 function loadEnv(): void {
-    const envPath = path.resolve(process.cwd(), '.env');
+    const envPath = path.resolve(process.cwd(), '../.env');
+    const envPathSameDir = path.resolve(process.cwd(), './.env');
 
     if (existsSync(envPath)) {
         dotenv.config({ path: envPath });
+    } else if(existsSync(envPathSameDir)) {
+        dotenv.config({ path: envPathSameDir });
     } else {
-        console.warn(`⚠️  .env file not found at ${envPath}`);
+        console.warn(`.env file not found at ${envPath} or ${envPathSameDir}`);
     }
 }
 
@@ -223,5 +234,7 @@ appConfig.aws.ses.imageHostName = process.env.AWS_SES_IMAGE_HOST ?? appConfig.aw
 appConfig.aws.location.apiKey = process.env.AWS_LOC_API_KEY ?? appConfig.aws.location.apiKey;
 appConfig.aws.location.index = process.env.AWS_LOC_INDEX ?? appConfig.aws.location.index;
 appConfig.aws.s3.userMediaBucket = process.env.AWS_S3_MEDIA_BUCKET ?? appConfig.aws.s3.userMediaBucket;
+appConfig.aws.sqs.imageQueue = process.env.AWS_SQS_IMAGE_QUEUE ?? appConfig.aws.sqs.imageQueue;
+appConfig.aws.sqs.imageQueueUrl = process.env.AWS_SQS_IMAGE_QUEUE_URL ?? appConfig.aws.sqs.imageQueueUrl;
 
 export default appConfig;

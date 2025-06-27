@@ -36,6 +36,10 @@ export {
     getLikesByPost,
     getPfpByUserId,
     getPostFromCacheOrES,
+    updateEntryUrl,
+    getFileExtension,
+    getFileExtByMimeType, 
+    updateProfileInRedis
 } from './utils';
 
 // AWS Connector
@@ -47,8 +51,11 @@ export {
     getLocationData,
     sendEmailByTemplate,
     sendSMS,
+    sendImageProcessingMessage,
+    uploadProcessedImage, 
+    getFileFromS3,
+    ImageProcessingMessage
 } from './connectors/AWSConnector';
-export type { LambdaMultipartFile } from './connectors/AWSConnector';
 
 // DB Connector
 export {
@@ -86,18 +93,4 @@ export { SearchService } from './connectors/elastic/SearchService';
 export { IndexService } from './connectors/elastic/IndexService';
 
 // Types
-/*
-export type {
-    User,
-    Post,
-    Entry,
-    Like,
-    Global,
-    Comment,
-    Profile,
-    ProfileWithFollowStatus,
-    ProfileWithFollowStatusInt,
-    RequestWithRequestorId
-} from './types';
-*/
 export * from './types';

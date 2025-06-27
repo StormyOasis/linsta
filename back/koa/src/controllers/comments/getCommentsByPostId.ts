@@ -1,5 +1,5 @@
 import { Context } from "koa";
-import { handleSuccess, handleValidationError, verifyJWT } from "../../utils";
+import { handleSuccess, handleValidationError } from "../../utils";
 import { 
     DBConnector, 
     EDGE_CHILD_TO_PARENT_COMMENT, 
@@ -29,11 +29,6 @@ export const handlerActions = async (baseMetricsKey: string, ctx: Context) => {
 
     if (!postId) {
         return handleValidationError(ctx, "Invalid params");
-    }
-
-    if (!verifyJWT(ctx, () => { })) {
-        // 403 - Forbidden
-        return handleValidationError(ctx, "You do not have permission to access this data", 403);
     }
 
     try {

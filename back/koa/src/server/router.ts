@@ -11,6 +11,9 @@ import { handler as toggleFollowing } from "../controllers/accounts/toggleFollow
 
 import { handler as getLocation } from "../controllers/locations/getLocation";
 
+import { handler as addPost } from "../controllers/posts/addPost";
+import { handler as deletePost } from "../controllers/posts/deletePost";
+import { handler as updatePost } from "../controllers/posts/updatePost";
 import { handler as getAllLikesByPost } from "../controllers/posts/getAllLikesByPost";
 import { handler as getAllPostsByFollowing } from "../controllers/posts/getAllPostsByFollowing";
 import { handler as postGetPostById } from "../controllers/posts/postGetPostById";
@@ -18,6 +21,8 @@ import { handler as toggleLikePost } from "../controllers/posts/toggleLikePost";
 import { handler as postIsPostLikedByUserId } from "../controllers/posts/postIsPostLikedByUserId";
 import { handler as getPostsByUserId } from "../controllers/posts/getPostsByUserId";
 
+import { handler as addComment } from "../controllers/comments/addComment";
+import { handler as deleteComment } from "../controllers/comments/deleteComment";
 import { handler as getCommentsByPostId } from "../controllers/comments/getCommentsByPostId";
 import { handler as toggleCommentLike } from "../controllers/comments/toggleCommentLike";
 
@@ -28,6 +33,8 @@ import { handler as getPostProfileByUserName } from "../controllers/profiles/get
 import { handler as getProfileStatsById } from "../controllers/profiles/getProfileStatsById";
 import { handler as bulkGetProfilesAndFollowing } from "../controllers/profiles/bulkGetProfilesAndFollowing";
 import { handler as getSingleFollowStatus } from "../controllers/profiles/getSingleFollowStatus";
+import { handler as putProfilePfp } from "../controllers/profiles/putProfilePfp";
+import { handler as updateProfileByUserId } from "../controllers/profiles/updateProfileByUserId";
 
 import { handler as getPostSearch } from "../controllers/search/getPostSearch";
 import { handler as getSuggestions } from "../controllers/search/getSuggestions";
@@ -48,6 +55,9 @@ router.post("/api/v1/accounts/follow", verifyJWT, toggleFollowing);
 router.get("/api/v1/locations/get", verifyJWT, getLocation);
 
 // posts handlers
+router.put("/api/v1/posts/addPost", verifyJWT, addPost);
+router.post("/api/v1/posts/updatePost", verifyJWT, updatePost);
+router.post("/api/v1/posts/deletePost", verifyJWT, deletePost);
 router.post("/api/v1/posts/getAllPostsByFollowing", verifyJWT, getAllPostsByFollowing);
 router.post("/api/v1/posts/getPostById", verifyJWT, postGetPostById);
 router.post("/api/v1/posts/likePost", verifyJWT, toggleLikePost);
@@ -56,6 +66,8 @@ router.get("/api/v1/posts/getAllLikesByPost", verifyJWT, getAllLikesByPost);
 router.post("/api/v1/posts/getByUserId", verifyJWT, getPostsByUserId);
 
 // comment handlers
+router.post("/api/v1/comment/add", verifyJWT, addComment);
+router.post("/api/v1/comment/delete", verifyJWT, deleteComment);
 router.post("/api/v1/comment/getByPostId", verifyJWT, getCommentsByPostId);
 router.post("/api/v1/comment/toggleLike", verifyJWT, toggleCommentLike);
 
@@ -67,6 +79,8 @@ router.post("/api/v1/profiles/getByUserName", verifyJWT, getPostProfileByUserNam
 router.post("/api/v1/profiles/getStatsById", verifyJWT, getProfileStatsById);
 router.post("/api/v1/profiles/bulkGetProfiles", verifyJWT, bulkGetProfilesAndFollowing);
 router.post("/api/v1/profiles/getSingleFollowStatus", verifyJWT, getSingleFollowStatus);
+router.put("/api/v1/profiles/updatePfp", verifyJWT, putProfilePfp);
+router.post("/api/v1/profiles/update", verifyJWT, updateProfileByUserId);
 
 // Search handlers
 router.post("/api/v1/search/search", getPostSearch);

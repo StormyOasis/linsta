@@ -32,36 +32,3 @@ export const verifyJWT = (event: APIGatewayProxyEvent, userId: string): JwtPaylo
         return null;
     }
 }
-
-export const getFileExtByMimeType = (mimeType: string | null): string => {
-    switch (mimeType) {
-        case "image/jpeg": {
-            return ".jpg";
-        }
-        case "image/png": {
-            return ".png";
-        }
-        case "video/mp4": {
-            return ".mp4";
-        }
-        default: {
-            throw new Error("Unknown mime type");
-        }
-    }
-}
-
-export const updateProfileInRedis = async (profile: Profile, userId: string) => {
-    if (!profile || !userId) {
-        throw new Error("Invalid params to Redis");
-    }
-
-    // Build the redis key based on if searching by user name or by user id
-    const key = `profile:id:${userId}`;
-    // Inverse key used to update the other copy of profile stored in redis
-    const inverseKey = `profile:name:${profile.userName}`;
-    const profileString = JSON.stringify(profile);
-
-    // Add to redis. Store the profile under both the userId and userName(hence inverseKey var)    
-    await RedisConnector.set(key, profileString);
-    await RedisConnector.set(inverseKey, profileString);
-};

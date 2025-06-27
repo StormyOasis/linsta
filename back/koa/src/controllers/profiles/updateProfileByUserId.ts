@@ -1,18 +1,17 @@
-import { APIGatewayProxyEvent } from 'aws-lambda';
-import { getIpFromEvent, updateProfileInRedis, verifyJWT } from '../../utils';
 import {
     DBConnector,
     getProfile,
-    handleSuccess,
-    handleValidationError,
     IndexService,
     logger,
     metrics,
     Profile,
     sanitizeInput,
     withMetrics,
-    extractFromMultipleTexts
+    extractFromMultipleTexts,
+    updateProfileInRedis
 } from '@linsta/shared';
+import { Context } from 'koa';
+import { handleValidationError, handleSuccess } from '../../utils';
 
 type UpdateProfileRequest = {
     bio?: string | null;
@@ -25,29 +24,18 @@ type UpdateProfileRequest = {
     userId: string;
 };
 
-export const handler = async (event: APIGatewayProxyEvent) => {
-    const baseMetricsKey = "profiles.updateProfileByUserId";
-    const ip = getIpFromEvent(event);
+export const handler = async (ctx: Context) => {
+    const baseMetricsKey = "profiles.updateprofilebyuserid";
+    const ip = ctx.ip;
 
-    return await withMetrics(baseMetricsKey, ip, async () => await handlerActions(baseMetricsKey, event));
+    return await withMetrics(baseMetricsKey, ip, async () => await handlerActions(baseMetricsKey, ctx));
 }
 
-export const handlerActions = async (baseMetricsKey: string, event: APIGatewayProxyEvent) => {
-    let data: UpdateProfileRequest;
-    try {
-        data = JSON.parse(event.body || '{}');
-    } catch {
-        return handleValidationError("Invalid params passed");
-    }
+export const handlerActions = async (baseMetricsKey: string, ctx: Context) => {
+    const data: UpdateProfileRequest = ctx.request.body;
 
     if (!data?.userId) {
-        return handleValidationError("Invalid params passed");
-    }
-
-    // JWT Authorization: Only the owner can update
-    const jwtPayload = verifyJWT(event, data.userId);
-    if (!jwtPayload) {
-        return handleValidationError("You do not have permission to access this data", 403);
+        return handleValidationError(ctx, "Invalid params passed");
     }
 
     try {
@@ -64,7 +52,7 @@ export const handlerActions = async (baseMetricsKey: string, event: APIGatewayPr
         const profile: Profile | null = await getProfile(data.userId, null);
 
         if (!profile) {
-            return handleValidationError("Invalid profile for user id");
+            return handleValidationError(ctx, "Invalid profile for user id");
         }
 
         // get the hashtags and mentions from bio text
@@ -99,7 +87,7 @@ export const handlerActions = async (baseMetricsKey: string, event: APIGatewayPr
 
         if (!result?.value) {
             await DBConnector.rollbackTransaction();
-            return handleValidationError("Error updating profile");
+            return handleValidationError(ctx, "Error updating profile");
         }
 
         await DBConnector.commitTransaction();
@@ -116,11 +104,11 @@ export const handlerActions = async (baseMetricsKey: string, event: APIGatewayPr
         // Profile has just been updated, need to upsert into redis
         await updateProfileInRedis(profile, data.userId);
 
-        return handleSuccess({ status: "OK" });
+        return handleSuccess(ctx, { status: "OK" });
     } catch (err) {
         await DBConnector.rollbackTransaction();
         metrics.increment(`${baseMetricsKey}.errorCount`);
         logger.error((err as Error).message);
-        return handleValidationError("Error updating profile");
+        return handleValidationError(ctx, "Error updating profile");
     }
 };
