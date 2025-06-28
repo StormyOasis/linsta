@@ -431,7 +431,7 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
         <>
             <Div>
                 <Flex>
-                    <FlexRow>
+                    <FlexRow $maxHeight="470px">
                         <MediaSliderWrapper $width={sliderWidth}>
                             <MediaSlider media={props.post.media} />
                         </MediaSliderWrapper>
