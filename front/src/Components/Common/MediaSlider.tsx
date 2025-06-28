@@ -49,6 +49,7 @@ const SlideItem = styled(Div)`
     overflow: hidden;
     transform: translateX(0);
     transition: transform .5s ease;
+    background-color: ${props => props.theme['colors'].backgroundColor};
 `;
   
 type MediaSliderProps = {

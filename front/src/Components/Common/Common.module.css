@@ -109,8 +109,7 @@ input[type="range"]:focus::-moz-range-thumb {
     height: 100%;
     object-fit: cover;
     overflow: clip;
-    max-height: 470px;    
-    position:absolute;
+    max-height: 474px;
 }
 
 .mediaCircles {

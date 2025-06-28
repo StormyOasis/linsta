@@ -15,7 +15,7 @@ const esClient = new Client({
         apiKey: "VFF0cGhwY0JqN1pNcFN0Zk9nRk06dE9PREVUbzVPaFViYWRRR0lINkREdw=="
     },
     tls: {
-        rejectUnauthorized:false,
+        rejectUnauthorized: false,
         ca: fs.readFileSync(path.resolve('./certs/ca.crt')),
     }
 });
@@ -63,9 +63,9 @@ const generateProfile = async () => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const currentTime = moment();
     const momentData = {
-        year: "2000",
-        month: "12",
-        day: "01",
+        year: Number("2000"),
+        month: Number("12") - 1,
+        day: Number("01"),
         hour: currentTime.hour(),
         minute: currentTime.minute(),
         second: currentTime.second(),
@@ -77,12 +77,12 @@ const generateProfile = async () => {
     let pfpUrl = null;
     let pfpExt = null;
 
-    while(true) {
+    while (true) {
         pfpUrl = faker.image.avatar();
 
         const pathname = new URL(pfpUrl).pathname;
-        const filename = pathname.substring(pathname.lastIndexOf('/') + 1);        
-        if(filename.includes(".")) {
+        const filename = pathname.substring(pathname.lastIndexOf('/') + 1);
+        if (filename.includes(".")) {
             pfpExt = filename.substring(filename.indexOf("."));
             break;
         }
@@ -110,8 +110,6 @@ const generateProfile = async () => {
         link: faker.internet.url(),
     };
 
-
-
     console.log("Adding to database...")
     // Add profile to database
     const result = await g.addV("User")
@@ -125,9 +123,9 @@ const generateProfile = async () => {
         .property("bio", bio)
         .property("pronouns", profile.pronouns)
         .property("link", profile.link)
-        .property("gender", profile.gender)        
-        .property("firstName", firstName)        
-        .property("lastName", lastName)        
+        .property("gender", profile.gender)
+        .property("firstName", firstName)
+        .property("lastName", lastName)
         .next();
 
     const userId = result.value.id;
@@ -135,9 +133,7 @@ const generateProfile = async () => {
 
     const loginRes = await login(userName, password);
     const token = loginRes.data.token;
-    console.log(token);
 
-    
     // Now add to ES
     console.log("Adding to ES...")
     const esResult = await esClient.index({
@@ -148,9 +144,11 @@ const generateProfile = async () => {
     // Now update the profile id in the user vertex
     const gr = await g.V(userId)
         .property("profileId", esResult._id)
-        .next();      
+        .next();
 
-    const res = await putSubmitPfp(userId, pfpTmpFile, pfpNoPath, token);
+    await esClient.indices.refresh({ index: 'profiles' });
+
+    const res = await putSubmitPfp(userId, pfpTmpFile, pfpNoPath, token, pfpExt, esResult._id);
     console.log(res.statusText);
 
     return profile;
@@ -163,8 +161,8 @@ const login = async (userName, password) => {
     return res.data;
 }
 
-const putSubmitPfp = async (userId, pfpTmpFile, pfpNoPath, token) => {
-    console.log("Uploading pfp...")
+const putSubmitPfp = async (userId, pfpTmpFile, pfpNoPath, token, pfpExt, esId) => {
+    console.log(`Uploading pfp for userId: ${userId} esId: ${esId}...`);
     // Need to use multipart-formdata since we are uploading files
     const form = new FormData();
 
@@ -173,7 +171,7 @@ const putSubmitPfp = async (userId, pfpTmpFile, pfpNoPath, token) => {
 
     // Pfp file data
     const fileBuffer = await readFile(pfpTmpFile);
-    const blob = new Blob([fileBuffer]);
+    const blob = new Blob([fileBuffer], { type: getMimeTypeByFileExt(pfpExt) });
 
     form.append('fileData', blob, pfpNoPath);
 
@@ -187,21 +185,52 @@ const putSubmitPfp = async (userId, pfpTmpFile, pfpNoPath, token) => {
     return res;
 }
 
-
 // Generate a random post
 const generatePosts = async (profile) => {
-    const captionText = faker.lorem.sentence();
-    const locationText = faker.address.city();
-    const hashtags = generateHashtags(3);
-    const altText = faker.lorem.sentence();
-    const userId = profile.userId;
-    const userName = profile.userName;
     const posts = [];
-    const collaborators = [];
 
-    const postCount = Math.floor(Math.random() * 24);
+    const postCount = Math.floor(Math.random() * 24) + 1;
+
+    const loginRes = await login(profile.userName, `${profile.userName}1!`);
+    const token = loginRes.data.token;
 
     for (let i = 0; i < postCount; i++) {
+        const captionText = faker.lorem.sentence();
+        const locationText = faker.address.city();
+        const hashtags = generateHashtags(3);
+        const userId = profile.userId;
+        const userName = profile.userName;       
+
+        const mediaCount = Math.floor(Math.random() * 3) + 1;
+        const entries = [];
+        const fileData = [];
+        for(let j = 0; j < mediaCount; j++) {
+            let url = faker.image.avatar();
+            while(!url.includes(".jpg")) {
+                url = faker.image.avatar();
+            }
+            let ext = url.substring(url.lastIndexOf("."));
+
+            const response = await fetch(url);
+            const arrayBuffer = await response.arrayBuffer();
+            const buffer = Buffer.from(arrayBuffer);
+            const tmpFile = `/var/linsta/${crypto.randomUUID()}${ext}`;
+
+            await writeFile(tmpFile, buffer);     
+            
+            const fileBuffer = await readFile(tmpFile);
+            const blob = new Blob([fileBuffer], { type: getMimeTypeByFileExt(ext) });                    
+            const entry = {
+                id: crypto.randomUUID().replaceAll("-", ""),
+                index: j,
+                isVideofile: false,
+                alt: faker.lorem.sentence(),
+            } ;
+
+            fileData.push({ id: entry.id, data: blob })
+            entries.push(entry);           
+        }
+
         const post = {
             user: {
                 userId,
@@ -216,80 +245,33 @@ const generatePosts = async (profile) => {
                 commentsDisabled: faker.datatype.boolean(),
                 commentCount: faker.number.int(),
                 likesDisabled: faker.datatype.boolean(),
-                collaborators
+                collaborators: []
             },
-            media: [
-                {
-                    id: uuidv4(),
-                    userId,
-                    path: faker.image.avatar(),
-                    altText,
-                    mimeType: 'image/jpeg'
-                }
-            ],
-            // SUGGEST fields using the same values
-            /*userName_suggest: {
-                input: [userName]
-            },
-            captionText_suggest: {
-                input: [captionText]
-            },
-            locationText_suggest: {
-                input: [locationText]
-            },
-            hashtags_suggest: {
-                input: hashtags
-            },
-            altText_suggest: {
-                input: [altText]
-            }*/
+            media: entries
         };
 
-        // Add to ES
-        const esResult = await esClient.index({
-            index: "main",
-            document: post
-        }); 
-        
-        let graphResult = await g.addV("Post")
-            .property("esId", esResult._id)
-            .next();   
-            
-        const postId = graphResult.value.id;
+        const form = new FormData();
 
-        // Now add the edges between the post and user verticies            
-        graphResult = await g.V(postId)
-            .as('post')
-            .V(userId)
-            .as('user')
-            .addE("post_to_user")
-            .from_("post")
-            .to("user")
-            .addE("user_to_post")
-            .from_("user")
-            .to("post")
-            .next();        
+        // Include basic user info
+        form.append("user", JSON.stringify({ userId, userName }));
 
-        // Update the media entries with the postId for easier
-        // and faster lookup. First update in ES
-        const updatePostIdInMedia = {
-            index: "main",
-            id: esResult._id,
-            script: {
-                source:
-                    `for (int i = 0; i < ctx._source.media.size(); i++) {
-                        ctx._source.media[i].postId = params.postId;
-                    }
-                `,
-                "params": {
-                    "postId": `${postId}`
-                },
-                "lang": "painless"
-            }        
-        }
+        form.append("requestorUserId", userId);
 
-        await esClient.update(updatePostIdInMedia);
-    }    
+        // Data that pertains to entire post, not just the images/videos contained within
+        form.append("global", JSON.stringify(post.global));
+
+        // Add the file list and associated info for each file
+        form.append("entries", JSON.stringify(entries));
+
+        // finally add the data for each file    
+        fileData.map(entry => {
+            form.append(entry.id, entry.data);
+        });        
+        const headers = {};
+        headers['Authorization'] = `Bearer ${token}`;
+
+        const res = await axios.putForm(`https://api.linsta.lboydstun.com/api/v1/posts/addPost`, form, { headers });            
+    }
 
     return posts;
 };
@@ -301,21 +283,20 @@ const bulkIndexData = async () => {
 
 
     try {
-        for (let i = 0; i < 1; i++) {
+        for (let i = 0; i < 100; i++) {
             console.log(`Generating profile ${i + 1}...`);
-
-
             const profile = await generateProfile();
-            //const posts = await generatePosts(profile);
+            const posts = await generatePosts(profile);
+            console.log(`Data generated for user: ${profile.userName}`);
 
             //
 
 
-           /* profiles.push({
-               index: { _index: 'profiles', _id: userId },
-            });
-            profiles.push(profile);
-*/
+            /* profiles.push({
+                index: { _index: 'profiles', _id: userId },
+             });
+             profiles.push(profile);
+ */
             // const posts = generatePosts(uuidv4(), userId, userName);
             //posts.push({
             //    index: { _index: 'main', _id: post.postId },
@@ -346,3 +327,61 @@ const bulkIndexData = async () => {
 
 // Run the bulk indexing function
 bulkIndexData();
+
+
+const getMimeTypeByFileExt = (ext) => {
+    if (!ext) throw new Error("File extension is required");
+
+    switch (ext.toLowerCase()) {
+        // Images
+        case ".jpg":
+        case ".jpeg":
+            return "image/jpeg";
+        case ".png":
+            return "image/png";
+        case ".gif":
+            return "image/gif";
+        case ".webp":
+            return "image/webp";
+        case ".svg":
+            return "image/svg+xml";
+        case ".bmp":
+            return "image/bmp";
+        case ".tiff":
+        case ".tif":
+            return "image/tiff";
+        case ".ico":
+            return "image/x-icon";
+        case ".heic":
+        case ".heif":
+            return "image/heic";
+
+        // Videos
+        case ".mp4":
+            return "video/mp4";
+        case ".mov":
+            return "video/quicktime";
+        case ".avi":
+            return "video/x-msvideo";
+        case ".wmv":
+            return "video/x-ms-wmv";
+        case ".webm":
+            return "video/webm";
+        case ".mpeg":
+        case ".mpg":
+            return "video/mpeg";
+        case ".3gp":
+            return "video/3gpp";
+        case ".3g2":
+            return "video/3gpp2";
+        case ".flv":
+            return "video/x-flv";
+        case ".ogv":
+            return "video/ogg";
+        case ".mkv":
+            return "application/x-matroska";
+
+        default:
+            throw new Error(`Unknown file extension: ${ext}`);
+    }
+}
