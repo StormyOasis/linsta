@@ -41,7 +41,7 @@ const defaultTheme = {
         searchPanelWidth: "300px",
         cropperHeight: "275px",
         defaultModalWidth: "600px",
-        maxModalWidth: "75vw",
+        maxModalWidth: "45vw",
         maxModalHeight: "75vh",
         minModalHeight: "300px",
         minPostTextEditorHeight: "140px",
@@ -54,7 +54,8 @@ const defaultTheme = {
     breakpoints: {
         sm: "576",
         md: "768",
-        lg: "1280"
+        lg: "1280",
+        xl: "1440"
     }
 };
 

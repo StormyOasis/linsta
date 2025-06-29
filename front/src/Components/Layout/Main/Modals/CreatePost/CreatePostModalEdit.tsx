@@ -3,45 +3,34 @@ import styled from "styled-components";
 import { ModalSectionWrapper } from "../../../../Common/MultiStepModal";
 import Slider from "../../../../Common/Slider";
 import { EditData } from "./CreatePostModal";
-import { Div, FlexColumn } from "../../../../Common/CombinedStyling";
+import { Div, Flex, FlexColumn, FlexRow, FlexRowFullWidth } from "../../../../Common/CombinedStyling";
 import { blobToBase64 } from "../../../../../utils/utils";
 import MediaSliderButton from "../../../../Common/MediaSliderButton";
 
-const EditContainer = styled.div`
-    display: flex;
+const EditContainer = styled(FlexRow)`
     position: relative;
-    flex-direction: row;
     min-width: calc(${props => props.theme['sizes'].defaultModalWidth} - 40px);
     max-width: calc(${props => props.theme['sizes'].maxModalWidth} - 40px);
     max-height: 412px;
     min-height: calc(${props => props.theme['sizes'].minModalHeight} - 40px);
 `;
 
-const ImageContainer = styled.div`    
-    display: flex;
-    width: 50%;
+const ImageContainer = styled(Flex)`    
     justify-content: flex-end;
     vertical-align: middle;
-    overflow: hidden;
+    
 `;
 
-const ControlsContainer = styled.div`
-    display: flex;    
-    flex-direction: column;
-    width: 50%;  
+const ControlsContainer = styled(FlexColumn)`
     padding-left: 5px;
     pointer-events: all;
 `;
 
-const ControlTabContainer = styled.div`
-    display:flex;
-    flex-direction: row;
-    width: 100%;
+const ControlTabContainer = styled(FlexRowFullWidth)`
     height: max-content;
 `;
 
-const ControlTab = styled.div<{selected?: boolean}>`
-    display: flex;
+const ControlTab = styled(Flex)<{selected?: boolean}>`
     cursor: pointer;
     opacity: ${props => props.selected ? 1 : .25};
     font-weight: ${props => props.selected ? 700 : 500};
@@ -54,9 +43,7 @@ const ControlTab = styled.div<{selected?: boolean}>`
     height: max-content;
 `;
 
-const ControlContentContainer = styled.div`
-    display: flex;
-    flex-direction: column;
+const ControlContentContainer = styled(FlexColumn)`
     overflow-y: auto;
     overflow-x: hidden;
 `;
@@ -77,22 +64,39 @@ const PreviewVideo = styled.video`
     overflow: hidden;
 `;
 
-const FilterTile = styled.div`
-    display: flex;
+const FilterTile = styled(FlexColumn)`
     cursor: pointer;
     align-items: center;
-    width: 75%;
 `;
 
 const FilterImage = styled.img`
-    width: 25%;
     margin-bottom: 3px;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover; 
 `;
 
-const FilterText = styled.div<{selected?: boolean}>`
+const FilterText = styled(Div)<{selected?: boolean}>`
     text-align: center;
     font-weight: ${props => props.selected ? 700 : 400};
-    margin-left: 10px;
+    text-transform: capitalize;
+    font-size: 12px;
+`;
+
+const Grid = styled(Div)`
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+
+    @media (min-width: ${props => props.theme["breakpoints"].lg}px) and 
+        (max-width: ${props => props.theme["breakpoints"].xl - 1}px) {
+
+        grid-template-columns: repeat(2, 1fr);
+    } 
+        
+    @media (max-width: ${props => props.theme["breakpoints"].lg - 1}px) {
+        grid-template-columns: 1fr;
+    }     
 `;
 
 export type CreatePostModalEditProps = {
@@ -214,19 +218,21 @@ const CreatePostModalEditor: React.FC<CreatePostModalEditorProps> = (props: Crea
         return (
             <>
                 <FlexColumn>
-                    <FilterTile key="original" onClick={() => onFilterClick("original")}>
-                        <FilterImage src={`/public/images/filters/original.png`} alt="Original" />
-                        <FilterText selected={selectedFilter==="original"}>original</FilterText>
-                    </FilterTile>                    
-                    {Object.keys(filters).map(key => {
-                            return (
-                                <FilterTile key={key} onClick={() => onFilterClick(key)}>
-                                    <FilterImage src={`/public/images/filters/${key}.jfif`} alt={key} />
-                                    <FilterText selected={selectedFilter === key}>{key}</FilterText>
-                                </FilterTile>
-                            );
-                        })
-                    }
+                    <Grid>
+                        <FilterTile key="original" onClick={() => onFilterClick("original")}>
+                            <FilterImage src={`/public/images/filters/original.png`} alt="Original" />
+                            <FilterText selected={selectedFilter==="original"}>original</FilterText>
+                        </FilterTile>                    
+                        {Object.keys(filters).map(key => {
+                                return (
+                                    <FilterTile key={key} onClick={() => onFilterClick(key)}>
+                                        <FilterImage src={`/public/images/filters/${key}.jfif`} alt={key} />
+                                        <FilterText selected={selectedFilter === key}>{key.replaceAll("_", " ")}</FilterText>
+                                    </FilterTile>
+                                );
+                            })
+                        }
+                    </Grid>
                 </FlexColumn>
             </>
         );
@@ -399,29 +405,29 @@ const CreatePostModalEditor: React.FC<CreatePostModalEditorProps> = (props: Crea
                     }               
                 </ImageContainer>
                 <ControlsContainer>
-                {props.editData.isVideoFile && 
-                    <Div $fontWeight="700" $color="red" $textAlign="center">Note: Editing video files is currently unsupported</Div>
-                }
-                {!props.editData.isVideoFile && 
-                    <>
-                        <ControlTabContainer>
-                            <ControlTab 
-                                selected={controlTabIndex === 0} 
-                                onClick={() => {
-                                    setIsFlaggedForReset(true); 
-                                    setControlTabIndex(0)}}>Filters</ControlTab>
-                            <ControlTab 
-                                selected={controlTabIndex === 1} 
-                                onClick={() => {
-                                    setIsFlaggedForReset(true);
-                                    setControlTabIndex(1);}}>Adjustments</ControlTab>
-                        </ControlTabContainer>
-                        <ControlContentContainer>
-                            {controlTabIndex === 0 && renderFiltersTab()}
-                            {controlTabIndex === 1 && renderAdjustmentsTab()}
-                        </ControlContentContainer>                      
-                    </>                    
-                }
+                    {props.editData.isVideoFile && 
+                        <Div $fontWeight="700" $color="red" $textAlign="center">Note: Editing video files is currently unsupported</Div>
+                    }
+                    {!props.editData.isVideoFile && 
+                        <>
+                            <ControlTabContainer>
+                                <ControlTab 
+                                    selected={controlTabIndex === 0} 
+                                    onClick={() => {
+                                        setIsFlaggedForReset(true); 
+                                        setControlTabIndex(0)}}>Filters</ControlTab>
+                                <ControlTab 
+                                    selected={controlTabIndex === 1} 
+                                    onClick={() => {
+                                        setIsFlaggedForReset(true);
+                                        setControlTabIndex(1);}}>Adjustments</ControlTab>
+                            </ControlTabContainer>
+                            <ControlContentContainer>
+                                {controlTabIndex === 0 && renderFiltersTab()}
+                                {controlTabIndex === 1 && renderAdjustmentsTab()}
+                            </ControlContentContainer>                      
+                        </>                    
+                    }
                 </ControlsContainer>
             </EditContainer>
         </ModalSectionWrapper>
