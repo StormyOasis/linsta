@@ -56,7 +56,7 @@ const generateProfile = async () => {
     const userName = faker.internet.username();
     const firstName = faker.name.firstName();
     const lastName = faker.name.lastName();
-    const bio = faker.lorem.sentence();
+    let bio = faker.lorem.sentence();
     const hashtags = generateHashtags(3);
     const email = `${userName}@gmail.com`;
     const password = `${userName}1!`;
@@ -71,6 +71,12 @@ const generateProfile = async () => {
         second: currentTime.second(),
         millisecond: currentTime.millisecond()
     };
+
+        bio += "  ";
+        for(const tag of hashtags) {
+            bio += tag + " ";
+        }        
+
 
     const birthDate = moment(momentData);
 
@@ -195,7 +201,7 @@ const generatePosts = async (profile) => {
     const token = loginRes.data.token;
 
     for (let i = 0; i < postCount; i++) {
-        const captionText = faker.lorem.sentence();
+        let captionText = faker.lorem.sentence();
         const locationText = faker.address.city();
         const hashtags = generateHashtags(3);
         const userId = profile.userId;
@@ -231,13 +237,18 @@ const generatePosts = async (profile) => {
             entries.push(entry);           
         }
 
+        captionText += ".  ";
+        for(const tag of hashtags) {
+            captionText += tag + " ";
+        }        
+
         const post = {
             user: {
                 userId,
                 userName
             },
-            hashtags,
-            mentions: generateMentions(3),
+           // hashtags,
+           // mentions: generateMentions(3),
             global: {
                 captionText,
                 locationText,
