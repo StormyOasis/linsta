@@ -29,8 +29,37 @@ type RedisServerStats = {
 export class RedisConnector {
     private static instance: RedisConnector | null = null;
     private client: RedisClientType | null = null;
+    private metricsInterval: NodeJS.Timeout | null;
 
     private constructor() {
+        const timeout: number = config.redis.metricsIntervalMs as number;
+
+        this.metricsInterval = setInterval(async (connector: RedisConnector) => {
+            if (connector === null) {
+                return;
+            }
+
+            try {
+                const keyCount: number|null = await connector.getKeyCount();
+                if(keyCount == null) {
+                    throw new Error("Could not get key count");
+                }
+                metrics.gauge("redis.keyCount", keyCount || 0);
+
+                const serverInfo: (RedisServerStats | null) = await connector.getServerStatus();
+                if (serverInfo) {
+                    metrics.gauge("redis.connectedClients", serverInfo.connected_clients);
+                    metrics.gauge("redis.qps", serverInfo.instantaneous_ops_per_sec);
+                    metrics.gauge("redis.usedMemory", serverInfo.used_memory);
+                    metrics.gauge("redis.usedMemoryPeak", serverInfo.used_memory_peak);
+                    metrics.gauge("redis.memFragmentationRatio", serverInfo.mem_fragmentation_ratio);
+                } else {
+                    throw new Error("Error getting server stats");
+                }
+            } catch (err) {
+                logger.error("Failed getting redis metrics: ", err);         
+            }
+        }, timeout, this);        
     }
 
     public static getInstance(): RedisConnector {
