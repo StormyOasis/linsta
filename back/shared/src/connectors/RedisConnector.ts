@@ -29,7 +29,7 @@ type RedisServerStats = {
 export class RedisConnector {
     private static instance: RedisConnector | null = null;
     private client: RedisClientType | null = null;
-    private metricsInterval: NodeJS.Timeout | null;
+    private metricsInterval: NodeJS.Timeout;
 
     private constructor() {
         const timeout: number = config.redis.metricsIntervalMs as number;
@@ -270,6 +270,7 @@ export class RedisConnector {
         if (this.client != null) {
             await this.client.disconnect();
             this.client = null;
+            clearInterval(this.metricsInterval);
         }
     }
 

@@ -4,11 +4,14 @@ import { Client } from '@elastic/elasticsearch';
 
 import logger from "../../logger";
 import config from '../../config';
+import metrics from '../../metrics';
 import { Post } from '../../types';
 import { IndexService } from './IndexService';
+import { ClusterHealthResponse, IndicesStatsResponse } from '@elastic/elasticsearch/lib/api/types';
 
 export default class ESConnector {
     private static client: Client|null = null;
+    private static metricsInterval: NodeJS.Timeout;
 
     private constructor() {
     }
@@ -28,11 +31,41 @@ export default class ESConnector {
                 }
             });
             logger.info("Built ElasticSearch client");
+
+            // Metrics
+            const timeout: number = config.es.metricsIntervalMs as number;
+
+            this.metricsInterval = setInterval(async (connector: ESConnector) => {
+                if (connector === null || ESConnector.client === null) {
+                    return;
+                }
+
+                try {
+                    const health: ClusterHealthResponse | undefined = await ESConnector.client?.cluster.health();
+                    const stats: IndicesStatsResponse | undefined = await ESConnector.client?.indices.stats();
+                    if (health && stats) {
+                        metrics.gauge('es.cluster_status', metrics.mapEsStatus(health.status));
+                        metrics.gauge('es.number_of_nodes', health.number_of_nodes);
+                        metrics.gauge('es.active_primary_shards', health.active_primary_shards);
+                        metrics.gauge('es.active_shards', health.active_shards);
+                        metrics.gauge('es.task_max_waiting_in_queue_millis', health.task_max_waiting_in_queue_millis);
+                        metrics.gauge('es.number_of_pending_tasks', health.number_of_pending_tasks);
+                        metrics.gauge('es.total_docs_count', stats._all.total?.docs?.count || -1);
+                        metrics.gauge('es.unassigned_shards', health?.unassigned_shards || 0);
+                    }
+                } catch (err) {
+                    logger.error("Error getting ES Metrics", err);
+                    metrics.gauge('es.cluster_status', metrics.mapEsStatus("red"));
+                    metrics.gauge('es.number_of_nodes', 0);
+                }
+
+            }, timeout, this);            
         }
         return this.client;
     }
 
     public static close = async () => {
+        clearInterval(ESConnector.metricsInterval);
         await this.client?.close();
         this.client = null;
     }

@@ -44,6 +44,7 @@ interface ESConfig {
     maxTimeout: number;
     minTimeout: number;
     maxRetries: number;
+    metricsIntervalMs: number;
 }
 
 interface DBConfig {
@@ -133,7 +134,8 @@ const appConfig: AppConfig = {
         backoffFactor: 0,
         maxTimeout: 0,
         minTimeout: 0,
-        maxRetries: 0
+        maxRetries: 0,
+        metricsIntervalMs: 1000
     },
     redis: {
         host: '',
@@ -143,7 +145,7 @@ const appConfig: AppConfig = {
         connectTimeout: 0,
         maxRetries: 0,
         defaultTTL: 0,
-        metricsIntervalMs: 0
+        metricsIntervalMs: 1000
     },
     aws: {
         region: '',
@@ -218,6 +220,7 @@ appConfig.es.backoffFactor = Number(process.env.ES_BACKOFF_FACTOR ?? appConfig.e
 appConfig.es.maxRetries = Number(process.env.ES_MAX_RETRIES ?? appConfig.es.maxRetries);
 appConfig.es.minTimeout = Number(process.env.ES_MIN_TIMEOUT ?? appConfig.es.minTimeout);
 appConfig.es.maxTimeout = Number(process.env.ES_MAX_TIMEOUT ?? appConfig.es.maxTimeout);
+appConfig.es.metricsIntervalMs = Number(process.env.ES_METRICS_INTERVAL_MS ?? appConfig.es.metricsIntervalMs);
 
 appConfig.redis.host = process.env.REDIS_HOST ?? appConfig.redis.host;
 appConfig.redis.port = process.env.REDIS_PORT ?? appConfig.redis.port;
