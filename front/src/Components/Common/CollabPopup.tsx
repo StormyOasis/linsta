@@ -60,6 +60,11 @@ const CollabPopupContainer = styled(Div) <{ $isOpen: boolean }>`
     border-radius: 8px;
     overflow-y: auto;
     overflow-x: clip;
+
+    @media (max-width: ${props => props.theme["breakpoints"].md - 1}px) {
+        width: 100vw;
+        height: auto;
+    }       
 `;
 
 const ProfileLinkWrapper = styled(FlexRow)`

@@ -16,6 +16,12 @@ const SliderWrapper = styled(Flex)`
     justify-content: flex-end;
     margin-top: 20px;
     margin-right: 10px;
+
+    @media (max-width: ${props => props.theme["breakpoints"].md - 1}px) {    
+        width:100%;
+        margin-right: 0px;
+        justify-content: center;        
+    }
 `;
 
 const Slider: React.FC<SliderProps> = (props: SliderProps) => {

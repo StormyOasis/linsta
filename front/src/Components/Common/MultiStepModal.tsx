@@ -11,14 +11,20 @@ const ModalWrapper = styled(Flex)`
     flex-direction: column;
     justify-content: center;
     overflow: hidden;
-    position: absolute;
+    position: fixed;
     pointer-events: all;
     border: none;
     box-sizing: content-box;
-    left: 50%;
-    top: 10px;
-    transform: translateX(-50%);
-    width:100%;
+    left: 0;
+    top: 0;    
+    width: 100%;
+    height: 100%;
+
+    @media (max-width: ${props => props.theme["breakpoints"].md - 1}px) {
+        align-items: flex-start;
+        justify-content: flex-start;
+        padding: 0;
+    }    
 `;
 
 const ModalInnerWrapper = styled(Div)`
@@ -37,12 +43,34 @@ const ModalInnerWrapper = styled(Div)`
     position: relative;
     border-radius: 12px;
     background-color: ${props => props.theme['colors'].backgroundColor};
+    
+    @media (max-width: ${props => props.theme["breakpoints"].md - 1}px) {
+        width: 100%;
+        height: 100%;
+        max-width: 100%;
+        max-height: 100%;
+        margin: 0;
+        border-radius: 0;
+    }    
 `;
 
 const ModalInnerWrapper2 = styled(Div)`  
     display: block;
     overflow: hidden;
     pointer-events: all;
+
+    @media (max-width: ${props => props.theme["breakpoints"].md - 1}px) {
+        height: 100%;
+        overflow-y: auto;
+    }    
+`;
+
+const ModalInnerWrapper3 = styled(FlexColumn)`
+    height: 100%;
+
+    @media (max-width: ${props => props.theme["breakpoints"].md - 1}px) {
+        height: calc(100% - 39px);
+    }       
 `;
 
 const ModalTitleBarWrapper = styled(Flex)`
@@ -135,6 +163,10 @@ export const ModalContentWrapper = styled(FlexColumn)<{ $hideMargins?: boolean |
     pointer-events: all;
     position: relative;
     margin: ${props => props.$hideMargins ? 0 : "20px 28px 20px 28px"};
+
+    @media (max-width: ${props => props.theme["breakpoints"].md - 1}px) {
+        margin: auto;
+    }    
 `;
 
 export const ModalSectionWrapper = styled(FlexColumn)`
@@ -204,7 +236,7 @@ export default class MultiStepModal extends React.Component<MultiStepModalProps>
                 <ModalWrapper role="dialog" $zIndex={`${this.props.zIndex}`}>
                     <ModalInnerWrapper>
                         <ModalInnerWrapper2>
-                            <FlexColumn $height="100%">
+                            <ModalInnerWrapper3 $height="100%">
                                 {!step.options.hideHeader && 
                                     <ModalTitleBarWrapper>
                                     <ModalTitleBarInnerWrapper>
@@ -227,9 +259,9 @@ export default class MultiStepModal extends React.Component<MultiStepModalProps>
                                 }
                                 <ModalContentWrapper $hideMargins={step.options.hideMargins} $alignItems={alignItems}>
                                     <LoadingImage isLoading={this.props.showLoadingAnimation} />
-                                    {!this.props.showLoadingAnimation && step.element}
+                                    {!this.props.showLoadingAnimation && step.element /* This is where child react nodes are inserted */}
                                 </ModalContentWrapper>
-                            </FlexColumn>
+                            </ModalInnerWrapper3>
                             {(step.options.showFooter && !this.props.showLoadingAnimation) &&
                                 <ModalFooter>
                                     <PrevButton onClick={step?.onPrev} />
