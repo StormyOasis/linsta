@@ -35,7 +35,7 @@ const ModalInnerWrapper = styled(Div)`
     display: block;
     flex-shrink: 1;
     margin: 20px;
-    max-width: ${props => props.theme['sizes'].maxModalWidth};
+    //max-width: ${props => props.theme['sizes'].maxModalWidth};
     max-height: calc(100% - 40px);
     min-width: 260px;
     overflow: hidden;
@@ -44,6 +44,13 @@ const ModalInnerWrapper = styled(Div)`
     border-radius: 12px;
     background-color: ${props => props.theme['colors'].backgroundColor};
     
+    @media (min-width: ${props => props.theme["breakpoints"].md}px) and 
+            (max-width: ${props => props.theme["breakpoints"].lg - 1}px) {
+        height: auto;
+        max-width: 75vw;
+        overflow-y: auto;
+    }
+
     @media (max-width: ${props => props.theme["breakpoints"].md - 1}px) {
         width: 100%;
         height: 100%;
@@ -66,11 +73,19 @@ const ModalInnerWrapper2 = styled(Div)`
 `;
 
 const ModalInnerWrapper3 = styled(FlexColumn)`
-    height: 100%;
+    flex-grow: 1;
+    width: 100%;
+    overflow: hidden;
+    box-sizing: border-box;
 
     @media (max-width: ${props => props.theme["breakpoints"].md - 1}px) {
-        height: calc(100% - 39px);
-    }       
+        height: calc(100% - 42px);
+    }
+
+    @media (min-width: ${props => props.theme["breakpoints"].md}px) {
+        height: auto;
+        max-height: 100%;
+    }    
 `;
 
 const ModalTitleBarWrapper = styled(Flex)`
@@ -152,21 +167,35 @@ const CloseButton = styled(XSVG)`
     margin-right: 5px;
 `;
 
-export const ModalContentWrapper = styled(FlexColumn)<{ $hideMargins?: boolean | undefined, $alignItems: string }>`
+export const ModalContentWrapper = styled(FlexColumn)<{ $hideMargins?: boolean | undefined, $alignItems: string}>`
     align-content: stretch;
     align-items: ${props => props.$alignItems};
     border: none;
-    flex-grow: 0;
-    flex-shrink: 0;
-    justify-content: flex-start;
-    overflow: visible;
+    flex-grow: 1;
+
+    overflow-y:visible;
+    overflow-x:hidden;
+    
+    box-sizing: border-box;
+
     pointer-events: all;
-    position: relative;
     margin: ${props => props.$hideMargins ? 0 : "20px 28px 20px 28px"};
 
     @media (max-width: ${props => props.theme["breakpoints"].md - 1}px) {
-        margin: auto;
+        margin: 0;
+        justify-content: center;
+        align-items: center;
+        overflow-x: hidden;
+        width: 100%;
+        max-width: 100%;
     }    
+`;
+
+const ScrollableContentWrapper = styled(FlexColumn)`
+    flex-grow: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-height: inherit;
 `;
 
 export const ModalSectionWrapper = styled(FlexColumn)`
@@ -178,6 +207,9 @@ export const ModalSectionWrapper = styled(FlexColumn)`
     overflow: visible;
     position: relative;
     pointer-events: all;
+    width: 100%; 
+    max-width: 100%;
+    box-sizing: border-box;   
 `;
 
 const ModalFooter = styled(FlexRow)`
@@ -257,10 +289,12 @@ export default class MultiStepModal extends React.Component<MultiStepModalProps>
                                     </ModalTitleBarInnerWrapper>
                                     </ModalTitleBarWrapper>
                                 }
-                                <ModalContentWrapper $hideMargins={step.options.hideMargins} $alignItems={alignItems}>
-                                    <LoadingImage isLoading={this.props.showLoadingAnimation} />
-                                    {!this.props.showLoadingAnimation && step.element /* This is where child react nodes are inserted */}
-                                </ModalContentWrapper>
+                                <ScrollableContentWrapper>
+                                    <ModalContentWrapper $hideMargins={step.options.hideMargins} $alignItems={alignItems}>
+                                        <LoadingImage isLoading={this.props.showLoadingAnimation} />
+                                        {!this.props.showLoadingAnimation && step.element /* This is where child react nodes are inserted */}
+                                    </ModalContentWrapper>
+                                </ScrollableContentWrapper>
                             </ModalInnerWrapper3>
                             {(step.options.showFooter && !this.props.showLoadingAnimation) &&
                                 <ModalFooter>

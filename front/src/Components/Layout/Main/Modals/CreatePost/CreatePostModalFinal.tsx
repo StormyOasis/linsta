@@ -22,41 +22,50 @@ const EditContainer = styled(FlexRow)`
     position: relative;
     min-width: calc(${props => props.theme['sizes'].defaultModalWidth} - 40px);
     max-width: calc(${props => props.theme['sizes'].maxModalWidth} - 40px);
-    max-height: 412px;
+    height: 100%;
     min-height: calc(${props => props.theme['sizes'].minModalHeight} - 40px);
 
     @media (max-width: ${props => props.theme["breakpoints"].md - 1}px) {
         flex-direction: column;
         max-height: unset;
+        min-width: 100%;
+        max-width: 100%;
+    }
+        
+    @media (min-width: ${props => props.theme["breakpoints"].md}px) {
+        width: 100%;
+        max-width: 820px;
+        min-height: calc(${props => props.theme['sizes'].minModalHeight} - 40px);
+        max-height: 412px;
     }    
 `;
 
 const ImageContainer = styled(Flex)`
-  position: relative;
-  width: 386px; 
-  justify-content: center;
-  align-items: center;
+    position: relative;
+    width: 386px; 
+    justify-content: center;
+    align-items: center;
 
-  @media (max-width: ${props => props.theme["breakpoints"].md - 1}px) {
-    max-width: 100%;
-    height: auto;
-    flex: 0 0 auto;
-    overflow: visible;
-    width: 100vw;
-  }
+    @media (max-width: ${props => props.theme["breakpoints"].md - 1}px) {
+        max-width: 100%;
+        height: auto;
+        flex: 0 0 auto;
+        overflow: visible;
+        width: 100%;
+    }
 `;
-
 
 const ControlsContainer = styled(FlexColumn)` 
     width: 386px;  
     padding-left: 5px;
     pointer-events: all;
 
-  @media (max-width: ${props => props.theme["breakpoints"].md - 1}px) {
-    width: 100vw;
-    padding-left: 0;
-    margin-top: 10px;
-  }    
+    @media (max-width: ${props => props.theme["breakpoints"].md - 1}px) {
+        width: 100%;
+        max-width: 100%;
+        padding-left: 0;
+        margin-top: 10px;
+    }    
 `;
 
 const ControlContentContainer = styled(FlexColumn)`
@@ -72,11 +81,11 @@ const PreviewImage = styled.img`
     object-fit: cover;
     overflow: hidden;
 
-  @media (max-width: ${props => props.theme["breakpoints"].md - 1}px) {
-    width: 100%;
-    height: auto;
-    max-height: 412px;
-  }    
+    @media (max-width: ${props => props.theme["breakpoints"].md - 1}px) {
+        width: 100%;
+        height: auto;
+        max-height: 412px;
+    }    
 `;
 
 const PreviewVideo = styled.video`
@@ -86,11 +95,11 @@ const PreviewVideo = styled.video`
     object-fit: cover;
     overflow: hidden;
 
-  @media (max-width: ${props => props.theme["breakpoints"].md - 1}px) {
-    width: 100%;
-    height: auto;
-    max-height: 412px;
-  }    
+    @media (max-width: ${props => props.theme["breakpoints"].md - 1}px) {
+        width: 100%;
+        height: auto;
+        max-height: 412px;
+    }    
 `;
 
 const TextEditorContainerWrapper = styled(Div)`

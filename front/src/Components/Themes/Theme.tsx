@@ -52,10 +52,12 @@ const defaultTheme = {
     },
 
     breakpoints: {
-        sm: "576",
-        md: "768",
-        lg: "1280",
-        xl: "1440"
+        xs: "480",   // Extra small
+        sm: "576",   // Small (mobile)
+        md: "768",   // Medium (tablet)
+        lg: "1280",  // Large (desktop)
+        xl: "1440",  // Extra Large (widescreen desktop)
+        xxl: "1600"  // Ultra Large (4K-friendly)
     }
 };
 

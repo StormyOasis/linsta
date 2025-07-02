@@ -9,10 +9,18 @@ import MediaSliderButton from "../../../../Common/MediaSliderButton";
 import { CropSVG, FourToFiveSVG, ImageSVG, OneToOneSVG, SixteenToNineSVG } from "../../../../../Components/Common/Icon";
 
 const CropContainer = styled(Div)`
-    height: ${props => props.theme['sizes'].cropperHeight};
+    position: relative;
     width: calc(${props => props.theme['sizes'].defaultModalWidth} - 40px);
     max-width: calc(${props => props.theme['sizes'].maxModalWidth} - 40px);
-`;
+    height: ${props => props.theme['sizes'].cropperHeight};
+
+    @media (max-width: ${props => props.theme["breakpoints"].md - 1}px) {
+        width: 100%;
+        max-width: 100%;
+        padding: 0 10px;
+        box-sizing: border-box;
+    }
+    `;
 
 const CropperWrapper = styled(Div)`
     position: absolute;
@@ -20,6 +28,8 @@ const CropperWrapper = styled(Div)`
     left: 0;
     right: 0;
     bottom: 0;
+    height: 100%;
+    width: 100%;    
 `;
 const CropperContainer = styled(Div)`
     position: absolute;
@@ -27,6 +37,8 @@ const CropperContainer = styled(Div)`
     left: 0;
     right: 0;
     bottom: 5px;
+    height: calc(100% - 5px);
+    width: 100%;    
 `;
 
 const CropperAspectRatioButtonWrapper = styled(Div)`
@@ -88,6 +100,14 @@ const AspectPopupMenuItemContent = styled(Div)`
     flex-direction: row;
     justify-content: space-between;
     width: 100%;
+`;
+
+const ResponsiveFlex = styled(Flex)`
+    flex-direction: column;
+
+    @media (min-width: ${props => props.theme['breakpoints'].md}px) {
+        flex-direction: row;
+    }
 `;
 
 export type CreatePostModalCropProps = {
@@ -318,8 +338,8 @@ const CreatePostModalCropper: React.FC<CropperProps> = (props: CropperProps) => 
                     </CropperWrapper>
                 </CropContainer>
             </ModalSectionWrapper>
-            <ModalSectionWrapper style={{width: "100%"}}>
-                <Flex>
+            <ModalSectionWrapper $width="100%" $paddingBottom="1px">
+                <ResponsiveFlex>
                     <Slider
                         value={zoom}
                         min={0}
@@ -340,7 +360,7 @@ const CreatePostModalCropper: React.FC<CropperProps> = (props: CropperProps) => 
                         aria-labelledby="Rotation"
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => setRotation(Number.parseFloat(e.target.value))}
                     />                    
-                </Flex>
+                </ResponsiveFlex>
             </ModalSectionWrapper>
         </>
     )

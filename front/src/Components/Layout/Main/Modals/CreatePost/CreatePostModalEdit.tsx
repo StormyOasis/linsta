@@ -11,11 +11,14 @@ const EditContainer = styled(Flex)`
   width: 100%;
   flex-direction: column;
 
-  @media (min-width: ${props => props.theme["breakpoints"].md - 1}px) {
+  @media (min-width: ${props => props.theme["breakpoints"].lg}px) {
     flex-direction: row;
+  }
+
+  @media (min-width: ${props => props.theme["breakpoints"].md}px) {
     min-width: calc(${props => props.theme['sizes'].defaultModalWidth} - 40px);
     max-width: calc(${props => props.theme['sizes'].maxModalWidth} - 40px);
-    max-height: 412px;
+    max-height: 568px;
     min-height: calc(${props => props.theme['sizes'].minModalHeight} - 40px);
   }
 `;
@@ -39,9 +42,13 @@ const ControlsContainer = styled(FlexColumn)`
     padding-left: 5px;
     pointer-events: all;
 
-    @media (max-width: ${props => props.theme["breakpoints"].md - 1}px) {    
+    @media (max-width: ${props => props.theme["breakpoints"].lg - 1}px) {
         padding: 10px 0 0 0;
-        width: 100vw;
+    }
+
+    @media (min-width: ${props => props.theme["breakpoints"].lg}px) {
+        width: auto;
+        padding-left: 20px;
     }
 `;
 
