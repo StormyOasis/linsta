@@ -64,6 +64,10 @@ const ProfilePfpContainer = styled(FlexRow)`
     background-color: ${props => props.theme['colors'].borderDefaultColor};
     border-radius: 16px;
     align-items: center;
+
+    @media (max-width: ${props => props.theme["breakpoints"].md - 1}px) {
+        flex-direction: column;
+    }    
 `;
 
 const InputContainer = styled(Div)`
@@ -317,6 +321,7 @@ const EditProfileContent: React.FC = () => {
     const renderGenderDropdown = () => {
         return (
             <PopupDropdownSelector
+                shouldValidate={false}
                 selectedItems={[selectedGenderItem]}
                 onClose={() => { }}
                 onSelect={handleItemSelect}>
@@ -332,6 +337,7 @@ const EditProfileContent: React.FC = () => {
     const renderPronounDropdown = () => {
         return (
             <PopupDropdownSelector
+                shouldValidate={false}
                 selectedItems={[selectedPronounItem]}
                 onClose={() => { }}
                 onSelect={handleItemSelect}>
@@ -405,7 +411,6 @@ const EditProfileContent: React.FC = () => {
                                     name="website"
                                     placeholder="Website"
                                     value={website}
-                                    shouldValidate={true}
                                     isValid={validateUrl(website)}
                                     onChange={(event: React.ChangeEvent<HTMLInputElement>) => setWebsite(event.target.value)}
                                 ></StyledInput>
