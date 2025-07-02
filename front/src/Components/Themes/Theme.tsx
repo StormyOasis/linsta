@@ -41,7 +41,7 @@ const defaultTheme = {
         searchPanelWidth: "300px",
         cropperHeight: "275px",
         defaultModalWidth: "600px",
-        maxModalWidth: "75vw",
+        maxModalWidth: "45vw",
         maxModalHeight: "75vh",
         minModalHeight: "300px",
         minPostTextEditorHeight: "140px",
@@ -52,9 +52,12 @@ const defaultTheme = {
     },
 
     breakpoints: {
-        sm: "576",
-        md: "768",
-        lg: "1280"
+        xs: "480",   // Extra small
+        sm: "576",   // Small (mobile)
+        md: "768",   // Medium (tablet)
+        lg: "1280",  // Large (desktop)
+        xl: "1440",  // Extra Large (widescreen desktop)
+        xxl: "1600"  // Ultra Large (4K-friendly)
     }
 };
 

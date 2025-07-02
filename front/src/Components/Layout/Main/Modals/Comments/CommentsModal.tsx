@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { renderToString } from "react-dom/server";
 import styled from "styled-components";
 
-import MultiStepModal from "../../../../Common/MultiStepModal";
+import MultiStepModal, { ModalSectionWrapper } from "../../../../Common/MultiStepModal";
 import { Post, Profile } from "../../../../../api/types";
 import { BoldLink, Div, Flex, FlexColumn, FlexColumnFullWidth, FlexRow, FlexRowFullWidth, Span } from "../../../../Common/CombinedStyling";
 import MediaSlider from "../../../../Common/MediaSlider";
@@ -22,12 +22,58 @@ import { actions, useAppDispatch, useAppSelector } from "../../../../../Componen
 import Linkify from "../../../../../Components/Common/Linkify";
 import { MessageSVG } from "../../../../../Components/Common/Icon";
 
-const MediaSliderWrapper = styled(Div) <{ $width: number }>`
+const EditContainer = styled(FlexRow)`
+    position: relative;
+    min-width: calc(${props => props.theme['sizes'].defaultModalWidth} - 40px);
+    max-width: calc(${props => props.theme['sizes'].maxModalWidth} - 40px);
+    height: 100%;
+    min-height: calc(${props => props.theme['sizes'].minModalHeight} - 40px);
+
+    @media (max-width: ${props => props.theme["breakpoints"].md - 1}px) {
+        flex-direction: column;
+        max-height: unset;
+        min-width: 100%;
+        max-width: 100%;
+    }
+        
+    @media (min-width: ${props => props.theme["breakpoints"].md}px) {
+        width: 100%;
+        max-width: 820px;
+        min-height: calc(${props => props.theme['sizes'].minModalHeight} - 40px);
+        max-height: 483px;
+    }    
+`;
+
+const MediaSliderWrapper = styled(Flex) <{ $width: number }>`
     align-content: center;
     background-color: ${props => props.theme['colors'].backgroundColorSecondary};          
     overflow: hidden;
     max-width: ${props => props.$width}px;
     width: ${props => props.$width}px;        
+    position: relative;
+
+    @media (max-width: ${props => props.theme["breakpoints"].md - 1}px) {
+        max-width: 100%;
+        height: auto;
+        flex: 0 0 auto;
+        overflow: visible;
+        width: 100vw;
+    }  
+`;
+
+const ControlContainer = styled(FlexColumn)`
+    width: 100%;
+    
+    @media (min-width: ${props => props.theme["breakpoints"].lg}px) {
+        min-width: 340px;
+        max-width: 404px;
+    }
+    @media (max-width: ${props => props.theme["breakpoints"].md - 1}px) {
+   //     flex-direction: column;
+     //   max-height: unset;
+     //   min-width: 100%;
+     //   max-width: 100%;
+    }
 `;
 
 const HeadingWrapper = styled(Div)`
@@ -431,125 +477,125 @@ const CommentModalContent: React.FC<CommentModalContentProps> = (props: CommentM
         <>
             <Div>
                 <Flex>
-                    <FlexRow $maxHeight="470px">
-                        <MediaSliderWrapper $width={sliderWidth}>
-                            <MediaSlider media={props.post.media} />
-                        </MediaSliderWrapper>
-                        <Flex>
-                            <FlexColumn $maxWidth="500px" $width="350px">
-                                <HeadingWrapper>
-                                    <Div $marginLeft="10px" $paddingTop="10px" $paddingBottom="10px" $paddingRight="10px">
-                                        <FlexRow $justifyContent="space-between">
-                                            <ProfileLink
-                                                collaborators={props.post.global.collaborators}
-                                                showCollaborators={true}
-                                                onCollaboratorsClick={handleCollaboratorsClick}
-                                                showLocation={true}
-                                                location={props.post.global.locationText}      
-                                                showPfp={true}
-                                                showUserName={true}
-                                                showFullName={false}
-                                                pfp={props.post.user.pfp}
-                                                url={`${HOST}/${props.post.user.userName}`}
-                                                userName={props.post.user.userName} />
-                                            {(authUser.id == props.post.user.userId) &&
-                                                <PostOptionsWrapper>
-                                                    <BoldLink $fontSize="1.5em" onClick={() => openPostMenuModal(props.post)}>...</BoldLink>
-                                                </PostOptionsWrapper>
-                                            }
-                                        </FlexRow>
-                                    </Div>
-                                </HeadingWrapper>
-                                <CommentsWrapper>
-                                    {!props.post.global.commentsDisabled && renderComments()}
-                                    {(props.post.global.commentsDisabled || props.post.global.commentCount === 0) && 
-                                        <FlexColumnFullWidth $height="100%" $justifyContent="center">
-                                            <Div $alignSelf="center" $fontSize="1.3em" $fontWeight="500">No Comments Yet</Div>
-                                        </FlexColumnFullWidth>
-                                    }
-                                </CommentsWrapper>
-                                <ActionWrapper>
-                                    <Div $cursor="pointer">
-                                        <Flex $paddingRight="8px" $position="relative" $top="2px">
-                                            <LikeToggler
-                                                aria-label="Toogle post like"
-                                                isLiked={isLiked}
-                                                handleClick={async () => await toggleLike(authUser.userName, authUser.id)}>
-                                            </LikeToggler>
-                                        </Flex>
-                                    </Div>
-                                    <Div $cursor="pointer">
-                                        <Flex $paddingRight="8px">
-                                            <ActionContainer>
-                                                <MessageSVG width="28px" height="28px" onClick={() => {
-                                                    if (commentTextAreaRef.current) {
-                                                        const textArea = (commentTextAreaRef.current as HTMLTextAreaElement);
-                                                        textArea.innerText = `@${props.post.user.userName} `;
-                                                        textArea.focus();
-                                                        textArea.selectionStart = textArea.value.length;
-                                                        setParentCommentId(null);
-                                                    }
-                                                }} />
-                                            </ActionContainer>
-                                        </Flex>
-                                    </Div>
-                                    {/*<Div $cursor="pointer">
-                                        <Flex $paddingRight="8px">
-                                            <ActionContainer>
-                                                <ShareSVG />
-                                            </ActionContainer>
-                                        </Flex>
-                                    </Div>*/}
-                                </ActionWrapper>
-                                <Div $paddingLeft="10px" $paddingBottom="10px">
-                                    <ViewLikesText post={props.post} authUserId={authUser.id} handleClick={() => openLikesModal(props.post)}></ViewLikesText>
-                                    <Span $marginRight="10px" $fontSize="13px">
-                                        {getDateAsText(props.post.global.dateTime)}
-                                    </Span>
-                                </Div>
-                                {!props.post.global?.commentsDisabled &&
-                                    <Div>
-                                        <CommentInputWrapper>
-                                            <CommentTextArea value={commentText} ref={commentTextAreaRef}
-                                                placeholder="Add a new comment..."
-                                                aria-label="Add a new comment..."
-                                                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
-                                                    setCommentText(e.currentTarget.value);
-                                                }}
-                                                onInput={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-                                                    const element = e.currentTarget;
-                                                    element.style.height = "";
-                                                    element.style.height = element.scrollHeight + "px";
-                                                }}
-                                                onKeyDown={async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-                                                    if (e.key === "Enter" && commentText.trim()) {
-                                                        // Prevent adding a new line
-                                                        e.preventDefault();
-
-                                                        await handleSubmitComment(commentText);
-                                                    }
-                                                }}
-                                            />
-                                            <Flex $marginTop="auto" $marginBottom="auto">
-                                                {
-                                                    (commentText && commentText.length > 0) &&
-                                                    <Div $paddingLeft="5px" $paddingRight="5px" $margin="auto">
-                                                        <StyledLink
-                                                            onClick={async () => await handleSubmitComment(commentText.trim())}>
-                                                            Post
-                                                        </StyledLink>
-                                                    </Div>
+                    <ModalSectionWrapper>
+                        <EditContainer>
+                            <MediaSliderWrapper $width={sliderWidth}>
+                                <MediaSlider media={props.post.media} />
+                            </MediaSliderWrapper>
+                            <ControlContainer>
+                                    <HeadingWrapper>
+                                        <Div $marginLeft="10px" $paddingTop="10px" $paddingBottom="10px" $paddingRight="10px">
+                                            <FlexRow $justifyContent="space-between">
+                                                <ProfileLink
+                                                    collaborators={props.post.global.collaborators}
+                                                    showCollaborators={true}
+                                                    onCollaboratorsClick={handleCollaboratorsClick}
+                                                    showLocation={true}
+                                                    location={props.post.global.locationText}      
+                                                    showPfp={true}
+                                                    showUserName={true}
+                                                    showFullName={false}
+                                                    pfp={props.post.user.pfp}
+                                                    url={`${HOST}/${props.post.user.userName}`}
+                                                    userName={props.post.user.userName} />
+                                                {(authUser.id == props.post.user.userId) &&
+                                                    <PostOptionsWrapper>
+                                                        <BoldLink $fontSize="1.5em" onClick={() => openPostMenuModal(props.post)}>...</BoldLink>
+                                                    </PostOptionsWrapper>
                                                 }
-                                                <EmojiPickerPopup noPadding={true} onEmojiClick={(emoji: any) => {
-                                                    setCommentText(commentText + emoji.emoji);
-                                                }}></EmojiPickerPopup>
+                                            </FlexRow>
+                                        </Div>
+                                    </HeadingWrapper>
+                                    <CommentsWrapper>
+                                        {!props.post.global.commentsDisabled && renderComments()}
+                                        {(props.post.global.commentsDisabled || props.post.global.commentCount === 0) && 
+                                            <FlexColumnFullWidth $height="100%" $justifyContent="center">
+                                                <Div $alignSelf="center" $fontSize="1.3em" $fontWeight="500">No Comments Yet</Div>
+                                            </FlexColumnFullWidth>
+                                        }
+                                    </CommentsWrapper>
+                                    <ActionWrapper>
+                                        <Div $cursor="pointer">
+                                            <Flex $paddingRight="8px" $position="relative" $top="2px">
+                                                <LikeToggler
+                                                    aria-label="Toogle post like"
+                                                    isLiked={isLiked}
+                                                    handleClick={async () => await toggleLike(authUser.userName, authUser.id)}>
+                                                </LikeToggler>
                                             </Flex>
-                                        </CommentInputWrapper>
+                                        </Div>
+                                        <Div $cursor="pointer">
+                                            <Flex $paddingRight="8px">
+                                                <ActionContainer>
+                                                    <MessageSVG width="28px" height="28px" onClick={() => {
+                                                        if (commentTextAreaRef.current) {
+                                                            const textArea = (commentTextAreaRef.current as HTMLTextAreaElement);
+                                                            textArea.innerText = `@${props.post.user.userName} `;
+                                                            textArea.focus();
+                                                            textArea.selectionStart = textArea.value.length;
+                                                            setParentCommentId(null);
+                                                        }
+                                                    }} />
+                                                </ActionContainer>
+                                            </Flex>
+                                        </Div>
+                                        {/*<Div $cursor="pointer">
+                                            <Flex $paddingRight="8px">
+                                                <ActionContainer>
+                                                    <ShareSVG />
+                                                </ActionContainer>
+                                            </Flex>
+                                        </Div>*/}
+                                    </ActionWrapper>
+                                    <Div $paddingLeft="10px" $paddingBottom="10px">
+                                        <ViewLikesText post={props.post} authUserId={authUser.id} handleClick={() => openLikesModal(props.post)}></ViewLikesText>
+                                        <Span $marginRight="10px" $fontSize="13px">
+                                            {getDateAsText(props.post.global.dateTime)}
+                                        </Span>
                                     </Div>
-                                }
-                            </FlexColumn>
-                        </Flex>
-                    </FlexRow>
+                                    {!props.post.global?.commentsDisabled &&
+                                        <Div>
+                                            <CommentInputWrapper>
+                                                <CommentTextArea value={commentText} ref={commentTextAreaRef}
+                                                    placeholder="Add a new comment..."
+                                                    aria-label="Add a new comment..."
+                                                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+                                                        setCommentText(e.currentTarget.value);
+                                                    }}
+                                                    onInput={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+                                                        const element = e.currentTarget;
+                                                        element.style.height = "";
+                                                        element.style.height = element.scrollHeight + "px";
+                                                    }}
+                                                    onKeyDown={async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+                                                        if (e.key === "Enter" && commentText.trim()) {
+                                                            // Prevent adding a new line
+                                                            e.preventDefault();
+
+                                                            await handleSubmitComment(commentText);
+                                                        }
+                                                    }}
+                                                />
+                                                <Flex $marginTop="auto" $marginBottom="auto">
+                                                    {
+                                                        (commentText && commentText.length > 0) &&
+                                                        <Div $paddingLeft="5px" $paddingRight="5px" $margin="auto">
+                                                            <StyledLink
+                                                                onClick={async () => await handleSubmitComment(commentText.trim())}>
+                                                                Post
+                                                            </StyledLink>
+                                                        </Div>
+                                                    }
+                                                    <EmojiPickerPopup noPadding={true} onEmojiClick={(emoji: any) => {
+                                                        setCommentText(commentText + emoji.emoji);
+                                                    }}></EmojiPickerPopup>
+                                                </Flex>
+                                            </CommentInputWrapper>
+                                        </Div>
+                                    }
+                            </ControlContainer>
+                        </EditContainer>
+                    </ModalSectionWrapper>
                 </Flex>
             </Div>
         </>

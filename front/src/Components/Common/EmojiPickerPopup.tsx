@@ -34,6 +34,11 @@ const EmojiPickerPopupContainer = styled.div<{ $isOpen: boolean }>`
     width: 20%;
     height: 50%;
     z-index: 9999;
+
+    @media (max-width: ${props => props.theme["breakpoints"].md - 1}px) {
+        width: 100vw;
+        height: auto;
+    }      
 `;
 
 type EmojiPickerPopupProps = {

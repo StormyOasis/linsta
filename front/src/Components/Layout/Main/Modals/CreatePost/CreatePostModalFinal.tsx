@@ -10,7 +10,7 @@ import { useSelector } from "react-redux";
 import TextEditor from "../../../../Common/Lexical/TextEditor";
 import Dropdown from "../../../../Common/Dropdown";
 import ToggleSwitch from "../../../../Common/ToggleSwitch";
-import { Div, FlexColumn, FlexRow, Span } from "../../../../Common/CombinedStyling";
+import { Div, Flex, FlexColumn, FlexRow, Span } from "../../../../Common/CombinedStyling";
 import LocationPopup from "../../../../Common/LocationPopup";
 import MediaSliderButton from "../../../../Common/MediaSliderButton";
 import CollabPopup from "../../../../../Components/Common/CollabPopup";
@@ -18,35 +18,57 @@ import { CollabData } from "src/api/types";
 
 const MAX_TEXT_LENGTH: number = 2047;
 
-const EditContainer = styled(Div)`
-    display: flex;
+const EditContainer = styled(FlexRow)`
     position: relative;
-    flex-direction: row;
     min-width: calc(${props => props.theme['sizes'].defaultModalWidth} - 40px);
     max-width: calc(${props => props.theme['sizes'].maxModalWidth} - 40px);
-    max-height: 412px;
+    height: 100%;
     min-height: calc(${props => props.theme['sizes'].minModalHeight} - 40px);
+
+    @media (max-width: ${props => props.theme["breakpoints"].md - 1}px) {
+        flex-direction: column;
+        max-height: unset;
+        min-width: 100%;
+        max-width: 100%;
+    }
+        
+    @media (min-width: ${props => props.theme["breakpoints"].md}px) {
+        width: 100%;
+        max-width: 820px;
+        min-height: calc(${props => props.theme['sizes'].minModalHeight} - 40px);
+        max-height: 412px;
+    }    
 `;
 
-const ImageContainer = styled(Div)`    
-    display: flex;
-    width: 386px;
-    justify-content: flex-end;
-    vertical-align: middle;
-    overflow: hidden;
+const ImageContainer = styled(Flex)`
+    position: relative;
+    width: 386px; 
+    justify-content: center;
+    align-items: center;
+
+    @media (max-width: ${props => props.theme["breakpoints"].md - 1}px) {
+        max-width: 100%;
+        height: auto;
+        flex: 0 0 auto;
+        overflow: visible;
+        width: 100%;
+    }
 `;
 
-const ControlsContainer = styled(Div)`
-    display: flex;    
-    flex-direction: column;
+const ControlsContainer = styled(FlexColumn)` 
     width: 386px;  
     padding-left: 5px;
     pointer-events: all;
+
+    @media (max-width: ${props => props.theme["breakpoints"].md - 1}px) {
+        width: 100%;
+        max-width: 100%;
+        padding-left: 0;
+        margin-top: 10px;
+    }    
 `;
 
-const ControlContentContainer = styled(Div)`
-    display: flex;
-    flex-direction: column;
+const ControlContentContainer = styled(FlexColumn)`
     overflow-x: hidden;
     overflow-y: auto;
     height: 100%;
@@ -58,6 +80,12 @@ const PreviewImage = styled.img`
     height:412px;
     object-fit: cover;
     overflow: hidden;
+
+    @media (max-width: ${props => props.theme["breakpoints"].md - 1}px) {
+        width: 100%;
+        height: auto;
+        max-height: 412px;
+    }    
 `;
 
 const PreviewVideo = styled.video`
@@ -66,6 +94,12 @@ const PreviewVideo = styled.video`
     height:412px;
     object-fit: cover;
     overflow: hidden;
+
+    @media (max-width: ${props => props.theme["breakpoints"].md - 1}px) {
+        width: 100%;
+        height: auto;
+        max-height: 412px;
+    }    
 `;
 
 const TextEditorContainerWrapper = styled(Div)`

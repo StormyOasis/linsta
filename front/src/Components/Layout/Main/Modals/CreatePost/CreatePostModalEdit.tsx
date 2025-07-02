@@ -3,45 +3,60 @@ import styled from "styled-components";
 import { ModalSectionWrapper } from "../../../../Common/MultiStepModal";
 import Slider from "../../../../Common/Slider";
 import { EditData } from "./CreatePostModal";
-import { Div, FlexColumn } from "../../../../Common/CombinedStyling";
+import { Div, Flex, FlexColumn, FlexRow, FlexRowFullWidth } from "../../../../Common/CombinedStyling";
 import { blobToBase64 } from "../../../../../utils/utils";
 import MediaSliderButton from "../../../../Common/MediaSliderButton";
 
-const EditContainer = styled.div`
-    display: flex;
-    position: relative;
+const EditContainer = styled(Flex)`
+  width: 100%;
+  flex-direction: column;
+
+  @media (min-width: ${props => props.theme["breakpoints"].lg}px) {
     flex-direction: row;
+  }
+
+  @media (min-width: ${props => props.theme["breakpoints"].md}px) {
     min-width: calc(${props => props.theme['sizes'].defaultModalWidth} - 40px);
     max-width: calc(${props => props.theme['sizes'].maxModalWidth} - 40px);
-    max-height: 412px;
+    max-height: 568px;
     min-height: calc(${props => props.theme['sizes'].minModalHeight} - 40px);
+  }
 `;
 
-const ImageContainer = styled.div`    
-    display: flex;
-    width: 50%;
-    justify-content: flex-end;
-    vertical-align: middle;
-    overflow: hidden;
+const ImageContainer = styled(Flex)`
+  position: relative;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+
+  @media (max-width: ${props => props.theme["breakpoints"].md - 1}px) {
+    max-width: 100%;
+    height: auto;
+    flex: 0 0 auto;
+    overflow: visible;
+    width: 100vw;
+  }
 `;
 
-const ControlsContainer = styled.div`
-    display: flex;    
-    flex-direction: column;
-    width: 50%;  
+const ControlsContainer = styled(FlexColumn)`
     padding-left: 5px;
     pointer-events: all;
+
+    @media (max-width: ${props => props.theme["breakpoints"].lg - 1}px) {
+        padding: 10px 0 0 0;
+    }
+
+    @media (min-width: ${props => props.theme["breakpoints"].lg}px) {
+        width: auto;
+        padding-left: 20px;
+    }
 `;
 
-const ControlTabContainer = styled.div`
-    display:flex;
-    flex-direction: row;
-    width: 100%;
+const ControlTabContainer = styled(FlexRowFullWidth)`
     height: max-content;
 `;
 
-const ControlTab = styled.div<{selected?: boolean}>`
-    display: flex;
+const ControlTab = styled(Flex) <{ selected?: boolean }>`
     cursor: pointer;
     opacity: ${props => props.selected ? 1 : .25};
     font-weight: ${props => props.selected ? 700 : 500};
@@ -54,19 +69,24 @@ const ControlTab = styled.div<{selected?: boolean}>`
     height: max-content;
 `;
 
-const ControlContentContainer = styled.div`
-    display: flex;
-    flex-direction: column;
+const ControlContentContainer = styled(FlexColumn)`
     overflow-y: auto;
     overflow-x: hidden;
 `;
 
 const PreviewImage = styled.img`
-    display:flex;
-    width: 386px;
-    height:412px;
-    object-fit: cover;
-    overflow: hidden;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    max-width: 100%;
+    max-height: 400px;
+    display: block;
+
+    @media (min-width: ${props => props.theme["breakpoints"].md}px) {
+        width: 386px;
+        height: 412px;
+        object-fit: cover;
+    }
 `;
 
 const PreviewVideo = styled.video`
@@ -75,30 +95,86 @@ const PreviewVideo = styled.video`
     height:412px;
     object-fit: cover;
     overflow: hidden;
+
+    @media (max-width: ${props => props.theme["breakpoints"].md - 1}px) {    
+        width: 100%;
+        height: auto;
+        max-height: 400px;
+        object-fit: contain;
+    }    
 `;
 
-const FilterTile = styled.div`
-    display: flex;
+const FilterTile = styled(FlexColumn)`
     cursor: pointer;
     align-items: center;
-    width: 75%;
+
+    @media (max-width: ${props => props.theme["breakpoints"].lg - 1}px) {
+        flex: 0 0 auto;
+        width: 80px;
+    }    
 `;
 
 const FilterImage = styled.img`
-    width: 25%;
     margin-bottom: 3px;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover; 
 `;
 
-const FilterText = styled.div<{selected?: boolean}>`
+const FilterText = styled(Div) <{ selected?: boolean }>`
     text-align: center;
     font-weight: ${props => props.selected ? 700 : 400};
-    margin-left: 10px;
+    text-transform: capitalize;
+    font-size: 12px;
+`;
+
+const Grid = styled(Div)`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+
+  @media (min-width: ${props => props.theme["breakpoints"].lg}px) and 
+    (max-width: ${props => props.theme["breakpoints"].xl - 1}px) {
+    grid-template-columns: repeat(2, 1fr);
+  } 
+
+  @media (max-width: ${props => props.theme["breakpoints"].lg - 1}px) {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    max-width: 100vw;
+    width: 100%;
+    box-sizing: border-box;
+
+    > * {
+      flex: 0 0 auto;
+    }
+
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }     
+`;
+
+const ScrollContainer = styled.div`
+  overflow-x: auto;
+  width: 100%;
+  max-width: 100vw;
+
+  @media (min-width: ${props => props.theme["breakpoints"].lg}px) {
+    overflow-x: unset;
+  }
 `;
 
 export type CreatePostModalEditProps = {
     editData: EditData[];
-    onEditedFile: (editData: EditData, data: string, newFilter: string) => void;   
-    loadImage: (editData:EditData, data: string) => string;
+    onEditedFile: (editData: EditData, data: string, newFilter: string) => void;
+    loadImage: (editData: EditData, data: string) => string;
 }
 
 const CreatePostModalEdit: React.FC<CreatePostModalEditProps> = (props: CreatePostModalEditProps) => {
@@ -112,14 +188,14 @@ const CreatePostModalEdit: React.FC<CreatePostModalEditProps> = (props: CreatePo
         setCurrentFileIndex(currentFileIndex - 1);
     }
 
-    if(props.editData == null || props.editData.length === 0) {
+    if (props.editData == null || props.editData.length === 0) {
         return null;
     }
 
     return (
-        <>            
-            <CreatePostModalEditor 
-                hasNext={currentFileIndex < props.editData.length-1}
+        <>
+            <CreatePostModalEditor
+                hasNext={currentFileIndex < props.editData.length - 1}
                 hasPrev={currentFileIndex > 0}
                 onNextFile={onNextFile}
                 onPrevFile={onPrevFile}
@@ -136,14 +212,14 @@ type CreatePostModalEditorProps = {
     hasNext: boolean;
     hasPrev: boolean;
     onNextFile: () => void;
-    onPrevFile: () => void;    
-    onEditedFile: (editData:EditData, data:string, newFilter: string) => void;
-    loadImage: (editData:EditData, data: string) => string;
+    onPrevFile: () => void;
+    onEditedFile: (editData: EditData, data: string, newFilter: string) => void;
+    loadImage: (editData: EditData, data: string) => string;
 }
 
 const CreatePostModalEditor: React.FC<CreatePostModalEditorProps> = (props: CreatePostModalEditorProps) => {
     const [isFlaggedForReset, setIsFlaggedForReset] = useState(false);
-    const [controlTabIndex, setControlTabIndex] = useState(0);    
+    const [controlTabIndex, setControlTabIndex] = useState(0);
     const [brightness, setBrightness] = useState(0);
     const [contrast, setContrast] = useState(0);
     const [greyscale, setGreyscale] = useState(0);
@@ -158,11 +234,11 @@ const CreatePostModalEditor: React.FC<CreatePostModalEditorProps> = (props: Crea
     useEffect(() => {
         // Some of the image manipulations are expensive, so offload all 
         // image manipulations onto a web worker to keep the main thread responsive
-        if(jimpWorker !== null) {
+        if (jimpWorker !== null) {
             jimpWorker.terminate();
         }
         const worker = new Worker("/public/jimpWorker.js");
-        
+
         worker.onmessage = (e) => {
             const data = e.data;
 
@@ -179,24 +255,24 @@ const CreatePostModalEditor: React.FC<CreatePostModalEditorProps> = (props: Crea
     }, [props.editData])
 
     const onFilterClick = async (filterName: string) => {
-        if(filterName === "original" || filterName === props.editData.filterName) {
+        if (filterName === "original" || filterName === props.editData.filterName) {
             //reset when clicking the original filter or the current filter to toggle
-            props.onEditedFile(props.editData,  await blobToBase64(props.editData.originalUrl) as string, "original");
+            props.onEditedFile(props.editData, await blobToBase64(props.editData.originalUrl) as string, "original");
             return;
-        }        
+        }
 
         // Have to reload the image element or we end up compounding filters. 
         // We instead should simulate resetting back to the original image before applying
         // the filter
-        const image:HTMLImageElement = new Image();
+        const image: HTMLImageElement = new Image();
         image.src = props.editData.originalUrl;
-        image.onload = async () => {            
-            const result = await window.pixelsJS.default.filterImgAsBlob(image, filterName);            
+        image.onload = async () => {
+            const result = await window.pixelsJS.default.filterImgAsBlob(image, filterName);
             props.onEditedFile(props.editData, await blobToBase64(result) as string, filterName);
         }
     }
 
-    const resetState = () => { 
+    const resetState = () => {
         setBrightness(0);
         setContrast(0);
         setGreyscale(0);
@@ -204,7 +280,7 @@ const CreatePostModalEditor: React.FC<CreatePostModalEditorProps> = (props: Crea
         setBlur(0);
         setSepia(0);
         setPixelate(0);
-        setIsFlaggedForReset(false);    
+        setIsFlaggedForReset(false);
     }
 
     const renderFiltersTab = () => {
@@ -214,19 +290,23 @@ const CreatePostModalEditor: React.FC<CreatePostModalEditorProps> = (props: Crea
         return (
             <>
                 <FlexColumn>
-                    <FilterTile key="original" onClick={() => onFilterClick("original")}>
-                        <FilterImage src={`/public/images/filters/original.png`} alt="Original" />
-                        <FilterText selected={selectedFilter==="original"}>original</FilterText>
-                    </FilterTile>                    
-                    {Object.keys(filters).map(key => {
-                            return (
-                                <FilterTile key={key} onClick={() => onFilterClick(key)}>
-                                    <FilterImage src={`/public/images/filters/${key}.jfif`} alt={key} />
-                                    <FilterText selected={selectedFilter === key}>{key}</FilterText>
-                                </FilterTile>
-                            );
-                        })
-                    }
+                    <ScrollContainer>
+                        <Grid>
+                            <FilterTile key="original" onClick={() => onFilterClick("original")}>
+                                <FilterImage src={`/public/images/filters/original.png`} alt="Original" />
+                                <FilterText selected={selectedFilter === "original"}>original</FilterText>
+                            </FilterTile>
+                            {Object.keys(filters).map(key => {
+                                return (
+                                    <FilterTile key={key} onClick={() => onFilterClick(key)}>
+                                        <FilterImage src={`/public/images/filters/${key}.jfif`} alt={key} />
+                                        <FilterText selected={selectedFilter === key}>{key.replaceAll("_", " ")}</FilterText>
+                                    </FilterTile>
+                                );
+                            })
+                            }
+                        </Grid>
+                    </ScrollContainer>
                 </FlexColumn>
             </>
         );
@@ -243,10 +323,10 @@ const CreatePostModalEditor: React.FC<CreatePostModalEditorProps> = (props: Crea
                     label="Brightness"
                     aria-labelledby="Brightness"
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                        const value:number = Number.parseFloat(e.target.value);
+                        const value: number = Number.parseFloat(e.target.value);
                         setBrightness(value);
 
-                        if(jimpWorker) {
+                        if (jimpWorker) {
                             jimpWorker.postMessage({
                                 data: props.editData.data,
                                 type: "brightness",
@@ -263,10 +343,10 @@ const CreatePostModalEditor: React.FC<CreatePostModalEditorProps> = (props: Crea
                     label="Contrast"
                     aria-labelledby="Contrast"
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                        const value:number = Number.parseFloat(e.target.value);
+                        const value: number = Number.parseFloat(e.target.value);
                         setContrast(value);
 
-                        if(jimpWorker) {
+                        if (jimpWorker) {
                             jimpWorker.postMessage({
                                 data: props.editData.data,
                                 type: "contrast",
@@ -283,10 +363,10 @@ const CreatePostModalEditor: React.FC<CreatePostModalEditorProps> = (props: Crea
                     label="Greyscale"
                     aria-labelledby="Greyscale"
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                        const value:number = Number.parseFloat(e.target.value);
+                        const value: number = Number.parseFloat(e.target.value);
                         setGreyscale(value);
 
-                        if(jimpWorker) {
+                        if (jimpWorker) {
                             jimpWorker.postMessage({
                                 data: props.editData.data,
                                 type: "greyscale",
@@ -303,10 +383,10 @@ const CreatePostModalEditor: React.FC<CreatePostModalEditorProps> = (props: Crea
                     label="Invert"
                     aria-labelledby="Invert"
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                        const value:number = Number.parseFloat(e.target.value);
+                        const value: number = Number.parseFloat(e.target.value);
                         setInvert(value);
 
-                        if(jimpWorker) {
+                        if (jimpWorker) {
                             jimpWorker.postMessage({
                                 data: props.editData.data,
                                 type: "invert",
@@ -323,10 +403,10 @@ const CreatePostModalEditor: React.FC<CreatePostModalEditorProps> = (props: Crea
                     label="Blur"
                     aria-labelledby="Blur"
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                        const value:number = Number.parseFloat(e.target.value);
+                        const value: number = Number.parseFloat(e.target.value);
                         setBlur(value);
 
-                        if(jimpWorker) {
+                        if (jimpWorker) {
                             jimpWorker.postMessage({
                                 data: props.editData.data,
                                 type: "blur",
@@ -343,10 +423,10 @@ const CreatePostModalEditor: React.FC<CreatePostModalEditorProps> = (props: Crea
                     label="Sepia"
                     aria-labelledby="Sepia"
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                        const value:number = Number.parseFloat(e.target.value);
+                        const value: number = Number.parseFloat(e.target.value);
                         setSepia(value);
 
-                        if(jimpWorker) {
+                        if (jimpWorker) {
                             jimpWorker.postMessage({
                                 data: props.editData.data,
                                 type: "sepia",
@@ -363,10 +443,10 @@ const CreatePostModalEditor: React.FC<CreatePostModalEditorProps> = (props: Crea
                     label="Pixelate"
                     aria-labelledby="Pixelate"
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                        const value:number = Number.parseFloat(e.target.value);
+                        const value: number = Number.parseFloat(e.target.value);
                         setPixelate(value);
 
-                        if(jimpWorker) {
+                        if (jimpWorker) {
                             jimpWorker.postMessage({
                                 data: props.editData.data,
                                 type: "pixelate",
@@ -374,54 +454,56 @@ const CreatePostModalEditor: React.FC<CreatePostModalEditorProps> = (props: Crea
                             });
                         }
                     }}
-                />                                                                                                    
+                />
             </>
         );
     }
 
-    if(isFlaggedForReset) {
-        resetState();        
-    } 
-    
+    if (isFlaggedForReset) {
+        resetState();
+    }
+
     return (
         <ModalSectionWrapper>
             <EditContainer>
                 <ImageContainer>
-                    {!props.editData.isVideoFile && 
+                    {!props.editData.isVideoFile &&
                         <PreviewImage ref={imageRef} src={props.loadImage(props.editData, props.editData.data)} />}
                     {props.editData.isVideoFile && <PreviewVideo src={props.editData.originalUrl}></PreviewVideo>}
 
-                    {props.hasPrev && 
-                        <MediaSliderButton direction="left" onClick={() => {props.onPrevFile(); setIsFlaggedForReset(true)}} />
+                    {props.hasPrev &&
+                        <MediaSliderButton direction="left" onClick={() => { props.onPrevFile(); setIsFlaggedForReset(true) }} />
                     }
                     {props.hasNext &&
-                        <MediaSliderButton direction="right" onClick={() => {props.onNextFile(); setIsFlaggedForReset(true)}} />
-                    }               
+                        <MediaSliderButton direction="right" onClick={() => { props.onNextFile(); setIsFlaggedForReset(true) }} />
+                    }
                 </ImageContainer>
                 <ControlsContainer>
-                {props.editData.isVideoFile && 
-                    <Div $fontWeight="700" $color="red" $textAlign="center">Note: Editing video files is currently unsupported</Div>
-                }
-                {!props.editData.isVideoFile && 
-                    <>
-                        <ControlTabContainer>
-                            <ControlTab 
-                                selected={controlTabIndex === 0} 
-                                onClick={() => {
-                                    setIsFlaggedForReset(true); 
-                                    setControlTabIndex(0)}}>Filters</ControlTab>
-                            <ControlTab 
-                                selected={controlTabIndex === 1} 
-                                onClick={() => {
-                                    setIsFlaggedForReset(true);
-                                    setControlTabIndex(1);}}>Adjustments</ControlTab>
-                        </ControlTabContainer>
-                        <ControlContentContainer>
-                            {controlTabIndex === 0 && renderFiltersTab()}
-                            {controlTabIndex === 1 && renderAdjustmentsTab()}
-                        </ControlContentContainer>                      
-                    </>                    
-                }
+                    {props.editData.isVideoFile &&
+                        <Div $fontWeight="700" $color="red" $textAlign="center">Note: Editing video files is currently unsupported</Div>
+                    }
+                    {!props.editData.isVideoFile &&
+                        <>
+                            <ControlTabContainer>
+                                <ControlTab
+                                    selected={controlTabIndex === 0}
+                                    onClick={() => {
+                                        setIsFlaggedForReset(true);
+                                        setControlTabIndex(0)
+                                    }}>Filters</ControlTab>
+                                <ControlTab
+                                    selected={controlTabIndex === 1}
+                                    onClick={() => {
+                                        setIsFlaggedForReset(true);
+                                        setControlTabIndex(1);
+                                    }}>Adjustments</ControlTab>
+                            </ControlTabContainer>
+                            <ControlContentContainer>
+                                {controlTabIndex === 0 && renderFiltersTab()}
+                                {controlTabIndex === 1 && renderAdjustmentsTab()}
+                            </ControlContentContainer>
+                        </>
+                    }
                 </ControlsContainer>
             </EditContainer>
         </ModalSectionWrapper>

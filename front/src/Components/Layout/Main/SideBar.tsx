@@ -259,7 +259,7 @@ const SideBar: React.FC = () => {
                 {!matchesSmallestBP &&
                     <Div className={styles.logoWrapper}>
                         <Link to="/" aria-label="Home">
-                            {matchesLargestBP ? <LargeLogo /> : <MainSVG width="22px" height="22px" />}
+                            {matchesLargestBP ? <LargeLogo /> : <MainSVG width="22px" height="22px" color="black" />}
                         </Link>
                     </Div>
                 }

@@ -11,12 +11,13 @@ const MediaSliderWrapper = styled(Div)`
 `;
 
 const MediaSliderLeftNormalWrapper = styled(MediaSliderWrapper)`
-    bottom: 43%;
-    left: -1%;
+    bottom: 45%;
+    left: 0;
 `;
 
 const MediaSliderRightNormalWrapper = styled(MediaSliderWrapper)`
-    bottom: 43%;    
+    bottom: 45%;    
+    right: 0;
 `;
 
 const MediaSliderBottomLeftWrapper = styled(MediaSliderWrapper)`
@@ -37,7 +38,6 @@ const MediaSliderButtonContainer = styled(Flex)`
     cursor: pointer;
     
     &:hover {
-        color: ${props => props.theme['colors'].borderDefaultColor};
         background-color: ${props => props.theme['colors'].cropperAspectBkgndNoTrans};
         border: 1px solid ${props => props.theme['colors'].borderDarkColor};
     };    
