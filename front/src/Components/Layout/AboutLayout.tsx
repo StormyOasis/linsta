@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { keyframes, styled } from "styled-components";
 import StyledButton from "../Common/StyledButton";
-import { Div, Flex, Link } from "../Common/CombinedStyling";
+import { Div, Flex, FlexRowFullWidth, Link } from "../Common/CombinedStyling";
 import {
     FaReact,
     FaDocker,
@@ -29,6 +29,7 @@ import {
     SiGrafana,
     SiKibana,
     SiInsomnia,
+    SiFacebook,
 } from 'react-icons/si';
 import LargeLogo from "../Common/LargeLogo";
 import StyledLink from "../Common/StyledLink";
@@ -42,6 +43,15 @@ const fadeInUp = keyframes`
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+`;
+
+const fadeIn = keyframes`
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
     }
 `;
 
@@ -116,16 +126,57 @@ const JiraList = styled(TechList)`
 
 const ScreenshotGrid = styled(Div)`
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+`;
 
-    img {
-        width: 100%;
-        height: auto;
-        border-radius: 8px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+const ScreenshotCard = styled(Div)`
+    position: relative;
+    overflow: hidden;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    cursor: pointer;
+
+    &:hover div {
+        opacity: 1;
+        transform: translateY(0);
     }
 `;
+
+const ScreenshotImg = styled.img`
+    width: 100%;
+    display: block;
+    height: auto;
+`;
+
+const ScreenshotOverlay = styled(Div)`
+    position: absolute;
+    bottom: 0;
+    background: rgba(0,0,0,0.7);
+    color: #fff;
+    width: 100%;
+    padding: 1rem;
+    opacity: 0;
+    transform: translateY(100%);
+    transition: all 0.3s ease;
+
+    p {
+        margin: 0;
+        font-size: 0.95rem;
+        line-height: 1.4;
+    }
+
+    @media (hover: none) and (pointer: coarse) {
+        opacity: 1;
+        transform: translateY(0);
+        position: static;
+        background: #333;
+        color: #fff;
+        margin-top: 0.5rem;
+    }
+`;
+
 
 const Footer = styled.footer`
     text-align: center;
@@ -156,7 +207,132 @@ const LogoWrapper = styled(Div)`
     justify-self: center;
 `;
 
+const ModalBackdrop = styled.div`
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    justify-content: center;
+    align-items: start;
+    z-index: 1000;
+    animation: ${fadeIn} 0.3s ease forwards;
+`;
+
+const ModalContent = styled.div`
+    margin-top: 24px;
+    background: #fff;
+    padding: 1rem;
+    border-radius: 8px;
+    max-width: 75%;
+    max-height: 75%;
+    overflow: auto;
+    position: relative;
+    box-shadow: 0 0 10px rgba(0,0,0,0.3);
+
+    animation: ${fadeIn} 0.3s ease forwards;
+
+    img {
+        width: 100%;
+        height: auto;
+        display: block;
+        border-radius: 6px;
+        margin-bottom: 1rem;
+    }
+
+    p {
+        font-size: 0.95rem;
+        color: #333;
+    }
+`;
+
+const CloseButton = styled.button`
+    position: absolute;
+    top: 0.5rem;
+    right: 0.75rem;
+    font-size: 1.5rem;
+    background: none;
+    border: none;
+    color: #333;
+    cursor: pointer;
+
+    &:hover {
+        color: #000;
+    }
+`;
+
+const imageUrl = `https://d1xxvwtswm7wsd.cloudfront.net/about`
+const screenshots = [
+    {
+        src: `${imageUrl}/signup.png`,
+        alt: 'Sign up form',
+        description: 'User registration form with validation and backend integration via Koa + JWT',
+    },
+    {
+        src: `${imageUrl}/confirmationEmail.png`,
+        alt: 'Sign up confirmation',
+        description: 'Confirmation email received as part of signup flow',
+    },
+    {
+        src: `${imageUrl}/mainFeed.png`,
+        alt: 'Main feed',
+        description: "The user's primary feed, displaying posts from the specific users they follow"
+    },
+    {
+        src: `${imageUrl}/exploreWithSearch.png`,
+        alt: 'Explore with search',
+        description: 'The Explore page showing posts and includes the search popout with example search results',
+    },
+    {
+        src: `${imageUrl}/createPost.png`,
+        alt: 'Create post',
+        description: 'The final step in the create new post flow, showing adding captions, location, collaborators, and additional settings',
+    },
+    {
+        src: `${imageUrl}/commentModal.png`,
+        alt: 'Comment modal',
+        description: 'Modal where a user can add, like, and reply to comments',
+    },
+    {
+        src: `${imageUrl}/profilePage.png`,
+        alt: 'Profile',
+        description: "The profile page showing a user's bio and additional information, as well as showing each of that user's posts"
+    },
+    {
+        src: `${imageUrl}/editProfile.png`,
+        alt: 'Edit profile',
+        description: "Page allowing the user to update their bio, profile picture, webpage, and additional information"
+    },
+    {
+        src: `${imageUrl}/metrics.png`,
+        alt: 'Metrics',
+        description: "Example Grafana visualizations based on metrics collected via statsd"
+    },
+    {
+        src: `${imageUrl}/createPostMobile.png`,
+        alt: 'Create post on mobile',
+        description: 'The final step in the create post flow as seen on mobile',
+    },
+    {
+        src: `${imageUrl}/mainFeedMobile.png`,
+        alt: 'Main feed on mobile',
+        description: 'The main feed as it appears on mobile devices',
+    },
+];
+
 const AboutLayout: React.FC = () => {
+    const [modalImage, setModalImage] = useState(null);
+
+    const openModal = (image: any) => setModalImage(image);
+    const closeModal = () => setModalImage(null);
+
+    useEffect(() => {
+        const handleEsc = (e: any) => {
+            if (e.key === 'Escape') closeModal();
+        };
+        window.addEventListener('keydown', handleEsc);
+        return () => window.removeEventListener('keydown', handleEsc);
+    }, []);
+
     return (
         <Wrapper>
             <Section>
@@ -166,10 +342,10 @@ const AboutLayout: React.FC = () => {
                     </Link>
                 </LogoWrapper>
                 <Text style={{ textAlign: "center" }}>
-                    A modern, full-scale Instagram-style application built with a cloud-native architecture. Designed for scalability, performance, and interactivity.
+                    A full-featured, enterprise-grade social networking platform inspired by Instagram. Built with a cloud-native architecture for high performance, scalability, and real-time interactivity.
                 </Text>
                 <WarningText>
-                    **Note: This is not meant for public use nor is it in anyway affilated with Meta.**
+                    **Note: This is not meant for public use nor is it in any way affilated with Meta.**
                 </WarningText>
             </Section>
 
@@ -195,7 +371,7 @@ const AboutLayout: React.FC = () => {
                             <li><FaCss3Alt /> CSS</li>
                             <li><SiStyledcomponents /> styled-components</li>
                             <li><SiJest /> Jest</li>
-                            <li><SiGraphql /> Facebook Lexical</li>
+                            <li><SiFacebook /> Facebook Lexical</li>
                         </TechList>
                     </StackColumn>
 
@@ -236,26 +412,41 @@ const AboutLayout: React.FC = () => {
             <Section>
                 <Subtitle>Screenshots</Subtitle>
                 <ScreenshotGrid>
-                    <img src="/images/home.png" alt="Home screen" />
-                    <img src="/images/profile.png" alt="User profile" />
-                    <img src="/images/chat.png" alt="Chat screen" />
+                    {screenshots.map((screenshot, index) => (
+                        <ScreenshotCard key={index} onClick={() => openModal(screenshot)}>
+                            <ScreenshotImg src={screenshot.src} alt={screenshot.alt} />
+                            <ScreenshotOverlay>
+                                <p>{screenshot.description}</p>
+                            </ScreenshotOverlay>
+                        </ScreenshotCard>
+                    ))}
                 </ScreenshotGrid>
+                {modalImage && (
+                    <ModalBackdrop onClick={closeModal}>
+                        <ModalContent onClick={(e) => e.stopPropagation()}>
+                            <CloseButton onClick={closeModal}>&times;</CloseButton>
+                            <img src={modalImage.src} alt={modalImage.alt} />
+                            <p>{modalImage.description}</p>
+                        </ModalContent>
+                    </ModalBackdrop>
+                )}
             </Section>
 
             <Section>
                 <Subtitle>Challenges & Solutions</Subtitle>
-                <Text>The primary challenge was financial. As this is not meant to be a revenue generating application, having the best ROI on AWS fees is essential. </Text>
-                <Text>The most notable tradeoff was with the graph database. The original plan was to develop locally using Gremlin in JanusGraph and then deploy to AWS Neptune. However, even a minimal Neptune databse proved to be too expensive.  The solution was to instead self host a JanusGraph install on an existing EC2 Instance.</Text>
-                <Text>On the other hand, I tested deploying the back-end REST Api to AWS Lambda instead EC2.  While it would certainly save money, the cold start delays that Lambdas have were unacceptable. In this case, the extra cost of the EC2 instance uptime was the better value.</Text>
+                <Text>The biggest challenge was infrastructure cost. Since this project is not intended to generate revenue, I had to design for cost-efficiency without sacrificing architecture quality.</Text>
+                <Text>The most notable tradeoff was with the graph database. The original plan was to develop locally using Gremlin in JanusGraph and then deploy to AWS Neptune. However, even a minimal Neptune database proved to be too expensive.  The solution was to instead self host a JanusGraph install on an existing EC2 Instance.</Text>
+                <Text>On the other hand, I tested deploying the back-end REST Api to AWS Lambda instead of EC2.  While it would certainly save money, AWS Lambda cold starts introduced unacceptable latency for user-facing APIs. In this case, a continuously running EC2 instance offered a better balance between performance and cost.</Text>
             </Section>
 
             <Section>
                 <Subtitle>What's Next</Subtitle>
                 <Text>The following are some of the current pending high priority Jira tickets for expanding functionality:</Text>
                 <JiraList>
-                    <li>LINSTA-130: Epic - Create notification and messaging systems</li>
-                    <li>LINSTA-9: Move SNS and SES out of aws sandboxes</li>
-                    <li>LINSTA-127: Collect front end metrics and send to SQS / Lambdas for processing</li>
+                    <li><b>LINSTA-130</b>: Epic - Create notification and messaging systems</li>
+                    <li><b>LINSTA-127</b>: Collect front end metrics and send to SQS / Lambdas for processing</li>
+                    <li><b>LINSTA-131</b>: Adjust Gremlin to not use read then write transactions in order to prevent lock contention</li>
+                    <li><b>LINSTA-133</b>: Setup Jenkins or AWS CodeBuild / Deploy for CI/CD</li>
                 </JiraList>
             </Section>
 
@@ -263,6 +454,21 @@ const AboutLayout: React.FC = () => {
                 <VisitWrapperLink href="/login" aria-label="Visit Linstagram">
                     <VisitButton text="Visit Linstagram" />
                 </VisitWrapperLink>
+                <Div>
+                    <Text><b>Note</b>: I’m currently operating in the AWS test (sandbox) environment for email and SMS, which restricts messaging to pre-approved addresses only.  As a result, the signup process will be blocked at the confirmation code step for now.</Text>
+                    <Text>I’ve submitted a request to move to production mode. Once approved, I’ll be able to send messages to any address. </Text>
+                    <Text>In the meantime, I have provided two valid logins for use in the app:</Text>
+                    <FlexRowFullWidth>
+                        <TechList>
+                            <li>Username: linstatest01</li>
+                            <li>Password: Linstatest01!</li>
+                        </TechList>
+                        <TechList style={{ marginLeft: "28px" }}>
+                            <li>Username: linstatest02</li>
+                            <li>Password: Linstatest02!</li>
+                        </TechList>
+                    </FlexRowFullWidth>
+                </Div>
             </Section>
 
             <Footer>
