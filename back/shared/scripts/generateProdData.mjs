@@ -299,32 +299,7 @@ const bulkIndexData = async () => {
             const profile = await generateProfile();
             const posts = await generatePosts(profile);
             console.log(`Data generated for user: ${profile.userName}`);
-
-            //
-
-
-            /* profiles.push({
-                index: { _index: 'profiles', _id: userId },
-             });
-             profiles.push(profile);
- */
-            // const posts = generatePosts(uuidv4(), userId, userName);
-            //posts.push({
-            //    index: { _index: 'main', _id: post.postId },
-            //});
-            //posts.push(post);
-
-            //await buildGraphElements(profile, post);
         }
-
-
-
-        // Bulk index profiles and posts
-        //const profileBulkResponse = await esClient.bulk({ body: profiles });
-        //const postBulkResponse = await esClient.bulk({ body: posts });
-
-        //console.log('Profiles indexed:', profileBulkResponse);
-        //console.log('Posts indexed:', postBulkResponse);
 
     } catch (error) {
         console.error('Error bulk indexing:', error);
