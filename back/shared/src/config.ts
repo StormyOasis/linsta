@@ -18,6 +18,9 @@ interface AWSConfig {
     sqs: {
         imageQueue: string;
         imageQueueUrl: string;
+    },
+    cloudfront: {
+        url: string;
     }
 }
 
@@ -163,6 +166,9 @@ const appConfig: AppConfig = {
         sqs: {
             imageQueue: '',
             imageQueueUrl:'' 
+        },
+        cloudfront: {
+            url: ''
         }
     }
 };
@@ -237,6 +243,7 @@ appConfig.aws.ses.imageHostName = process.env.AWS_SES_IMAGE_HOST ?? appConfig.aw
 appConfig.aws.location.apiKey = process.env.AWS_LOC_API_KEY ?? appConfig.aws.location.apiKey;
 appConfig.aws.location.index = process.env.AWS_LOC_INDEX ?? appConfig.aws.location.index;
 appConfig.aws.s3.userMediaBucket = process.env.AWS_S3_MEDIA_BUCKET ?? appConfig.aws.s3.userMediaBucket;
+appConfig.aws.cloudfront.url = process.env.AWS_CLOUDFRONT_URL ?? appConfig.aws.cloudfront.url;
 appConfig.aws.sqs.imageQueue = process.env.AWS_SQS_IMAGE_QUEUE ?? appConfig.aws.sqs.imageQueue;
 appConfig.aws.sqs.imageQueueUrl = process.env.AWS_SQS_IMAGE_QUEUE_URL ?? appConfig.aws.sqs.imageQueueUrl;
 

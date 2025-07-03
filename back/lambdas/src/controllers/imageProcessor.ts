@@ -33,7 +33,7 @@ export const handler: SQSHandler = async (event) => {
             await removeFile(originalUrl);
 
             // Append ?ts=... (Cache busting)
-            const newUrl = `${newUrlBase.url}?ts=${Date.now()}`;
+            const newUrl = convertS3ToCloudFront(`${newUrlBase.url}?ts=${Date.now()}`);
             await updateEntryUrl(postEsId, entryId, "image/webp", newUrl);
 
             logger.info(`Image ${entryId} updated to ${newUrl}`);
@@ -42,3 +42,13 @@ export const handler: SQSHandler = async (event) => {
         }
     }
 };
+
+const convertS3ToCloudFront = (s3Url: string) => {
+  const s3Prefix = `https://${config.aws.s3.userMediaBucket}.s3.${config.aws.region}.amazonaws.com/`;
+  const cloudfrontPrefix = config.aws.cloudfront.url;
+
+  if (s3Url.startsWith(s3Prefix)) {
+    return s3Url.replace(s3Prefix, cloudfrontPrefix);
+  }
+  return s3Url;
+}
