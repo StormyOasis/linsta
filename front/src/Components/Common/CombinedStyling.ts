@@ -18,7 +18,7 @@ export const Div = styled.div.attrs<{
     $paddingTop?: string|null, $paddingBottom?: string|null,
     $marginLeft?: string|null, $marginRight?: string|null, 
     $marginTop?: string|null, $marginBottom?: string|null, $lineHeight?: string|null,
-    $position?: string|null, $cursor?: string|null, $display?: string|null,
+    $position?: string|null, $cursor?: string|null, $display?: string|null, $justifyItems?: string|null,
     $overflow?: string|null, $justifyContent?: string|null, $justifySelf?: string|null, $verticalAlign?: string|null,
     $minWidth?: string|null, $width?: string|null, $maxWidth?:string|null, $textAlign?: string|null,
     $minHeight?: string|null, $height?: string|null, $maxHeight?:string|null, $fontWeight?: string|null,
@@ -52,6 +52,7 @@ export const Div = styled.div.attrs<{
         $alignSelf: props.$alignSelf || null,
         $justifyContent: props.$justifyContent || null,
         $justifySelf: props.$justifySelf || null,
+        $justifyItems: props.$justifyItems || null,
 
         $minWidth: props.$minWidth || null,
         $width: props.$width || null,
@@ -101,6 +102,7 @@ export const Div = styled.div.attrs<{
     align-self: ${(props) => props.$alignSelf};
     justify-content: ${(props) => props.$justifyContent};
     justify-self: ${(props) => props.$justifySelf};
+    justify-items: ${(props) => props.$justifyItems};
     vertical-align: ${(props) => props.$verticalAlign};
 
     min-width: ${(props) => props.$minWidth};
@@ -132,7 +134,7 @@ export const Span = styled.span.attrs<{
     $flexGrow?: string|null, $flexWrap?: string|null,     
     $paddingLeft?: string|null, $paddingRight?: string|null, 
     $paddingTop?: string|null, $paddingBottom?: string|null,
-    $marginLeft?: string|null, $marginRight?: string|null, 
+    $marginLeft?: string|null, $marginRight?: string|null, $justifyItems?: string|null,
     $marginTop?: string|null, $marginBottom?: string|null, $color?: string|null,
     $position?: string|null, $cursor?: string|null, $display?: string|null, $lineHeight?: string|null,
     $overflow?: string|null, $justifyContent?: string|null, $justifySelf?: string|null, $verticalAlign?: string|null,
@@ -168,6 +170,7 @@ export const Span = styled.span.attrs<{
         $alignSelf: props.$alignSelf || null,
         $justifyContent: props.$justifyContent || null,
         $justifySelf: props.$justifySelf || null,
+        $justifyItems: props.$justifyItems || null,
 
         $minWidth: props.$minWidth || null,
         $width: props.$width || null,
@@ -217,6 +220,7 @@ export const Span = styled.span.attrs<{
     align-self: ${(props) => props.$alignSelf};
     justify-content: ${(props) => props.$justifyContent};
     justify-self: ${(props) => props.$justifySelf};
+    justify-items: ${(props) => props.$justifyItems};
     vertical-align: ${(props) => props.$verticalAlign};
 
     min-width: ${(props) => props.$minWidth};

@@ -1,6 +1,7 @@
-import StatsDClient, { ClientOptions, StatsD, Tags } from 'hot-shots';
+import StatsDClient, { ClientOptions } from 'hot-shots';
 import config from './config';
 import logger from './logger';
+import RedisConnector from './connectors/RedisConnector';
 
 export class Metrics extends StatsDClient {
     private static instance: Metrics | null = null;
@@ -11,8 +12,6 @@ export class Metrics extends StatsDClient {
 
     public static getInstance(): Metrics {
         if (!Metrics.instance) {
-            console.log(`metrics://${config.metrics.statsd.host}:${config.metrics.statsd.port}`);
-
             Metrics.instance = new Metrics({
                 host: config.metrics.statsd.host,
                 port: Number(config.metrics.statsd.port),
@@ -39,11 +38,7 @@ export async function withMetrics<T>(key: string, ip: string, fn: () => Promise<
     logger.info(`Invoking ${key}`);
     const start = Date.now();
 
-    // Extract IP from http headers
-    //let ip = event.requestContext.identity.sourceIp;
-    //if(!ip) {
-    //    ip = !ip && event.headers['x-forwarded-for']?.split(',')[0] || 'unknown';  
-    //}
+    Metrics.getInstance().increment(`ips.${ip}`);
 
     //const minuteKey = new Date(start).toISOString().slice(0, 16); // we want to expire after once a minute
     //const redisKey = `ips:${minuteKey}`;

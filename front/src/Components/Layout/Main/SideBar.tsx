@@ -91,12 +91,12 @@ const ResultsContainer = styled(Flex)`
     overflow-x: hidden;
 `;
 
-const BottomLinkWrapper = styled(Flex)`
+const BottomLinkWrapper = styled(FlexColumn)`
     justify-content: center;
     width: 100%;
     position: absolute;
-    bottom: 5px;
-`
+    bottom: 5px;    
+`;
 
 const SideBar: React.FC = () => {
     const [isSearchExpanded, setIsSearchExpanded] = useState<boolean>(false);
@@ -272,11 +272,16 @@ const SideBar: React.FC = () => {
                     {renderMenuItem("Profile", `/${profileUrl}`, <MemoizedProfilePic profile={profile} />, 0, null)}                 
                 </NavWrapper>
                 <BottomLinkWrapper>
-                    {!matchesSmallestBP &&
-                        <StyledLink onClick={handleLogout} styleOverride={{fontSize: ".925em", fontWeight: 600}}>                            
-                            Logout
-                        </StyledLink>
-                    }                    
+                    {!matchesSmallestBP && (
+                        <Div $justifyItems="center">
+                            <StyledLink to="/about" styleOverride={{fontSize: ".925em", fontWeight: 600}}>                            
+                                About
+                            </StyledLink> 
+                            <StyledLink onClick={handleLogout} styleOverride={{fontSize: ".925em", fontWeight: 600}}>                            
+                                Logout
+                            </StyledLink>
+                        </Div>
+                    )}                    
                 </BottomLinkWrapper>                   
             </SideBarWrapper>
 

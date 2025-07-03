@@ -130,6 +130,11 @@ const LoginLayout: React.FC<LoginLayoutProps> = (_props: LoginLayoutProps) => {
                         </Div>
                     </Div>
                 </Div>
+                <Div $margin="auto">
+                    <StyledLink to="/about" styleOverride={{fontSize: ".925em", fontWeight: 600}}>                            
+                        About
+                    </StyledLink>                     
+                </Div>
             </LoginLayoutWrapper>
         </Theme>
     );

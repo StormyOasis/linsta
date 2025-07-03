@@ -36,6 +36,7 @@ const StyledButtonComponent = styled.button<{ $props?: any, $useSecondaryColors?
     margin-top: 0px;
     margin-left: 40px;
     margin-right: 40px;
+    transition: background 0.3s ease;
 
     cursor: ${(props) => (props.disabled ? "default" : "pointer")};
 

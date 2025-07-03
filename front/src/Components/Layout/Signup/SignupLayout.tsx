@@ -8,6 +8,7 @@ import SignupMainForm from "../../../Components/Layout/Signup/Flow/SignupMainFor
 import BirthdayForm from "../../../Components/Layout/Signup/Flow/BirthdayForm";
 import ConfirmationCodeForm from "../../../Components/Layout/Signup/Flow/ConfirmationCodeForm";
 import StyledLink from "../../../Components/Common/StyledLink";
+import { Div } from "../../../Components/Common/CombinedStyling";
 
 type SignupLayoutProps = {
     page?: number | null
@@ -153,6 +154,11 @@ export default class SignupLayout extends React.Component<
                             </div>
                         </div>
                     </div>
+                    <Div $margin="auto">
+                        <StyledLink to="/about" styleOverride={{fontSize: ".925em", fontWeight: 600}}>                            
+                            About
+                        </StyledLink>                     
+                    </Div>                    
                 </SignupLayoutWrapper>
             </Theme>
         );

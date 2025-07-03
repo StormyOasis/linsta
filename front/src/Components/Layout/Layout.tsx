@@ -11,6 +11,7 @@ import { FlexColumn } from "../Common/CombinedStyling";
 import NotFoundLayout from "./NotFoundLayout";
 import ExploreLayout from "./Explore/ExploreLayout";
 import loadable from '@loadable/component';
+import AboutLayout from "./AboutLayout";
 
 const LazyProfileLayout = loadable(() => import('./Profile/ProfileLayout'));
 const LazyModalManager = loadable(() => import('../../Components/Layout/Main/Modals/ModalManager'));
@@ -44,6 +45,7 @@ const Layout: React.FC = () => {
                     <Route path="/404" element={<NotFoundLayout />} />
                     <Route path="/:userName/" element={<RedirectToProfilePage />} />
                     <Route path="/:userName" element={<LazyProfileLayout edit={false} />} />                    
+                    <Route path="/about" element={<AboutLayout />} />
                 </Routes>
             </FlexColumn>
         </>
