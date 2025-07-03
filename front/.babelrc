@@ -1,12 +1,19 @@
 {
-    "presets": [
-        "@babel/preset-env",
-        "@babel/preset-typescript", 
-        ["@babel/preset-react", {"runtime": "automatic", "targets": {"node":"current"}}]
-    ],
-    "plugins": [        
-        "@loadable/babel-plugin",
-        ["babel-plugin-styled-components", { "ssr": true, "displayName": true, "preprocess": false }],
-    ],
-    "ignore": ["node_modules", "build"]
- }
+  "presets": [
+    ["@babel/preset-env", {
+      "useBuiltIns": "entry",
+      "corejs": 3
+    }],
+    "@babel/preset-typescript",
+    ["@babel/preset-react", { "runtime": "automatic" }]
+  ],
+  "plugins": [
+    "@loadable/babel-plugin",
+    ["babel-plugin-styled-components", {
+      "ssr": true,
+      "displayName": true,
+      "preprocess": false
+    }]
+  ],
+  "ignore": ["node_modules", "build"]
+}

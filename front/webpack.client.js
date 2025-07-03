@@ -32,6 +32,7 @@ module.exports = {
     path: path.resolve(__dirname, 'dist'),
     publicPath: '/',
     chunkFilename: '[id].chunk.js',
+    chunkLoading: 'jsonp'
   },
 
   optimization: {
