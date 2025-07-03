@@ -91,22 +91,26 @@ const MediaSlider: React.FC<MediaSliderProps> = ({ media, onSlideChange }) => {
         return () => window.removeEventListener('resize', onResize);
     }, []);
 
-    // Scroll container to selected index (desktop only)
     const scrollToIndex = (index: number) => {
         if (!containerRef.current) return;
         const container = containerRef.current;
         const childWidth = container.offsetWidth;
-        container.scrollTo({
-            left: index * childWidth,
-            behavior: 'smooth',
-        });
+
+        if (isDesktop) {
+            container.scrollTo({
+                left: index * childWidth,
+                behavior: 'smooth',
+            });
+        }
+
         setCurrentIndex(index);
     };
 
-    // Arrow handlers
+
     const advanceIndex = (changeBy: number) => {
-        const newIndex = currentIndex + changeBy;
-        setCurrentIndex(newIndex);
+        const newIndex = Math.min(Math.max(currentIndex + changeBy, 0), mediaCount - 1);
+        scrollToIndex(newIndex);
+
         if (onSlideChange) {
             onSlideChange(newIndex);
         }
@@ -195,7 +199,7 @@ const MediaSlider: React.FC<MediaSliderProps> = ({ media, onSlideChange }) => {
                         <MediaCircle
                             key={i}
                             style={{ opacity: i === currentIndex ? 1 : 0.4, cursor: 'pointer' }}
-                            onClick={() => isDesktop && scrollToIndex(i)}
+                            onClick={() => scrollToIndex(i)}
                             aria-current={i === currentIndex ? 'true' : undefined}
                             aria-label={`Go to media ${i + 1}`}
                         />
