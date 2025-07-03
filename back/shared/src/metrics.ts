@@ -38,13 +38,11 @@ export async function withMetrics<T>(key: string, ip: string, fn: () => Promise<
     logger.info(`Invoking ${key}`);
     const start = Date.now();
 
-    Metrics.getInstance().increment(`${key}.ip.${ip}`);
-
-    const minuteKey = new Date(start).toISOString().slice(0, 16); // we want to expire after once a minute
-    const redisKey = `ips:${minuteKey}`;
+//    const minuteKey = new Date(start).toISOString().slice(0, 16); // we want to expire after once a minute
+//    const redisKey = `ips:${minuteKey}`;
 
     // Add ip key and set expiration so Redis cleans up old keys automatically    
-    await RedisConnector.sAdd(redisKey, ip);
+//    await RedisConnector.sAdd(redisKey, ip);
     //await RedisConnector.expire(redisKey, 3600); // 1 hour TTL
 
     Metrics.getInstance().increment(`${key}.invoked`);
