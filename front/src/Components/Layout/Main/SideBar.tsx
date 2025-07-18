@@ -92,7 +92,7 @@ const ResultsContainer = styled(Flex)`
 `;
 
 const BottomLinkWrapper = styled(FlexColumn)`
-    justify-content: center;
+    text-align: center;
     width: 100%;
     position: absolute;
     bottom: 5px;    
@@ -273,7 +273,7 @@ const SideBar: React.FC = () => {
                 </NavWrapper>
                 <BottomLinkWrapper>
                     {!matchesSmallestBP && (
-                        <Div $justifyItems="center">
+                        <Div>
                             <StyledLink to="/about" styleOverride={{fontSize: ".925em", fontWeight: 600}}>                            
                                 About
                             </StyledLink> 
