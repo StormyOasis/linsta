@@ -293,7 +293,7 @@ export const updateEntryUrl = async (postEsId: string, entryId: string, mimeType
                     if (ctx._source.media[i].id == params.entryId) {
                         ctx._source.media[i].path = params.newUrl != null ? params.newUrl : ctx._source.media[i].path;
                         ctx._source.media[i].mimeType = params.mimeType != null ? params.mimeType : ctx._source.media[i].mimeType;
-                        ctx._source.media[i].alt = params.alt != null ? params.alt : ctx._source.media[i].alt;
+                        ctx._source.media[i].altText = params.alt != null ? params.alt : ctx._source.media[i].altText;
                         break;
                     }
                 }
@@ -315,6 +315,7 @@ export const updateEntryUrl = async (postEsId: string, entryId: string, mimeType
             const post: Post = JSON.parse(cached) as Post;
             for (const entry of post.media) {
                 if (entry.id == params.entryId) {
+                    logger.info(`Updating entry ${entry.id} in cached post data for esId ${postEsId}`);
                     entry.mimeType = mimeType != null ? mimeType : entry.mimeType;
                     entry.url = newUrl != null ? newUrl : entry.url;
                     entry.alt = alt != null ? alt : entry.alt;
