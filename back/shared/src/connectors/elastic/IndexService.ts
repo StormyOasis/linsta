@@ -67,7 +67,7 @@ export class IndexService {
         const { hashtags, mentions } = extractFromMultipleTexts([
             global.captionText,
             global.locationText,
-            ...entries.map((entry) => entry.alt)
+            ...entries.map((entry) => entry.altText)
         ])
 
         const dataSet = {
@@ -89,7 +89,7 @@ export class IndexService {
             },
             media: entries.map((entry) => {
                 return {
-                    altText: entry.alt,
+                    altText: entry.altText,
                     entityTag: entry.entityTag,
                     id: entry.id,
                     mimeType: entry.mimeType,

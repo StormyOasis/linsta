@@ -27,7 +27,7 @@ export type Global = {
 
 export type Entry = {
     id: string;
-    alt: string;
+    altText: string;
     entityTag: string;
     url: string;
     userId: string;

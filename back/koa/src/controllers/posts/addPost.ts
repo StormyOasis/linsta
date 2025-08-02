@@ -98,8 +98,8 @@ export const handlerActions = async (baseMetricsKey: string, ctx: Context) => {
         entries.forEach(async (entry:Entry) => {
             const ext = getFileExtension(entry.url);
             const key = `${user.userId}/${entry.id}.${ext}`;
-            await sendImageProcessingMessage(indexResponse._id, entry.id, key, (entry.mimeType || "").includes("video"), entry.alt);
-            await sendAutoCaptionProcessingMessage(indexResponse._id, entry.id, key, (entry.mimeType || "").includes("video"), entry.alt);
+            await sendImageProcessingMessage(indexResponse._id, entry.id, key, (entry.mimeType || "").includes("video"), entry.altText);
+            await sendAutoCaptionProcessingMessage(indexResponse._id, entry.id, key, (entry.mimeType || "").includes("video"), entry.altText);
         });
 
         return handleSuccess(ctx, { status: "OK", postId });
@@ -119,7 +119,7 @@ const processFileUploads = async (userId: string, entries: Entry[], files: formi
         entry.entityTag = result.tag.replace('"', '').replace('"', '');
         entry.url = result.url;
         entry.mimeType = file.mimetype;
-        entry.alt = sanitize(entry.alt);
+        entry.altText = sanitize(entry.altText);
         entry.userId = userId;        
     }
 }
