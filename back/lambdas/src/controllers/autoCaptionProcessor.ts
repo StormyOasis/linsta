@@ -21,7 +21,7 @@ export const handler: SQSHandler = async (event) => {
             }
 
             const imageUrl = `https://${config.aws.s3.userMediaBucket}.s3.${config.aws.region}.amazonaws.com/${key}`;
-logger.info(`Image URL: ${imageUrl}`);
+
             // Call OpenAI service to generate caption
             const caption = await getImageCaption(imageUrl);
 
