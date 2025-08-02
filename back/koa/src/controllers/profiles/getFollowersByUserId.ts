@@ -26,7 +26,7 @@ export const handler = async (ctx: Context) => {
 }
 
 export const handlerActions = async (baseMetricsKey: string, ctx: Context) => {
-    const { userId } = <GetFollowersByUserIdRequest>ctx.request.body;
+    const { userId } = ctx.request.body as GetFollowersByUserIdRequest;
 
     if (!userId) {
         return handleValidationError(ctx, "Invalid params passed");

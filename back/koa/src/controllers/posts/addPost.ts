@@ -13,6 +13,7 @@ import {
     updatePostIdInES,
     IndexService,
     sendImageProcessingMessage,
+    sendAutoCaptionProcessingMessage,
     getFileExtByMimeType,
 } from '@linsta/shared';
 import type { User, Global, Entry, Post } from '@linsta/shared';
@@ -58,7 +59,7 @@ export const handlerActions = async (baseMetricsKey: string, ctx: Context) => {
         const indexResponse = await IndexService.insertPost(dataSet)
         if (!indexResponse || indexResponse.result !== 'created') {
             return handleValidationError(ctx, "Error adding post");
-        }
+        }       
 
         // Add an associated vertex and edges to the graph for this post
         await DBConnector.beginTransaction();
@@ -78,7 +79,6 @@ export const handlerActions = async (baseMetricsKey: string, ctx: Context) => {
         // Add the edges between the post and user vertices
         await DBConnector.createEdge(true, postId, user.userId, EDGE_POST_TO_USER, EDGE_USER_TO_POST);
 
-
         // Update the media entries with the postId for easier lookup. First update in ES
         await updatePostIdInES(indexResponse._id, postId);
 
@@ -94,11 +94,12 @@ export const handlerActions = async (baseMetricsKey: string, ctx: Context) => {
         // Add the post data to redis
         await RedisConnector.set(indexResponse._id, JSON.stringify(dataSet));
 
-        // We've finished all post stuff so it's now time to queue up an image processing processing event
+        // We've finished all post stuff so it's now time to queue up an image processing and autocaption processing events
         entries.forEach(async (entry:Entry) => {
             const ext = getFileExtension(entry.url);
             const key = `${user.userId}/${entry.id}.${ext}`;
-            await sendImageProcessingMessage(indexResponse._id, entry.id, key, (entry.mimeType || "").includes("video"));
+            await sendImageProcessingMessage(indexResponse._id, entry.id, key, (entry.mimeType || "").includes("video"), entry.alt);
+            await sendAutoCaptionProcessingMessage(indexResponse._id, entry.id, key, (entry.mimeType || "").includes("video"), entry.alt);
         });
 
         return handleSuccess(ctx, { status: "OK", postId });

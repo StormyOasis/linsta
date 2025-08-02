@@ -34,7 +34,7 @@ export const handler: SQSHandler = async (event) => {
 
             // Append ?ts=... (Cache busting)
             const newUrl = convertS3ToCloudFront(`${newUrlBase.url}?ts=${Date.now()}`);
-            await updateEntryUrl(postEsId, entryId, "image/webp", newUrl);
+            await updateEntryUrl(postEsId, entryId, "image/webp", newUrl, null);
 
             logger.info(`Image ${entryId} updated to ${newUrl}`);
         } catch (err) {

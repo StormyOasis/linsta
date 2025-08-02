@@ -2,6 +2,11 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { existsSync } from 'fs';
 
+interface AIConfig {
+    openApiKey: string;    
+    autoCaptionUrl: string;
+}
+
 interface AWSConfig {
     region: string;
     ses: {
@@ -18,6 +23,8 @@ interface AWSConfig {
     sqs: {
         imageQueue: string;
         imageQueueUrl: string;
+        autoCaptionQueue: string;
+        autoCaptionQueueUrl: string;        
     },
     cloudfront: {
         url: string;
@@ -92,6 +99,7 @@ interface AppConfig {
     es: ESConfig;
     redis: RedisConfig;
     aws: AWSConfig;
+    ai: AIConfig;
 }
 
 const appConfig: AppConfig = {
@@ -165,12 +173,18 @@ const appConfig: AppConfig = {
         },
         sqs: {
             imageQueue: '',
-            imageQueueUrl:'' 
+            imageQueueUrl: '',
+            autoCaptionQueue: '',
+            autoCaptionQueueUrl: ''
         },
         cloudfront: {
             url: ''
         }
-    }
+    },
+    ai: {
+        openApiKey: '',
+        autoCaptionUrl: 'https://api.openai.com/v1/chat/completions'
+    }    
 };
 
 
@@ -246,5 +260,12 @@ appConfig.aws.s3.userMediaBucket = process.env.AWS_S3_MEDIA_BUCKET ?? appConfig.
 appConfig.aws.cloudfront.url = process.env.AWS_CLOUDFRONT_URL ?? appConfig.aws.cloudfront.url;
 appConfig.aws.sqs.imageQueue = process.env.AWS_SQS_IMAGE_QUEUE ?? appConfig.aws.sqs.imageQueue;
 appConfig.aws.sqs.imageQueueUrl = process.env.AWS_SQS_IMAGE_QUEUE_URL ?? appConfig.aws.sqs.imageQueueUrl;
+appConfig.aws.sqs.autoCaptionQueue = process.env.AWS_SQS_AUTO_CAPTION_QUEUE ?? appConfig.aws.sqs.autoCaptionQueue;
+appConfig.aws.sqs.autoCaptionQueueUrl = process.env.AWS_SQS_AUTO_CAPTION_QUEUE_URL ?? appConfig.aws.sqs.autoCaptionQueueUrl;
+
+appConfig.ai.openApiKey = process.env.OPENAI_API_KEY ?? appConfig.ai.openApiKey;
+appConfig.ai.autoCaptionUrl = process.env.OPENAI_AUTO_CAPTION_URL ?? appConfig.ai.autoCaptionUrl;
+
+"https://api.openai.com/v1/chat/completions"     
 
 export default appConfig;

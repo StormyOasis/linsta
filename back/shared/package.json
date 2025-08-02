@@ -26,7 +26,8 @@
         "p-retry": "^4.6.2",
         "redis": "^4.7.0",
         "sanitize-html": "^2.13.0",
-        "winston": "^3.13.0"
+        "winston": "^3.13.0",    
+        "axios": "^1.11.0"    
     },
     "devDependencies": {
         "@babel/core": "^7.26.10",
@@ -62,6 +63,6 @@
         "jest-environment-jsdom": "^29.7.0",
         "ts-jest": "^29.3.0",
         "ts-node": "^10.9.2",
-        "typescript": "^5.8.2"
+        "typescript": "5.8.2"
     }
 }

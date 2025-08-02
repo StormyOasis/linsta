@@ -32,6 +32,19 @@ export type ImageProcessingMessage = {
         key: string;
         compress: boolean;
         isVideo: boolean;
+        currentAltText: string|null;
+    };
+};
+
+export type AutoCaptionProcessingMessage = {
+    type: "autoCaption_processing";
+    version: "v1";
+    data: {
+        currentAltText: string|null;
+        postId: string;
+        entryId: string;
+        key: string;
+        isVideo: boolean;
     };
 };
 
@@ -190,7 +203,7 @@ export const uploadProcessedImage = async (key: string, buffer: Buffer)
     };
 };
 
-export const sendImageProcessingMessage = async (postEsId: string, entryId: string, key: string, isVideo: boolean) => {
+export const sendImageProcessingMessage = async (postEsId: string, entryId: string, key: string, isVideo: boolean, currentAltText: string|null) => {
     const message:ImageProcessingMessage = {
         type: "image_processing",
         version: "v1",
@@ -199,13 +212,34 @@ export const sendImageProcessingMessage = async (postEsId: string, entryId: stri
             entryId,
             key,
             isVideo,
-            compress: true
+            compress: true,
+            currentAltText
         },
     };
 
     const sqsClient = getAWSClient(SQSClient, {});
     await sqsClient.send(new SendMessageCommand({
         QueueUrl: config.aws.sqs.imageQueueUrl,
+        MessageBody: JSON.stringify(message),
+    }));
+};
+
+export const sendAutoCaptionProcessingMessage = async (postId: string, entryId: string, key: string, isVideo: boolean, currentAltText: string|null) => {
+    const message:AutoCaptionProcessingMessage = {
+        type: "autoCaption_processing",
+        version: "v1",
+        data: {
+            postId,
+            entryId,
+            key,
+            currentAltText,
+            isVideo
+        },
+    };
+
+    const sqsClient = getAWSClient(SQSClient, {});
+    await sqsClient.send(new SendMessageCommand({
+        QueueUrl: config.aws.sqs.autoCaptionQueueUrl,
         MessageBody: JSON.stringify(message),
     }));
 };
