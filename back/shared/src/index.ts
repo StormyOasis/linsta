@@ -51,11 +51,15 @@ export {
     getLocationData,
     sendEmailByTemplate,
     sendSMS,
+    sendAutoCaptionProcessingMessage,
     sendImageProcessingMessage,
     uploadProcessedImage, 
-    getFileFromS3,
-    ImageProcessingMessage
+    getFileFromS3,    
+    ImageProcessingMessage,
+    AutoCaptionProcessingMessage,
 } from './connectors/AWSConnector';
+
+export { getImageCaption } from './connectors/AIConnector';
 
 // DB Connector
 export {

@@ -271,12 +271,13 @@ export const getProfile = async (userId: string | null, userName: string | null)
     return null;
 }
 
-export const updateEntryUrl = async (postEsId: string, entryId: string, mimeType: string, newUrl: string) => {
+export const updateEntryUrl = async (postEsId: string, entryId: string, mimeType: string|null, newUrl: string|null, alt: string|null) => {
     // We need to change the media url in ES and possibly redis
     const params: Record<string, unknown> = {
         newUrl,
         mimeType,
-        entryId
+        entryId, 
+        alt
     };
 
     // Update ES first, it's the source of truth 
@@ -290,8 +291,9 @@ export const updateEntryUrl = async (postEsId: string, entryId: string, mimeType
                 // Iterate through the media array and update the altText
                 for (int i = 0; i < mediaSize; i++) {
                     if (ctx._source.media[i].id == params.entryId) {
-                        ctx._source.media[i].path = params.newUrl;
-                        ctx._source.media[i].mimeType = params.mimeType;
+                        ctx._source.media[i].path = params.newUrl != null ? params.newUrl : ctx._source.media[i].path;
+                        ctx._source.media[i].mimeType = params.mimeType != null ? params.mimeType : ctx._source.media[i].mimeType;
+                        ctx._source.media[i].alt = params.alt != null ? params.alt : ctx._source.media[i].alt;
                         break;
                     }
                 }
@@ -313,8 +315,9 @@ export const updateEntryUrl = async (postEsId: string, entryId: string, mimeType
             const post: Post = JSON.parse(cached) as Post;
             for (const entry of post.media) {
                 if (entry.id == params.entryId) {
-                    entry.mimeType = mimeType;
-                    entry.url = newUrl;
+                    entry.mimeType = mimeType != null ? mimeType : entry.mimeType;
+                    entry.url = newUrl != null ? newUrl : entry.url;
+                    entry.alt = alt != null ? alt : entry.alt;
                     break;
                 }
             }
