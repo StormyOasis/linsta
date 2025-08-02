@@ -225,7 +225,7 @@ export const sendImageProcessingMessage = async (postEsId: string, entryId: stri
     }));
 };
 
-export const sendAutoCaptionProcessingMessage = async (postId: string, entryId: string, key: string, isVideo: boolean, currentAltText: string|null) => {
+export const sendAutoCaptionProcessingMessage = async (postId: string, entryId: string, key: string, isVideo: boolean, url: string, currentAltText: string|null) => {
     const message:AutoCaptionProcessingMessage = {
         type: "autoCaption_processing",
         version: "v1",
@@ -234,7 +234,8 @@ export const sendAutoCaptionProcessingMessage = async (postId: string, entryId: 
             entryId,
             key,
             currentAltText,
-            isVideo
+            isVideo,
+            url
         },
     };
 

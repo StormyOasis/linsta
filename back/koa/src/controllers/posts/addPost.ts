@@ -99,7 +99,7 @@ export const handlerActions = async (baseMetricsKey: string, ctx: Context) => {
             const ext = getFileExtension(entry.url);
             const key = `${user.userId}/${entry.id}.${ext}`;
             await sendImageProcessingMessage(indexResponse._id, entry.id, key, (entry.mimeType || "").includes("video"), entry.altText);
-            await sendAutoCaptionProcessingMessage(indexResponse._id, entry.id, key, (entry.mimeType || "").includes("video"), entry.altText);
+            await sendAutoCaptionProcessingMessage(indexResponse._id, entry.id, key, (entry.mimeType || "").includes("video"), entry.url, entry.altText);
         });
 
         return handleSuccess(ctx, { status: "OK", postId });
