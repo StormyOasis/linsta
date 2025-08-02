@@ -16,13 +16,13 @@
         "build:shared": "cd shared && npm install && npm run build",
         "build:koa": "npm run build:shared && cd koa && npm install && npm run build",
         "build:lambdas": "npm run build:shared && cd lambdas && npm install && npm run build",
-        "build": "tsc --build",
+        "build": "npm --prefix shared run build && npm --prefix koa run build && npm --prefix lambdas run build",
         "lint": "cd shared && npm run lint && cd ../koa && npm run lint && cd ../lambdas && npm run lint",
         "test": "cd shared && npm run test && cd ../koa && npm run test && cd ../lambdas && npm run test",
         "deploy": "npm run build:lambdas && cd lambdas && npm run deploy",
         "start": "npm run build && npm run start:koa",
         "start:dev": "npm run build && concurrently \"npm run start:koa\" \"npm run start:lambdas\"",
         "start:koa": "cd koa && npm run start",
-        "start:lambdas": "cd lambdas && npm run start"
+        "start:lambdas": "cd lambdas && npm run start"        
     }
 }

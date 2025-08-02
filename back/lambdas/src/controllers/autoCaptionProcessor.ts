@@ -27,6 +27,8 @@ export const handler: SQSHandler = async (event) => {
 
             // we should have a caption now so we need to update ES and redis
             await updateEntryUrl(postId, entryId, null, null, caption);
+
+            logger.info(`Caption for entry ${entryId} updated to: ${caption}`);
         } catch (err) {
             logger.error(`Failed to process:`, err);
         }

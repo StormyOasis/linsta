@@ -16,6 +16,6 @@
       "@linsta/shared": ["../shared/build"] // Use build artifacts, or "../shared/src" if importing source directly
     }
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "src/types/koa.d.ts"],
   "exclude": ["node_modules", "build"]
 }
