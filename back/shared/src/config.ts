@@ -266,6 +266,4 @@ appConfig.aws.sqs.autoCaptionQueueUrl = process.env.AWS_SQS_AUTO_CAPTION_QUEUE_U
 appConfig.ai.openApiKey = process.env.OPENAI_API_KEY ?? appConfig.ai.openApiKey;
 appConfig.ai.autoCaptionUrl = process.env.OPENAI_AUTO_CAPTION_URL ?? appConfig.ai.autoCaptionUrl;
 
-"https://api.openai.com/v1/chat/completions"     
-
 export default appConfig;

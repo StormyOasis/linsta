@@ -9,7 +9,7 @@ export const getImageCaption = async (url: string): Promise<string> => {
         const response = await axios.post(            
             config.ai.autoCaptionUrl, 
             {
-                model: "gpt-4-vision-preview",
+                model: "gpt-4o",
                 messages: [
                     {
                         role: "user",
