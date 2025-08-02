@@ -25,7 +25,7 @@ export const getImageCaption = async (url: string): Promise<string> => {
                                 },
                                 {
                                     type: "image_url",
-                                    image_url: url,
+                                    url,
                                 },
                             ],
                         },
