@@ -230,7 +230,7 @@ const generatePosts = async (profile) => {
                 id: crypto.randomUUID().replaceAll("-", ""),
                 index: j,
                 isVideofile: false,
-                alt: faker.lorem.sentence(),
+                altText: faker.lorem.sentence(),
             } ;
 
             fileData.push({ id: entry.id, data: blob })
