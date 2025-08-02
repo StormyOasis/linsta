@@ -45,6 +45,7 @@ export type AutoCaptionProcessingMessage = {
         entryId: string;
         key: string;
         isVideo: boolean;
+        url: string;
     };
 };
 

@@ -11,7 +11,7 @@ export const handler: SQSHandler = async (event) => {
     for (const record of event.Records) {
         try {
             const message = JSON.parse(record.body) as AutoCaptionProcessingMessage;
-            const { postId, entryId, currentAltText, key } = message.data;
+            const { postId, entryId, currentAltText, key, url } = message.data;
 
             logger.info(`Processing ${key}...`);
 
@@ -20,11 +20,9 @@ export const handler: SQSHandler = async (event) => {
                 logger.info(`Skipping ${key}... with altText: ${currentAltText}`);
                 continue;
             }
-
-            const imageUrl = `https://${config.aws.s3.userMediaBucket}.s3.${config.aws.region}.amazonaws.com/${key}`;
-
+            
             // Call OpenAI service to generate caption
-            const caption = await getImageCaption(imageUrl);
+            const caption = await getImageCaption(url);
 
             // we should have a caption now so we need to update ES and redis
             await updateEntryUrl(postId, entryId, null, null, caption);
