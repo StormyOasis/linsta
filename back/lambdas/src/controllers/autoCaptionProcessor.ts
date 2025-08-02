@@ -15,7 +15,7 @@ export const handler: SQSHandler = async (event) => {
 
             logger.info(`Processing ${key}...`);
 
-            if (currentAltText && currentAltText.length > 0) {
+            if (!currentAltText || (currentAltText && currentAltText.length > 0)) {
                 // This entry has a caption so skip processing
                 continue;
             }
