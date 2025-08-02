@@ -11,7 +11,7 @@ import {
     FaCss3Alt,
     FaNodeJs,
     FaJs,
-    FaJira,
+    FaJira,    
 } from 'react-icons/fa';
 
 import {
@@ -25,11 +25,15 @@ import {
     SiRedis,
     SiJsonwebtokens,
     SiNginx,
-    SiGraphql,
     SiGrafana,
     SiKibana,
     SiInsomnia,
     SiFacebook,
+    SiGraphql,
+    SiAxios,    
+} from 'react-icons/si';
+import { SiLocation } from 'react-icons/si';
+import { SiAmazonaws
 } from 'react-icons/si';
 import LargeLogo from "../Common/LargeLogo";
 import StyledLink from "../Common/StyledLink";
@@ -388,6 +392,7 @@ const AboutLayout: React.FC = () => {
                             <li><FaAws /> AWS S3, SES, SNS</li>
                             <li><FaAws /> AWS Location Services</li>
                             <li><FaAws /> AWS SQS</li>
+                            <li><SiAxios /> Axios for connecting to OpenAI</li>
                         </TechList>
                     </StackColumn>
 
