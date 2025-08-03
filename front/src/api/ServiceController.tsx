@@ -102,7 +102,7 @@ export const putSubmitPost = async (data: any, authUser: AuthUser): Promise<Serv
             id: entry.id,
             index: entry.index,
             isVideofile: entry.isVideoFile,
-            alt: entry.altText,
+            altText: entry.altText,
         }
     });
 

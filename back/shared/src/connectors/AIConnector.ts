@@ -41,7 +41,8 @@ export const getImageCaption = async (url: string): Promise<string> => {
             );
 
             caption = response.data.choices[0].message.content;
-            return caption; // success, return early
+            
+            return caption;            
         } catch (error: any) {
             logger.error(
                 `Attempt ${attempt} failed:`,

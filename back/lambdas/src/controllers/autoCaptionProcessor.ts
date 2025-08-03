@@ -11,16 +11,19 @@ export const handler: SQSHandler = async (event) => {
     for (const record of event.Records) {
         try {
             const message = JSON.parse(record.body) as AutoCaptionProcessingMessage;
-            const { postId, entryId, currentAltText, key, url } = message.data;
+            const { postId, entryId, currentAltText, key, isVideo } = message.data;
 
-            logger.info(`Processing ${key}...`);
+            let url = `${config.aws.cloudfront.url}${key}`;
+            url = url.replace(/\.[^/.]+$/, '.webp');
 
-            if (currentAltText && currentAltText?.length > 0) {
+            logger.info(`Processing ${key} at url: ${url} with altText: ${currentAltText}...`);
+
+            if (isVideo || (currentAltText && currentAltText?.length > 0)) {
                 // This entry has a caption so skip processing
                 logger.info(`Skipping ${key}... with altText: ${currentAltText}`);
                 continue;
             }
-            
+
             // Call OpenAI service to generate caption
             const caption = await getImageCaption(url);
 
