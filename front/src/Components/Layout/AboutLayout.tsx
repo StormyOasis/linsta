@@ -392,7 +392,7 @@ const AboutLayout: React.FC = () => {
                             <li><FaAws /> AWS S3, SES, SNS</li>
                             <li><FaAws /> AWS Location Services</li>
                             <li><FaAws /> AWS SQS</li>
-                            <li><SiAxios /> Axios for connecting to OpenAI</li>
+                            <li><SiAxios /> Axios connection to OpenAI</li>
                         </TechList>
                     </StackColumn>
 
