@@ -29,9 +29,9 @@ const EmojiPickerButton = styled.button<{ $noPadding: boolean | undefined }>`
 
 const EmojiPickerPopupContainer = styled.div<{ $isOpen: boolean }>`
     display: ${props => props.$isOpen ? "flex" : "none"};
-    position: absolute;
-    bottom: 12px;
-    right: 20px;
+    position: fixed;
+    bottom: 40px;
+    right: 20%;
     height: auto;
     z-index: 9999;  
 `;
