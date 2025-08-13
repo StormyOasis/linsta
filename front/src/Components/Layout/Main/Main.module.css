@@ -4,12 +4,6 @@
     height: 100vh;
 }
 
-.logoWrapper {
-    margin-bottom: 20px;
-    padding: 12px;
-    text-align:center;
-}
-
 .iconWrapper {
     overflow: visible;
     display: flex;

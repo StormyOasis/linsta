@@ -57,7 +57,20 @@ const NavWrapper = styled(FlexColumn)`
         display: inline-flex;
         flex-direction: row;
         justify-content: center;
-    }     
+    }
+`;
+
+const LogoWrapper = styled(Div)`
+    margin-bottom: 20px;
+    padding: 12px;
+    text-align:center;
+    
+    @media (min-width: ${props => props.theme["breakpoints"].md}px) and 
+        (max-width: ${props => props.theme["breakpoints"].lg - 1}px) {
+
+        margin-bottom: 0;
+        padding-bottom: 10px;
+    }
 `;
 
 const SearchPanel = styled(Div) <{ $isExpanded: boolean }>`
@@ -95,7 +108,13 @@ const BottomLinkWrapper = styled(FlexColumn)`
     text-align: center;
     width: 100%;
     position: absolute;
-    bottom: 5px;    
+    bottom: 5px;      
+`;
+
+const MainSVGImg = styled(MainSVG)`
+    width: 22px;
+    height: 22px;
+    color: black;
 `;
 
 const SideBar: React.FC = () => {
@@ -108,8 +127,8 @@ const SideBar: React.FC = () => {
 
     const panelRef = useRef<HTMLDivElement | null>(null);
 
-    const matchesLargestBP = useMediaQuery({ minWidth: 1280 });
-    const matchesSmallestBP = useMediaQuery({ maxWidth: 767 });
+    const matchesLargeBP = useMediaQuery({ minWidth: 1280 });
+    const matchesMediumBP = useMediaQuery({ maxWidth: 767 });
 
     const authUser: AuthUser = useAppSelector((state: RootState) => state.auth.user);
     const profile: Profile = useAppSelector((state: RootState) => state.profile.profile);
@@ -188,7 +207,7 @@ const SideBar: React.FC = () => {
                 text={text}
                 iconElement={iconElement}
                 paddingLeft={paddingLeft}                
-                matchesLargestBP={matchesLargestBP}
+                matchesLargestBP={matchesLargeBP}
                 onClick={onClickHandler}
             />
         );
@@ -256,23 +275,23 @@ const SideBar: React.FC = () => {
     return (
         <>
             <SideBarWrapper role="navigation">
-                {!matchesSmallestBP &&
-                    <Div className={styles.logoWrapper}>
+                {!matchesMediumBP &&
+                    <LogoWrapper>
                         <Link to="/" aria-label="Home">
-                            {matchesLargestBP ? <LargeLogo /> : <MainSVG width="22px" height="22px" color="black" />}
+                            {matchesLargeBP ? <LargeLogo /> : <MainSVGImg />}
                         </Link>
-                    </Div>
+                    </LogoWrapper>
                 }
 
                 <NavWrapper>
                     {renderMenuItem("Home", "/", <HomeSVG width="22px" height="22px" fill="black" />, undefined, null)}
-                    {!matchesSmallestBP && renderMenuItem("Search", null, <SearchSVG width="22px" height="22px" />, undefined, toggleSearchPanel)}
+                    {!matchesMediumBP && renderMenuItem("Search", null, <SearchSVG width="22px" height="22px" />, undefined, toggleSearchPanel)}
                     {renderMenuItem("Explore", "/explore", <ExploreSVG width="23px" height="23px" />, undefined, null)}
                     {renderMenuItem("Create", null, <CreateSVG width="22px" height="22px" />, undefined, createPostHandler)}
                     {renderMenuItem("Profile", `/${profileUrl}`, <MemoizedProfilePic profile={profile} />, 0, null)}                 
                 </NavWrapper>
                 <BottomLinkWrapper>
-                    {!matchesSmallestBP && (
+                    {!matchesMediumBP && (
                         <Div>
                             <StyledLink to="/about" styleOverride={{fontSize: ".925em", fontWeight: 600}}>                            
                                 About
