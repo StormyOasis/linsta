@@ -42,7 +42,7 @@ const EditContainer = styled(FlexRow)`
 
 const ImageContainer = styled(Flex)`
     position: relative;
-    width: 386px; 
+    width: 100%;
     justify-content: center;
     align-items: center;
 
@@ -50,21 +50,24 @@ const ImageContainer = styled(Flex)`
         max-width: 100%;
         height: auto;
         flex: 0 0 auto;
-        overflow: visible;
-        width: 100%;
+        overflow: visible;        
     }
 `;
 
 const ControlsContainer = styled(FlexColumn)` 
-    width: 386px;  
+    width: 100%;  
     padding-left: 5px;
+    padding-top: 10px;
+    padding-right: 16px;
     pointer-events: all;
 
     @media (max-width: ${props => props.theme["breakpoints"].md - 1}px) {
         width: 100%;
         max-width: 100%;
-        padding-left: 0;
         margin-top: 10px;
+        padding-left: 0;
+        padding-right: 0px;        
+        padding-top: 0px;
     }    
 `;
 
@@ -76,7 +79,7 @@ const ControlContentContainer = styled(FlexColumn)`
 
 const PreviewImage = styled.img`
     display:flex;
-    width: 386px;
+    width: 100%;
     height:412px;
     object-fit: cover;
     overflow: hidden;
@@ -90,7 +93,7 @@ const PreviewImage = styled.img`
 
 const PreviewVideo = styled.video`
     display:flex;
-    width: 386px;
+    width: 100%;
     height:412px;
     object-fit: cover;
     overflow: hidden;

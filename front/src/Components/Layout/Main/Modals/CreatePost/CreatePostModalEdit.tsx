@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { ModalSectionWrapper } from "../../../../Common/MultiStepModal";
 import Slider from "../../../../Common/Slider";
 import { EditData } from "./CreatePostModal";
-import { Div, Flex, FlexColumn, FlexRow, FlexRowFullWidth } from "../../../../Common/CombinedStyling";
+import { Div, Flex, FlexColumn, FlexRowFullWidth } from "../../../../Common/CombinedStyling";
 import { blobToBase64 } from "../../../../../utils/utils";
 import MediaSliderButton from "../../../../Common/MediaSliderButton";
 
@@ -18,7 +18,7 @@ const EditContainer = styled(Flex)`
   @media (min-width: ${props => props.theme["breakpoints"].md}px) {
     min-width: calc(${props => props.theme['sizes'].defaultModalWidth} - 40px);
     max-width: calc(${props => props.theme['sizes'].maxModalWidth} - 40px);
-    max-height: 568px;
+    max-height: 400px;
     min-height: calc(${props => props.theme['sizes'].minModalHeight} - 40px);
   }
 `;
@@ -40,6 +40,7 @@ const ImageContainer = styled(Flex)`
 
 const ControlsContainer = styled(FlexColumn)`
     padding-left: 5px;
+    padding-right: 20px;
     pointer-events: all;
 
     @media (max-width: ${props => props.theme["breakpoints"].lg - 1}px) {
@@ -83,7 +84,6 @@ const PreviewImage = styled.img`
     display: block;
 
     @media (min-width: ${props => props.theme["breakpoints"].md}px) {
-        width: 386px;
         height: 412px;
         object-fit: cover;
     }
@@ -91,15 +91,14 @@ const PreviewImage = styled.img`
 
 const PreviewVideo = styled.video`
     display:flex;
-    width: 386px;
+    width: 100%;
     height:412px;
     object-fit: cover;
     overflow: hidden;
 
     @media (max-width: ${props => props.theme["breakpoints"].md - 1}px) {    
-        width: 100%;
         height: auto;
-        max-height: 400px;
+        max-height: 412px;
         object-fit: contain;
     }    
 `;

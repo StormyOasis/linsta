@@ -240,8 +240,9 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
         {
             title: "Edit",
             element: <CreatePostModalEdit editData={editData} onEditedFile={onEditedFile} loadImage={loadImage}/>,
-            options: {
+            options: {                
                 showFooter: true,
+                hideMargins: true,
                 footerNextPageText: "Next"
             },
             onNext: async () => {setStepNumber(stepNumber + 1)},
@@ -261,6 +262,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = (props: CreatePostModalP
                         onCollabChanged={handleCollabChanged} />,
             options: {
                 showFooter: true,
+                hideMargins: true,
                 footerNextPageText: "Share"
             },
             onNext: async () => await submitPost(),
