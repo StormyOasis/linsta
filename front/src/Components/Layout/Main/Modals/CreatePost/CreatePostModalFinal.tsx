@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import styled from "styled-components";
 import * as styles from '../../Main.module.css';
 import { ModalSectionWrapper } from "../../../../Common/MultiStepModal";
@@ -215,7 +215,9 @@ const CreatePostModalFinal: React.FC<CreatePostModalFinalProps> = (props: Create
     const [currentFileIndex, setCurrentFileIndex] = useState(0);
     const [isFlaggedForReset, setIsFlaggedForReset] = useState(false);
     const [emoji, setEmoji] = useState(null);
-    const [charCount, setCharCount] = useState(0);
+    const [, forceRender] = useState(0); // Dummy state to trigger re-render for UI
+
+    const charCountRef = useRef(0);
 
     const authUser:AuthUser = useSelector((state:any) => state.auth.user);
 
@@ -229,9 +231,9 @@ const CreatePostModalFinal: React.FC<CreatePostModalFinalProps> = (props: Create
 
     const resetState = () => { 
         setIsFlaggedForReset(false);
-        setCharCount(0);
+        charCountRef.current = 0;
         setEmoji(null);         
-    }
+    };
 
     const handleEmojiSelect = (emoji: any) => {
         // If the user selects the same emoji twice(or more) in a row
@@ -243,11 +245,12 @@ const CreatePostModalFinal: React.FC<CreatePostModalFinalProps> = (props: Create
     }
 
     const getCurrentLength = (count:number, _delCount:number):void => {
-        setCharCount(count);
+        charCountRef.current = count;
+        forceRender(prev => prev + 1); // trigger UI update
     }
 
     const handleLexicalChange = (data: string) => {
-        props.onLexicalChange(data, charCount);
+        props.onLexicalChange(data, charCountRef.current);
     }
 
     const renderAltImages = () => {
@@ -329,9 +332,9 @@ const CreatePostModalFinal: React.FC<CreatePostModalFinalProps> = (props: Create
                                         <EmojiPickerPopup onEmojiClick={handleEmojiSelect} />
                                     </Span>
                                     <CharacterCountContainer>
-                                        {charCount > (MAX_TEXT_LENGTH+1) ? 
+                                        {charCountRef.current > (MAX_TEXT_LENGTH+1) ? 
                                             `${(MAX_TEXT_LENGTH+1)} / ${MAX_TEXT_LENGTH + 1}` : 
-                                            `${charCount} / ${MAX_TEXT_LENGTH + 1}`}
+                                            `${charCountRef.current} / ${MAX_TEXT_LENGTH + 1}`}
                                     </CharacterCountContainer>
                                 </TextEditorBottomWrapper>
                             </TextEditorContainerWrapper>

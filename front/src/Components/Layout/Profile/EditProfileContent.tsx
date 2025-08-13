@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import { useEffect, useState } from "react";
 import { Profile } from "../../../api/types";
 import { actions, useAppDispatch, useAppSelector } from "../../../Components/Redux/redux";
@@ -97,7 +97,6 @@ const EditProfileContent: React.FC = () => {
     const [website, setWebsite] = useState<string>("");
     const [fullName, setFullName] = useState<string>("");
     const [emoji, setEmoji] = useState(null);
-    const [charCount, setCharCount] = useState(0);
     const [bioText, setBioText] = useState<string>("");
 
     const [selectedGenderItem, setSelectedGenderItem] = useState<string>("Prefer not to say");
@@ -107,6 +106,9 @@ const EditProfileContent: React.FC = () => {
     const [selectedPronounItem, setSelectedPronounItem] = useState<string>("Prefer not to say");
     const [selectedPronounIndex, setSelectedPronounIndex] = useState<number>(0);
     const [customPronounText, setCustomPronounText] = useState<string>("");
+    const [, forceRender] = useState(0); // Dummy state to trigger re-render for UI
+
+    const charCountRef = useRef(0);
 
     const dispatch = useAppDispatch();
 
@@ -208,11 +210,12 @@ const EditProfileContent: React.FC = () => {
     }
 
     const getCurrentLength = (count: number, _delCount: number): void => {
-        setCharCount(count);
+        charCountRef.current = count;
+        forceRender(prev => prev + 1); // trigger UI update
     }
 
     const handleLexicalChange = (data: string) => {
-        if (charCount === 0) {
+        if (charCountRef.current === 0) {
             setBioText("");
         } else {
             setBioText(data);
@@ -429,9 +432,9 @@ const EditProfileContent: React.FC = () => {
                                             <EmojiPickerPopup onEmojiClick={handleEmojiSelect} />
                                         </Span>
                                         <CharacterCountContainer>
-                                            {charCount > (MAX_BIO_LENGTH + 1) ?
+                                            {charCountRef.current > (MAX_BIO_LENGTH + 1) ?
                                                 `${(MAX_BIO_LENGTH + 1)} / ${MAX_BIO_LENGTH + 1}` :
-                                                `${charCount} / ${MAX_BIO_LENGTH + 1}`}
+                                                `${charCountRef.current} / ${MAX_BIO_LENGTH + 1}`}
                                         </CharacterCountContainer>
                                     </TextEditorBottomWrapper>
                                 </TextEditorContainerWrapper>

@@ -12,7 +12,7 @@ const InsertEmojiPlugin = (props: any) => {
             return;
         }
 
-        const emojiMatch = findEmojiByUnfiedId((props.emoji.unified as string).toUpperCase());
+        const emojiMatch = findEmojiByUnfiedId((props.emoji.unified as string).toUpperCase());        
         if (emojiMatch === null) {
             return;
         }

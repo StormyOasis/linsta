@@ -71,7 +71,6 @@ const EditPostModal: React.FC<EditPostModalProps> = (props: EditPostModalProps) 
     
     const submitEditPost = async () => {
         setIsSubmitting(true);
-
         const fieldsToUpdate = [
             {key: "captionText", value: (lexicalText || "")},
             {key: "locationText", value: locationText},

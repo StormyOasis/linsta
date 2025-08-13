@@ -22,7 +22,6 @@ import { $generateHtmlFromNodes } from '@lexical/html';
 import { EditorState, LexicalEditor } from "lexical";
 import Placeholder from "./Plugins/Placeholder";
 import InitialHtmlPlugin from "./Plugins/InitialHtmlPlugin";
-import { preloadEmojiData } from './Plugins/findEmoji';
 import { ClickToFocusPlugin } from './Plugins/ClickToFocusPlugin';
 
 type TextEditorProps = {
@@ -69,11 +68,11 @@ const TextEditor = (props: TextEditorProps) => {
                     <HashtagPlugin />
                     <CharacterLimitPlugin charset="UTF-8" maxLength={props.maxTextLength} renderer={(_remainingCharacters) => {
                         return <></>;
-                    }} />
-                    <MaxLengthPlugin maxLength={props.maxTextLength} getCurrentLength={props.getCurrentLength} />
+                    }} />                    
                     <OnChangePlugin onChange={handleChange} />
                     <InitialHtmlPlugin initialValue={props.defaultValue} />
                     <AutoFocusPlugin />
+                    <MaxLengthPlugin maxLength={props.maxTextLength} getCurrentLength={props.getCurrentLength} />
                 </ClickToFocusPlugin>
             </LexicalComposer>
         </div>
