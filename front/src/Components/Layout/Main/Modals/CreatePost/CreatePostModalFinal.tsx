@@ -86,8 +86,8 @@ const PreviewImage = styled.img`
 
     @media (max-width: ${props => props.theme["breakpoints"].md - 1}px) {
         width: 100%;
-        height: auto;
-        max-height: 412px;
+        height: 528px;
+        max-height: 528px;
     }    
 `;
 
@@ -100,8 +100,8 @@ const PreviewVideo = styled.video`
 
     @media (max-width: ${props => props.theme["breakpoints"].md - 1}px) {
         width: 100%;
-        height: auto;
-        max-height: 412px;
+        height: 528px;
+        max-height: 528px;
     }    
 `;
 

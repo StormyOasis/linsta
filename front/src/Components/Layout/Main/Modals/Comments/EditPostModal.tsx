@@ -95,7 +95,7 @@ const EditPostModal: React.FC<EditPostModalProps> = (props: EditPostModalProps) 
         {
             title: "Edit Post",            
             options: {
-                showFooter: false,
+                showFooter: true,
                 hideHeader: false,
                 hideMargins: true,
                 footerNextPageText: "Update"                         
