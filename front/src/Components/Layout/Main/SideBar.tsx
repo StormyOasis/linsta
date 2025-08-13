@@ -129,6 +129,7 @@ const SideBar: React.FC = () => {
 
     const matchesLargeBP = useMediaQuery({ minWidth: 1280 });
     const matchesMediumBP = useMediaQuery({ maxWidth: 767 });
+    const matchesMediumToLargeBP = useMediaQuery({ minWidth: 768, maxWidth: 1279 });
 
     const authUser: AuthUser = useAppSelector((state: RootState) => state.auth.user);
     const profile: Profile = useAppSelector((state: RootState) => state.profile.profile);
@@ -272,6 +273,8 @@ const SideBar: React.FC = () => {
         return null;
     }
 
+    const pfpPaddingRight = matchesMediumToLargeBP ? "0px" : "7px";
+
     return (
         <>
             <SideBarWrapper role="navigation">
@@ -288,15 +291,15 @@ const SideBar: React.FC = () => {
                     {!matchesMediumBP && renderMenuItem("Search", null, <SearchSVG width="22px" height="22px" />, undefined, toggleSearchPanel)}
                     {renderMenuItem("Explore", "/explore", <ExploreSVG width="23px" height="23px" />, undefined, null)}
                     {renderMenuItem("Create", null, <CreateSVG width="22px" height="22px" />, undefined, createPostHandler)}
-                    {renderMenuItem("Profile", `/${profileUrl}`, <MemoizedProfilePic profile={profile} />, 0, null)}                 
+                    {renderMenuItem("Profile", `/${profileUrl}`, <MemoizedProfilePic profile={profile} paddingRight={pfpPaddingRight} />, 0, null)}                 
                 </NavWrapper>
                 <BottomLinkWrapper>
                     {!matchesMediumBP && (
                         <Div>
-                            <StyledLink to="/about" styleOverride={{fontSize: ".925em", fontWeight: 600}}>                            
+                            <StyledLink to="/about" styleOverride={{fontWeight: 600}}>                            
                                 About
                             </StyledLink> 
-                            <StyledLink onClick={handleLogout} styleOverride={{fontSize: ".925em", fontWeight: 600}}>                            
+                            <StyledLink onClick={handleLogout} styleOverride={{fontWeight: 600}}>                            
                                 Logout
                             </StyledLink>
                         </Div>

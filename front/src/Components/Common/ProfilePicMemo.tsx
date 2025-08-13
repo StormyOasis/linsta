@@ -11,7 +11,6 @@ const ProfilePicWrapper = styled(Span)`
     height: 30px;
     object-fit: contain;
     border-radius: 50%;
-    padding-right: 7px;
 `;
 
 const PfpImg = styled.img<{$isValidPfp:boolean}>`
@@ -22,12 +21,12 @@ const PfpImg = styled.img<{$isValidPfp:boolean}>`
     height: 30px;
 `;
 
-const MemoizedProfilePic = React.memo(({ profile, marginRight = "0px" }: any) => {
+const MemoizedProfilePic = React.memo(({ profile, marginRight = "0px", paddingRight = "7px" }: any) => {
     const pfp = getPfpFromProfile(profile);
     const isValidPfp = pfp !== DEFAULT_PFP;
 
     return (
-        <ProfilePicWrapper $marginRight={marginRight}>
+        <ProfilePicWrapper $marginRight={marginRight} $paddingRight={paddingRight}>
             {profile && <PfpImg
                 $isValidPfp={isValidPfp}
                 src={pfp}
