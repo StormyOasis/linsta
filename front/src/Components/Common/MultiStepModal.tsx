@@ -182,8 +182,7 @@ export const ModalContentWrapper = styled(FlexColumn)<{ $hideMargins?: boolean |
     margin: ${props => props.$hideMargins ? 0 : "20px 28px 20px 28px"};
 
     @media (max-width: ${props => props.theme["breakpoints"].md - 1}px) {
-        margin: 0;
-        justify-content: center;
+        margin: 0;        
         align-items: center;
         overflow-x: hidden;
         width: 100%;
