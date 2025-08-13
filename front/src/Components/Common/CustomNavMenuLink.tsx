@@ -15,6 +15,12 @@ const InnerNavLinkWrapper = styled(Div)`
         background-color: ${(props) => props.theme['colors'].navLinkHoverColor};
     }        
 
+
+    @media (min-width: ${props => props.theme["breakpoints"].md}px) and 
+        (max-width: ${props => props.theme["breakpoints"].lg - 1}px) {
+        padding-top: 9px;
+    }
+
     @media (min-width: ${props => props.theme["breakpoints"].lg - 1}px) {
         width: 100%;
         align-items: center;
