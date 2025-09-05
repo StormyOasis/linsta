@@ -42,6 +42,9 @@ export const logout = () => {
 }
 
 export const getCurrentUser = () => {
+    if(!localStorage) {
+        return null;
+    }
     const user = localStorage.getItem('user');
     if (user == null) {
         return null;

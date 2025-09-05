@@ -22,6 +22,7 @@ const EXCLUDED_API_PATHS = [
     /^\/api\/v1\/accounts\/login\/?$/, // Matches /api/v1/accounts/login
     /^\/api\/v1\/accounts\/forgot\/?$/, // Matches /api/v1/accounts/forgot
     /^\/api\/v1\/accounts\/changePassword\/?$/, // Matches /api/v1/accounts/change_password
+    /^\/api\/v1\/track\/track\/?$/ // Matches /api/v1/track/track
 ];
 
 const App = new Koa();

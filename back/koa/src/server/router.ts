@@ -1,5 +1,5 @@
 import Router from "koa-router";
-import { verifyJWT } from "../utils";
+import { handleSuccess, verifyJWT } from "../utils";
 
 import { handler as getIsUnqiueUsername } from "../controllers/accounts/checkUserName";
 import { handler as sendConfirmCode } from "../controllers/accounts/sendConfirmCode";
@@ -38,6 +38,8 @@ import { handler as updateProfileByUserId } from "../controllers/profiles/update
 
 import { handler as getPostSearch } from "../controllers/search/getPostSearch";
 import { handler as getSuggestions } from "../controllers/search/getSuggestions";
+import { Context } from "koa";
+import { Metrics } from "../../../shared/build/metrics";
 
 
 const router = new Router();
@@ -85,5 +87,31 @@ router.post("/api/v1/profiles/update", verifyJWT, updateProfileByUserId);
 // Search handlers
 router.post("/api/v1/search/search", getPostSearch);
 router.get("/api/v1/search/suggest", getSuggestions);
+
+// IP tracker
+router.put("/api/v1/track/track", async (ctx: Context) => {
+    const data = ctx.request?.body;
+    if (!data?.ip) {
+        return handleSuccess(ctx, {}); // Nothing to track
+    }
+    const clientIp = data.ip;
+    
+    const clientPath = (data.path || "")
+        .split('?')[0]                 // Remove query string
+        .replace(/\/+/g, '_')          // Replace slashes with underscores
+        .replace(/[^a-zA-Z0-9._-]/g, '') // Remove invalid characters
+        || 'root';         
+
+    // Normalize IP for tagging (avoid dots in metric names)
+    const ipTag = clientIp.replace(/\./g, '_');
+
+    // Send a counter metric for the IP visit
+    Metrics.getInstance().increment(`visits.by_ip.${ipTag}.${clientPath}`);    
+
+    // Optional: track total visits
+    Metrics.getInstance().increment('visits.total');    
+
+    return handleSuccess(ctx, {});
+});
 
 export default router;

@@ -16,9 +16,12 @@ import App from "../Components/App";
 import { buildStore } from "../Components/Redux/redux";
 import { Provider } from "react-redux";
 import { API_HOST, PORT } from "../api/config";
+import { putIpAddress } from "../api/ServiceController";
 
 const router = new Router();
 const app = new Koa();
+
+app.proxy = true;
 
 const renderHtml = (title: string, styles: any, html: any, preloadState: any): string => {
     return `
@@ -202,6 +205,26 @@ app.use(compress({
 }));
 app.use(serve(path.resolve(__dirname)));
 app.use(cors());
+app.use(async (ctx, next) => {
+    await next(); // Let route handler run
+
+    // Skip static assets
+    if (ctx.path.match(/\.(css|js|png|jpg|jpeg|gif|svg|ico|webp|mov|mp3|mp4|mpeg|json|map|js\.map)$/i)) {
+        return;
+    }
+
+    const clientIp = ctx.ip;
+
+    // Normalize the path for StatsD
+    const normalizedPath = ctx.path
+        .split('?')[0]            // remove query string
+        .replace(/^\//, '')       // remove leading slash
+        .replace(/\//g, '_')      // replace remaining slashes with underscores
+        .replace(/[^a-zA-Z0-9_-]/g, ''); // remove invalid chars
+
+    putIpAddress({ ip: clientIp, path: normalizedPath })
+        .catch(err => console.error('Failed to log IP:', err));
+});
 app.use(router.routes());
 app.use(router.allowedMethods());
 

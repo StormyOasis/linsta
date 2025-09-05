@@ -37,6 +37,7 @@ import { SiAmazonaws
 } from 'react-icons/si';
 import LargeLogo from "../Common/LargeLogo";
 import StyledLink from "../Common/StyledLink";
+import { putIpAddress } from "../../api/ServiceController";
 
 
 const fadeInUp = keyframes`
@@ -197,6 +198,9 @@ const WarningText = styled(Div)`
 const VisitWrapperLink = styled(Link)`
     display: flex;
     justify-content: center;
+    margin: auto;    
+    margin-bottom: 1rem;
+    width: fit-content;
 `;
 
 const VisitButton = styled(StyledButton)`
@@ -331,7 +335,9 @@ const AboutLayout: React.FC = () => {
 
     useEffect(() => {
         const handleEsc = (e: any) => {
-            if (e.key === 'Escape') closeModal();
+            if (e.key === 'Escape') { 
+                closeModal();
+            }
         };
         window.addEventListener('keydown', handleEsc);
         return () => window.removeEventListener('keydown', handleEsc);
@@ -359,6 +365,28 @@ const AboutLayout: React.FC = () => {
                     This project replicates core social media functionality. Users can create profiles, post media, comment, like, and follow others. In addition, it includes enterprise-ready features such as secure authentication, AWS-powered geolocation suggestions, and a distributed event-driven backend architecture.
                 </Text>
             </Section>
+
+            <Section>
+                <Subtitle>View Live Site</Subtitle>
+                <VisitWrapperLink href="/login" aria-label="Visit Linstagram">
+                    <VisitButton text="Visit Linstagram" />
+                </VisitWrapperLink>
+                <Div>
+                    <Text><b>*Note*</b>: I’m currently operating in the AWS test (sandbox) environment for email and SMS, which restricts messaging to pre-approved addresses only.  As a result, the signup process will be blocked at the confirmation code step for now.</Text>
+                    <Text>I’ve submitted a request to move to production mode. Once approved, I’ll be able to send messages to any address. </Text>
+                    <Text>In the meantime, I have provided two valid logins for use in the app:</Text>
+                    <FlexRowFullWidth>
+                        <TechList>
+                            <li>Username: linstatest01</li>
+                            <li>Password: Linstatest01!</li>
+                        </TechList>
+                        <TechList style={{ marginLeft: "28px" }}>
+                            <li>Username: linstatest02</li>
+                            <li>Password: Linstatest02!</li>
+                        </TechList>
+                    </FlexRowFullWidth>
+                </Div>
+            </Section>            
 
             <Section>
                 <Subtitle>Tech Stack</Subtitle>
@@ -450,30 +478,7 @@ const AboutLayout: React.FC = () => {
                 <JiraList>
                     <li><b>LINSTA-130</b>: Epic - Create notification and messaging systems</li>
                     <li><b>LINSTA-127</b>: Collect front end metrics and send to SQS / Lambdas for processing</li>
-                    <li><b>LINSTA-131</b>: Adjust Gremlin to not use read then write transactions in order to prevent lock contention</li>
-                    <li><b>LINSTA-133</b>: Setup Jenkins or AWS CodeBuild / Deploy for CI/CD</li>
                 </JiraList>
-            </Section>
-
-            <Section>
-                <VisitWrapperLink href="/login" aria-label="Visit Linstagram">
-                    <VisitButton text="Visit Linstagram" />
-                </VisitWrapperLink>
-                <Div>
-                    <Text><b>Note</b>: I’m currently operating in the AWS test (sandbox) environment for email and SMS, which restricts messaging to pre-approved addresses only.  As a result, the signup process will be blocked at the confirmation code step for now.</Text>
-                    <Text>I’ve submitted a request to move to production mode. Once approved, I’ll be able to send messages to any address. </Text>
-                    <Text>In the meantime, I have provided two valid logins for use in the app:</Text>
-                    <FlexRowFullWidth>
-                        <TechList>
-                            <li>Username: linstatest01</li>
-                            <li>Password: Linstatest01!</li>
-                        </TechList>
-                        <TechList style={{ marginLeft: "28px" }}>
-                            <li>Username: linstatest02</li>
-                            <li>Password: Linstatest02!</li>
-                        </TechList>
-                    </FlexRowFullWidth>
-                </Div>
             </Section>
 
             <Footer>

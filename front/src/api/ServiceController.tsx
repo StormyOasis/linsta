@@ -218,6 +218,7 @@ export const getSearch = async (data: any): Promise<ServiceResponse> => {
     const res = await axios.post(`${API_HOST}/api/${API_VERSION}/search/search`, addRequestorId(data), { headers: authHeader() });
     return res.data;
 }
+
 export const getSuggestions = async (data: any): Promise<ServiceResponse> => {
     const res = await axios.get(`${API_HOST}/api/${API_VERSION}/search/suggest`, {
         params: {
@@ -230,3 +231,8 @@ export const getSuggestions = async (data: any): Promise<ServiceResponse> => {
     });
     return res.data;
 }
+
+export const putIpAddress = async (data: any): Promise<ServiceResponse> => {
+    const res = await axios.put(`${API_HOST}/api/${API_VERSION}/track/track`, data);
+    return res.data;
+};
