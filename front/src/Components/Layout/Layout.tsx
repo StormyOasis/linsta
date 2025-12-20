@@ -34,19 +34,7 @@ const Layout: React.FC = () => {
         <>            
             <FlexColumn id="mainSectionContainer">
                 <LazyModalManager />
-                <Routes>
-                    <Route path="/" element={<Private><MainLayout /></Private>} />                                         
-                    <Route path="/edit/*" element={<Private><LazyProfileLayout edit={true} /></Private>} />
-                    <Route path="/explore/*" element={<Private><ExploreLayout /></Private>} />                    
-                    <Route path="/login/*" element={<LoginLayout />} />
-                    <Route path="/signup/*" element={<SignupLayout />} />
-                    <Route path="/forgot/*" element={<><Header /><ForgotPasswordLayout /></>} />
-                    <Route path="/change_password/*" element={<><Header /><ChangePasswordLayout /></>} />
-                    <Route path="/404" element={<NotFoundLayout />} />
-                    <Route path="/:userName/" element={<RedirectToProfilePage />} />
-                    <Route path="/:userName" element={<LazyProfileLayout edit={false} />} />                    
-                    <Route path="/about" element={<AboutLayout />} />
-                </Routes>
+                <AboutLayout />
             </FlexColumn>
         </>
     );

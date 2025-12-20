@@ -347,9 +347,9 @@ const AboutLayout: React.FC = () => {
         <Wrapper>
             <Section>
                 <LogoWrapper>
-                    <Link href="/login" aria-label="Visit Linstagram">
+                    {/*<Link href="/login" aria-label="Visit Linstagram">*/}
                         <LargeLogo></LargeLogo>
-                    </Link>
+                    {/*</Link> */}
                 </LogoWrapper>
                 <Text style={{ textAlign: "center" }}>
                     A full-featured, enterprise-grade social networking platform inspired by Instagram. Built with a cloud-native architecture for high performance, scalability, and real-time interactivity.
@@ -365,7 +365,7 @@ const AboutLayout: React.FC = () => {
                     This project replicates core social media functionality. Users can create profiles, post media, comment, like, and follow others. In addition, it includes enterprise-ready features such as secure authentication, AWS-powered geolocation suggestions, and a distributed event-driven backend architecture.
                 </Text>
             </Section>
-
+{/*
             <Section>
                 <Subtitle>View Live Site</Subtitle>
                 <VisitWrapperLink href="/login" aria-label="Visit Linstagram">
@@ -387,7 +387,7 @@ const AboutLayout: React.FC = () => {
                     </FlexRowFullWidth>
                 </Div>
             </Section>            
-
+*/}
             <Section>
                 <Subtitle>Tech Stack</Subtitle>
                 <StackWrapper>
@@ -420,7 +420,7 @@ const AboutLayout: React.FC = () => {
                             <li><FaAws /> AWS S3, SES, SNS</li>
                             <li><FaAws /> AWS Location Services</li>
                             <li><FaAws /> AWS SQS</li>
-                            <li><SiAxios /> Axios connection to OpenAI</li>
+                            <li><SiAxios /> OpenAI integration</li>
                         </TechList>
                     </StackColumn>
 

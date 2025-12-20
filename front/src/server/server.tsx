@@ -222,8 +222,8 @@ app.use(async (ctx, next) => {
         .replace(/\//g, '_')      // replace remaining slashes with underscores
         .replace(/[^a-zA-Z0-9_-]/g, ''); // remove invalid chars
 
-    putIpAddress({ ip: clientIp, path: normalizedPath })
-        .catch(err => console.error('Failed to log IP:', err));
+    //putIpAddress({ ip: clientIp, path: normalizedPath })
+    //    .catch(err => console.error('Failed to log IP:', err));
 });
 app.use(router.routes());
 app.use(router.allowedMethods());
