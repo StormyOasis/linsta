@@ -12,7 +12,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { historyUtils, validatePassword } from "../../../utils/utils";
 import { AppDispatch } from "../../../Components/Redux/redux";
 import { loginUser } from "../../../Components/Redux/slices/auth.slice";
-import { Div, Flex, Span } from "../../../Components/Common/CombinedStyling";
+import { Div, Flex, FlexColumnFullWidth, FlexRowFullWidth, Span } from "../../../Components/Common/CombinedStyling";
 
 type LoginLayoutProps = {
 };
@@ -123,18 +123,36 @@ const LoginLayout: React.FC<LoginLayoutProps> = (_props: LoginLayoutProps) => {
                         <Div className={styles.default.signupBox}>
                             {renderLoginForm()}
                         </Div>
-                        <Div
-                            className={styles.default.signupBox}
-                            style={{ padding: "20px 0" }}>
+                        <Div className={styles.default.signupBox} style={{ padding: "20px 0" }}>
                             Don't have an account? <StyledLink to="/signup">Sign up</StyledLink>
                         </Div>
+                        <Div className={styles.default.signupBox} style={{ padding: "10px" }}>
+                            <span style={{fontWeight: 600, color: "red"}}>Important Note for Visitors:</span>                            
+                            <Div $margin="auto" $fontSize=".9em" $textAlign="center">
+                                Due to AWS test environment restrictions for email and SMS messaging (see <StyledLink to="/about">here</StyledLink>), the following test accounts have been created for demonstration purposes:
+                            </Div>
+                            <FlexColumnFullWidth $paddingTop="5px">
+                                <FlexRowFullWidth $justifyContent="space-evenly" $fontWeight="800" $paddingBottom="5px">
+                                    <Span>Username:</Span>
+                                    <Span>Password:</Span>
+                                </FlexRowFullWidth>
+                                <FlexRowFullWidth $justifyContent="space-evenly" $paddingBottom="2px">
+                                    <Span>linstatest01</Span>
+                                    <Span>Linstatest01!</Span>
+                                </FlexRowFullWidth>
+                                <FlexRowFullWidth $justifyContent="space-evenly" $paddingBottom="2px">
+                                    <Span>linstatest02</Span>
+                                    <Span>Linstatest02!</Span>
+                                </FlexRowFullWidth>                                
+                            </FlexColumnFullWidth>
+                        </Div>                        
                     </Div>
                 </Div>
                 <Div $margin="auto">
                     <StyledLink to="/about" styleOverride={{fontSize: ".925em", fontWeight: 600}}>                            
                         About
                     </StyledLink>                     
-                </Div>
+                </Div>                
             </LoginLayoutWrapper>
         </Theme>
     );
