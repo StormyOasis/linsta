@@ -256,8 +256,20 @@ export class DBConnector {
         throw new Error("Unexpected result format");
     }
 
-    public getVertexPropertySafe = (vertexProperties: Record<string, Array<{ value: string }>> | undefined,
-        propertyName: string, defaultValue: string = ""): string => {
+    public getVertexPropertySafe = (
+        vertexProperties:
+            | Record<string, Array<{ value: string }>>
+            | Array<{ key?: string; label?: string; value?: string }>
+            | undefined,
+        propertyName: string,
+        defaultValue: string = ""
+    ): string => {
+        if (Array.isArray(vertexProperties)) {
+            return vertexProperties.find((property) =>
+                property.key === propertyName || property.label === propertyName
+            )?.value ?? defaultValue;
+        }
+
         return vertexProperties?.[propertyName]?.[0]?.value ?? defaultValue;
     };
 
