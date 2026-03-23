@@ -40,7 +40,8 @@ const renderHtml = (title: string, styles: any, html: any, preloadState: any): s
                     REACT_APP_API_HOST: "${process.env.REACT_APP_API_HOST}",
                     REACT_APP_LAMBDA_HOST: "${process.env.REACT_APP_LAMBDA_HOST}",
                     REACT_APP_METRICS_HOST: "${process.env.REACT_APP_METRICS_HOST}",
-                    REACT_APP_METRICS_PORT: "${process.env.REACT_APP_METRICS_PORT}"             
+                    REACT_APP_METRICS_PORT: "${process.env.REACT_APP_METRICS_PORT}",
+                    REACT_APP_VISITOR_LAMBDA_HOST: "${process.env.REACT_APP_VISITOR_LAMBDA_HOST}"             
                 };
             </script>
             <link rel="preconnect" href="https://linsta-public.s3.us-west-2.amazonaws.com">
