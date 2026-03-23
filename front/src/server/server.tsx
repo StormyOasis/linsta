@@ -32,7 +32,7 @@ const renderHtml = (title: string, styles: any, html: any, preloadState: any): s
             <meta name="viewport" content="width=device-width, initial-scale=1">    
             <meta name="description" content="Linstagram - An instagram clone">    
             <title>${title}</title>
-	        <link rel="icon" type="image/png" href="${process.env.REACT_APP_HOST}/favicon.png">
+	        <link rel="icon" type="image/png" href="${process.env.REACT_APP_HOST}/public/favicon.png">
             <script>
                 window.env = {
                     REACT_APP_PORT: "${process.env.REACT_APP_PORT}",
