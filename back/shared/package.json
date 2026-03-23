@@ -21,7 +21,7 @@
         "bcrypt": "^6.0.0",
         "dotenv": "^16.5.0",
         "formidable": "^3.5.4",
-        "gremlin": "^3.7.3",
+        "gremlin": "3.7.3",
         "hot-shots": "^10.2.1",
         "p-retry": "^4.6.2",
         "redis": "^4.7.0",
