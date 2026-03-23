@@ -8,6 +8,7 @@ import { historyUtils } from "../utils/utils";
 import { useSelector } from "react-redux";
 import { useAppDispatch } from "./Redux/redux";
 import { getProfileByUserId } from "./Redux/slices/profile.slice";
+import VisitorCounter from "./Common/VisitorCounter";
 
 const App: React.FC<any> = ({ children }) => {
     const [isServer, setIsServer] = useState<boolean>(true);
@@ -33,6 +34,7 @@ const App: React.FC<any> = ({ children }) => {
             <ErrorBoundary FallbackComponent={({ error }) => <div data-testid="fallback">{error.stack}</div>}>
                 {children}
                 <Theme>
+                    <VisitorCounter />
                     <Layout />
                 </Theme>
             </ErrorBoundary>
