@@ -231,8 +231,3 @@ export const getSuggestions = async (data: any): Promise<ServiceResponse> => {
     });
     return res.data;
 }
-
-export const putIpAddress = async (data: any): Promise<ServiceResponse> => {
-    const res = await axios.put(`${API_HOST}/api/${API_VERSION}/track/track`, data);
-    return res.data;
-};

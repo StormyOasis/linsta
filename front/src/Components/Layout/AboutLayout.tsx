@@ -37,7 +37,6 @@ import { SiAmazonaws
 } from 'react-icons/si';
 import LargeLogo from "../Common/LargeLogo";
 import StyledLink from "../Common/StyledLink";
-import { putIpAddress } from "../../api/ServiceController";
 
 
 const fadeInUp = keyframes`
